@@ -63,9 +63,9 @@ export const compile = async (
 
   contracts.forEach((contract) => {
     const michelson: string = execSync(
-      `${ligo} compile-contract ${
-        format === "json" ? "--michelson-format=json" : ""
-      } $PWD/${contractsDir}/${contract}.ligo main`,
+      `${ligo} compile contract $PWD/${contractsDir}/${contract}.ligo ${
+        format === "json" ? "--michelson-format json" : ""
+      }`,
       { maxBuffer: 1024 * 500 }
     ).toString();
 
@@ -115,7 +115,7 @@ export const compileLambdas = async (
   try {
     for (const lambda of lambdas) {
       const michelson: string = execSync(
-        `${ligo} compile-parameter --michelson-format=json $PWD/${contract} main 'Setup_func(record index=${lambda.index}n; func=${lambda.name}; end)'`,
+        `${ligo} compile parameter $PWD/${contract} 'Setup_func(record index=${lambda.index}n; func=${lambda.name}; end)' --michelson-format=json`,
         { maxBuffer: 1024 * 500 }
       ).toString();
 
@@ -190,19 +190,18 @@ export const getDeployedAddress = (contract: string) => {
   }
 };
 
-export const runMigrations = async (options: any) => {
+export const runMigrations = async (
+  from: number = 0,
+  to: number = getMigrationsList().length,
+  network: string = "development"
+) => {
   try {
     const migrations: string[] = getMigrationsList();
-
-    options.network = options.network || "development";
-    options.optionFrom = options.from || 0;
-    options.optionTo = options.to || migrations.length;
-
-    const networkConfig: any = env.networks[options.network];
+    const networkConfig: any = env.networks[network];
     const tezos: TezosToolkit = new TezosToolkit(networkConfig.rpc);
 
-    for (const migration of migrations) {
-      const execMigration = require(`../${env.migrationsDir}/${migration}.js`);
+    for (let i: number = from; i < to; ++i) {
+      const execMigration: any = require(`../${env.migrationsDir}/${migrations[i]}.js`);
 
       await execMigration(tezos);
     }

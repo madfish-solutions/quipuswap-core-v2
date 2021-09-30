@@ -1,14 +1,16 @@
 const env = require("../env");
 
 import {
-  BlockResponse,
-  OperationEntry,
   OperationContentsAndResultOrigination,
+  OperationContentsAndResult,
+  OperationContents,
+  OperationEntry,
+  BlockResponse,
 } from "@taquito/rpc";
 import { TezosToolkit, OpKind } from "@taquito/taquito";
 
-export const SYNC_INTERVAL = +env.syncInterval;
-export const CONFIRM_TIMEOUT = +env.confirmTimeout;
+export const SYNC_INTERVAL: number = +env.syncInterval;
+export const CONFIRM_TIMEOUT: number = +env.confirmTimeout;
 
 export type ConfirmOperationOptions = {
   initializedAt?: number;
@@ -21,29 +23,32 @@ export async function confirmOperation(
   opHash: string,
   { initializedAt, fromBlockLevel, signal }: ConfirmOperationOptions = {}
 ): Promise<OperationEntry> {
-  if (!initializedAt) initializedAt = Date.now();
+  if (!initializedAt) {
+    initializedAt = Date.now();
+  }
+
   if (initializedAt && initializedAt + CONFIRM_TIMEOUT < Date.now()) {
     throw new Error("Confirmation polling timed out");
   }
 
-  const startedAt = Date.now();
-  let currentBlockLevel;
+  const startedAt: number = Date.now();
+  let currentBlockLevel: number;
 
   try {
-    const currentBlock = await tezos.rpc.getBlock();
+    const currentBlock: any = await tezos.rpc.getBlock();
 
     currentBlockLevel = currentBlock.header.level;
 
     for (
-      let i = fromBlockLevel ?? currentBlockLevel;
+      let i: number = fromBlockLevel ?? currentBlockLevel;
       i <= currentBlockLevel;
       i++
     ) {
-      const block =
+      const block: any =
         i === currentBlockLevel
           ? currentBlock
           : await tezos.rpc.getBlock({ block: i as any });
-      const opEntry = await findOperation(block, opHash);
+      const opEntry: any = await findOperation(block, opHash);
 
       if (opEntry) {
         return opEntry;
@@ -59,7 +64,10 @@ export async function confirmOperation(
     throw new Error("Cancelled");
   }
 
-  const timeToWait = Math.max(startedAt + SYNC_INTERVAL - Date.now(), 0);
+  const timeToWait: number = Math.max(
+    startedAt + SYNC_INTERVAL - Date.now(),
+    0
+  );
 
   await new Promise((r) => setTimeout(r, timeToWait));
 
@@ -70,8 +78,11 @@ export async function confirmOperation(
   });
 }
 
-export async function findOperation(block: BlockResponse, opHash: string) {
-  for (let i = 3; i >= 0; i--) {
+export async function findOperation(
+  block: BlockResponse,
+  opHash: string
+): Promise<OperationEntry> {
+  for (let i: number = 3; i >= 0; i--) {
     for (const op of block.operations[i]) {
       if (op.hash === opHash) {
         return op;
@@ -82,13 +93,13 @@ export async function findOperation(block: BlockResponse, opHash: string) {
   return null;
 }
 
-export function getOriginatedContractAddress(opEntry: OperationEntry) {
-  const results = Array.isArray(opEntry.contents)
-    ? opEntry.contents
-    : [opEntry.contents];
-  const originationOp = results.find((op) => op.kind === OpKind.ORIGINATION) as
-    | OperationContentsAndResultOrigination
-    | undefined;
+export function getOriginatedContractAddress(opEntry: OperationEntry): string {
+  const results: (OperationContents | OperationContentsAndResult)[] =
+    Array.isArray(opEntry.contents) ? opEntry.contents : [opEntry.contents];
+  const originationOp: OperationContentsAndResultOrigination = results.find(
+    (op) => op.kind === OpKind.ORIGINATION
+  ) as OperationContentsAndResultOrigination | undefined;
+
   return (
     originationOp?.metadata?.operation_result?.originated_contracts?.[0] ?? null
   );

@@ -2,7 +2,7 @@ import yargs from "yargs";
 
 import { compile, compileLambdas, runMigrations } from "./helpers";
 
-const argv = yargs
+yargs
   .command(
     "compile [format] [contract] [contracts_dir] [output_dir] [ligo_version]",
     "compiles the contract",
@@ -74,7 +74,7 @@ const argv = yargs
       },
       to: {
         description: "the migrations counter to end with",
-        alias: "to",
+        alias: "t",
         type: "number",
       },
       network: {
@@ -84,7 +84,7 @@ const argv = yargs
       },
     },
     async (argv) => {
-      runMigrations(argv);
+      runMigrations(argv.from, argv.to, argv.network);
     }
   )
   .help()
