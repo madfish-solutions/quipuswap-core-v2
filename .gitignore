@@ -1,0 +1,10 @@
+build/
+node_modules/
+output/
+.vscode/
+venv/
+.idea/
+
+.DS_Store
+yarn.lock
+.pytest_cache

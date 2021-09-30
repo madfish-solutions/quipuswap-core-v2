@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "allowJs": true,
+    "noImplicitAny": false,
+    "downlevelIteration": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "baseUrl": "./",
+    "typeRoots": ["./node_modules/@types", "./test/types"],
+    "types": ["node", "@types/mocha", "@types/chai", "@types/expect", "./test/types"],
+  },
+  "exclude": ["node_modules", "build", "cache", "artifacts"],
+  "include": ["./*.ts", "./test/*.ts", "./test/helpers/*.ts"]
+}
