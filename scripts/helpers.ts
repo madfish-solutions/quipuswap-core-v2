@@ -114,12 +114,12 @@ export const compileLambdas = async (
 
   try {
     for (const lambda of lambdas) {
-      const michelson: string = execSync(
-        `${ligo} compile parameter $PWD/${contract} 'Setup_func(record index=${lambda.index}n; func=${lambda.name}; end)' --michelson-format=json`,
+      const michelson = execSync(
+        `${ligo} compile expression pascaligo 'Setup_func(record [idx=${lambda.index}n; func_bytes=Bytes.pack(${lambda.name})])' --michelson-format json --init-file $PWD/${contract}`,
         { maxBuffer: 1024 * 500 }
       ).toString();
 
-      res.push(JSON.parse(michelson).args[0].args[0]);
+      res.push(JSON.parse(michelson).args[0]);
 
       console.log(
         lambda.index + 1 + ". " + lambda.name + " successfully compiled."
@@ -131,7 +131,7 @@ export const compileLambdas = async (
     }
 
     fs.writeFileSync(
-      `${env.buildDir}/lambdas/dex_lambdas.json`,
+      `${env.buildDir}/lambdas/dex_core_lambdas.json`,
       JSON.stringify(res)
     );
   } catch (e) {
