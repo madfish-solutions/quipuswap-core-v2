@@ -4,7 +4,12 @@ function call_dex_core(
                         : full_return_t is
   block {
     const id : nat = case action of
-    | Test(_) -> 0n
+    | Set_admin(_)             -> 0n
+    | Confirm_admin(_)         -> 1n
+    | Add_managers(_)          -> 2n
+    | Set_fees(_)              -> 3n
+    | Set_cycle_duration(_)    -> 4n
+    | Update_token_metadata(_) -> 5n
     end;
 
     const lambda_bytes : bytes = case s.dex_core_lambdas[id] of

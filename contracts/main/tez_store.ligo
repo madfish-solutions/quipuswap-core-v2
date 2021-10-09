@@ -1,4 +1,5 @@
-#include "../partial/i_common.ligo"
+#include "../partial/common_types.ligo"
+#include "../partial/common_helpers.ligo"
 
 #include "../partial/tez_store/tez_store_types.ligo"
 #include "../partial/tez_store/tez_store_methods.ligo"

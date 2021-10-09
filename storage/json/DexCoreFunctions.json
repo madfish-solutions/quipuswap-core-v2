@@ -1,6 +1,26 @@
 [
   {
     "index": 0,
-    "name": "test"
+    "name": "set_admin"
+  },
+  {
+    "index": 1,
+    "name": "confirm_admin"
+  },
+  {
+    "index": 2,
+    "name": "add_managers"
+  },
+  {
+    "index": 3,
+    "name": "set_fees"
+  },
+  {
+    "index": 4,
+    "name": "set_cycle_duration"
+  },
+  {
+    "index": 5,
+    "name": "update_token_metadata"
   }
 ]
