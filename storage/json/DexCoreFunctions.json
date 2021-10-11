@@ -25,14 +25,18 @@
   },
   {
     "index": 6,
-    "name": "transfer"
+    "name": "ban_bakers"
   },
   {
     "index": 7,
-    "name": "update_operators"
+    "name": "transfer"
   },
   {
     "index": 8,
+    "name": "update_operators"
+  },
+  {
+    "index": 9,
     "name": "balance_of"
   }
 ]

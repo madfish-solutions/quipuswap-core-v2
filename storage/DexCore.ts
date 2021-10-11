@@ -10,6 +10,7 @@ export const dexCoreStorage: DexCoreStorage = {
   token_metadata: MichelsonMap.fromLiteral({}),
   ledger: MichelsonMap.fromLiteral({}),
   accounts: MichelsonMap.fromLiteral({}),
+  bakers: MichelsonMap.fromLiteral({}),
   managers: [],
   fees: {
     interface_fee: new BigNumber(0),

@@ -2,6 +2,11 @@ type account_t          is [@layout:comb] record [
   allowances              : set(address);
 ]
 
+type baker_t            is [@layout:comb] record [
+  ban_period              : nat;
+  ban_start_time          : timestamp;
+]
+
 type fees_t             is [@layout:comb] record [
   interface_fee           : nat;
   swap_fee                : nat;
@@ -12,6 +17,7 @@ type storage_t          is [@layout:comb] record [
   token_metadata          : big_map(token_t, token_metadata_t);
   ledger                  : big_map((address * token_t), nat);
   accounts                : big_map((address * token_t), account_t);
+  bakers                  : big_map(key_hash, baker_t);
   managers                : set(address);
   fees                    : fees_t;
   admin                   : address;
@@ -45,6 +51,13 @@ type upd_tok_meta_t     is [@layout:comb] record [
   token_info              : list(metadata_pair_t);
 ]
 
+type ban_baker_t        is [@layout:comb] record [
+  baker                   : key_hash;
+  ban_period              : nat;
+]
+
+type ban_bakers_t       is list(ban_baker_t)
+
 type default_t          is unit
 
 type action_t           is
@@ -54,6 +67,7 @@ type action_t           is
 | Set_fees                of set_fees_t
 | Set_cycle_duration      of set_cycle_dur_t
 | Update_token_metadata   of upd_tok_meta_t
+| Ban_bakers              of ban_bakers_t
 | Transfer                of transfers_t
 | Update_operators        of update_operators_t
 | Balance_of              of balance_of_t
@@ -79,4 +93,4 @@ type full_action_t      is
 | Setup_func              of setup_func_t
 | Default                 of default_t
 
-[@inline] const dex_core_methods_max_index : nat = 8n;
+[@inline] const dex_core_methods_max_index : nat = 9n;

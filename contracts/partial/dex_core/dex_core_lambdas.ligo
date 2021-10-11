@@ -108,3 +108,31 @@ function update_token_metadata(
     | _ -> skip
     end
   } with (no_operations, s)
+
+function ban_bakers(
+  const action          : action_t;
+  var s                 : storage_t)
+                        : return_t is
+  block {
+    case action of
+      Ban_bakers(params) -> {
+        only_admin(s.admin);
+
+        function ban_baker(
+          var s           : storage_t;
+          const params    : ban_baker_t)
+                          : storage_t is
+          block {
+            var baker : baker_t := get_baker(params.baker, s.bakers);
+
+            baker.ban_period := params.ban_period;
+            baker.ban_start_time := Tezos.now;
+
+            s.bakers[params.baker] := baker;
+          } with s;
+
+        s := List.fold(ban_baker, params, s);
+      }
+    | _ -> skip
+    end
+  } with (no_operations, s)

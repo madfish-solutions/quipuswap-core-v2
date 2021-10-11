@@ -28,3 +28,15 @@ function get_token_metadata(
   | None           -> (failwith("DexCore/dex-not-set") : token_metadata_t)
   | Some(metadata) -> metadata
   end
+
+function get_baker(
+  const baker           : key_hash;
+  const bakers          : big_map(key_hash, baker_t))
+                        : baker_t is
+  case bakers[baker] of
+  | None          -> record [
+    ban_period     = 0n;
+    ban_start_time = (0 : timestamp);
+  ]
+  | Some(baker) -> baker
+  end
