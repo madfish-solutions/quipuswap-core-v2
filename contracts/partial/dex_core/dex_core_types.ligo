@@ -1,5 +1,4 @@
 type account_t          is [@layout:comb] record [
-  balance                 : nat;
   allowances              : set(address);
 ]
 
@@ -9,8 +8,10 @@ type fees_t             is [@layout:comb] record [
 ]
 
 type storage_t          is [@layout:comb] record [
-  accounts                : big_map((token_t * address), account_t);
+  metadata                : big_map(string, bytes);
   token_metadata          : big_map(token_t, token_metadata_t);
+  ledger                  : big_map((address * token_t), nat);
+  accounts                : big_map((address * token_t), account_t);
   managers                : set(address);
   fees                    : fees_t;
   admin                   : address;

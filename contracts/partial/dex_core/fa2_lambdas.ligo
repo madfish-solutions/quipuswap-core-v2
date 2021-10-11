@@ -12,25 +12,23 @@ function iterate_transfer(
         then failwith("FA2_TOKEN_UNDEFINED")
         else skip;
 
-        var sender_account : account_t := get_account(dst.token_id, transfer_param.from_, s.accounts);
+        const sender_account : account_t = get_account(transfer_param.from_, dst.token_id, s.accounts);
 
         if transfer_param.from_ =/= Tezos.sender and not (Set.mem(Tezos.sender, sender_account.allowances))
         then failwith("FA2_NOT_OPERATOR")
         else skip;
 
-        if sender_account.balance < dst.amount
+        const sender_balance : nat = get_token_balance(transfer_param.from_, dst.token_id, s.ledger);
+
+        if sender_balance < dst.amount
         then failwith("FA2_INSUFFICIENT_BALANCE")
         else skip;
 
-        sender_account.balance := abs(sender_account.balance - dst.amount);
+        s.ledger[(transfer_param.from_, dst.token_id)] := abs(sender_balance - dst.amount);
 
-        s.accounts[(dst.token_id, transfer_param.from_)] := sender_account;
+        const recipient_balance : nat = get_token_balance(dst.to_, dst.token_id, s.ledger);
 
-        var recipient_account : account_t := get_account(dst.token_id, dst.to_, s.accounts);
-
-        recipient_account.balance := recipient_account.balance + dst.amount;
-
-        s.accounts[(dst.token_id, dst.to_)] := recipient_account;
+        s.ledger[(dst.to_, dst.token_id)] := recipient_balance + dst.amount;
       } with s
   } with (List.fold(make_transfer, transfer_param.txs, s))
 
@@ -49,11 +47,11 @@ function update_operator(
       then failwith("FA2_NOT_OWNER")
       else skip;
 
-      var account : account_t := get_account(param.token_id, param.owner, s.accounts);
+      var account : account_t := get_account(param.owner, param.token_id, s.accounts);
 
       account.allowances := Set.add(param.operator, account.allowances);
 
-      s.accounts[(param.token_id, param.owner)] := account;
+      s.accounts[(param.owner, param.token_id)] := account;
     }
     | Remove_operator(param) -> {
       if param.token_id > s.tokens_count
@@ -64,11 +62,11 @@ function update_operator(
       then failwith("FA2_NOT_OWNER")
       else skip;
 
-      var account : account_t := get_account(param.token_id, param.owner, s.accounts);
+      var account : account_t := get_account(param.owner, param.token_id, s.accounts);
 
       account.allowances := Set.remove(param.operator, account.allowances);
 
-      s.accounts[(param.token_id, param.owner)] := account;
+      s.accounts[(param.owner, param.token_id)] := account;
     }
     end
   } with s
@@ -117,10 +115,10 @@ function balance_of(
           then failwith("FA2_TOKEN_UNDEFINED")
           else skip;
 
-          const account : account_t = get_account(request.token_id, request.owner, s.accounts);
+          const bal : nat = get_token_balance(request.owner, request.token_id, s.ledger);
           const response : balance_response_t = record [
             request = request;
-            balance = account.balance;
+            balance = bal;
           ];
         } with response # l;
 
