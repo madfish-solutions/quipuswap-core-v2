@@ -22,5 +22,17 @@
   {
     "index": 5,
     "name": "update_token_metadata"
+  },
+  {
+    "index": 6,
+    "name": "transfer"
+  },
+  {
+    "index": 7,
+    "name": "update_operators"
+  },
+  {
+    "index": 8,
+    "name": "balance_of"
   }
 ]

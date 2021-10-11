@@ -1,15 +1,22 @@
+type account_t          is [@layout:comb] record [
+  balance                 : nat;
+  allowances              : set(address);
+]
+
 type fees_t             is [@layout:comb] record [
   interface_fee           : nat;
   swap_fee                : nat;
 ]
 
 type storage_t          is [@layout:comb] record [
+  accounts                : big_map((token_t * address), account_t);
   token_metadata          : big_map(token_t, token_metadata_t);
   managers                : set(address);
   fees                    : fees_t;
   admin                   : address;
   pending_admin           : address;
   cycle_duration          : nat;
+  tokens_count            : nat;
 ]
 
 type set_admin_t        is address
@@ -46,6 +53,9 @@ type action_t           is
 | Set_fees                of set_fees_t
 | Set_cycle_duration      of set_cycle_dur_t
 | Update_token_metadata   of upd_tok_meta_t
+| Transfer                of transfers_t
+| Update_operators        of update_operators_t
+| Balance_of              of balance_of_t
 
 type return_t           is list(operation) * storage_t
 
@@ -68,4 +78,4 @@ type full_action_t      is
 | Setup_func              of setup_func_t
 | Default                 of default_t
 
-[@inline] const dex_core_methods_max_index : nat = 1n;
+[@inline] const dex_core_methods_max_index : nat = 8n;

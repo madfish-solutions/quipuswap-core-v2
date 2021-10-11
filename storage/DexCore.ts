@@ -15,4 +15,5 @@ export const dexCoreStorage: DexCoreStorage = {
   admin: zeroAddress,
   pending_admin: zeroAddress,
   cycle_duration: new BigNumber(0),
+  tokens_count: new BigNumber(0),
 };

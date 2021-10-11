@@ -8,6 +8,8 @@
 #include "../partial/dex_core/dex_core_methods.ligo"
 #include "../partial/dex_core/dex_core_lambdas.ligo"
 
+#include "../partial/dex_core/fa2_lambdas.ligo"
+
 function main(
   const action          : full_action_t;
   const s               : full_storage_t)

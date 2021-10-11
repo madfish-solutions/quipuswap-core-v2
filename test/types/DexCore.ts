@@ -14,4 +14,5 @@ export type DexCoreStorage = {
   admin: string;
   pending_admin: string;
   cycle_duration: BigNumber;
+  tokens_count: BigNumber;
 };
