@@ -17,11 +17,14 @@ type storage_t          is [@layout:comb] record [
   token_metadata          : big_map(token_t, token_metadata_t);
   ledger                  : big_map((address * token_t), nat);
   accounts                : big_map((address * token_t), account_t);
+  permits                 : big_map(address, user_permits_t);
   bakers                  : big_map(key_hash, baker_t);
   managers                : set(address);
   fees                    : fees_t;
   admin                   : address;
   pending_admin           : address;
+  permits_counter         : counter_t;
+  default_expiry          : seconds_t;
   cycle_duration          : nat;
   tokens_count            : nat;
 ]
@@ -68,6 +71,8 @@ type action_t           is
 | Set_cycle_duration      of set_cycle_dur_t
 | Update_token_metadata   of upd_tok_meta_t
 | Ban_bakers              of ban_bakers_t
+| Permit                  of permit_t
+| Set_expiry              of set_expiry_t
 | Transfer                of transfers_t
 | Update_operators        of update_operators_t
 | Balance_of              of balance_of_t

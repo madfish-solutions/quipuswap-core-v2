@@ -29,14 +29,22 @@
   },
   {
     "index": 7,
-    "name": "transfer"
+    "name": "permit"
   },
   {
     "index": 8,
-    "name": "update_operators"
+    "name": "set_expiry"
   },
   {
     "index": 9,
+    "name": "transfer"
+  },
+  {
+    "index": 10,
+    "name": "update_operators"
+  },
+  {
+    "index": 11,
     "name": "balance_of"
   }
 ]

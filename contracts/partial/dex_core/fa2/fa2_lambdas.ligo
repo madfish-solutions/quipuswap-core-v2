@@ -1,3 +1,46 @@
+function is_approved_operator(
+  const param           : transfer_t;
+  const s               : storage_t)
+                        : bool is
+  block {
+    const operator : address = Tezos.sender;
+    const owner : address = param.from_;
+    const user : account_t = get_account(owner, 0n, s.accounts); // token id?
+  } with owner = operator or Set.mem(operator, user.allowances)
+
+function transfer_sender_check(
+  const params          : transfers_t;
+  const s               : storage_t;
+  const action          : action_t)
+                        : storage_t is
+  block {
+    function is_approved(
+      const approved    : bool;
+      const param       : transfer_t)
+                        : bool is
+      approved and is_approved_operator(param, s);
+
+    const is_approved_operator_for_all : bool = List.fold(is_approved, params, True);
+  } with
+      if is_approved_operator_for_all
+      then s
+      else case params of
+        | nil -> s
+        | first_param # rest -> block {
+            const from_ : address = first_param.from_;
+            const updated_s : storage_t = sender_check(from_, s, action, "FA2_NOT_OPERATOR");
+
+            function check(
+              const param : transfer_t)
+                          : unit is
+              if param.from_ =/= from_
+              then failwith("FA2_NOT_OPERATOR")
+              else unit;
+
+            List.iter(check, rest);
+          } with updated_s
+        end
+
 function iterate_transfer(
   var s                 : storage_t;
   const transfer_param  : transfer_t)
@@ -78,6 +121,7 @@ function transfer(
   block {
     case action of
     | Transfer(params) -> {
+      s := transfer_sender_check(params, s, action);
       s := List.fold(iterate_transfer, params, s);
     }
     | _ -> skip

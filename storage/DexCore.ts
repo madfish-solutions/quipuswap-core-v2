@@ -10,6 +10,7 @@ export const dexCoreStorage: DexCoreStorage = {
   token_metadata: MichelsonMap.fromLiteral({}),
   ledger: MichelsonMap.fromLiteral({}),
   accounts: MichelsonMap.fromLiteral({}),
+  permits: MichelsonMap.fromLiteral({}),
   bakers: MichelsonMap.fromLiteral({}),
   managers: [],
   fees: {
@@ -18,6 +19,8 @@ export const dexCoreStorage: DexCoreStorage = {
   },
   admin: zeroAddress,
   pending_admin: zeroAddress,
+  permits_counter: new BigNumber(0),
+  default_expiry: new BigNumber(0),
   cycle_duration: new BigNumber(0),
   tokens_count: new BigNumber(0),
 };

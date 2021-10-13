@@ -1,14 +1,19 @@
 #include "../partial/common_types.ligo"
 #include "../partial/common_helpers.ligo"
 
-#include "../partial/dex_core/fa2_types.ligo"
+#include "../partial/dex_core/fa2/fa2_types.ligo"
+
+#include "../partial/dex_core/permits/permits_types.ligo"
 
 #include "../partial/dex_core/dex_core_types.ligo"
 #include "../partial/dex_core/dex_core_helpers.ligo"
 #include "../partial/dex_core/dex_core_methods.ligo"
 #include "../partial/dex_core/dex_core_lambdas.ligo"
 
-#include "../partial/dex_core/fa2_lambdas.ligo"
+#include "../partial/dex_core/permits/permits_methods.ligo"
+#include "../partial/dex_core/permits/permits_lambdas.ligo"
+
+#include "../partial/dex_core/fa2/fa2_lambdas.ligo"
 
 function main(
   const action          : full_action_t;

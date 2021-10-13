@@ -11,9 +11,11 @@ function call_dex_core(
     | Set_cycle_duration(_)    -> 4n
     | Update_token_metadata(_) -> 5n
     | Ban_bakers(_)            -> 6n
-    | Transfer(_)              -> 7n
-    | Update_operators(_)      -> 8n
-    | Balance_of(_)            -> 9n
+    | Permit(_)                -> 7n
+    | Set_expiry(_)            -> 8n
+    | Transfer(_)              -> 9n
+    | Update_operators(_)      -> 10n
+    | Balance_of(_)            -> 11n
     end;
 
     const lambda_bytes : bytes = case s.dex_core_lambdas[id] of
