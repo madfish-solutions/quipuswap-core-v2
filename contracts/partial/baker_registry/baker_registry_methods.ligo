@@ -13,6 +13,6 @@ function validate(
   const s               : storage_t)
                         : return_t is
   case s[baker] of
-  | Some(_) -> (no_operations, s)
+  | Some(_) -> (Constants.no_operations, s)
   | None    -> register(baker, s)
   end

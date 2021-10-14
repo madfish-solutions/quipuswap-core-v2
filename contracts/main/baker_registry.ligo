@@ -1,3 +1,5 @@
+#include "../partial/utils.ligo"
+
 #include "../partial/common_types.ligo"
 #include "../partial/common_helpers.ligo"
 

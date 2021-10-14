@@ -11,7 +11,7 @@ function set_admin(
       }
     | _ -> skip
     end
-  } with (no_operations, s)
+  } with (Constants.no_operations, s)
 
 function confirm_admin(
   const action          : action_t;
@@ -27,7 +27,7 @@ function confirm_admin(
       }
     | _ -> skip
     end
-  } with (no_operations, s)
+  } with (Constants.no_operations, s)
 
 function add_managers(
   const action          : action_t;
@@ -50,7 +50,7 @@ function add_managers(
       }
     | _ -> skip
     end
-  } with (no_operations, s)
+  } with (Constants.no_operations, s)
 
 function set_fees(
   const action          : action_t;
@@ -65,7 +65,7 @@ function set_fees(
       }
     | _ -> skip
     end
-  } with (no_operations, s)
+  } with (Constants.no_operations, s)
 
 function set_cycle_duration(
   const action          : action_t;
@@ -80,7 +80,7 @@ function set_cycle_duration(
       }
     | _ -> skip
     end
-  } with (no_operations, s)
+  } with (Constants.no_operations, s)
 
 function update_token_metadata(
   const action          : action_t;
@@ -107,7 +107,7 @@ function update_token_metadata(
       }
     | _ -> skip
     end
-  } with (no_operations, s)
+  } with (Constants.no_operations, s)
 
 function ban_bakers(
   const action          : action_t;
@@ -135,4 +135,4 @@ function ban_bakers(
       }
     | _ -> skip
     end
-  } with (no_operations, s)
+  } with (Constants.no_operations, s)

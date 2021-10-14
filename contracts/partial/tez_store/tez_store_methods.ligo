@@ -3,4 +3,4 @@ function test(
                         : return_t is
   block {
     skip;
-  } with (no_operations, s)
+  } with (Constants.no_operations, s)

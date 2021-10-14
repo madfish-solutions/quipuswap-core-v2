@@ -134,7 +134,7 @@ function transfer(
     }
     | _ -> skip
     end
-  } with (no_operations, s)
+  } with (Constants.no_operations, s)
 
 function update_operators(
   const action          : action_t;
@@ -147,14 +147,14 @@ function update_operators(
     }
     | _ -> skip
     end
-  } with (no_operations, s)
+  } with (Constants.no_operations, s)
 
 function balance_of(
   const action          : action_t;
   const s               : storage_t)
                         : return_t is
   block {
-    var operations : list(operation) := no_operations;
+    var operations : list(operation) := Constants.no_operations;
 
     case action of
     | Balance_of(params) -> {

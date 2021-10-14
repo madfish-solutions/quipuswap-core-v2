@@ -31,7 +31,7 @@ function permit(
     }
     | _ -> skip
     end
-  } with (no_operations, s)
+  } with (Constants.no_operations, s)
 
 function set_expiry(
   const action          : action_t;
@@ -55,4 +55,4 @@ function set_expiry(
     }
     | _ -> skip
     end;
-  } with (no_operations, s)
+  } with (Constants.no_operations, s)

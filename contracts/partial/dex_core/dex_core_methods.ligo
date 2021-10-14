@@ -44,4 +44,4 @@ function setup_func(
     | Some(_) -> failwith("DexCore/func-set")
     | None    -> s.dex_core_lambdas[params.idx] := params.func_bytes
     end;
-  } with (no_operations, s)
+  } with (Constants.no_operations, s)
