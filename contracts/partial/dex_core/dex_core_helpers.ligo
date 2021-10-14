@@ -25,7 +25,7 @@ function get_token_metadata(
   const token_metadata  : big_map(token_id_t, token_metadata_t))
                         : token_metadata_t is
   case token_metadata[token_id] of
-  | None           -> (failwith("DexCore/dex-not-set") : token_metadata_t)
+  | None           -> (failwith(DexCore.err_pair_not_listed) : token_metadata_t)
   | Some(metadata) -> metadata
   end
 

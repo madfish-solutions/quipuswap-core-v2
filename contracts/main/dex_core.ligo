@@ -1,3 +1,5 @@
+#include "../partial/errors.ligo"
+
 #include "../partial/utils.ligo"
 
 #include "../partial/dex_core/fa12/fa12_types.ligo"

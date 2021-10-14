@@ -21,7 +21,7 @@ function launch_exchange(
     case action of
     | Launch_exchange(params) -> {
         if params.pair.token_a >= params.pair.token_b
-        then failwith("Dex/wrong-pair-order")
+        then failwith(DexCore.err_wrong_pair_order)
         else skip;
 
         const pair_info : (pair_t * nat) = get_pair_info(params.pair, s.token_to_id, s.pairs, s.tokens_count);
@@ -36,15 +36,15 @@ function launch_exchange(
         else skip;
 
         if (params.pair.token_a = Tez and Tezos.amount < 1mutez) or params.token_a_in < 1n
-        then failwith("Dex/no-token-a-in")
+        then failwith(DexCore.err_zero_a_in)
         else skip;
 
         if params.token_b_in < 1n
-        then failwith("Dex/no-token-b-in")
+        then failwith(DexCore.err_zero_b_in)
         else skip;
 
         if pair.total_supply =/= 0n
-        then failwith("Dex/pair-exist")
+        then failwith(DexCore.err_pair_listed)
         else skip;
 
         const init_shares : nat =

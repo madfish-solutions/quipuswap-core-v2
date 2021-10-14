@@ -21,12 +21,12 @@ function call_dex_core(
 
     const lambda_bytes : bytes = case s.dex_core_lambdas[id] of
     | Some(v) -> v
-    | None    -> failwith("DexCore/func-not-set")
+    | None    -> failwith(DexCore.err_unknown_func)
     end;
 
     const res : return_t = case (Bytes.unpack(lambda_bytes) : option(dex_core_func_t)) of
     | Some(f) -> f(action, s.storage)
-    | None    -> failwith("DexCore/cant-unpack-lambda")
+    | None    -> failwith(DexCore.err_cant_unpack_lambda)
     end;
 
     s.storage := res.1;
@@ -38,11 +38,11 @@ function setup_func(
                         : full_return_t is
   block {
     if params.idx >= dex_core_methods_max_index
-    then failwith("DexCore/wrong-index")
+    then failwith(DexCore.err_high_func_index)
     else skip;
 
     case s.dex_core_lambdas[params.idx] of
-    | Some(_) -> failwith("DexCore/func-set")
+    | Some(_) -> failwith(DexCore.err_func_set)
     | None    -> s.dex_core_lambdas[params.idx] := params.func_bytes
     end;
   } with ((nil : list(operation)), s)

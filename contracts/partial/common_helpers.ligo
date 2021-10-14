@@ -3,7 +3,7 @@ function only_admin(
                         : unit is
   block {
     if Tezos.sender =/= admin
-    then failwith("Not-admin")
+    then failwith(Common.err_not_admin)
     else skip;
   } with unit
 
@@ -12,7 +12,7 @@ function only_pending_admin(
                         : unit is
   block {
     if Tezos.sender =/= pending_admin
-    then failwith("Not-pending-admin")
+    then failwith(Common.err_not_pending_admin)
     else skip;
   } with unit
 
@@ -21,7 +21,7 @@ function only_manager(
                         : unit is
   block {
     if not Set.mem(Tezos.sender, managers)
-    then failwith("Not-manager")
+    then failwith(Common.err_not_manager)
     else skip;
   } with unit
 
@@ -30,7 +30,7 @@ function get_fa12_token_transfer_entrypoint(
                         : contract(fa12_transfer_t) is
   case (Tezos.get_entrypoint_opt("%transfer", token) : option(contract(fa12_transfer_t))) of
   | Some(contr) -> contr
-  | None        -> (failwith("Fa12-transfer-404") : contract(fa12_transfer_t))
+  | None        -> (failwith(Common.err_fa12_transfer_entrypoint_404) : contract(fa12_transfer_t))
   end
 
 function get_fa2_token_transfer_entrypoint(
@@ -38,7 +38,7 @@ function get_fa2_token_transfer_entrypoint(
                         : contract(fa2_transfer_t) is
   case (Tezos.get_entrypoint_opt("%transfer", token) : option(contract(fa2_transfer_t))) of
   | Some(contr) -> contr
-  | None        -> (failwith("Fa2-transfer-404") : contract(fa2_transfer_t))
+  | None        -> (failwith(Common.err_fa2_transfer_entrypoint_404) : contract(fa2_transfer_t))
   end
 
 function wrap_fa12_transfer_trx(
