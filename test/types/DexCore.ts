@@ -8,7 +8,6 @@ export type Fees = {
 };
 
 export type DexCoreStorage = {
-  metadata: MichelsonMap<MichelsonMapKey, unknown>;
   token_metadata: MichelsonMap<MichelsonMapKey, unknown>;
   ledger: MichelsonMap<MichelsonMapKey, unknown>;
   accounts: MichelsonMap<MichelsonMapKey, unknown>;

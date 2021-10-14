@@ -6,7 +6,6 @@ import { BigNumber } from "bignumber.js";
 import { MichelsonMap } from "@taquito/michelson-encoder";
 
 export const dexCoreStorage: DexCoreStorage = {
-  metadata: MichelsonMap.fromLiteral({}),
   token_metadata: MichelsonMap.fromLiteral({}),
   ledger: MichelsonMap.fromLiteral({}),
   accounts: MichelsonMap.fromLiteral({}),

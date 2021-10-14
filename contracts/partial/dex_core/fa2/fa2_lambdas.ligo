@@ -88,38 +88,24 @@ function update_operator(
   const params          : update_operator_t)
                         : storage_t is
   block {
-    case params of
-    | Add_operator(param) -> {
-      if param.token_id > s.tokens_count
-      then failwith("FA2_TOKEN_UNDEFINED")
-      else skip;
+    const (param, should_add) = case params of
+    | Add_operator(param) -> (param, True)
+    | Remove_operator(param) ->  (param, False)
+    end;
 
-      if Tezos.sender =/= param.owner
-      then failwith("FA2_NOT_OWNER")
-      else skip;
+    if param.token_id > s.tokens_count
+    then failwith("FA2_TOKEN_UNDEFINED")
+    else skip;
 
-      var account : account_t := get_account(param.owner, param.token_id, s.accounts);
+    if Tezos.sender =/= param.owner
+    then failwith("FA2_NOT_OWNER")
+    else skip;
 
-      account.allowances := Set.add(param.operator, account.allowances);
+    var account : account_t := get_account(param.owner, param.token_id, s.accounts);
 
-      s.accounts[(param.owner, param.token_id)] := account;
-    }
-    | Remove_operator(param) -> {
-      if param.token_id > s.tokens_count
-      then failwith("FA2_TOKEN_UNDEFINED")
-      else skip;
+    account.allowances := Set.update(param.operator, should_add, account.allowances);
 
-      if Tezos.sender =/= param.owner
-      then failwith("FA2_NOT_OWNER")
-      else skip;
-
-      var account : account_t := get_account(param.owner, param.token_id, s.accounts);
-
-      account.allowances := Set.remove(param.operator, account.allowances);
-
-      s.accounts[(param.owner, param.token_id)] := account;
-    }
-    end
+    s.accounts[(param.owner, param.token_id)] := account;
   } with s
 
 function transfer(
@@ -154,7 +140,7 @@ function balance_of(
   const s               : storage_t)
                         : return_t is
   block {
-    var operations : list(operation) := Constants.no_operations;
+    var operations : list(operation) := nil;
 
     case action of
     | Balance_of(params) -> {

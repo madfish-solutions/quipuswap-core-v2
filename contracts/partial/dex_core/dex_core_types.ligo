@@ -13,7 +13,6 @@ type fees_t             is [@layout:comb] record [
 ]
 
 type storage_t          is [@layout:comb] record [
-  metadata                : big_map(string, bytes);
   token_metadata          : big_map(token_t, token_metadata_t);
   ledger                  : big_map((address * token_t), nat);
   accounts                : big_map((address * token_t), account_t);
@@ -89,6 +88,7 @@ type dex_core_func_t    is (action_t * storage_t) -> return_t
 type full_storage_t     is [@layout:comb] record [
   storage                 : storage_t;
   dex_core_lambdas        : big_map(nat, bytes);
+  metadata                : big_map(string, bytes);
 ]
 
 type full_return_t      is list(operation) * full_storage_t
