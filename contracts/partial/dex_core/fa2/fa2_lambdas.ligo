@@ -1,28 +1,36 @@
-function is_approved_operator(
-  const param           : transfer_t;
-  const s               : storage_t)
-                        : bool is
-  block {
-    const operator : address = Tezos.sender;
-    const owner : address = param.from_;
-    const user : account_t = get_account(owner, 0n, s.accounts); // token id?
-  } with owner = operator or Set.mem(operator, user.allowances)
-
 function transfer_sender_check(
   const params          : transfers_t;
-  const s               : storage_t;
-  const action          : action_t)
+  const action          : action_t;
+  const s               : storage_t)
                         : storage_t is
   block {
-    function is_approved(
+    function check_operator_for_tx(
+      var is_tx_operator    : is_tx_operator_t;
+      const param           : transfer_dst_t)
+                            : is_tx_operator_t is
+      block {
+        const user : account_t = get_account(is_tx_operator.owner, param.token_id, s.accounts);
+
+        is_tx_operator.approved := is_tx_operator.approved and
+          (is_tx_operator.owner = Tezos.sender or Set.mem(Tezos.sender, user.allowances));
+      } with is_tx_operator;
+
+    function check_operator_for_transfer(
       const approved    : bool;
       const param       : transfer_t)
                         : bool is
-      approved and is_approved_operator(param, s);
+      block {
+        var acc : is_tx_operator_t := record [
+          owner    = param.from_;
+          approved = True;
+        ];
 
-    const is_approved_operator_for_all : bool = List.fold(is_approved, params, True);
+        acc := List.fold(check_operator_for_tx, param.txs, acc);
+      } with approved and acc.approved;
+
+    const is_approved_for_all_transfers : bool = List.fold(check_operator_for_transfer, params, True);
   } with
-      if is_approved_operator_for_all
+      if is_approved_for_all_transfers
       then s
       else case params of
         | nil -> s
@@ -121,7 +129,7 @@ function transfer(
   block {
     case action of
     | Transfer(params) -> {
-      s := transfer_sender_check(params, s, action);
+      s := transfer_sender_check(params, action, s);
       s := List.fold(iterate_transfer, params, s);
     }
     | _ -> skip

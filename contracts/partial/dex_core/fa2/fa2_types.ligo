@@ -44,3 +44,8 @@ type balance_of_t       is [@layout:comb] record [
   requests                : list(balance_request_t);
   callback                : contract(list(balance_response_t));
 ]
+
+type is_tx_operator_t   is [@laoyout:comb] record [
+  owner                   : address;
+  approved                : bool;
+]
