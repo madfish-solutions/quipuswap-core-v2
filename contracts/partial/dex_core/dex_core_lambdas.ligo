@@ -70,15 +70,9 @@ function launch_exchange(
             tez_store_storage
           );
 
-          pair.tez_store := Some(deploy_res.1);
-
-          ops := transfer_token(
-            Tezos.sender,
-            deploy_res.1,
-            Tezos.amount / 1mutez,
-            params.pair.token_a
-          ) # ops;
           ops := deploy_res.0 # ops;
+
+          pair.tez_store := Some(deploy_res.1);
         }
         else skip;
 
