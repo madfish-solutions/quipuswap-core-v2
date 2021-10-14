@@ -5,9 +5,10 @@
   "description": "Quipuswap Core V2",
   "scripts": {
     "start-sandbox": "docker run --rm --name my-sandbox -e flextesa_node_cors_origin='*' -e block_time=1 --detach -p 8732:20000 tqtezos/flextesa:20210602 granabox start",
-    "clean": "rm -rf ./build",
+    "clean": "rm -rf ./build ./contracts/compiled",
+    "pre-compile": "ts-node scripts/cli.ts compile -c tez_store -o contracts/compiled",
     "compile-lambdas": "ts-node scripts/cli.ts compile-lambda -j storage/json/DexCoreFunctions.json -c contracts/main/dex_core.ligo",
-    "compile": "ts-node scripts/cli.ts compile -f json",
+    "compile": "yarn pre-compile && ts-node scripts/cli.ts compile -f json",
     "full-compile": "yarn clean && yarn compile && yarn compile-lambdas",
     "migrate": "yarn compile && ts-node scripts/cli.ts migrate",
     "migrate-granadanet": "yarn compile && ts-node scripts/cli.ts migrate -n granadanet",

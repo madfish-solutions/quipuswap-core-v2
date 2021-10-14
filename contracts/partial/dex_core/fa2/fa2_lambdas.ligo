@@ -120,7 +120,7 @@ function transfer(
     }
     | _ -> skip
     end
-  } with (Constants.no_operations, s)
+  } with ((nil : list(operation)), s)
 
 function update_operators(
   const action          : action_t;
@@ -133,14 +133,14 @@ function update_operators(
     }
     | _ -> skip
     end
-  } with (Constants.no_operations, s)
+  } with ((nil : list(operation)), s)
 
 function balance_of(
   const action          : action_t;
   const s               : storage_t)
                         : return_t is
   block {
-    var operations : list(operation) := nil;
+    var ops : list(operation) := nil;
 
     case action of
     | Balance_of(params) -> {
@@ -166,8 +166,8 @@ function balance_of(
         (nil : list(balance_response_t))
       );
 
-      operations := Tezos.transaction(accumulated_response, 0tz, params.callback) # operations;
+      ops := Tezos.transaction(accumulated_response, 0tz, params.callback) # ops;
     }
     | _ -> skip
     end
-  } with (operations, s)
+  } with (ops, s)

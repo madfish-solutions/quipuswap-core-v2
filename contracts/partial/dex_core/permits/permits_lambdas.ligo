@@ -31,7 +31,7 @@ function permit(
     }
     | _ -> skip
     end
-  } with (Constants.no_operations, s)
+  } with ((nil : list(operation)), s)
 
 function set_expiry(
   const action          : action_t;
@@ -55,4 +55,4 @@ function set_expiry(
     }
     | _ -> skip
     end;
-  } with (Constants.no_operations, s)
+  } with ((nil : list(operation)), s)

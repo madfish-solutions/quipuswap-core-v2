@@ -1,5 +1,19 @@
+type tez_store_t        is storage_t
+
 type account_t          is [@layout:comb] record [
   allowances              : set(address);
+]
+
+type pair_t             is [@layout:comb] record [
+  token_a_pool            : nat;
+  token_b_pool            : nat;
+  total_supply            : nat;
+  tez_store               : option(address);
+]
+
+type tokens_t           is [@layout:comb] record [
+  token_a                 : token_t;
+  token_b                 : token_t;
 ]
 
 type baker_t            is [@layout:comb] record [
@@ -13,9 +27,12 @@ type fees_t             is [@layout:comb] record [
 ]
 
 type storage_t          is [@layout:comb] record [
-  token_metadata          : big_map(token_t, token_metadata_t);
-  ledger                  : big_map((address * token_t), nat);
-  accounts                : big_map((address * token_t), account_t);
+  token_metadata          : big_map(token_id_t, token_metadata_t);
+  ledger                  : big_map((address * token_id_t), nat);
+  accounts                : big_map((address * token_id_t), account_t);
+  tokens                  : big_map(nat, tokens_t);
+  token_to_id             : big_map(bytes, nat);
+  pairs                   : big_map(nat, pair_t);
   permits                 : big_map(address, user_permits_t);
   bakers                  : big_map(key_hash, baker_t);
   managers                : set(address);
@@ -26,6 +43,12 @@ type storage_t          is [@layout:comb] record [
   default_expiry          : seconds_t;
   cycle_duration          : nat;
   tokens_count            : nat;
+]
+
+type launch_exchange_t  is [@layout:comb] record [
+  pair                    : tokens_t;
+  token_a_in              : nat;
+  token_b_in              : nat;
 ]
 
 type set_admin_t        is address
@@ -49,7 +72,7 @@ type metadata_pair_t    is [@layout:comb] record [
 ]
 
 type upd_tok_meta_t     is [@layout:comb] record [
-  token_id                : token_t;
+  token_id                : token_id_t;
   token_info              : list(metadata_pair_t);
 ]
 
@@ -63,6 +86,7 @@ type ban_bakers_t       is list(ban_baker_t)
 type default_t          is unit
 
 type action_t           is
+| Launch_exchange         of launch_exchange_t
 | Set_admin               of set_admin_t
 | Confirm_admin           of confirm_admin_t
 | Add_managers            of add_managers_t
@@ -98,4 +122,6 @@ type full_action_t      is
 | Setup_func              of setup_func_t
 | Default                 of default_t
 
-[@inline] const dex_core_methods_max_index : nat = 9n;
+type deploy_tez_store_t is (option(key_hash) * tez * tez_store_t) -> (operation * address)
+
+[@inline] const dex_core_methods_max_index : nat = 12n;

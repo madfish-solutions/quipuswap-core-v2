@@ -11,6 +11,9 @@ export type DexCoreStorage = {
   token_metadata: MichelsonMap<MichelsonMapKey, unknown>;
   ledger: MichelsonMap<MichelsonMapKey, unknown>;
   accounts: MichelsonMap<MichelsonMapKey, unknown>;
+  tokens: MichelsonMap<MichelsonMapKey, unknown>;
+  token_to_id: MichelsonMap<MichelsonMapKey, unknown>;
+  pairs: MichelsonMap<MichelsonMapKey, unknown>;
   permits: MichelsonMap<MichelsonMapKey, unknown>;
   bakers: MichelsonMap<MichelsonMapKey, unknown>;
   managers: string[];

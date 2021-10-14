@@ -4,18 +4,19 @@ function call_dex_core(
                         : full_return_t is
   block {
     const id : nat = case action of
-    | Set_admin(_)             -> 0n
-    | Confirm_admin(_)         -> 1n
-    | Add_managers(_)          -> 2n
-    | Set_fees(_)              -> 3n
-    | Set_cycle_duration(_)    -> 4n
-    | Update_token_metadata(_) -> 5n
-    | Ban_bakers(_)            -> 6n
-    | Permit(_)                -> 7n
-    | Set_expiry(_)            -> 8n
-    | Transfer(_)              -> 9n
-    | Update_operators(_)      -> 10n
-    | Balance_of(_)            -> 11n
+    | Launch_exchange(_)       -> 0n
+    | Set_admin(_)             -> 1n
+    | Confirm_admin(_)         -> 2n
+    | Add_managers(_)          -> 3n
+    | Set_fees(_)              -> 4n
+    | Set_cycle_duration(_)    -> 5n
+    | Update_token_metadata(_) -> 6n
+    | Ban_bakers(_)            -> 7n
+    | Permit(_)                -> 8n
+    | Set_expiry(_)            -> 9n
+    | Transfer(_)              -> 10n
+    | Update_operators(_)      -> 11n
+    | Balance_of(_)            -> 12n
     end;
 
     const lambda_bytes : bytes = case s.dex_core_lambdas[id] of
@@ -36,7 +37,7 @@ function setup_func(
   var s                 : full_storage_t)
                         : full_return_t is
   block {
-    if params.idx > dex_core_methods_max_index
+    if params.idx >= dex_core_methods_max_index
     then failwith("DexCore/wrong-index")
     else skip;
 
@@ -44,4 +45,4 @@ function setup_func(
     | Some(_) -> failwith("DexCore/func-set")
     | None    -> s.dex_core_lambdas[params.idx] := params.func_bytes
     end;
-  } with (Constants.no_operations, s)
+  } with ((nil : list(operation)), s)
