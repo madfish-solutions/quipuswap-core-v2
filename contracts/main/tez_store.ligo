@@ -10,6 +10,7 @@
 #include "../partial/common_helpers.ligo"
 
 #include "../partial/tez_store/tez_store_types.ligo"
+#include "../partial/tez_store/tez_store_helpers.ligo"
 #include "../partial/tez_store/tez_store_methods.ligo"
 
 function main(
@@ -17,5 +18,6 @@ function main(
   const s               : storage_t)
                         : return_t is
   case action of
-  | Test -> test(s)
+  | Invest_tez         -> invest_tez(s)
+  | Divest_tez(params) -> divest_tez(params, s)
   end

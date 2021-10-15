@@ -1,4 +1,4 @@
-[@inline] function only_admin(
+function only_admin(
   const admin           : address)
                         : unit is
   block {
@@ -7,7 +7,7 @@
     else skip;
   } with unit
 
-[@inline] function only_pending_admin(
+function only_pending_admin(
   const pending_admin   : address)
                         : unit is
   block {
@@ -16,7 +16,7 @@
     else skip;
   } with unit
 
-[@inline] function only_manager(
+function only_manager(
   const managers        : set(address))
                         : unit is
   block {

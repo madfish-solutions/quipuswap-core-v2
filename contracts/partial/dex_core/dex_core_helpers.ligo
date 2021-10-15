@@ -82,16 +82,50 @@ function get_tokens(
   | Some(tokens) -> tokens
   end
 
+function get_tez_store_or_fail(
+  const tez_store_opt   : option(address))
+                        : address is
+  case tez_store_opt of
+  | None            -> (failwith(DexCore.err_tez_store_404) : address)
+  | Some(tez_store) -> tez_store
+  end
+
+function get_tez_store_divest_tez_entrypoint(
+  const tez_store       : address)
+                        : contract(divest_tez_t) is
+  case (Tezos.get_entrypoint_opt("%divest_tez", tez_store) : option(contract(divest_tez_t))) of
+  | Some(contr) -> contr
+  | None        -> (failwith(DexCore.err_tez_store_divest_tez_entrypoint_404) : contract(divest_tez_t))
+  end
+
+function divest_tez(
+  const recipient       : address;
+  const amt             : nat;
+  const tez_store       : address)
+                        : operation is
+  Tezos.transaction(
+    record [
+      recipient = recipient;
+      amt       = amt;
+    ],
+    0mutez,
+    get_tez_store_divest_tez_entrypoint(tez_store)
+  )
+
 function check_tez_or_token_and_transfer(
   const tokens_required : nat;
   const token_type      : token_t;
   const tez_store_opt   : option(address))
                         : operation is
   if token_type = Tez
-  then block {
-    const tez_store : address = case tez_store_opt of
-    | None    -> failwith(DexCore.err_tez_store_404)
-    | Some(v) -> v
-    end;
-  } with transfer_token(Tezos.sender, tez_store, Tezos.amount / 1mutez, token_type)
+  then transfer_token(Tezos.sender, get_tez_store_or_fail(tez_store_opt), Tezos.amount / 1mutez, token_type)
   else transfer_token(Tezos.sender, Tezos.self_address, tokens_required, token_type)
+
+function divest_tez_or_transfer_tokens(
+  const tokens_divested : nat;
+  const token_type      : token_t;
+  const tez_store_opt   : option(address))
+                        : operation is
+  if token_type = Tez
+  then divest_tez(Tezos.sender, tokens_divested, get_tez_store_or_fail(tez_store_opt))
+  else transfer_token(Tezos.self_address, Tezos.sender, tokens_divested, token_type)

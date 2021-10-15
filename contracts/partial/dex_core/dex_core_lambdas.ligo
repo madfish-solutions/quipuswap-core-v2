@@ -62,7 +62,7 @@ function launch_exchange(
         if params.pair.token_a = Tez
         then {
           const tez_store_storage : tez_store_t = record [
-            a = 0n;
+            dex_core = Tezos.self_address;
           ];
           const deploy_res : (operation * address) = deploy_tez_store(
             (None : option(key_hash)),
@@ -148,8 +148,46 @@ function divest_liquidity(
     var ops: list(operation) := nil;
 
     case action of
-    | Divest_liquidity(_params) -> {
-        skip;
+    | Divest_liquidity(params) -> {
+        if s.tokens_count = params.pair_id
+        then failwith(DexCore.err_pair_not_listed)
+        else skip;
+
+        var pair : pair_t := get_pair(params.pair_id, s.pairs);
+
+        if pair.token_a_pool * pair.token_b_pool = 0n
+        then failwith(DexCore.err_no_liquidity)
+        else skip;
+
+        const sender_balance : nat = get_token_balance(Tezos.sender, params.pair_id, s.ledger);
+
+        if params.shares > sender_balance
+        then failwith(DexCore.err_insufficient_lp)
+        else skip;
+
+        s.ledger[(Tezos.sender, params.pair_id)] := abs(sender_balance - params.shares);
+
+        const token_a_divested : nat = pair.token_a_pool * params.shares / pair.total_supply;
+        const token_b_divested : nat = pair.token_b_pool * params.shares / pair.total_supply;
+
+        if params.min_token_a_out = 0n or params.min_token_b_out = 0n
+        then failwith(DexCore.err_dust_out)
+        else skip;
+
+        if token_a_divested < params.min_token_a_out or token_b_divested < params.min_token_b_out
+        then failwith(DexCore.err_high_min_out)
+        else skip;
+
+        pair.token_a_pool := abs(pair.token_a_pool - token_a_divested);
+        pair.token_b_pool := abs(pair.token_b_pool - token_b_divested);
+        pair.total_supply := abs(pair.total_supply - params.shares);
+
+        s.pairs[params.pair_id] := pair;
+
+        const tokens : tokens_t = get_tokens(params.pair_id, s.tokens);
+
+        ops := divest_tez_or_transfer_tokens(token_a_divested, tokens.token_a, pair.tez_store) # ops;
+        ops := divest_tez_or_transfer_tokens(token_b_divested, tokens.token_b, pair.tez_store) # ops;
       }
     | _ -> skip
     end;
