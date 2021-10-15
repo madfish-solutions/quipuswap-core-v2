@@ -1,5 +1,16 @@
-{ parameter (or (pair %divest_tez (address %recipient) (nat %amt)) (unit %invest_tez)) ;
-  storage address ;
+{ parameter
+    (or (pair %divest_tez (contract %recipient unit) (nat %amt)) (unit %invest_tez)) ;
+  storage
+    (pair (big_map %voters
+             address
+             (pair (option %candidate key_hash)
+                   (pair (timestamp %last_veto) (pair (nat %veto) (nat %vote)))))
+          (pair (big_map %vetos key_hash timestamp)
+                (pair (big_map %votes key_hash nat)
+                      (pair (option %current_delegated key_hash)
+                            (pair (option %next_candidate key_hash)
+                                  (pair (timestamp %last_veto)
+                                        (pair (address %dex_core) (pair (nat %veto) (nat %total_votes))))))))) ;
   code { PUSH nat 0 ;
          PUSH nat 1 ;
          PAIR ;
@@ -22,6 +33,7 @@
            { SWAP ;
              DUP ;
              DUG 2 ;
+             GET 13 ;
              DIG 3 ;
              SWAP ;
              EXEC ;
@@ -44,8 +56,6 @@
              CDR ;
              DIG 3 ;
              CAR ;
-             CONTRACT unit ;
-             IF_NONE { PUSH string "bad address for get_contract" ; FAILWITH } {} ;
              PUSH mutez 1 ;
              DIG 2 ;
              MUL ;
@@ -53,5 +63,14 @@
              TRANSFER_TOKENS ;
              CONS ;
              PAIR }
-           { DIG 3 ; DROP 2 ; DUP ; DIG 2 ; SWAP ; EXEC ; DROP ; NIL operation ; PAIR } } }
+           { DIG 3 ;
+             DROP 2 ;
+             DUP ;
+             GET 13 ;
+             DIG 2 ;
+             SWAP ;
+             EXEC ;
+             DROP ;
+             NIL operation ;
+             PAIR } } }
 

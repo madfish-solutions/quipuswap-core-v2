@@ -6,10 +6,10 @@
 
 #include "../partial/dex_core/fa2/fa2_types.ligo"
 
-#include "../partial/tez_store/tez_store_types.ligo"
-
 #include "../partial/common_types.ligo"
 #include "../partial/common_helpers.ligo"
+
+#include "../partial/tez_store/tez_store_types.ligo"
 
 #include "../partial/dex_core/permits/permits_types.ligo"
 

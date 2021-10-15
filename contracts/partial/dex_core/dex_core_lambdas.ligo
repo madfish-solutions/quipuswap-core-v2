@@ -56,18 +56,15 @@ function launch_exchange(
         pair.token_b_pool := params.token_b_in;
         pair.total_supply := init_shares;
 
-        s.ledger[(Tezos.sender, token_id)] := init_shares;
+        s.ledger[(params.shares_recipient, token_id)] := init_shares;
         s.tokens[token_id] := params.pair;
 
         if params.pair.token_a = Tez
         then {
-          const tez_store_storage : tez_store_t = record [
-            dex_core = Tezos.self_address;
-          ];
           const deploy_res : (operation * address) = deploy_tez_store(
             (None : option(key_hash)),
             Tezos.amount,
-            tez_store_storage
+            get_tez_store_initial_storage(unit)
           );
 
           ops := deploy_res.0 # ops;
@@ -79,12 +76,12 @@ function launch_exchange(
         s.pairs[token_id] := pair;
 
         if params.pair.token_a =/= Tez
-        then {
-          ops := transfer_token(Tezos.sender, Tezos.self_address, params.token_a_in, params.pair.token_a) # ops;
-        }
+        then ops := transfer_token(Tezos.sender, Tezos.self_address, params.token_a_in, params.pair.token_a) # ops
         else skip;
 
-        ops := transfer_token(Tezos.sender, Tezos.self_address, params.token_b_in, params.pair.token_b) # ops;
+        if params.pair.token_b =/= Tez
+        then ops := transfer_token(Tezos.sender, Tezos.self_address, params.token_b_in, params.pair.token_b) # ops
+        else skip;
       }
     | _ -> skip
     end
@@ -123,9 +120,9 @@ function invest_liquidity(
         then failwith(DexCore.err_low_token_b_in)
         else skip;
 
-        const sender_balance : nat = get_token_balance(Tezos.sender, params.pair_id, s.ledger);
+        const sender_balance : nat = get_token_balance(params.shares_recipient, params.pair_id, s.ledger);
 
-        s.ledger[(Tezos.sender, params.pair_id)] := sender_balance + params.shares;
+        s.ledger[(params.shares_recipient, params.pair_id)] := sender_balance + params.shares;
 
         pair.token_a_pool := pair.token_a_pool + tokens_a_required;
         pair.token_b_pool := pair.token_b_pool + tokens_b_required;
@@ -186,8 +183,18 @@ function divest_liquidity(
 
         const tokens : tokens_t = get_tokens(params.pair_id, s.tokens);
 
-        ops := divest_tez_or_transfer_tokens(token_a_divested, tokens.token_a, pair.tez_store) # ops;
-        ops := divest_tez_or_transfer_tokens(token_b_divested, tokens.token_b, pair.tez_store) # ops;
+        ops := divest_tez_or_transfer_tokens(
+          params.liquidity_recipient,
+          token_a_divested,
+          tokens.token_a,
+          pair.tez_store
+        ) # ops;
+        ops := divest_tez_or_transfer_tokens(
+          params.liquidity_recipient,
+          token_b_divested,
+          tokens.token_b,
+          pair.tez_store
+        ) # ops;
       }
     | _ -> skip
     end;

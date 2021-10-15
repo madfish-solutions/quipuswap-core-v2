@@ -49,6 +49,7 @@ type launch_exchange_t  is [@layout:comb] record [
   pair                    : tokens_t;
   token_a_in              : nat;
   token_b_in              : nat;
+  shares_recipient        : address;
 ]
 
 type invest_liquidity_t is [@layout:comb] record [
@@ -56,6 +57,7 @@ type invest_liquidity_t is [@layout:comb] record [
   token_a_in              : nat;
   token_b_in              : nat;
   shares                  : nat;
+  shares_recipient        : address;
 ]
 
 type divest_liquidity_t is [@layout:comb] record [
@@ -63,6 +65,7 @@ type divest_liquidity_t is [@layout:comb] record [
   min_token_a_out         : nat;
   min_token_b_out         : nat;
   shares                  : nat;
+  liquidity_recipient     : address;
 ]
 
 type set_admin_t        is address

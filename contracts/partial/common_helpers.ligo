@@ -68,14 +68,10 @@ function get_fa2_token_transfer_entrypoint(
   ])
 
 function transfer_tez(
-  const to_             : address;
+  const to_             : contract(unit);
   const amt             : nat)
                         : operation is
-  Tezos.transaction(
-    unit,
-    amt * 1mutez,
-    (get_contract(to_) : contract(unit))
-  )
+  Tezos.transaction(unit, amt * 1mutez, to_)
 
 function transfer_fa12(
   const from_           : address;
@@ -109,7 +105,7 @@ function transfer_token(
   const token           : token_t)
                         : operation is
   case token of
-  | Tez         -> transfer_tez(to_, amt)
+  | Tez         -> transfer_tez((get_contract(to_) : contract(unit)), amt)
   | Fa12(token) -> transfer_fa12(from_, to_, amt, token)
   | Fa2(token)  -> transfer_fa2(from_, to_, amt, token.token, token.id)
   end

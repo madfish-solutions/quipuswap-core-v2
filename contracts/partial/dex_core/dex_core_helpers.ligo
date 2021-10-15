@@ -99,7 +99,7 @@ function get_tez_store_divest_tez_entrypoint(
   end
 
 function divest_tez(
-  const recipient       : address;
+  const recipient       : contract(unit);
   const amt             : nat;
   const tez_store       : address)
                         : operation is
@@ -118,14 +118,30 @@ function check_tez_or_token_and_transfer(
   const tez_store_opt   : option(address))
                         : operation is
   if token_type = Tez
-  then transfer_token(Tezos.sender, get_tez_store_or_fail(tez_store_opt), Tezos.amount / 1mutez, token_type)
+  then transfer_tez((get_contract(get_tez_store_or_fail(tez_store_opt)) : contract(unit)), Tezos.amount / 1mutez)
   else transfer_token(Tezos.sender, Tezos.self_address, tokens_required, token_type)
 
 function divest_tez_or_transfer_tokens(
+  const recipient       : address;
   const tokens_divested : nat;
   const token_type      : token_t;
   const tez_store_opt   : option(address))
                         : operation is
   if token_type = Tez
-  then divest_tez(Tezos.sender, tokens_divested, get_tez_store_or_fail(tez_store_opt))
-  else transfer_token(Tezos.self_address, Tezos.sender, tokens_divested, token_type)
+  then divest_tez((get_contract(recipient) : contract(unit)), tokens_divested, get_tez_store_or_fail(tez_store_opt))
+  else transfer_token(Tezos.self_address, recipient, tokens_divested, token_type)
+
+function get_tez_store_initial_storage(
+  const _               : unit)
+                        : tez_store_t is
+  record [
+    voters = (Big_map.empty : big_map(address, vote_info_t));
+    vetos = (Big_map.empty : big_map(key_hash, timestamp));
+    votes = (Big_map.empty : big_map(key_hash, nat));
+    current_delegated = (None: option(key_hash));
+    next_candidate = (None: option(key_hash));
+    last_veto = Tezos.now;
+    dex_core = Tezos.self_address;
+    veto = 0n;
+    total_votes = 0n;
+  ]
