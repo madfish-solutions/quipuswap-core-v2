@@ -1,4 +1,4 @@
-function only_admin(
+[@inline] function only_admin(
   const admin           : address)
                         : unit is
   block {
@@ -7,7 +7,7 @@ function only_admin(
     else skip;
   } with unit
 
-function only_pending_admin(
+[@inline] function only_pending_admin(
   const pending_admin   : address)
                         : unit is
   block {
@@ -16,7 +16,7 @@ function only_pending_admin(
     else skip;
   } with unit
 
-function only_manager(
+[@inline] function only_manager(
   const managers        : set(address))
                         : unit is
   block {
@@ -41,14 +41,14 @@ function get_fa2_token_transfer_entrypoint(
   | None        -> (failwith(Common.err_fa2_transfer_entrypoint_404) : contract(fa2_transfer_t))
   end
 
-function wrap_fa12_transfer_trx(
+[@inline] function wrap_fa12_transfer_trx(
   const from_           : address;
   const to_             : address;
   const amt             : nat)
                         : fa12_transfer_t is
   FA12_transfer(from_, (to_, amt))
 
-function wrap_fa2_transfer_trx(
+[@inline] function wrap_fa2_transfer_trx(
   const from_           : address;
   const to_             : address;
   const amt             : nat;
@@ -111,5 +111,17 @@ function transfer_token(
   case token of
   | Tez         -> transfer_tez(to_, amt)
   | Fa12(token) -> transfer_fa12(from_, to_, amt, token)
-  | Fa2(token) -> transfer_fa2(from_, to_, amt, token.token, token.id)
+  | Fa2(token)  -> transfer_fa2(from_, to_, amt, token.token, token.id)
+  end
+
+[@inline] function div_ceil(
+  const numerator       : nat;
+  const denominator     : nat)
+                        : nat is
+  case ediv(numerator, denominator) of
+  | Some(result) ->
+      if result.1 > 0n
+      then result.0 + 1n
+      else result.0
+  | None         -> failwith(DexCore.err_no_liquidity)
   end

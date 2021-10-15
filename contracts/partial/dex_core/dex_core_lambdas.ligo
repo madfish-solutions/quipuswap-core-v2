@@ -80,24 +80,79 @@ function launch_exchange(
 
         if params.pair.token_a =/= Tez
         then {
-          ops := transfer_token(
-            Tezos.sender,
-            Tezos.self_address,
-            params.token_a_in,
-            params.pair.token_a
-          ) # ops;
+          ops := transfer_token(Tezos.sender, Tezos.self_address, params.token_a_in, params.pair.token_a) # ops;
         }
         else skip;
 
-        ops := transfer_token(
-          Tezos.sender,
-          Tezos.self_address,
-          params.token_b_in,
-          params.pair.token_b
-        ) # ops;
+        ops := transfer_token(Tezos.sender, Tezos.self_address, params.token_b_in, params.pair.token_b) # ops;
       }
     | _ -> skip
     end
+  } with (ops, s)
+
+function invest_liquidity(
+  const action          : action_t;
+  var s                 : storage_t)
+                        : return_t is
+  block {
+    var ops: list(operation) := nil;
+
+    case action of
+    | Invest_liquidity(params) -> {
+        var pair : pair_t := get_pair(params.pair_id, s.pairs);
+
+        if pair.token_a_pool * pair.token_b_pool = 0n
+        then failwith(DexCore.err_no_liquidity)
+        else skip;
+
+        if params.shares = 0n
+        then failwith(DexCore.err_no_shares_expected)
+        else skip;
+
+        const tokens : tokens_t = get_tokens(params.pair_id, s.tokens);
+        const tokens_a_required : nat = div_ceil(params.shares * pair.token_a_pool, pair.total_supply);
+        const tokens_b_required : nat = div_ceil(params.shares * pair.token_b_pool, pair.total_supply);
+
+        if (tokens.token_a = Tez and tokens_a_required > Tezos.amount / 1mutez)
+          or tokens_a_required > params.token_a_in
+        then failwith(DexCore.err_low_token_a_in)
+        else skip;
+
+        if (tokens.token_b = Tez and tokens_b_required > Tezos.amount / 1mutez)
+          or tokens_b_required > params.token_b_in
+        then failwith(DexCore.err_low_token_b_in)
+        else skip;
+
+        const sender_balance : nat = get_token_balance(Tezos.sender, params.pair_id, s.ledger);
+
+        s.ledger[(Tezos.sender, params.pair_id)] := sender_balance + params.shares;
+
+        pair.token_a_pool := pair.token_a_pool + tokens_a_required;
+        pair.token_b_pool := pair.token_b_pool + tokens_b_required;
+        pair.total_supply := pair.total_supply + params.shares;
+
+        s.pairs[params.pair_id] := pair;
+
+        ops := check_tez_or_token_and_transfer(tokens_a_required, tokens.token_a, pair.tez_store) # ops;
+        ops := check_tez_or_token_and_transfer(tokens_b_required, tokens.token_b, pair.tez_store) # ops;
+      }
+    | _ -> skip
+    end;
+  } with (ops, s)
+
+function divest_liquidity(
+  const action          : action_t;
+  var s                 : storage_t)
+                        : return_t is
+  block {
+    var ops: list(operation) := nil;
+
+    case action of
+    | Divest_liquidity(_params) -> {
+        skip;
+      }
+    | _ -> skip
+    end;
   } with (ops, s)
 
 function set_admin(

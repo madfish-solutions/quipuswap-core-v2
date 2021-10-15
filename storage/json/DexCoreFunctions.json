@@ -5,50 +5,58 @@
   },
   {
     "index": 1,
-    "name": "set_admin"
+    "name": "invest_liquidity"
   },
   {
     "index": 2,
-    "name": "confirm_admin"
+    "name": "divest_liquidity"
   },
   {
     "index": 3,
-    "name": "add_managers"
+    "name": "set_admin"
   },
   {
     "index": 4,
-    "name": "set_fees"
+    "name": "confirm_admin"
   },
   {
     "index": 5,
-    "name": "set_cycle_duration"
+    "name": "add_managers"
   },
   {
     "index": 6,
-    "name": "update_token_metadata"
+    "name": "set_fees"
   },
   {
     "index": 7,
-    "name": "ban_bakers"
+    "name": "set_cycle_duration"
   },
   {
     "index": 8,
-    "name": "permit"
+    "name": "update_token_metadata"
   },
   {
     "index": 9,
-    "name": "set_expiry"
+    "name": "ban_bakers"
   },
   {
     "index": 10,
-    "name": "transfer"
+    "name": "permit"
   },
   {
     "index": 11,
-    "name": "update_operators"
+    "name": "set_expiry"
   },
   {
     "index": 12,
+    "name": "transfer"
+  },
+  {
+    "index": 13,
+    "name": "update_operators"
+  },
+  {
+    "index": 14,
     "name": "balance_of"
   }
 ]

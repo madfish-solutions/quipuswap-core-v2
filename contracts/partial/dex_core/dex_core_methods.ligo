@@ -5,18 +5,20 @@ function call_dex_core(
   block {
     const id : nat = case action of
     | Launch_exchange(_)       -> 0n
-    | Set_admin(_)             -> 1n
-    | Confirm_admin(_)         -> 2n
-    | Add_managers(_)          -> 3n
-    | Set_fees(_)              -> 4n
-    | Set_cycle_duration(_)    -> 5n
-    | Update_token_metadata(_) -> 6n
-    | Ban_bakers(_)            -> 7n
-    | Permit(_)                -> 8n
-    | Set_expiry(_)            -> 9n
-    | Transfer(_)              -> 10n
-    | Update_operators(_)      -> 11n
-    | Balance_of(_)            -> 12n
+    | Invest_liquidity(_)      -> 1n
+    | Divest_liquidity(_)      -> 2n
+    | Set_admin(_)             -> 3n
+    | Confirm_admin(_)         -> 4n
+    | Add_managers(_)          -> 5n
+    | Set_fees(_)              -> 6n
+    | Set_cycle_duration(_)    -> 7n
+    | Update_token_metadata(_) -> 8n
+    | Ban_bakers(_)            -> 9n
+    | Permit(_)                -> 10n
+    | Set_expiry(_)            -> 11n
+    | Transfer(_)              -> 12n
+    | Update_operators(_)      -> 13n
+    | Balance_of(_)            -> 14n
     end;
 
     const lambda_bytes : bytes = case s.dex_core_lambdas[id] of

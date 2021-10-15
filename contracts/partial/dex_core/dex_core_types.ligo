@@ -51,6 +51,20 @@ type launch_exchange_t  is [@layout:comb] record [
   token_b_in              : nat;
 ]
 
+type invest_liquidity_t is [@layout:comb] record [
+  pair_id                 : nat;
+  token_a_in              : nat;
+  token_b_in              : nat;
+  shares                  : nat;
+]
+
+type divest_liquidity_t is [@layout:comb] record [
+  pair_id                 : nat;
+  min_token_a_out         : nat;
+  min_token_b_out         : nat;
+  shares                  : nat;
+]
+
 type set_admin_t        is address
 
 type confirm_admin_t    is unit
@@ -87,6 +101,8 @@ type default_t          is unit
 
 type action_t           is
 | Launch_exchange         of launch_exchange_t
+| Invest_liquidity        of invest_liquidity_t
+| Divest_liquidity        of divest_liquidity_t
 | Set_admin               of set_admin_t
 | Confirm_admin           of confirm_admin_t
 | Add_managers            of add_managers_t
@@ -124,4 +140,4 @@ type full_action_t      is
 
 type deploy_tez_store_t is (option(key_hash) * tez * tez_store_t) -> (operation * address)
 
-[@inline] const dex_core_methods_max_index : nat = 12n;
+[@inline] const dex_core_methods_max_index : nat = 14n;

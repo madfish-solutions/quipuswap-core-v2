@@ -4,7 +4,7 @@ function transfer_sender_check(
   const s               : storage_t)
                         : storage_t is
   block {
-    function check_operator_for_tx(
+    [@inline] function check_operator_for_tx(
       var is_tx_operator    : is_tx_operator_t;
       const param           : transfer_dst_t)
                             : is_tx_operator_t is
@@ -15,7 +15,7 @@ function transfer_sender_check(
           (is_tx_operator.owner = Tezos.sender or Set.mem(Tezos.sender, user.allowances));
       } with is_tx_operator;
 
-    function check_operator_for_transfer(
+    [@inline] function check_operator_for_transfer(
       const approved    : bool;
       const param       : transfer_t)
                         : bool is
