@@ -90,6 +90,14 @@ function get_tez_store_or_fail(
   | Some(tez_store) -> tez_store
   end
 
+function get_tez_store_invest_tez_entrypoint(
+  const tez_store       : address)
+                        : contract(invest_tez_t) is
+  case (Tezos.get_entrypoint_opt("%invest_tez", tez_store) : option(contract(invest_tez_t))) of
+  | Some(contr) -> contr
+  | None        -> (failwith(DexCore.err_tez_store_invest_tez_entrypoint_404) : contract(invest_tez_t))
+  end
+
 function get_tez_store_divest_tez_entrypoint(
   const tez_store       : address)
                         : contract(divest_tez_t) is
@@ -98,27 +106,40 @@ function get_tez_store_divest_tez_entrypoint(
   | None        -> (failwith(DexCore.err_tez_store_divest_tez_entrypoint_404) : contract(divest_tez_t))
   end
 
-function divest_tez(
-  const recipient       : contract(unit);
-  const amt             : nat;
+function invest_tez(
+  const invest_params   : invest_tez_t;
+  const amt             : tez;
   const tez_store       : address)
                         : operation is
   Tezos.transaction(
-    record [
-      recipient = recipient;
-      amt       = amt;
-    ],
+    invest_params,
+    amt,
+    get_tez_store_invest_tez_entrypoint(tez_store)
+  )
+
+function divest_tez(
+  const divest_params   : divest_tez_t;
+  const tez_store       : address)
+                        : operation is
+  Tezos.transaction(
+    divest_params,
     0mutez,
     get_tez_store_divest_tez_entrypoint(tez_store)
   )
 
 function check_tez_or_token_and_transfer(
+  const inv_liq_params : invest_liquidity_t;
   const tokens_required : nat;
   const token_type      : token_t;
   const tez_store_opt   : option(address))
                         : operation is
   if token_type = Tez
-  then transfer_tez((get_contract(get_tez_store_or_fail(tez_store_opt)) : contract(unit)), Tezos.amount / 1mutez)
+  then block {
+    const invest_params : invest_tez_t = record [
+      candidate = inv_liq_params.candidate;
+      user      = inv_liq_params.shares_recipient;
+    ];
+  } with invest_tez(invest_params, Tezos.amount, get_tez_store_or_fail(tez_store_opt))
   else transfer_token(Tezos.sender, Tezos.self_address, tokens_required, token_type)
 
 function divest_tez_or_transfer_tokens(
@@ -128,13 +149,20 @@ function divest_tez_or_transfer_tokens(
   const tez_store_opt   : option(address))
                         : operation is
   if token_type = Tez
-  then divest_tez((get_contract(recipient) : contract(unit)), tokens_divested, get_tez_store_or_fail(tez_store_opt))
+  then block {
+    const divest_params : divest_tez_t = record [
+      recipient = (get_contract(recipient) : contract(unit));
+      user      = Tezos.sender;
+      amt       = tokens_divested;
+    ];
+  } with divest_tez(divest_params, get_tez_store_or_fail(tez_store_opt))
   else transfer_token(Tezos.self_address, recipient, tokens_divested, token_type)
 
 function get_tez_store_initial_storage(
   const _               : unit)
                         : tez_store_t is
   record [
+    ledger = (Big_map.empty : big_map(address, nat));
     voters = (Big_map.empty : big_map(address, vote_info_t));
     vetos = (Big_map.empty : big_map(key_hash, timestamp));
     votes = (Big_map.empty : big_map(key_hash, nat));

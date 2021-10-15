@@ -110,7 +110,7 @@ function transfer_token(
   | Fa2(token)  -> transfer_fa2(from_, to_, amt, token.token, token.id)
   end
 
-[@inline] function div_ceil(
+function div_ceil(
   const numerator       : nat;
   const denominator     : nat)
                         : nat is

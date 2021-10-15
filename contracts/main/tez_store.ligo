@@ -18,6 +18,6 @@ function main(
   const s               : storage_t)
                         : return_t is
   case action of
-  | Invest_tez         -> invest_tez(s)
+  | Invest_tez(params) -> invest_tez(params, s)
   | Divest_tez(params) -> divest_tez(params, s)
   end

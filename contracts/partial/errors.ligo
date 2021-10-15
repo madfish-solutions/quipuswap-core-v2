@@ -16,7 +16,8 @@ module DexCore is {
   [@inline] const err_insufficient_lp                     : nat = 14n;
   [@inline] const err_dust_out                            : nat = 15n;
   [@inline] const err_high_min_out                        : nat = 16n;
-  [@inline] const err_tez_store_divest_tez_entrypoint_404 : nat = 17n;
+  [@inline] const err_tez_store_invest_tez_entrypoint_404 : nat = 17n;
+  [@inline] const err_tez_store_divest_tez_entrypoint_404 : nat = 18n;
 }
 
 module TezStore is {

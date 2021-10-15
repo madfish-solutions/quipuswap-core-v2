@@ -1,16 +1,18 @@
 { parameter
-    (or (pair %divest_tez (contract %recipient unit) (nat %amt)) (unit %invest_tez)) ;
+    (or (pair %divest_tez (contract %recipient unit) (pair (address %user) (nat %amt)))
+        (pair %invest_tez (address %candidate) (address %user))) ;
   storage
-    (pair (big_map %voters
-             address
-             (pair (option %candidate key_hash)
-                   (pair (timestamp %last_veto) (pair (nat %veto) (nat %vote)))))
-          (pair (big_map %vetos key_hash timestamp)
-                (pair (big_map %votes key_hash nat)
-                      (pair (option %current_delegated key_hash)
-                            (pair (option %next_candidate key_hash)
-                                  (pair (timestamp %last_veto)
-                                        (pair (address %dex_core) (pair (nat %veto) (nat %total_votes))))))))) ;
+    (pair (big_map %ledger address nat)
+          (pair (big_map %voters
+                   address
+                   (pair (option %candidate key_hash)
+                         (pair (timestamp %last_veto) (pair (nat %veto) (nat %vote)))))
+                (pair (big_map %vetos key_hash timestamp)
+                      (pair (big_map %votes key_hash nat)
+                            (pair (option %current_delegated key_hash)
+                                  (pair (option %next_candidate key_hash)
+                                        (pair (timestamp %last_veto)
+                                              (pair (address %dex_core) (pair (nat %veto) (nat %total_votes)))))))))) ;
   code { PUSH nat 0 ;
          PUSH nat 1 ;
          PAIR ;
@@ -33,27 +35,55 @@
            { SWAP ;
              DUP ;
              DUG 2 ;
-             GET 13 ;
+             GET 15 ;
              DIG 3 ;
              SWAP ;
              EXEC ;
              DROP ;
+             SWAP ;
+             DUP ;
+             DUG 2 ;
+             CAR ;
+             SWAP ;
+             DUP ;
+             DUG 2 ;
+             GET 3 ;
+             GET ;
+             IF_NONE { PUSH nat 0 } {} ;
+             DUP ;
+             DUP 3 ;
+             GET 4 ;
+             COMPARE ;
+             GT ;
              PUSH mutez 1 ;
              BALANCE ;
              EDIV ;
              IF_NONE { PUSH string "DIV by 0" ; FAILWITH } {} ;
              CAR ;
-             SWAP ;
-             DUP ;
-             DUG 2 ;
-             CDR ;
+             DUP 4 ;
+             GET 4 ;
              COMPARE ;
              GT ;
-             IF { DIG 2 ; CAR ; FAILWITH } { DIG 2 ; DROP } ;
+             OR ;
+             IF { DIG 3 ; CAR ; FAILWITH } { DIG 3 ; DROP } ;
+             DIG 2 ;
+             DUP ;
+             CAR ;
+             DUP 4 ;
+             GET 4 ;
+             DIG 3 ;
+             SUB ;
+             ABS ;
+             DUP 4 ;
+             GET 3 ;
              SWAP ;
+             SOME ;
+             SWAP ;
+             UPDATE ;
+             UPDATE 1 ;
              NIL operation ;
              DUP 3 ;
-             CDR ;
+             GET 4 ;
              DIG 3 ;
              CAR ;
              PUSH mutez 1 ;
@@ -64,13 +94,39 @@
              CONS ;
              PAIR }
            { DIG 3 ;
-             DROP 2 ;
+             DROP ;
+             SWAP ;
              DUP ;
-             GET 13 ;
-             DIG 2 ;
+             DUG 2 ;
+             GET 15 ;
+             DIG 3 ;
              SWAP ;
              EXEC ;
              DROP ;
+             SWAP ;
+             DUP ;
+             DUP ;
+             DUG 3 ;
+             CAR ;
+             PUSH mutez 1 ;
+             AMOUNT ;
+             EDIV ;
+             IF_NONE { PUSH string "DIV by 0" ; FAILWITH } {} ;
+             CAR ;
+             DIG 4 ;
+             CAR ;
+             DUP 5 ;
+             CDR ;
+             GET ;
+             IF_NONE { PUSH nat 0 } {} ;
+             ADD ;
+             DIG 3 ;
+             CDR ;
+             SWAP ;
+             SOME ;
+             SWAP ;
+             UPDATE ;
+             UPDATE 1 ;
              NIL operation ;
              PAIR } } }
 

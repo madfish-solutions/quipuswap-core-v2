@@ -6,6 +6,7 @@ type vote_info_t        is [@layout:comb] record [
 ]
 
 type storage_t          is [@layout:comb] record [
+  ledger                  : big_map(address, nat);
   voters                  : big_map(address, vote_info_t);
   vetos                   : big_map(key_hash, timestamp);
   votes                   : big_map(key_hash, nat);
@@ -17,10 +18,14 @@ type storage_t          is [@layout:comb] record [
   total_votes             : nat;
 ]
 
-type invest_tez_t       is unit
+type invest_tez_t       is [@layout:comb] record [
+  candidate               : address;
+  user                    : address;
+]
 
 type divest_tez_t       is [@layout:comb] record [
   recipient               : contract(unit);
+  user                    : address;
   amt                     : nat;
 ]
 

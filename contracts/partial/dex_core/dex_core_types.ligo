@@ -50,6 +50,7 @@ type launch_exchange_t  is [@layout:comb] record [
   token_a_in              : nat;
   token_b_in              : nat;
   shares_recipient        : address;
+  candidate               : address;
 ]
 
 type invest_liquidity_t is [@layout:comb] record [
@@ -58,6 +59,7 @@ type invest_liquidity_t is [@layout:comb] record [
   token_b_in              : nat;
   shares                  : nat;
   shares_recipient        : address;
+  candidate               : address;
 ]
 
 type divest_liquidity_t is [@layout:comb] record [

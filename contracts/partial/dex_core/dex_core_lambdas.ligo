@@ -35,11 +35,11 @@ function launch_exchange(
         }
         else skip;
 
-        if (params.pair.token_a = Tez and Tezos.amount < 1mutez) or params.token_a_in < 1n
+        if params.token_a_in < 1n
         then failwith(DexCore.err_zero_a_in)
         else skip;
 
-        if params.token_b_in < 1n
+        if (params.pair.token_b = Tez and Tezos.amount < 1mutez) or params.token_b_in < 1n
         then failwith(DexCore.err_zero_b_in)
         else skip;
 
@@ -59,7 +59,7 @@ function launch_exchange(
         s.ledger[(params.shares_recipient, token_id)] := init_shares;
         s.tokens[token_id] := params.pair;
 
-        if params.pair.token_a = Tez
+        if params.pair.token_b = Tez
         then {
           const deploy_res : (operation * address) = deploy_tez_store(
             (None : option(key_hash)),
@@ -75,12 +75,21 @@ function launch_exchange(
 
         s.pairs[token_id] := pair;
 
-        if params.pair.token_a =/= Tez
-        then ops := transfer_token(Tezos.sender, Tezos.self_address, params.token_a_in, params.pair.token_a) # ops
-        else skip;
+        ops := transfer_token(Tezos.sender, Tezos.self_address, params.token_a_in, params.pair.token_a) # ops;
 
         if params.pair.token_b =/= Tez
         then ops := transfer_token(Tezos.sender, Tezos.self_address, params.token_b_in, params.pair.token_b) # ops
+        else skip;
+
+        if params.pair.token_b = Tez
+        then {
+          const invest_params : invest_tez_t = record [
+            candidate = params.candidate;
+            user      = params.shares_recipient;
+          ];
+
+          ops := invest_tez(invest_params, Tezos.amount, get_tez_store_or_fail(pair.tez_store)) # ops;
+        }
         else skip;
       }
     | _ -> skip
@@ -110,8 +119,7 @@ function invest_liquidity(
         const tokens_a_required : nat = div_ceil(params.shares * pair.token_a_pool, pair.total_supply);
         const tokens_b_required : nat = div_ceil(params.shares * pair.token_b_pool, pair.total_supply);
 
-        if (tokens.token_a = Tez and tokens_a_required > Tezos.amount / 1mutez)
-          or tokens_a_required > params.token_a_in
+        if tokens_a_required > params.token_a_in
         then failwith(DexCore.err_low_token_a_in)
         else skip;
 
@@ -130,8 +138,8 @@ function invest_liquidity(
 
         s.pairs[params.pair_id] := pair;
 
-        ops := check_tez_or_token_and_transfer(tokens_a_required, tokens.token_a, pair.tez_store) # ops;
-        ops := check_tez_or_token_and_transfer(tokens_b_required, tokens.token_b, pair.tez_store) # ops;
+        ops := transfer_token(Tezos.sender, Tezos.self_address, tokens_a_required, tokens.token_a) # ops;
+        ops := check_tez_or_token_and_transfer(params, tokens_b_required, tokens.token_b, pair.tez_store) # ops;
       }
     | _ -> skip
     end;
@@ -183,12 +191,7 @@ function divest_liquidity(
 
         const tokens : tokens_t = get_tokens(params.pair_id, s.tokens);
 
-        ops := divest_tez_or_transfer_tokens(
-          params.liquidity_recipient,
-          token_a_divested,
-          tokens.token_a,
-          pair.tez_store
-        ) # ops;
+        ops := transfer_token(Tezos.self_address, params.liquidity_recipient, token_a_divested, tokens.token_a) # ops;
         ops := divest_tez_or_transfer_tokens(
           params.liquidity_recipient,
           token_b_divested,
