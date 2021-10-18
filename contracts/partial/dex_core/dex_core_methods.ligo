@@ -39,7 +39,7 @@ function setup_func(
   var s                 : full_storage_t)
                         : full_return_t is
   block {
-    if params.idx >= dex_core_methods_max_index
+    if params.idx > dex_core_methods_max_index
     then failwith(DexCore.err_high_func_index)
     else skip;
 
