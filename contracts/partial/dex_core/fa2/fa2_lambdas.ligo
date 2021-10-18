@@ -166,7 +166,7 @@ function balance_of(
         (nil : list(balance_response_t))
       );
 
-      ops := Tezos.transaction(accumulated_response, 0tz, params.callback) # ops;
+      ops := Tezos.transaction(accumulated_response, 0mutez, params.callback) # ops;
     }
     | _ -> skip
     end

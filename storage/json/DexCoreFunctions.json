@@ -58,5 +58,13 @@
   {
     "index": 14,
     "name": "balance_of"
+  },
+  {
+    "index": 15,
+    "name": "get_reserves"
+  },
+  {
+    "index": 16,
+    "name": "get_total_supply"
   }
 ]

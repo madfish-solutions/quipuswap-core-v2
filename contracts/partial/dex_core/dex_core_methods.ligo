@@ -4,9 +4,11 @@ function call_dex_core(
                         : full_return_t is
   block {
     const id : nat = case action of
+    (* DEX *)
     | Launch_exchange(_)       -> 0n
     | Invest_liquidity(_)      -> 1n
     | Divest_liquidity(_)      -> 2n
+    (* ADMIN *)
     | Set_admin(_)             -> 3n
     | Confirm_admin(_)         -> 4n
     | Add_managers(_)          -> 5n
@@ -14,11 +16,16 @@ function call_dex_core(
     | Set_cycle_duration(_)    -> 7n
     | Update_token_metadata(_) -> 8n
     | Ban_bakers(_)            -> 9n
+    (* PERMIT *)
     | Permit(_)                -> 10n
     | Set_expiry(_)            -> 11n
+    (* FA2 *)
     | Transfer(_)              -> 12n
     | Update_operators(_)      -> 13n
     | Balance_of(_)            -> 14n
+    (* VIEWS *)
+    | Get_reserves(_)          -> 15n
+    | Get_total_supply(_)      -> 16n
     end;
 
     const lambda_bytes : bytes = case s.dex_core_lambdas[id] of

@@ -11,6 +11,8 @@ const deploy_tez_store : deploy_tez_store_t =
   |} : deploy_tez_store_t
 )];
 
+(* DEX *)
+
 function launch_exchange(
   const action          : action_t;
   var s                 : storage_t)
@@ -202,6 +204,8 @@ function divest_liquidity(
     end;
   } with (ops, s)
 
+(* ADMIN *)
+
 function set_admin(
   const action          : action_t;
   var s                 : storage_t)
@@ -340,3 +344,85 @@ function ban_bakers(
     | _ -> skip
     end
   } with ((nil : list(operation)), s)
+
+(* VIEWS *)
+
+function get_reserves(
+  const action          : action_t;
+  const s               : storage_t)
+                        : return_t is
+  block {
+    var ops : list(operation) := nil;
+
+    case action of
+    | Get_reserves(params) -> {
+      function look_up_reserves(
+        const l         : list(reserves_res_t);
+        const pair_id   : reserves_req_t)
+                        : list(reserves_res_t) is
+        block {
+          if pair_id > s.tokens_count
+          then failwith(DexCore.err_pair_not_listed)
+          else skip;
+
+          const tokens : tokens_t = get_tokens(pair_id, s.tokens);
+          const pair : pair_t = get_pair(pair_id, s.pairs);
+          const response : reserves_res_t = record [
+            request  = pair_id;
+            reserves = record [
+              token_a      = tokens.token_a;
+              token_b      = tokens.token_b;
+              token_a_pool = pair.token_a_pool;
+              token_b_pool = pair.token_b_pool;
+            ];
+          ];
+        } with response # l;
+
+      const response : list(reserves_res_t) = List.fold(
+        look_up_reserves,
+        params.requests,
+        (nil : list(reserves_res_t))
+      );
+
+      ops := Tezos.transaction(response, 0mutez, params.callback) # ops;
+    }
+    | _ -> skip
+    end
+  } with (ops, s)
+
+function get_total_supply(
+  const action          : action_t;
+  const s               : storage_t)
+                        : return_t is
+  block {
+    var ops : list(operation) := nil;
+
+    case action of
+    | Get_total_supply(params) -> {
+      function look_up_total_supply(
+        const l         : list(total_supply_res_t);
+        const pair_id   : total_supply_req_t)
+                        : list(total_supply_res_t) is
+        block {
+          if pair_id > s.tokens_count
+          then failwith(DexCore.err_pair_not_listed)
+          else skip;
+
+          const pair : pair_t = get_pair(pair_id, s.pairs);
+          const response : total_supply_res_t = record [
+            request      = pair_id;
+            total_supply = pair.total_supply;
+          ];
+        } with response # l;
+
+      const response : list(total_supply_res_t) = List.fold(
+        look_up_total_supply,
+        params.requests,
+        (nil : list(total_supply_res_t))
+      );
+
+      ops := Tezos.transaction(response, 0mutez, params.callback) # ops;
+    }
+    | _ -> skip
+    end
+  } with (ops, s)

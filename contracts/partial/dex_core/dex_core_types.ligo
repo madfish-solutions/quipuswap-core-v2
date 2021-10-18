@@ -102,12 +102,45 @@ type ban_baker_t        is [@layout:comb] record [
 
 type ban_bakers_t       is list(ban_baker_t)
 
+type reserves_t         is [@layout:comb] record [
+  token_a                 : token_t;
+  token_b                 : token_t;
+  token_a_pool            : nat;
+  token_b_pool            : nat;
+]
+
+type reserves_req_t     is token_id_t
+
+type reserves_res_t     is [@layout:comb] record [
+  request                 : reserves_req_t;
+  reserves                : reserves_t;
+]
+
+type get_reserves_t     is [@layout:comb] record [
+  requests                : list(reserves_req_t);
+  callback                : contract(list(reserves_res_t));
+]
+
+type total_supply_req_t is token_id_t
+
+type total_supply_res_t is [@layout:comb] record [
+  request                 : total_supply_req_t;
+  total_supply            : nat;
+]
+
+type get_total_supply_t is [@layout:comb] record [
+  requests                : list(total_supply_req_t);
+  callback                : contract(list(total_supply_res_t));
+]
+
 type default_t          is unit
 
 type action_t           is
+(* DEX *)
 | Launch_exchange         of launch_exchange_t
 | Invest_liquidity        of invest_liquidity_t
 | Divest_liquidity        of divest_liquidity_t
+(* ADMIN *)
 | Set_admin               of set_admin_t
 | Confirm_admin           of confirm_admin_t
 | Add_managers            of add_managers_t
@@ -115,11 +148,16 @@ type action_t           is
 | Set_cycle_duration      of set_cycle_dur_t
 | Update_token_metadata   of upd_tok_meta_t
 | Ban_bakers              of ban_bakers_t
+(* PERMIT *)
 | Permit                  of permit_t
 | Set_expiry              of set_expiry_t
+(* FA2 *)
 | Transfer                of transfers_t
 | Update_operators        of update_operators_t
 | Balance_of              of balance_of_t
+(* VIEWS *)
+| Get_reserves            of get_reserves_t
+| Get_total_supply        of get_total_supply_t
 
 type return_t           is list(operation) * storage_t
 
@@ -145,4 +183,4 @@ type full_action_t      is
 
 type deploy_tez_store_t is (option(key_hash) * tez * tez_store_t) -> (operation * address)
 
-[@inline] const dex_core_methods_max_index : nat = 14n;
+[@inline] const dex_core_methods_max_index : nat = 16n;
