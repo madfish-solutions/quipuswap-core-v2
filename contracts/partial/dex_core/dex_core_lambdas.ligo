@@ -32,6 +32,20 @@ function launch_exchange(
         then {
           s.token_to_id[Bytes.pack(params.pair)] := token_id;
           s.tokens_count := s.tokens_count + 1n;
+
+          if params.pair.token_b = Tez
+          then {
+            const deploy_res : (operation * address) = deploy_tez_store(
+              (None : option(key_hash)),
+              Tezos.amount,
+              get_tez_store_initial_storage(unit)
+            );
+
+            ops := deploy_res.0 # ops;
+
+            pair.tez_store := Some(deploy_res.1);
+          }
+          else skip;
         }
         else skip;
 
@@ -58,21 +72,6 @@ function launch_exchange(
 
         s.ledger[(params.shares_recipient, token_id)] := init_shares;
         s.tokens[token_id] := params.pair;
-
-        if params.pair.token_b = Tez
-        then {
-          const deploy_res : (operation * address) = deploy_tez_store(
-            (None : option(key_hash)),
-            Tezos.amount,
-            get_tez_store_initial_storage(unit)
-          );
-
-          ops := deploy_res.0 # ops;
-
-          pair.tez_store := Some(deploy_res.1);
-        }
-        else skip;
-
         s.pairs[token_id] := pair;
 
         ops := transfer_token(Tezos.sender, Tezos.self_address, params.token_a_in, params.pair.token_a) # ops;
