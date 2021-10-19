@@ -173,3 +173,95 @@ function get_tez_store_initial_storage(
     veto = 0n;
     total_votes = 0n;
   ]
+
+function form_swap_data(
+  const pair            : pair_t;
+  const swap            : tokens_t;
+  const direction       : swap_operation_t)
+                        : swap_data_t is
+  block {
+    const side_a : swap_side_t = record [
+      pool  = pair.token_a_pool;
+      token = swap.token_a;
+    ];
+    const side_b : swap_side_t = record [
+      pool  = pair.token_b_pool;
+      token = swap.token_b;
+    ];
+  } with case direction of
+    | A_to_b -> record [
+        from_ = side_a;
+        to_   = side_b;
+      ]
+    | B_to_a -> record [
+        from_ = side_b;
+        to_   = side_a;
+      ]
+    end
+
+function form_pools(
+  const from_pool       : nat;
+  const to_pool         : nat;
+  const supply          : nat;
+  const tez_store_opt   : option(address);
+  const direction       : swap_operation_t)
+                        : pair_t is
+  case direction of
+  | B_to_a -> record [
+      token_a_pool = to_pool;
+      token_b_pool = from_pool;
+      total_supply = supply;
+      tez_store    = tez_store_opt;
+    ]
+  | A_to_b -> record [
+      token_a_pool = from_pool;
+      token_b_pool = to_pool;
+      total_supply = supply;
+      tez_store    = tez_store_opt;
+    ]
+  end
+
+function swap_internal(
+  var tmp               : tmp_swap_t;
+  const params          : swap_slice_t)
+                        : tmp_swap_t is
+  block {
+    const pair : pair_t = get_pair(params.pair_id, tmp.s.pairs);
+    const tokens : tokens_t = get_tokens(params.pair_id, tmp.s.tokens);
+    var swap: swap_data_t := form_swap_data(pair, tokens, params.operation);
+
+    if pair.token_a_pool * pair.token_b_pool = 0n
+    then failwith(DexCore.err_no_liquidity)
+    else skip;
+
+    if tmp.amount_in = 0n
+    then failwith(DexCore.err_zero_in)
+    else skip;
+
+    if swap.from_.token =/= tmp.token_in
+    then failwith(DexCore.err_wrong_route)
+    else skip;
+
+    const from_in_with_fee : nat = tmp.amount_in * Constants.fee_num;
+    const numerator : nat = from_in_with_fee * swap.to_.pool;
+    const denominator : nat = swap.from_.pool * Constants.fee_denom + from_in_with_fee;
+    const out : nat = numerator / denominator;
+
+    swap.to_.pool := abs(swap.to_.pool - out);
+    swap.from_.pool := swap.from_.pool + tmp.amount_in;
+
+    tmp.amount_in := out;
+    tmp.token_in := swap.to_.token;
+
+    const updated_pair : pair_t = form_pools(
+      swap.from_.pool,
+      swap.to_.pool,
+      pair.total_supply,
+      pair.tez_store,
+      params.operation
+    );
+
+    tmp.s.pairs[params.pair_id] := updated_pair;
+
+    tmp.operation := Some(transfer_token(Tezos.self_address, tmp.receiver, out, swap.to_.token));
+  } with tmp

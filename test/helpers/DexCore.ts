@@ -11,13 +11,24 @@ import {
 
 import fs from "fs";
 
+import { BigNumber } from "bignumber.js";
+
 import env from "../../env";
 
 import { confirmOperation } from "../../scripts/confirmation";
 
 import dexCorelambdas from "../../build/lambdas/dex_core_lambdas.json";
 
-import { DexCoreStorage } from "../types/DexCore";
+import { Utils } from "./Utils";
+
+import {
+  UpdateTokenMetadata,
+  LaunchExchange,
+  DexCoreStorage,
+  AddManager,
+  BanBaker,
+  Fees,
+} from "../types/DexCore";
 
 export class DexCore {
   contract: Contract;
@@ -134,6 +145,16 @@ export class DexCore {
     await confirmOperation(this.tezos, operation.opHash);
   }
 
+  async launchExchange(params: LaunchExchange): Promise<TransactionOperation> {
+    const operation: TransactionOperation = await this.contract.methods
+      .launch_exchange(...Utils.destructObj(params))
+      .send();
+
+    await confirmOperation(this.tezos, operation.hash);
+
+    return operation;
+  }
+
   async setAdmin(newAdmin: string): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
       .set_admin(newAdmin)
@@ -147,6 +168,60 @@ export class DexCore {
   async confirmAdmin(): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
       .confirm_admin([])
+      .send();
+
+    await confirmOperation(this.tezos, operation.hash);
+
+    return operation;
+  }
+
+  async addManagers(params: AddManager[]): Promise<TransactionOperation> {
+    const operation: TransactionOperation = await this.contract.methods
+      .add_managers(params)
+      .send();
+
+    await confirmOperation(this.tezos, operation.hash);
+
+    return operation;
+  }
+
+  async setFees(params: Fees): Promise<TransactionOperation> {
+    const operation: TransactionOperation = await this.contract.methods
+      .set_fees(...Utils.destructObj(params))
+      .send();
+
+    await confirmOperation(this.tezos, operation.hash);
+
+    return operation;
+  }
+
+  async setCycleDuration(
+    cycleDuration: BigNumber
+  ): Promise<TransactionOperation> {
+    const operation: TransactionOperation = await this.contract.methods
+      .set_cycle_duration(cycleDuration.toString())
+      .send();
+
+    await confirmOperation(this.tezos, operation.hash);
+
+    return operation;
+  }
+
+  async updateTokenMetadata(
+    params: UpdateTokenMetadata
+  ): Promise<TransactionOperation> {
+    const operation: TransactionOperation = await this.contract.methods
+      .update_token_metadata(...Utils.destructObj(params))
+      .send();
+
+    await confirmOperation(this.tezos, operation.hash);
+
+    return operation;
+  }
+
+  async banBakers(params: BanBaker[]): Promise<TransactionOperation> {
+    const operation: TransactionOperation = await this.contract.methods
+      .ban_bakers(params)
       .send();
 
     await confirmOperation(this.tezos, operation.hash);

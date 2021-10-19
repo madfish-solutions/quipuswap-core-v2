@@ -5,6 +5,8 @@ import {
 } from "@taquito/taquito";
 import { InMemorySigner } from "@taquito/signer";
 
+import { BigNumber } from "bignumber.js";
+
 import { confirmOperation } from "../../scripts/confirmation";
 
 import env from "../../env";
@@ -45,15 +47,24 @@ export class Utils {
     }
   }
 
+  async getLastBlockTimestamp(): Promise<string> {
+    return String(
+      Date.parse((await this.tezos.rpc.getBlockHeader()).timestamp)
+    );
+  }
+
   static destructObj(obj: any) {
+    const strs: string[] = ["tez", "fa12", "fa2", "tokan_a", "tokan_b"];
     let arr: any[] = [];
 
     Object.keys(obj).map(function (k) {
-      if (k === "fA12" || k === "fA2") {
+      if (strs.includes(k)) {
         arr.push(k);
       }
 
-      if (obj[k] instanceof MichelsonMap || Array.isArray(obj[k])) {
+      if (obj[k] instanceof BigNumber) {
+        arr.push(obj[k].toString());
+      } else if (obj[k] instanceof MichelsonMap || Array.isArray(obj[k])) {
         arr.push(obj[k]);
       } else if (
         typeof obj[k] === "object" &&

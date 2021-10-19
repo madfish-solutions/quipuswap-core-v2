@@ -7,6 +7,50 @@ export type Fees = {
   swap_fee: BigNumber;
 };
 
+export type Tez = undefined;
+
+export type FA12Token = string;
+
+export type FA2Token = {
+  token: string;
+  id: BigNumber;
+};
+
+export type Token = { tez: Tez } | { fa12: FA12Token } | { fa2: FA2Token };
+
+export type Tokens = {
+  token_a: Token;
+  token_b: Token;
+};
+
+export type LaunchExchange = {
+  pair: Tokens;
+  token_a_in: BigNumber;
+  token_b_in: BigNumber;
+  shares_recipient: string;
+  candidate: string;
+};
+
+export type AddManager = {
+  manager: string;
+  add: boolean;
+};
+
+export type MetadataPair = {
+  key: string;
+  value: string;
+};
+
+export type UpdateTokenMetadata = {
+  token_id: BigNumber;
+  token_info: MetadataPair[];
+};
+
+export type BanBaker = {
+  baker: string;
+  ban_period: BigNumber;
+};
+
 export type DexCoreStorage = {
   storage: {
     token_metadata: MichelsonMap<MichelsonMapKey, unknown>;
@@ -21,6 +65,7 @@ export type DexCoreStorage = {
     fees: Fees;
     admin: string;
     pending_admin: string;
+    baker_registry: string;
     permits_counter: BigNumber;
     default_expiry: BigNumber;
     cycle_duration: BigNumber;

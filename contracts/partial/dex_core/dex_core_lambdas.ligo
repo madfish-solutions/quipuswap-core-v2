@@ -33,6 +33,10 @@ function launch_exchange(
         if s.tokens_count = token_id
         then {
           s.token_to_id[Bytes.pack(params.pair)] := token_id;
+          s.token_metadata[token_id] := record [
+            token_id   = token_id;
+            token_info = Constants.default_token_metadata;
+          ];
           s.tokens_count := s.tokens_count + 1n;
 
           if params.pair.token_b = Tez
@@ -202,6 +206,57 @@ function divest_liquidity(
       }
     | _ -> skip
     end;
+  } with (ops, s)
+
+function swap(
+  const action          : action_t;
+  var s                 : storage_t)
+                        : return_t is
+  block {
+    var ops: list(operation) := nil;
+
+    case action of
+    | Swap(params) -> {
+        const first_swap : swap_slice_t = case List.head_opt(params.swaps) of
+        | Some(swap) -> swap
+        | None       -> failwith(DexCore.err_empty_route)
+        end;
+
+        const tokens : tokens_t = get_tokens(first_swap.pair_id, s.tokens);
+        const token : token_t = case first_swap.operation of
+        | A_to_b -> tokens.token_a
+        | B_to_a -> tokens.token_b
+        end;
+
+        ops := transfer_token(Tezos.sender, Tezos.self_address, params.amount_in, token) # ops;
+
+        const tmp : tmp_swap_t = List.fold(
+          swap_internal,
+          params.swaps,
+          record [
+            s         = s;
+            operation = (None : option(operation));
+            token_in  = token;
+            receiver  = params.receiver;
+            amount_in = params.amount_in;
+          ]
+        );
+
+        if tmp.amount_in < params.min_amount_out
+        then failwith(DexCore.err_high_min_out)
+        else skip;
+
+        s := tmp.s;
+
+        const last_operation : operation = case tmp.operation of
+        | Some(op) -> op
+        | None     -> failwith(DexCore.err_empty_route)
+        end;
+
+        ops := last_operation # ops;
+      }
+    | _ -> skip
+    end
   } with (ops, s)
 
 (* ADMIN *)

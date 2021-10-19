@@ -13,58 +13,62 @@
   },
   {
     "index": 3,
-    "name": "set_admin"
+    "name": "swap"
   },
   {
     "index": 4,
-    "name": "confirm_admin"
+    "name": "set_admin"
   },
   {
     "index": 5,
-    "name": "add_managers"
+    "name": "confirm_admin"
   },
   {
     "index": 6,
-    "name": "set_fees"
+    "name": "add_managers"
   },
   {
     "index": 7,
-    "name": "set_cycle_duration"
+    "name": "set_fees"
   },
   {
     "index": 8,
-    "name": "update_token_metadata"
+    "name": "set_cycle_duration"
   },
   {
     "index": 9,
-    "name": "ban_bakers"
+    "name": "update_token_metadata"
   },
   {
     "index": 10,
-    "name": "permit"
+    "name": "ban_bakers"
   },
   {
     "index": 11,
-    "name": "set_expiry"
+    "name": "permit"
   },
   {
     "index": 12,
-    "name": "transfer"
+    "name": "set_expiry"
   },
   {
     "index": 13,
-    "name": "update_operators"
+    "name": "transfer"
   },
   {
     "index": 14,
-    "name": "balance_of"
+    "name": "update_operators"
   },
   {
     "index": 15,
-    "name": "get_reserves"
+    "name": "balance_of"
   },
   {
     "index": 16,
+    "name": "get_reserves"
+  },
+  {
+    "index": 17,
     "name": "get_total_supply"
   }
 ]

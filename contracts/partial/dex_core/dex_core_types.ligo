@@ -39,6 +39,7 @@ type storage_t          is [@layout:comb] record [
   fees                    : fees_t;
   admin                   : address;
   pending_admin           : address;
+  baker_registry          : address;
   permits_counter         : counter_t;
   default_expiry          : seconds_t;
   cycle_duration          : nat;
@@ -68,6 +69,40 @@ type divest_liquidity_t is [@layout:comb] record [
   min_token_b_out         : nat;
   shares                  : nat;
   liquidity_recipient     : address;
+]
+
+type swap_side_t        is [@layout:comb] record [
+  pool                    : nat;
+  token                   : token_t;
+]
+
+type swap_data_t        is [@layout:comb] record [
+  to_                     : swap_side_t;
+  from_                   : swap_side_t;
+]
+
+type tmp_swap_t         is [@layout:comb] record [
+  s                       : storage_t;
+  operation               : option(operation);
+  token_in                : token_t;
+  receiver                : address;
+  amount_in               : nat;
+]
+
+type swap_operation_t   is
+| A_to_b
+| B_to_a
+
+type swap_slice_t       is [@layout:comb] record [
+  operation               : swap_operation_t;
+  pair_id                 : nat;
+]
+
+type swap_t             is [@layout:comb] record [
+  swaps                   : list(swap_slice_t);
+  receiver                : address;
+  amount_in               : nat;
+  min_amount_out          : nat;
 ]
 
 type set_admin_t        is address
@@ -140,6 +175,7 @@ type action_t           is
 | Launch_exchange         of launch_exchange_t
 | Invest_liquidity        of invest_liquidity_t
 | Divest_liquidity        of divest_liquidity_t
+| Swap                    of swap_t
 (* ADMIN *)
 | Set_admin               of set_admin_t
 | Confirm_admin           of confirm_admin_t
@@ -183,4 +219,4 @@ type full_action_t      is
 
 type deploy_tez_store_t is (option(key_hash) * tez * tez_store_t) -> (operation * address)
 
-[@inline] const dex_core_methods_max_index : nat = 16n;
+[@inline] const dex_core_methods_max_index : nat = 17n;

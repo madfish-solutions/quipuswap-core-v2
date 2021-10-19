@@ -22,6 +22,7 @@ export const dexCoreStorage: DexCoreStorage = {
     },
     admin: zeroAddress,
     pending_admin: zeroAddress,
+    baker_registry: zeroAddress,
     permits_counter: new BigNumber(0),
     default_expiry: new BigNumber(0),
     cycle_duration: new BigNumber(0),

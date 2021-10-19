@@ -13,12 +13,12 @@
                                   (pair (option %next_candidate key_hash)
                                         (pair (timestamp %last_veto)
                                               (pair (address %dex_core) (pair (nat %veto) (nat %total_votes)))))))))) ;
-  code { PUSH nat 0 ;
-         PUSH nat 1 ;
+  code { PUSH string "200" ;
+         PUSH string "201" ;
          PAIR ;
          DUP ;
          LAMBDA
-           (pair (pair nat nat) address)
+           (pair (pair string string) address)
            unit
            { UNPAIR ;
              SWAP ;

@@ -8,24 +8,25 @@ function call_dex_core(
     | Launch_exchange(_)       -> 0n
     | Invest_liquidity(_)      -> 1n
     | Divest_liquidity(_)      -> 2n
+    | Swap(_)                  -> 3n
     (* ADMIN *)
-    | Set_admin(_)             -> 3n
-    | Confirm_admin(_)         -> 4n
-    | Add_managers(_)          -> 5n
-    | Set_fees(_)              -> 6n
-    | Set_cycle_duration(_)    -> 7n
-    | Update_token_metadata(_) -> 8n
-    | Ban_bakers(_)            -> 9n
+    | Set_admin(_)             -> 4n
+    | Confirm_admin(_)         -> 5n
+    | Add_managers(_)          -> 6n
+    | Set_fees(_)              -> 7n
+    | Set_cycle_duration(_)    -> 8n
+    | Update_token_metadata(_) -> 9n
+    | Ban_bakers(_)            -> 10n
     (* PERMIT *)
-    | Permit(_)                -> 10n
-    | Set_expiry(_)            -> 11n
+    | Permit(_)                -> 11n
+    | Set_expiry(_)            -> 12n
     (* FA2 *)
-    | Transfer(_)              -> 12n
-    | Update_operators(_)      -> 13n
-    | Balance_of(_)            -> 14n
+    | Transfer(_)              -> 13n
+    | Update_operators(_)      -> 14n
+    | Balance_of(_)            -> 15n
     (* VIEWS *)
-    | Get_reserves(_)          -> 15n
-    | Get_total_supply(_)      -> 16n
+    | Get_reserves(_)          -> 16n
+    | Get_total_supply(_)      -> 17n
     end;
 
     const lambda_bytes : bytes = case s.dex_core_lambdas[id] of
