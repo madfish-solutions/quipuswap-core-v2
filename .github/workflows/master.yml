@@ -24,4 +24,4 @@ jobs:
       - name: Run ganache-cli in background
         run: ./ci/flextesa.sh
       - name: Compile and test contracts
-        run: yarn compile && yarn test
+        run: yarn full-compile && yarn test
