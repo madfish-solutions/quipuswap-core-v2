@@ -16,12 +16,14 @@ module DexCore is {
   [@inline] const err_insufficient_lp                     : string = "114";
   [@inline] const err_dust_out                            : string = "115";
   [@inline] const err_high_min_out                        : string = "116";
-  [@inline] const err_tez_store_invest_tez_entrypoint_404 : string = "117";
-  [@inline] const err_tez_store_divest_tez_entrypoint_404 : string = "118";
-  [@inline] const err_empty_route                         : string = "119";
-  [@inline] const err_zero_in                             : string = "120";
-  [@inline] const err_wrong_route                         : string = "121";
-  [@inline] const err_wrong_tez_amount                    : string = "122";
+  [@inline] const err_empty_route                         : string = "117";
+  [@inline] const err_zero_in                             : string = "118";
+  [@inline] const err_wrong_route                         : string = "119";
+  [@inline] const err_wrong_tez_amount                    : string = "120";
+  [@inline] const err_tez_store_invest_tez_entrypoint_404 : string = "121";
+  [@inline] const err_tez_store_divest_tez_entrypoint_404 : string = "122";
+  [@inline] const err_tez_store_ban_baker_entrypoint_404  : string = "123";
+  [@inline] const err_tez_store_vote_entrypoint_404       : string = "124";
 }
 
 module TezStore is {

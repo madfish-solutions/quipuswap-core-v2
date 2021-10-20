@@ -15,9 +15,19 @@
       - ✅ should register a new baker;
       - ✅ should fail if address to register is not a baker.
 
+## TezStore
+
+- 01_tez_store.spec.ts
+
+  1. `ban_baker`:
+
+     - ✅ should fail if not dex core is trying to ban baker;
+     - ✅ should ban baker;
+     - ✅ should unban baker.
+
 ## DexCore
 
-- 01_dex_core_admin_methods.spec.ts
+- 02_dex_core_admin_methods.spec.ts
 
   1.  `set_admin`:
 
@@ -56,11 +66,10 @@
       - ✅ should set new fields in token metadata;
       - ✅ should update existing and set new fields in token metadata.
 
-  7.  `ban_bakers`:
+  7.  `ban`:
 
       - ✅ should fail if not admin is trying to ban baker;
-      - ✅ should ban one baker;
-      - ✅ should unban one baker;
-      - ✅ should ban a group of bakers;
-      - ✅ should unban a group of bakers;
-      - ✅ should ban/unban some groups of bakers.
+      - ✅ should fail if pair not listed;
+      - ✅ should fail if tez store not found (not TEZ/TOK pair);
+      - ✅ should ban baker;
+      - ✅ should unban baker.

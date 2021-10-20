@@ -15,3 +15,16 @@ function only_dex_core(
   | None      -> 0n
   | Some(bal) -> bal
   end
+
+[@inline] function get_baker(
+  const baker           : key_hash;
+  const bakers          : big_map(key_hash, baker_t))
+                        : baker_t is
+  case bakers[baker] of
+  | None          -> record [
+    votes          = 0n;
+    ban_period     = 0n;
+    ban_start_time = (0 : timestamp);
+  ]
+  | Some(baker) -> baker
+  end

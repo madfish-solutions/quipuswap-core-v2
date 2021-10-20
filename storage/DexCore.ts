@@ -1,9 +1,10 @@
-import { DexCoreStorage } from "../test/types/DexCore";
+import { MichelsonMap } from "@taquito/michelson-encoder";
+
+import { BigNumber } from "bignumber.js";
 
 import { zeroAddress } from "../test/helpers/Utils";
 
-import { BigNumber } from "bignumber.js";
-import { MichelsonMap } from "@taquito/michelson-encoder";
+import { DexCoreStorage } from "../test/types/DexCore";
 
 export const dexCoreStorage: DexCoreStorage = {
   storage: {

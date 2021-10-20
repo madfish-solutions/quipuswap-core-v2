@@ -16,7 +16,7 @@ function call_dex_core(
     | Set_fees(_)              -> 7n
     | Set_cycle_duration(_)    -> 8n
     | Update_token_metadata(_) -> 9n
-    | Ban_bakers(_)            -> 10n
+    | Ban(_)                   -> 10n
     (* PERMIT *)
     | Permit(_)                -> 11n
     | Set_expiry(_)            -> 12n

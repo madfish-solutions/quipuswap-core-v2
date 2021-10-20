@@ -2,6 +2,8 @@ import { MichelsonMap, MichelsonMapKey } from "@taquito/michelson-encoder";
 
 import { BigNumber } from "bignumber.js";
 
+import { BanBaker } from "./TezStore";
+
 export type Fees = {
   interface_fee: BigNumber;
   swap_fee: BigNumber;
@@ -46,9 +48,9 @@ export type UpdateTokenMetadata = {
   token_info: MetadataPair[];
 };
 
-export type BanBaker = {
-  baker: string;
-  ban_period: BigNumber;
+export type Ban = {
+  pair_id: BigNumber;
+  ban_params: BanBaker;
 };
 
 export type DexCoreStorage = {

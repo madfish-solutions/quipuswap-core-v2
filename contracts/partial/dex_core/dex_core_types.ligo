@@ -16,11 +16,6 @@ type tokens_t           is [@layout:comb] record [
   token_b                 : token_t;
 ]
 
-type baker_t            is [@layout:comb] record [
-  ban_period              : nat;
-  ban_start_time          : timestamp;
-]
-
 type fees_t             is [@layout:comb] record [
   interface_fee           : nat;
   swap_fee                : nat;
@@ -34,7 +29,6 @@ type storage_t          is [@layout:comb] record [
   token_to_id             : big_map(bytes, token_id_t);
   pairs                   : big_map(token_id_t, pair_t);
   permits                 : big_map(address, user_permits_t);
-  bakers                  : big_map(key_hash, baker_t);
   referral_tokens         : big_map((token_t * address), nat);
   referral_tez            : big_map((token_id_t * address), nat);
   managers                : set(address);
@@ -57,7 +51,7 @@ type launch_exchange_t  is [@layout:comb] record [
 ]
 
 type invest_liquidity_t is [@layout:comb] record [
-  pair_id                 : nat;
+  pair_id                 : token_id_t;
   token_a_in              : nat;
   token_b_in              : nat;
   shares                  : nat;
@@ -66,7 +60,7 @@ type invest_liquidity_t is [@layout:comb] record [
 ]
 
 type divest_liquidity_t is [@layout:comb] record [
-  pair_id                 : nat;
+  pair_id                 : token_id_t;
   min_token_a_out         : nat;
   min_token_b_out         : nat;
   shares                  : nat;
@@ -98,7 +92,7 @@ type swap_direction_t   is
 
 type swap_slice_t       is [@layout:comb] record [
   direction               : swap_direction_t;
-  pair_id                 : nat;
+  pair_id                 : token_id_t;
 ]
 
 type swap_t             is [@layout:comb] record [
@@ -134,12 +128,10 @@ type upd_tok_meta_t     is [@layout:comb] record [
   token_info              : list(metadata_pair_t);
 ]
 
-type ban_baker_t        is [@layout:comb] record [
-  baker                   : key_hash;
-  ban_period              : nat;
+type ban_t              is [@layout:comb] record [
+  pair_id                 : token_id_t;
+  ban_params              : ban_baker_t;
 ]
-
-type ban_bakers_t       is list(ban_baker_t)
 
 type reserves_t         is [@layout:comb] record [
   token_a                 : token_t;
@@ -187,7 +179,7 @@ type action_t           is
 | Set_fees                of set_fees_t
 | Set_cycle_duration      of set_cycle_dur_t
 | Update_token_metadata   of upd_tok_meta_t
-| Ban_bakers              of ban_bakers_t
+| Ban                     of ban_t
 (* PERMIT *)
 | Permit                  of permit_t
 | Set_expiry              of set_expiry_t

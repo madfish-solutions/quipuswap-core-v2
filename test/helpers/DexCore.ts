@@ -26,8 +26,9 @@ import {
   LaunchExchange,
   DexCoreStorage,
   AddManager,
-  BanBaker,
+  Token,
   Fees,
+  Ban,
 } from "../types/DexCore";
 
 export class DexCore {
@@ -145,10 +146,13 @@ export class DexCore {
     await confirmOperation(this.tezos, operation.opHash);
   }
 
-  async launchExchange(params: LaunchExchange): Promise<TransactionOperation> {
+  async launchExchange(
+    params: LaunchExchange,
+    mutezAmount: number = 0
+  ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
       .launch_exchange(...Utils.destructObj(params))
-      .send();
+      .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
 
@@ -219,9 +223,9 @@ export class DexCore {
     return operation;
   }
 
-  async banBakers(params: BanBaker[]): Promise<TransactionOperation> {
+  async ban(params: Ban): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
-      .ban_bakers(params)
+      .ban(...Utils.destructObj(params))
       .send();
 
     await confirmOperation(this.tezos, operation.hash);

@@ -3,6 +3,7 @@ import { BakerRegistry } from "./helpers/BakerRegistry";
 import { Utils, zeroAddress } from "./helpers/Utils";
 import { DexCore } from "./helpers/DexCore";
 import { FA12 } from "./helpers/FA12";
+import { FA2 } from "./helpers/FA2";
 
 import { rejects } from "assert";
 
@@ -17,14 +18,16 @@ import { confirmOperation } from "../scripts/confirmation";
 import { bakerRegistryStorage } from "../storage/BakerRegistry";
 import { dexCoreStorage } from "../storage/DexCore";
 import { fa12Storage } from "../storage/test/FA12";
+import { fa2Storage } from "../storage/test/FA2";
 
 import {
   UpdateTokenMetadata,
   LaunchExchange,
   AddManager,
-  BanBaker,
   Fees,
+  Ban,
 } from "./types/DexCore";
+import { TezStore } from "./helpers/TezStore";
 
 chai.use(require("chai-bignumber")(BigNumber));
 
@@ -33,7 +36,7 @@ describe("DexCore tests (admin's methods)", async () => {
   var bakerRegistry: BakerRegistry;
   var dexCore: DexCore;
   var firstToken: FA12;
-  var secondToken: FA12;
+  var secondToken: FA2;
 
   before("setup", async () => {
     utils = new Utils();
@@ -61,7 +64,7 @@ describe("DexCore tests (admin's methods)", async () => {
     await confirmOperation(utils.tezos, operation.hash);
 
     firstToken = await FA12.originate(utils.tezos, fa12Storage);
-    secondToken = await FA12.originate(utils.tezos, fa12Storage);
+    secondToken = await FA2.originate(utils.tezos, fa2Storage);
   });
 
   it("should fail if not admin is trying to setup new pending admin", async () => {
@@ -280,7 +283,9 @@ describe("DexCore tests (admin's methods)", async () => {
     const launchExchange: LaunchExchange = {
       pair: {
         token_a: { fa12: firstToken.contract.address },
-        token_b: { fa12: secondToken.contract.address },
+        token_b: {
+          fa2: { token: secondToken.contract.address, id: new BigNumber(0) },
+        },
       },
       token_a_in: new BigNumber(1),
       token_b_in: new BigNumber(1),
@@ -303,10 +308,15 @@ describe("DexCore tests (admin's methods)", async () => {
       dexCore.contract.address,
       launchExchange.token_a_in
     );
-    await secondToken.approve(
-      dexCore.contract.address,
-      launchExchange.token_b_in
-    );
+    await secondToken.updateOperators([
+      {
+        add_operator: {
+          owner: bob.pkh,
+          operator: dexCore.contract.address,
+          token_id: new BigNumber(0),
+        },
+      },
+    ]);
     await dexCore.launchExchange(launchExchange);
     await dexCore.updateTokenMetadata(updateTokenMetadata);
     await dexCore.updateStorage({
@@ -455,122 +465,107 @@ describe("DexCore tests (admin's methods)", async () => {
   });
 
   it("should fail if not admin is trying to ban baker", async () => {
+    const ban: Ban = {
+      pair_id: new BigNumber(0),
+      ban_params: { baker: alice.pkh, ban_period: new BigNumber(666) },
+    };
+
     await utils.setProvider(alice.sk);
-    await rejects(dexCore.banBakers([]), (err: Error) => {
+    await rejects(dexCore.ban(ban), (err: Error) => {
       expect(err.message).to.equal(Common.ERR_NOT_ADMIN);
 
       return true;
     });
   });
 
-  it("should ban one baker", async () => {
-    const banBakerParams: BanBaker[] = [
-      { baker: alice.pkh, ban_period: new BigNumber(666) },
-    ];
+  it("should fail if pair not listed", async () => {
+    const ban: Ban = {
+      pair_id: new BigNumber(666),
+      ban_params: { baker: alice.pkh, ban_period: new BigNumber(666) },
+    };
 
     await utils.setProvider(bob.sk);
-    await dexCore.banBakers(banBakerParams);
-    await dexCore.updateStorage({ bakers: [alice.pkh] });
+    await rejects(dexCore.ban(ban), (err: Error) => {
+      expect(err.message).to.equal(DexCoreErrors.ERR_PAIR_NOT_LISTED);
+
+      return true;
+    });
+  });
+
+  it("should fail if tez store not found (not TEZ/TOK pair)", async () => {
+    const ban: Ban = {
+      pair_id: new BigNumber(0),
+      ban_params: { baker: alice.pkh, ban_period: new BigNumber(666) },
+    };
+
+    await rejects(dexCore.ban(ban), (err: Error) => {
+      expect(err.message).to.equal(DexCoreErrors.ERR_TEZ_STORE_404);
+
+      return true;
+    });
+  });
+
+  it("should ban baker", async () => {
+    const launchExchange: LaunchExchange = {
+      pair: {
+        token_a: { fa12: firstToken.contract.address },
+        token_b: { tez: undefined },
+      },
+      token_a_in: new BigNumber(1),
+      token_b_in: new BigNumber(1),
+      shares_recipient: bob.pkh,
+      candidate: bob.pkh,
+    };
+    const ban: Ban = {
+      pair_id: new BigNumber(1),
+      ban_params: { baker: alice.pkh, ban_period: new BigNumber(666) },
+    };
+
+    await firstToken.approve(
+      dexCore.contract.address,
+      launchExchange.token_a_in
+    );
+    await dexCore.launchExchange(launchExchange, 1);
+    await dexCore.updateStorage({ pairs: [ban.pair_id] });
+
+    const tezStore: TezStore = await TezStore.init(
+      dexCore.storage.storage.pairs[ban.pair_id.toNumber()].tez_store,
+      utils.tezos
+    );
+
+    await dexCore.ban(ban);
+    await tezStore.updateStorage({ bakers: [ban.ban_params.baker] });
 
     expect(
-      dexCore.storage.storage.bakers[alice.pkh].ban_period
-    ).to.be.bignumber.equal(banBakerParams[0].ban_period);
+      tezStore.storage.bakers[ban.ban_params.baker].ban_period
+    ).to.be.bignumber.equal(ban.ban_params.ban_period);
     expect(
       String(
-        Date.parse(dexCore.storage.storage.bakers[alice.pkh].ban_start_time)
+        Date.parse(tezStore.storage.bakers[ban.ban_params.baker].ban_start_time)
       )
     ).to.equal(await utils.getLastBlockTimestamp());
   });
 
-  it("should unban one baker", async () => {
-    const banBakerParams: BanBaker[] = [
-      { baker: alice.pkh, ban_period: new BigNumber(0) },
-    ];
+  it("should unban baker", async () => {
+    const ban: Ban = {
+      pair_id: new BigNumber(1),
+      ban_params: { baker: alice.pkh, ban_period: new BigNumber(0) },
+    };
+    const tezStore: TezStore = await TezStore.init(
+      dexCore.storage.storage.pairs[ban.pair_id.toNumber()].tez_store,
+      utils.tezos
+    );
 
-    await dexCore.banBakers(banBakerParams);
-    await dexCore.updateStorage({ bakers: [alice.pkh] });
+    await dexCore.ban(ban);
+    await tezStore.updateStorage({ bakers: [ban.ban_params.baker] });
 
     expect(
-      dexCore.storage.storage.bakers[alice.pkh].ban_period
-    ).to.be.bignumber.equal(banBakerParams[0].ban_period);
+      tezStore.storage.bakers[ban.ban_params.baker].ban_period
+    ).to.be.bignumber.equal(ban.ban_params.ban_period);
     expect(
       String(
-        Date.parse(dexCore.storage.storage.bakers[alice.pkh].ban_start_time)
+        Date.parse(tezStore.storage.bakers[ban.ban_params.baker].ban_start_time)
       )
     ).to.equal(await utils.getLastBlockTimestamp());
-  });
-
-  it("should ban a group of bakers", async () => {
-    const banBakerParams: BanBaker[] = [
-      { baker: alice.pkh, ban_period: new BigNumber(666) },
-      { baker: bob.pkh, ban_period: new BigNumber(13) },
-      { baker: dev.pkh, ban_period: new BigNumber(1000) },
-    ];
-
-    await dexCore.banBakers(banBakerParams);
-    await dexCore.updateStorage({ bakers: [alice.pkh, bob.pkh, dev.pkh] });
-
-    for (let i: number = 0; i < banBakerParams.length; ++i) {
-      expect(
-        dexCore.storage.storage.bakers[banBakerParams[i].baker].ban_period
-      ).to.be.bignumber.equal(banBakerParams[i].ban_period);
-      expect(
-        String(
-          Date.parse(
-            dexCore.storage.storage.bakers[banBakerParams[i].baker]
-              .ban_start_time
-          )
-        )
-      ).to.equal(await utils.getLastBlockTimestamp());
-    }
-  });
-
-  it("should unban a group of bakers", async () => {
-    const banBakerParams: BanBaker[] = [
-      { baker: alice.pkh, ban_period: new BigNumber(0) },
-      { baker: bob.pkh, ban_period: new BigNumber(0) },
-    ];
-
-    await dexCore.banBakers(banBakerParams);
-    await dexCore.updateStorage({ bakers: [alice.pkh, bob.pkh] });
-
-    for (let i: number = 0; i < banBakerParams.length; ++i) {
-      expect(
-        dexCore.storage.storage.bakers[banBakerParams[i].baker].ban_period
-      ).to.be.bignumber.equal(banBakerParams[i].ban_period);
-      expect(
-        String(
-          Date.parse(
-            dexCore.storage.storage.bakers[banBakerParams[i].baker]
-              .ban_start_time
-          )
-        )
-      ).to.equal(await utils.getLastBlockTimestamp());
-    }
-  });
-
-  it("should ban/unban some groups of bakers", async () => {
-    const banBakerParams: BanBaker[] = [
-      { baker: alice.pkh, ban_period: new BigNumber(666) },
-      { baker: bob.pkh, ban_period: new BigNumber(13) },
-      { baker: dev.pkh, ban_period: new BigNumber(0) },
-    ];
-
-    await dexCore.banBakers(banBakerParams);
-    await dexCore.updateStorage({ bakers: [alice.pkh, bob.pkh, dev.pkh] });
-
-    for (let i: number = 0; i < banBakerParams.length; ++i) {
-      expect(
-        dexCore.storage.storage.bakers[banBakerParams[i].baker].ban_period
-      ).to.be.bignumber.equal(banBakerParams[i].ban_period);
-      expect(
-        String(
-          Date.parse(
-            dexCore.storage.storage.bakers[banBakerParams[i].baker]
-              .ban_start_time
-          )
-        )
-      ).to.equal(await utils.getLastBlockTimestamp());
-    }
   });
 });

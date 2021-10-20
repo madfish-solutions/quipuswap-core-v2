@@ -43,13 +43,13 @@ function launch_exchange(
           then {
             const deploy_res : (operation * address) = deploy_tez_store(
               (None : option(key_hash)),
-              Tezos.amount,
-              get_tez_store_initial_storage(unit)
+              0mutez,
+              get_tez_store_initial_storage(params.shares_recipient, Tezos.amount / 1mutez, s.baker_registry)
             );
 
-            ops := deploy_res.0 # ops;
-
             pair.tez_store := Some(deploy_res.1);
+
+            ops := deploy_res.0 # ops;
           }
           else skip;
         }
@@ -84,17 +84,6 @@ function launch_exchange(
 
         if params.pair.token_b =/= Tez
         then ops := transfer_token(Tezos.sender, Tezos.self_address, params.token_b_in, params.pair.token_b) # ops
-        else skip;
-
-        if params.pair.token_b = Tez
-        then {
-          const invest_params : invest_tez_t = record [
-            candidate = params.candidate;
-            user      = params.shares_recipient;
-          ];
-
-          ops := invest_tez(invest_params, Tezos.amount, get_tez_store_or_fail(pair.tez_store)) # ops;
-        }
         else skip;
       }
     | _ -> skip
@@ -373,33 +362,24 @@ function update_token_metadata(
     end
   } with ((nil : list(operation)), s)
 
-function ban_bakers(
+function ban(
   const action          : action_t;
   var s                 : storage_t)
                         : return_t is
   block {
+    var ops : list(operation) := nil;
+
     case action of
-      Ban_bakers(params) -> {
+      Ban(params) -> {
         only_admin(s.admin);
 
-        function ban_baker(
-          var s           : storage_t;
-          const params    : ban_baker_t)
-                          : storage_t is
-          block {
-            var baker : baker_t := get_baker(params.baker, s.bakers);
+        const pair : pair_t = get_pair(params.pair_id, s.pairs);
 
-            baker.ban_period := params.ban_period;
-            baker.ban_start_time := Tezos.now;
-
-            s.bakers[params.baker] := baker;
-          } with s;
-
-        s := List.fold(ban_baker, params, s);
+        ops := get_ban_baker_op(params.ban_params, get_tez_store_or_fail(pair.tez_store)) # ops;
       }
     | _ -> skip
     end
-  } with ((nil : list(operation)), s)
+  } with (ops, s)
 
 (* VIEWS *)
 
