@@ -19,11 +19,29 @@
 
 - 01_tez_store.spec.ts
 
-  1. `ban_baker`:
+  1. `invest_tez`:
+
+     -
+
+  2. `divest_tez`:
+
+     -
+
+  3. `ban_baker`:
 
      - ✅ should fail if not dex core is trying to ban baker;
      - ✅ should ban baker;
      - ✅ should unban baker.
+
+  4. `vote`:
+
+     -
+
+  5. `is_banned_baker`:
+
+     - ✅ should return true if baker is banned;
+     - ✅ should return false if baker is not banned;
+     - ✅ should return false if baker's banning period is finished.
 
 ## DexCore
 

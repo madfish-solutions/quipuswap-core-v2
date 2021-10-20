@@ -5,6 +5,8 @@ import { DexCore } from "./helpers/DexCore";
 import { FA12 } from "./helpers/FA12";
 import { FA2 } from "./helpers/FA2";
 
+import { Contract, OriginationOperation, VIEW_LAMBDA } from "@taquito/taquito";
+
 import { rejects } from "assert";
 
 import chai, { expect } from "chai";
@@ -37,6 +39,7 @@ describe("DexCore tests (admin's methods)", async () => {
   var dexCore: DexCore;
   var firstToken: FA12;
   var secondToken: FA2;
+  var lambdaContract: Contract;
 
   before("setup", async () => {
     utils = new Utils();
@@ -55,16 +58,24 @@ describe("DexCore tests (admin's methods)", async () => {
 
     await dexCore.setLambdas();
 
-    const operation = await utils.tezos.contract.transfer({
+    const transferOperation = await utils.tezos.contract.transfer({
       to: dev.pkh,
       amount: 50_000_000,
       mutez: true,
     });
 
-    await confirmOperation(utils.tezos, operation.hash);
+    await confirmOperation(utils.tezos, transferOperation.hash);
 
     firstToken = await FA12.originate(utils.tezos, fa12Storage);
     secondToken = await FA2.originate(utils.tezos, fa2Storage);
+
+    const operation: OriginationOperation =
+      await utils.tezos.contract.originate({
+        code: VIEW_LAMBDA.code,
+        storage: VIEW_LAMBDA.storage,
+      });
+
+    lambdaContract = await operation.contract();
   });
 
   it("should fail if not admin is trying to setup new pending admin", async () => {

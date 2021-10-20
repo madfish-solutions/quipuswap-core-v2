@@ -25,7 +25,7 @@ function divest_tez(
   } with (list [transfer_tez(params.recipient, params.amt)], s)
 
 function ban_baker(
-  const params         : ban_baker_t;
+  const params          : ban_baker_t;
   var s                 : storage_t)
                         : return_t is
   block {
@@ -46,3 +46,17 @@ function vote(
   block {
     only_dex_core(s.dex_core);
   } with ((nil : list(operation)), s)
+
+function is_banned_baker(
+  const params          : is_banned_baker_t;
+  const s               : storage_t)
+                        : return_t is
+  block {
+    var baker : baker_t := get_baker(params.baker, s.bakers);
+  } with (list [
+    Tezos.transaction(
+      baker.ban_start_time + int(baker.ban_period) > Tezos.now,
+      0mutez,
+      params.callback
+    )
+  ], s)

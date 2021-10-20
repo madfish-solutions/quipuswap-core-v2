@@ -5,6 +5,8 @@ import { Utils } from "./helpers/Utils";
 
 import { rejects } from "assert";
 
+import { Contract, OriginationOperation, VIEW_LAMBDA } from "@taquito/taquito";
+
 import chai, { expect } from "chai";
 
 import { BigNumber } from "bignumber.js";
@@ -22,6 +24,7 @@ describe("TezStore tests", async () => {
   var utils: Utils;
   var bakerRegistry: BakerRegistry;
   var tezStore: TezStore;
+  var lambdaContract: Contract;
 
   before("setup", async () => {
     utils = new Utils();
@@ -37,6 +40,14 @@ describe("TezStore tests", async () => {
     tezStoreStorage.dex_core = bob.pkh;
 
     tezStore = await TezStore.originate(utils.tezos, tezStoreStorage);
+
+    const operation: OriginationOperation =
+      await utils.tezos.contract.originate({
+        code: VIEW_LAMBDA.code,
+        storage: VIEW_LAMBDA.storage,
+      });
+
+    lambdaContract = await operation.contract();
   });
 
   it("should fail if not dex core is trying to ban baker", async () => {
@@ -85,5 +96,38 @@ describe("TezStore tests", async () => {
     expect(
       String(Date.parse(tezStore.storage.bakers[alice.pkh].ban_start_time))
     ).to.equal(await utils.getLastBlockTimestamp());
+  });
+
+  it("should return false if baker is not banned", async () => {
+    const isBannedAlice: Promise<any> = await tezStore.contract.views
+      .is_banned_baker(alice.pkh)
+      .read(lambdaContract.address);
+
+    expect(isBannedAlice).to.be.false;
+  });
+
+  it("should return true if baker is banned", async () => {
+    const banBaker: BanBaker = {
+      baker: alice.pkh,
+      ban_period: new BigNumber(2),
+    };
+
+    await tezStore.banBaker(banBaker);
+
+    const isBannedAlice: Promise<any> = await tezStore.contract.views
+      .is_banned_baker(alice.pkh)
+      .read(lambdaContract.address);
+
+    expect(isBannedAlice).to.be.true;
+  });
+
+  it("should return false if baker's banning period is finished", async () => {
+    await utils.bakeBlocks(1);
+
+    const isBannedAlice: Promise<any> = await tezStore.contract.views
+      .is_banned_baker(alice.pkh)
+      .read(lambdaContract.address);
+
+    expect(isBannedAlice).to.be.false;
   });
 });

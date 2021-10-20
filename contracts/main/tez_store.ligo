@@ -18,8 +18,9 @@ function main(
   const s               : storage_t)
                         : return_t is
   case action of
-  | Invest_tez(params) -> invest_tez(params, s)
-  | Divest_tez(params) -> divest_tez(params, s)
-  | Ban_baker(params)  -> ban_baker(params, s)
-  | Vote(params)       -> vote(params, s)
+  | Invest_tez(params)      -> invest_tez(params, s)
+  | Divest_tez(params)      -> divest_tez(params, s)
+  | Ban_baker(params)       -> ban_baker(params, s)
+  | Vote(params)            -> vote(params, s)
+  | Is_banned_baker(params) -> is_banned_baker(params, s)
   end
