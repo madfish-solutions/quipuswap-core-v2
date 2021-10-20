@@ -21,6 +21,7 @@ export enum DexCore {
   ERR_EMPTY_ROUTE = "119",
   ERR_ZERO_IN = "120",
   ERR_WRONG_ROUTE = "121",
+  ERR_WRONG_TEZ_AMOUNT = "122",
 }
 
 export enum TezStore {

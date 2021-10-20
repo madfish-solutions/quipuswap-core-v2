@@ -1,9 +1,7 @@
 module Constants is {
   [@inline] const zero_address : address = ("tz1ZZZZZZZZZZZZZZZZZZZZZZZZZZZZNkiRg" : address);
 
-  [@inline] const fee_num : nat = 997n;
-
-  [@inline] const fee_denom : nat = 1000n;
+  [@inline] const precision : nat = 1_000_000_000_000_000_000n; (* 10 ^ 18 *)
 
   [@inline] const default_token_metadata : map(string, bytes) = map [
     "name" -> 0x517569707573776170204c5020546f6b656e;

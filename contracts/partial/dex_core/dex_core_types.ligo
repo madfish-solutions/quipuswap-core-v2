@@ -30,11 +30,13 @@ type storage_t          is [@layout:comb] record [
   token_metadata          : big_map(token_id_t, token_metadata_t);
   ledger                  : big_map((address * token_id_t), nat);
   accounts                : big_map((address * token_id_t), account_t);
-  tokens                  : big_map(nat, tokens_t);
-  token_to_id             : big_map(bytes, nat);
-  pairs                   : big_map(nat, pair_t);
+  tokens                  : big_map(token_id_t, tokens_t);
+  token_to_id             : big_map(bytes, token_id_t);
+  pairs                   : big_map(token_id_t, pair_t);
   permits                 : big_map(address, user_permits_t);
   bakers                  : big_map(key_hash, baker_t);
+  referral_tokens         : big_map((token_t * address), nat);
+  referral_tez            : big_map((token_id_t * address), nat);
   managers                : set(address);
   fees                    : fees_t;
   admin                   : address;
@@ -69,6 +71,7 @@ type divest_liquidity_t is [@layout:comb] record [
   min_token_b_out         : nat;
   shares                  : nat;
   liquidity_recipient     : address;
+  candidate               : address;
 ]
 
 type swap_side_t        is [@layout:comb] record [
@@ -89,18 +92,19 @@ type tmp_swap_t         is [@layout:comb] record [
   amount_in               : nat;
 ]
 
-type swap_operation_t   is
+type swap_direction_t   is
 | A_to_b
 | B_to_a
 
 type swap_slice_t       is [@layout:comb] record [
-  operation               : swap_operation_t;
+  direction               : swap_direction_t;
   pair_id                 : nat;
 ]
 
 type swap_t             is [@layout:comb] record [
   swaps                   : list(swap_slice_t);
   receiver                : address;
+  referrer                : address;
   amount_in               : nat;
   min_amount_out          : nat;
 ]

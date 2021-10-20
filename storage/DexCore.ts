@@ -15,6 +15,8 @@ export const dexCoreStorage: DexCoreStorage = {
     pairs: MichelsonMap.fromLiteral({}),
     permits: MichelsonMap.fromLiteral({}),
     bakers: MichelsonMap.fromLiteral({}),
+    referral_tokens: MichelsonMap.fromLiteral({}),
+    referral_tez: MichelsonMap.fromLiteral({}),
     managers: [],
     fees: {
       interface_fee: new BigNumber(0),

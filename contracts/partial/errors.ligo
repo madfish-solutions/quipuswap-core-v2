@@ -21,6 +21,7 @@ module DexCore is {
   [@inline] const err_empty_route                         : string = "119";
   [@inline] const err_zero_in                             : string = "120";
   [@inline] const err_wrong_route                         : string = "121";
+  [@inline] const err_wrong_tez_amount                    : string = "122";
 }
 
 module TezStore is {
