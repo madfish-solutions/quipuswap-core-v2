@@ -164,6 +164,11 @@ type get_total_supply_t is [@layout:comb] record [
   callback                : contract(list(total_supply_res_t));
 ]
 
+type check_is_banned_t  is [@layout:comb] record [
+  pair_id                 : token_id_t;
+  check_params            : is_banned_baker_t;
+]
+
 type default_t          is unit
 
 type action_t           is
@@ -190,6 +195,7 @@ type action_t           is
 (* VIEWS *)
 | Get_reserves            of get_reserves_t
 | Get_total_supply        of get_total_supply_t
+| Check_is_banned_baker   of check_is_banned_t
 
 type return_t           is list(operation) * storage_t
 
@@ -215,4 +221,4 @@ type full_action_t      is
 
 type deploy_tez_store_t is (option(key_hash) * tez * tez_store_t) -> (operation * address)
 
-[@inline] const dex_core_methods_max_index : nat = 17n;
+[@inline] const dex_core_methods_max_index : nat = 19n;

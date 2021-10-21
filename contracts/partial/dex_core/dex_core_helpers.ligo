@@ -110,6 +110,14 @@ function get_tez_store_vote_entrypoint(
   | None        -> (failwith(DexCore.err_tez_store_vote_entrypoint_404) : contract(vote_t))
   end
 
+function get_tez_store_is_banned_baker_entrypoint(
+  const tez_store       : address)
+                        : contract(is_banned_baker_t) is
+  case (Tezos.get_entrypoint_opt("%is_banned_baker", tez_store) : option(contract(is_banned_baker_t))) of
+  | Some(contr) -> contr
+  | None        -> (failwith(DexCore.err_tez_store_is_banned_baker_entrypoint_404) : contract(is_banned_baker_t))
+  end
+
 function get_invest_tez_op(
   const invest_params   : invest_tez_t;
   const tez_store       : address)
@@ -148,6 +156,16 @@ function get_vote_op(
     vote_params,
     0mutez,
     get_tez_store_vote_entrypoint(tez_store)
+  )
+
+function get_check_is_banned_baker_op(
+  const check_params    : is_banned_baker_t;
+  const tez_store       : address)
+                        : operation is
+  Tezos.transaction(
+    check_params,
+    0mutez,
+    get_tez_store_is_banned_baker_entrypoint(tez_store)
   )
 
 function check_tez_or_token_and_transfer(

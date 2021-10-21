@@ -51,11 +51,9 @@ function is_banned_baker(
   const params          : is_banned_baker_t;
   const s               : storage_t)
                         : return_t is
-  block {
-    var baker : baker_t := get_baker(params.baker, s.bakers);
-  } with (list [
+  (list [
     Tezos.transaction(
-      baker.ban_start_time + int(baker.ban_period) > Tezos.now,
+      get_is_banned_baker(get_baker(params.baker, s.bakers)),
       0mutez,
       params.callback
     )

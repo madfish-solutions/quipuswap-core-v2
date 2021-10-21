@@ -462,3 +462,20 @@ function get_total_supply(
     | _ -> skip
     end
   } with (ops, s)
+
+function check_is_banned_baker(
+  const action          : action_t;
+  var s                 : storage_t)
+                        : return_t is
+  block {
+    var ops : list(operation) := nil;
+
+    case action of
+      Check_is_banned_baker(params) -> {
+        const pair : pair_t = get_pair(params.pair_id, s.pairs);
+
+        ops := get_check_is_banned_baker_op(params.check_params, get_tez_store_or_fail(pair.tez_store)) # ops;
+      }
+    | _ -> skip
+    end
+  } with (ops, s)

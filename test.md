@@ -47,36 +47,52 @@
 
 - 02_dex_core_admin_methods.spec.ts
 
-  1.  `set_admin`:
+  1. `launch_exchange`:
 
-      - ✅ should fail if not admin is trying to setup new pending admin;
-      - ✅ should setup new pending admin by admin.
+     -
 
-  2.  `confirm_admin`:
+  2. `invest_liquidity`:
 
-      - ✅ should fail if not pending admin is trying to confirm new admin;
-      - ✅ should confirm new admin by pending admin.
+     -
 
-  3.  `add_managers`:
+  3. `divest_liquidity`:
 
-      - ✅ should fail if not admin is trying to add new manager;
-      - ✅ should add one manager;
-      - ✅ should remove one manager;
-      - ✅ should add a group of managers;
-      - ✅ should remove a group of managers;
-      - ✅ shoud add/remove some groups of managers.
+     -
 
-  4.  `set_fees`:
+  4. `swap`:
 
-      - ✅ should fail if not admin is trying to set fees;
-      - ✅ should update fees.
+     -
 
-  5.  `set_cycle_duration`:
+  5. `set_admin`:
 
-      - ✅ should fail if not admin is trying to set cycle duration;
-      - ✅ should update cycle duration.
+     - ✅ should fail if not admin is trying to setup new pending admin;
+     - ✅ should setup new pending admin by admin.
 
-  6.  `update_token_metadata`:
+  6. `confirm_admin`:
+
+     - ✅ should fail if not pending admin is trying to confirm new admin;
+     - ✅ should confirm new admin by pending admin.
+
+  7. `add_managers`:
+
+     - ✅ should fail if not admin is trying to add new manager;
+     - ✅ should add one manager;
+     - ✅ should remove one manager;
+     - ✅ should add a group of managers;
+     - ✅ should remove a group of managers;
+     - ✅ shoud add/remove some groups of managers.
+
+  8. `set_fees`:
+
+     - ✅ should fail if not admin is trying to set fees;
+     - ✅ should update fees.
+
+  9. `set_cycle_duration`:
+
+     - ✅ should fail if not admin is trying to set cycle duration;
+     - ✅ should update cycle duration.
+
+  10. `update_token_metadata`:
 
       - ✅ should fail if not manager is trying to update token metadata;
       - ✅ should fail if pair not listed;
@@ -84,10 +100,42 @@
       - ✅ should set new fields in token metadata;
       - ✅ should update existing and set new fields in token metadata.
 
-  7.  `ban`:
+  11. `ban`:
 
       - ✅ should fail if not admin is trying to ban baker;
       - ✅ should fail if pair not listed;
       - ✅ should fail if tez store not found (not TEZ/TOK pair);
       - ✅ should ban baker;
       - ✅ should unban baker.
+
+  12. `permit`:
+
+      -
+
+  13. `ser_expiry`:
+
+      -
+
+  14. `transfer`:
+
+      -
+
+  15. `update_operators`:
+
+      -
+
+  16. `balance_of`:
+
+      -
+
+  17. `get_reserves`:
+
+      -
+
+  18. `get_total_supply`:
+
+      -
+
+  19. `check_is_banned_baker`:
+
+      -

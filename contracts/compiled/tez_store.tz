@@ -180,25 +180,25 @@
                      SWAP ;
                      DUP ;
                      DUG 2 ;
+                     NIL operation ;
+                     DUP 3 ;
+                     CDR ;
+                     PUSH mutez 0 ;
+                     DIG 5 ;
                      GET 5 ;
-                     SWAP ;
-                     DUP ;
-                     DUG 2 ;
+                     DIG 5 ;
                      CAR ;
                      GET ;
                      IF_NONE
                        { PUSH nat 0 ; PUSH nat 0 ; PUSH timestamp 0 ; SWAP ; PAIR ; SWAP ; PAIR }
                        {} ;
-                     DIG 2 ;
-                     NIL operation ;
-                     DIG 3 ;
-                     CDR ;
-                     PUSH mutez 0 ;
                      NOW ;
-                     DUP 6 ;
+                     SWAP ;
+                     DUP ;
+                     DUG 2 ;
                      GET 3 ;
                      INT ;
-                     DIG 6 ;
+                     DIG 2 ;
                      GET 4 ;
                      ADD ;
                      COMPARE ;

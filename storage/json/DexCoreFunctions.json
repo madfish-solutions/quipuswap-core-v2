@@ -70,5 +70,9 @@
   {
     "index": 17,
     "name": "get_total_supply"
+  },
+  {
+    "index": 18,
+    "name": "check_is_banned_baker"
   }
 ]
