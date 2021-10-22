@@ -21,11 +21,19 @@
 
   1. `invest_tez`:
 
-     -
+     - ✅ should fail if not dex core is trying to invest tez;
+     - ✅ should invest tez for alice;
+     - ✅ should invest tez for carol - 1;
+     - ✅ should invest tez for carol - 2.
 
   2. `divest_tez`:
 
-     -
+     - ✅ should fail if not dex core is trying to divest tez;
+     - ✅ should fail if tez store have not enough TEZ on contract's balance;
+     - ✅ should fail if voter have not enough TEZ on his contract's balance;
+     - ✅ should divest tez for alice;
+     - ✅ should divest tez for carol - 1;
+     - ✅ should divest tez for carol - 2.
 
   3. `ban_baker`:
 

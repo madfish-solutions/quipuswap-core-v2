@@ -11,7 +11,7 @@ import env from "../../env";
 
 import { confirmOperation } from "../../scripts/confirmation";
 
-import { BanBaker, TezStoreStorage } from "../types/TezStore";
+import { BanBaker, DivestTez, TezStoreStorage } from "../types/TezStore";
 
 import { Utils } from "./Utils";
 
@@ -81,6 +81,29 @@ export class TezStore {
         Promise.resolve({})
       );
     }
+  }
+
+  async investTez(
+    receiver: string,
+    mutezAmount: number = 0
+  ): Promise<TransactionOperation> {
+    const operation: TransactionOperation = await this.contract.methods
+      .invest_tez(receiver)
+      .send({ amount: mutezAmount, mutez: true });
+
+    await confirmOperation(this.tezos, operation.hash);
+
+    return operation;
+  }
+
+  async divestTez(params: DivestTez): Promise<TransactionOperation> {
+    const operation: TransactionOperation = await this.contract.methods
+      .divest_tez(...Utils.destructObj(params))
+      .send();
+
+    await confirmOperation(this.tezos, operation.hash);
+
+    return operation;
   }
 
   async banBaker(params: BanBaker): Promise<TransactionOperation> {

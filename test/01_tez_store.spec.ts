@@ -11,12 +11,12 @@ import chai, { expect } from "chai";
 
 import { BigNumber } from "bignumber.js";
 
-import { alice, bob } from "../scripts/sandbox/accounts";
+import { alice, bob, carol, dev } from "../scripts/sandbox/accounts";
 
 import { bakerRegistryStorage } from "../storage/BakerRegistry";
 import { tezStoreStorage } from "../storage/test/TezStore";
 
-import { BanBaker } from "./types/TezStore";
+import { BanBaker, DivestTez } from "./types/TezStore";
 
 chai.use(require("chai-bignumber")(BigNumber));
 
@@ -50,12 +50,202 @@ describe("TezStore tests", async () => {
     lambdaContract = await operation.contract();
   });
 
+  it("should fail if not dex core is trying to invest tez", async () => {
+    await rejects(tezStore.investTez(alice.pkh, 1), (err: Error) => {
+      expect(err.message).to.equal(TezStoreErrors.ERR_NOT_DEX_CORE);
+
+      return true;
+    });
+  });
+
+  it("should invest tez for alice", async () => {
+    const voter: string = alice.pkh;
+    const amt: number = 100;
+
+    await utils.setProvider(bob.sk);
+    await tezStore.investTez(voter, amt);
+    await tezStore.updateStorage({ voters: [voter] });
+
+    expect(tezStore.storage.voters[voter].tez_bal).to.be.bignumber.equal(amt);
+    expect(
+      await utils.tezos.tz.getBalance(tezStore.contract.address)
+    ).to.be.bignumber.equal(new BigNumber(amt));
+  });
+
+  it("should invest tez for carol - 1", async () => {
+    const voter: string = carol.pkh;
+    const amt: number = 666;
+    const prevTezStoreTezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      tezStore.contract.address
+    );
+
+    await tezStore.investTez(voter, amt);
+    await tezStore.updateStorage({ voters: [voter] });
+
+    expect(tezStore.storage.voters[voter].tez_bal).to.be.bignumber.equal(amt);
+    expect(
+      await utils.tezos.tz.getBalance(tezStore.contract.address)
+    ).to.be.bignumber.equal(prevTezStoreTezBalance.plus(amt));
+  });
+
+  it("should invest tez for carol - 2", async () => {
+    const voter: string = carol.pkh;
+    const amt: number = 13;
+    const prevAmt: BigNumber = tezStore.storage.voters[voter].tez_bal;
+    const prevTezStoreTezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      tezStore.contract.address
+    );
+
+    await tezStore.investTez(voter, amt);
+    await tezStore.updateStorage({ voters: [voter] });
+
+    expect(tezStore.storage.voters[voter].tez_bal).to.be.bignumber.equal(
+      prevAmt.plus(amt)
+    );
+    expect(
+      await utils.tezos.tz.getBalance(tezStore.contract.address)
+    ).to.be.bignumber.equal(prevTezStoreTezBalance.plus(amt));
+  });
+
+  it("should fail if not dex core is trying to divest tez", async () => {
+    const divestTez: DivestTez = {
+      recipient: alice.pkh,
+      user: alice.pkh,
+      amt: new BigNumber(100),
+    };
+
+    await utils.setProvider(alice.sk);
+    await rejects(tezStore.divestTez(divestTez), (err: Error) => {
+      expect(err.message).to.equal(TezStoreErrors.ERR_NOT_DEX_CORE);
+
+      return true;
+    });
+  });
+
+  it("should fail if tez store have not enough TEZ on contract's balance", async () => {
+    const divestTez: DivestTez = {
+      recipient: alice.pkh,
+      user: alice.pkh,
+      amt: new BigNumber(100_000),
+    };
+
+    await utils.setProvider(bob.sk);
+    await rejects(tezStore.divestTez(divestTez), (err: Error) => {
+      expect(err.message).to.equal(TezStoreErrors.ERR_INSUFFICIENT_TEZ_BALANCE);
+
+      return true;
+    });
+  });
+
+  it("should fail if voter have not enough TEZ on his contract's balance", async () => {
+    const user: string = alice.pkh;
+
+    await tezStore.updateStorage({ voters: [user] });
+
+    const divestTez: DivestTez = {
+      recipient: alice.pkh,
+      user: user,
+      amt: tezStore.storage.voters[user].tez_bal.plus(1),
+    };
+
+    await rejects(tezStore.divestTez(divestTez), (err: Error) => {
+      expect(err.message).to.equal(TezStoreErrors.ERR_INSUFFICIENT_TEZ_BALANCE);
+
+      return true;
+    });
+  });
+
+  it("should divest tez for alice", async () => {
+    const user: string = alice.pkh;
+    const divestTez: DivestTez = {
+      recipient: alice.pkh,
+      user: user,
+      amt: tezStore.storage.voters[user].tez_bal,
+    };
+    const prevAmt: BigNumber = tezStore.storage.voters[user].tez_bal;
+    const prevTezStoreTezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      tezStore.contract.address
+    );
+    const prevRecipientTezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      divestTez.recipient
+    );
+
+    await tezStore.divestTez(divestTez);
+    await tezStore.updateStorage({ voters: [user] });
+
+    expect(tezStore.storage.voters[user].tez_bal).to.be.bignumber.equal(
+      prevAmt.minus(divestTez.amt)
+    );
+    expect(
+      await utils.tezos.tz.getBalance(tezStore.contract.address)
+    ).to.be.bignumber.equal(prevTezStoreTezBalance.minus(divestTez.amt));
+    expect(
+      await utils.tezos.tz.getBalance(divestTez.recipient)
+    ).to.be.bignumber.equal(prevRecipientTezBalance.plus(divestTez.amt));
+  });
+
+  it("should divest tez for carol - 1", async () => {
+    const user: string = carol.pkh;
+    const divestTez: DivestTez = {
+      recipient: dev.pkh,
+      user: user,
+      amt: new BigNumber(666),
+    };
+
+    await tezStore.updateStorage({ voters: [user] });
+
+    const prevAmt: BigNumber = tezStore.storage.voters[user].tez_bal;
+    const prevTezStoreTezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      tezStore.contract.address
+    );
+    const prevRecipientTezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      divestTez.recipient
+    );
+
+    await tezStore.divestTez(divestTez);
+    await tezStore.updateStorage({ voters: [user] });
+
+    expect(tezStore.storage.voters[user].tez_bal).to.be.bignumber.equal(
+      prevAmt.minus(divestTez.amt)
+    );
+    expect(
+      await utils.tezos.tz.getBalance(tezStore.contract.address)
+    ).to.be.bignumber.equal(prevTezStoreTezBalance.minus(divestTez.amt));
+    expect(
+      await utils.tezos.tz.getBalance(divestTez.recipient)
+    ).to.be.bignumber.equal(prevRecipientTezBalance.plus(divestTez.amt));
+  });
+
+  it("should divest tez for carol - 2", async () => {
+    const user: string = carol.pkh;
+    const divestTez: DivestTez = {
+      recipient: carol.pkh,
+      user: user,
+      amt: tezStore.storage.voters[user].tez_bal,
+    };
+    const prevRecipientTezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      divestTez.recipient
+    );
+
+    await tezStore.divestTez(divestTez);
+    await tezStore.updateStorage({ voters: [user] });
+
+    expect(tezStore.storage.voters[user].tez_bal).to.be.bignumber.equal(0);
+    expect(
+      await utils.tezos.tz.getBalance(tezStore.contract.address)
+    ).to.be.bignumber.equal(0);
+    expect(
+      await utils.tezos.tz.getBalance(divestTez.recipient)
+    ).to.be.bignumber.equal(prevRecipientTezBalance.plus(divestTez.amt));
+  });
+
   it("should fail if not dex core is trying to ban baker", async () => {
     const banBaker: BanBaker = {
       baker: alice.pkh,
       ban_period: new BigNumber(666),
     };
 
+    await utils.setProvider(alice.sk);
     await rejects(tezStore.banBaker(banBaker), (err: Error) => {
       expect(err.message).to.equal(TezStoreErrors.ERR_NOT_DEX_CORE);
 

@@ -2,6 +2,12 @@ import { MichelsonMap, MichelsonMapKey } from "@taquito/michelson-encoder";
 
 import { BigNumber } from "bignumber.js";
 
+export type DivestTez = {
+  recipient: string;
+  user: string;
+  amt: BigNumber;
+};
+
 export type BanBaker = {
   baker: string;
   ban_period: BigNumber;
