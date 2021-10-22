@@ -551,10 +551,8 @@ describe("DexCore tests (admin's methods)", async () => {
       tezStore.storage.bakers[ban.ban_params.baker].ban_period
     ).to.be.bignumber.equal(ban.ban_params.ban_period);
     expect(
-      String(
-        Date.parse(tezStore.storage.bakers[ban.ban_params.baker].ban_start_time)
-      )
-    ).to.equal(await utils.getLastBlockTimestamp());
+      Date.parse(tezStore.storage.bakers[ban.ban_params.baker].ban_start_time)
+    ).to.be.lte(await utils.getLastBlockTimestamp());
   });
 
   it("should unban baker", async () => {
@@ -574,9 +572,7 @@ describe("DexCore tests (admin's methods)", async () => {
       tezStore.storage.bakers[ban.ban_params.baker].ban_period
     ).to.be.bignumber.equal(ban.ban_params.ban_period);
     expect(
-      String(
-        Date.parse(tezStore.storage.bakers[ban.ban_params.baker].ban_start_time)
-      )
-    ).to.equal(await utils.getLastBlockTimestamp());
+      Date.parse(tezStore.storage.bakers[ban.ban_params.baker].ban_start_time)
+    ).to.be.lte(await utils.getLastBlockTimestamp());
   });
 });
