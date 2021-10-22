@@ -28,8 +28,9 @@ module DexCore is {
 }
 
 module TezStore is {
-  [@inline] const err_not_dex_core             : string = "200";
-  [@inline] const err_insufficient_tez_balance : string = "201";
+  [@inline] const err_not_dex_core                           : string = "200";
+  [@inline] const err_insufficient_tez_balance               : string = "201";
+  [@inline] const err_baker_registry_validate_entrypoint_404 : string = "202";
 }
 
 module Common is {

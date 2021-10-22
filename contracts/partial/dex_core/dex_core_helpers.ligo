@@ -195,21 +195,32 @@ function divest_tez_or_transfer_tokens(
   else transfer_token(Tezos.self_address, recipient, tokens_divested, token_type)
 
 function get_tez_store_initial_storage(
-  const recipient       : address;
-  const amt             : nat;
+  const candidate       : key_hash;
+  const share_recipient : address;
+  const tez_bal         : nat;
+  const init_shares     : nat;
   const baker_registry  : address)
                         : tez_store_t is
   record [
-    ledger = big_map [
-      recipient -> amt
+    voters = big_map [
+      share_recipient -> record [
+        candidate = Some(candidate);
+        tez_bal   = tez_bal;
+        votes     = init_shares;
+      ]
     ];
-    voters = (Big_map.empty : big_map(address, vote_info_t));
-    bakers = (Big_map.empty : big_map(key_hash, baker_t));
-    current_delegated = (None: option(key_hash));
-    next_candidate = (None: option(key_hash));
+    bakers = big_map [
+      candidate -> record [
+        ban_start_time = Tezos.now;
+        ban_period     = 0n;
+        votes          = init_shares;
+      ]
+    ];
+    current_delegated = candidate;
+    next_candidate = Constants.zero_key_hash;
     baker_registry = baker_registry;
     dex_core = Tezos.self_address;
-    total_votes = 0n;
+    total_votes = init_shares;
   ]
 
 function form_swap_data(

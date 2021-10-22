@@ -30,6 +30,7 @@ export enum DexCore {
 export enum TezStore {
   ERR_NOT_DEX_CORE = "200",
   ERR_INSUFFICIENT_TEZ_BALANCE = "201",
+  ERR_BAKER_REGISTRY_VALIDATE_ENTRYPOINT_404 = "202",
 }
 
 export enum Common {

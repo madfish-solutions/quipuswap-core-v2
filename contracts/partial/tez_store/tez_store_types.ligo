@@ -1,22 +1,20 @@
-type vote_info_t        is [@layout:comb] record [
+type voter_t            is [@layout:comb] record [
   candidate               : option(key_hash);
-  last_veto               : timestamp;
-  veto                    : nat;
-  vote                    : nat;
+  tez_bal                 : nat;
+  votes                   : nat;
 ]
 
 type baker_t            is [@layout:comb] record [
-  votes                   : nat;
-  ban_period              : nat;
   ban_start_time          : timestamp;
+  ban_period              : nat;
+  votes                   : nat;
 ]
 
 type storage_t          is [@layout:comb] record [
-  ledger                  : big_map(address, nat);
-  voters                  : big_map(address, vote_info_t);
+  voters                  : big_map(address, voter_t);
   bakers                  : big_map(key_hash, baker_t);
-  current_delegated       : option(key_hash);
-  next_candidate          : option(key_hash);
+  current_delegated       : key_hash;
+  next_candidate          : key_hash;
   baker_registry          : address;
   dex_core                : address;
   total_votes             : nat;
@@ -36,7 +34,8 @@ type ban_baker_t        is [@layout:comb] record [
 ]
 
 type vote_t             is [@layout:comb] record [
-  candidate               : address;
+  voter                   : address;
+  candidate               : key_hash;
   votes                   : nat;
   cycle_duration          : nat;
 ]

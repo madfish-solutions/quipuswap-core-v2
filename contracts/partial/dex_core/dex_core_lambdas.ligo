@@ -30,31 +30,6 @@ function launch_exchange(
         var pair : pair_t := pair_info.0;
         const token_id : nat = pair_info.1;
 
-        if s.tokens_count = token_id
-        then {
-          s.token_to_id[Bytes.pack(params.pair)] := token_id;
-          s.token_metadata[token_id] := record [
-            token_id   = token_id;
-            token_info = Constants.default_token_metadata;
-          ];
-          s.tokens_count := s.tokens_count + 1n;
-
-          if params.pair.token_b = Tez
-          then {
-            const deploy_res : (operation * address) = deploy_tez_store(
-              (None : option(key_hash)),
-              0mutez,
-              get_tez_store_initial_storage(params.shares_recipient, Tezos.amount / 1mutez, s.baker_registry)
-            );
-
-            pair.tez_store := Some(deploy_res.1);
-
-            ops := deploy_res.0 # ops;
-          }
-          else skip;
-        }
-        else skip;
-
         if params.token_a_in < 1n
         then failwith(DexCore.err_zero_a_in)
         else skip;
@@ -75,6 +50,37 @@ function launch_exchange(
         pair.token_a_pool := params.token_a_in;
         pair.token_b_pool := params.token_b_in;
         pair.total_supply := init_shares;
+
+        if s.tokens_count = token_id
+        then {
+          s.token_to_id[Bytes.pack(params.pair)] := token_id;
+          s.token_metadata[token_id] := record [
+            token_id   = token_id;
+            token_info = Constants.default_token_metadata;
+          ];
+          s.tokens_count := s.tokens_count + 1n;
+
+          if params.pair.token_b = Tez
+          then {
+            const deploy_res : (operation * address) = deploy_tez_store(
+              (None : option(key_hash)),
+              0mutez,
+              get_tez_store_initial_storage(
+                params.candidate,
+                params.shares_recipient,
+                Tezos.amount / 1mutez,
+                init_shares,
+                s.baker_registry
+              )
+            );
+
+            pair.tez_store := Some(deploy_res.1);
+
+            ops := deploy_res.0 # ops;
+          }
+          else skip;
+        }
+        else skip;
 
         s.ledger[(params.shares_recipient, token_id)] := init_shares;
         s.tokens[token_id] := params.pair;
@@ -132,6 +138,20 @@ function invest_liquidity(
 
         s.pairs[params.pair_id] := pair;
 
+        if tokens.token_b = Tez
+        then {
+          ops := get_vote_op(
+            record [
+              voter          = params.shares_recipient;
+              candidate      = params.candidate;
+              votes          = sender_balance + params.shares;
+              cycle_duration = s.cycle_duration;
+            ],
+            get_tez_store_or_fail(pair.tez_store)
+          ) # ops;
+        }
+        else skip;
+
         ops := transfer_token(Tezos.sender, Tezos.self_address, tokens_a_required, tokens.token_a) # ops;
         ops := check_tez_or_token_and_transfer(params, tokens_b_required, tokens.token_b, pair.tez_store) # ops;
       }
@@ -184,6 +204,20 @@ function divest_liquidity(
         s.pairs[params.pair_id] := pair;
 
         const tokens : tokens_t = get_tokens(params.pair_id, s.tokens);
+
+        if tokens.token_b = Tez
+        then {
+          ops := get_vote_op(
+            record [
+              voter          = Tezos.sender;
+              candidate      = params.candidate;
+              votes          = abs(sender_balance - params.shares);
+              cycle_duration = s.cycle_duration;
+            ],
+            get_tez_store_or_fail(pair.tez_store)
+          ) # ops;
+        }
+        else skip;
 
         ops := transfer_token(Tezos.self_address, params.liquidity_recipient, token_a_divested, tokens.token_a) # ops;
         ops := divest_tez_or_transfer_tokens(

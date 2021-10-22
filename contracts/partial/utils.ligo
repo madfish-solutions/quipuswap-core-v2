@@ -1,6 +1,8 @@
 module Constants is {
   [@inline] const zero_address : address = ("tz1ZZZZZZZZZZZZZZZZZZZZZZZZZZZZNkiRg" : address);
 
+  [@inline] const zero_key_hash : key_hash = ("tz1ZZZZZZZZZZZZZZZZZZZZZZZZZZZZNkiRg" : key_hash);
+
   [@inline] const precision : nat = 1_000_000_000_000_000_000n; (* 10 ^ 18 *)
 
   [@inline] const default_token_metadata : map(string, bytes) = map [
