@@ -267,8 +267,8 @@ describe("TezStore tests", async () => {
       banBaker.ban_period
     );
     expect(
-      String(Date.parse(tezStore.storage.bakers[alice.pkh].ban_start_time))
-    ).to.equal(await utils.getLastBlockTimestamp());
+      Date.parse(tezStore.storage.bakers[alice.pkh].ban_start_time)
+    ).to.be.lte(await utils.getLastBlockTimestamp());
   });
 
   it("should unban baker", async () => {
@@ -284,8 +284,8 @@ describe("TezStore tests", async () => {
       banBaker.ban_period
     );
     expect(
-      String(Date.parse(tezStore.storage.bakers[alice.pkh].ban_start_time))
-    ).to.equal(await utils.getLastBlockTimestamp());
+      Date.parse(tezStore.storage.bakers[alice.pkh].ban_start_time)
+    ).to.be.lte(await utils.getLastBlockTimestamp());
   });
 
   it("should return false if baker is not banned", async () => {

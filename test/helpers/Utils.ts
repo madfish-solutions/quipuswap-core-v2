@@ -47,10 +47,8 @@ export class Utils {
     }
   }
 
-  async getLastBlockTimestamp(): Promise<string> {
-    return String(
-      Date.parse((await this.tezos.rpc.getBlockHeader()).timestamp)
-    );
+  async getLastBlockTimestamp(): Promise<number> {
+    return Date.parse((await this.tezos.rpc.getBlockHeader()).timestamp);
   }
 
   static destructObj(obj: any) {
