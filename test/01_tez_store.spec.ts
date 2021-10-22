@@ -299,7 +299,7 @@ describe("TezStore tests", async () => {
   it("should return true if baker is banned", async () => {
     const banBaker: BanBaker = {
       baker: alice.pkh,
-      ban_period: new BigNumber(2),
+      ban_period: new BigNumber(5),
     };
 
     await tezStore.banBaker(banBaker);
@@ -312,7 +312,7 @@ describe("TezStore tests", async () => {
   });
 
   it("should return false if baker's banning period is finished", async () => {
-    await utils.bakeBlocks(1);
+    await utils.bakeBlocks(4);
 
     const isBannedAlice: Promise<any> = await tezStore.contract.views
       .is_banned_baker(alice.pkh)
