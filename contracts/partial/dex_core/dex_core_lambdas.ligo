@@ -70,6 +70,7 @@ function launch_exchange(
                 params.shares_recipient,
                 Tezos.amount / 1mutez,
                 init_shares,
+                s.cycle_duration,
                 s.baker_registry
               )
             );
@@ -153,7 +154,13 @@ function invest_liquidity(
         else skip;
 
         ops := transfer_token(Tezos.sender, Tezos.self_address, tokens_a_required, tokens.token_a) # ops;
-        ops := check_tez_or_token_and_transfer(params, tokens_b_required, tokens.token_b, pair.tez_store) # ops;
+        ops := check_tez_or_token_and_transfer(
+          params,
+          tokens_b_required,
+          tokens.token_b,
+          pair.total_supply,
+          pair.tez_store
+        ) # ops;
       }
     | _ -> skip
     end;
@@ -224,6 +231,7 @@ function divest_liquidity(
           params.liquidity_recipient,
           token_b_divested,
           tokens.token_b,
+          pair.total_supply,
           pair.tez_store
         ) # ops;
       }

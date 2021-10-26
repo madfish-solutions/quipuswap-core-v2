@@ -23,4 +23,5 @@ function main(
   | Ban_baker(params)       -> ban_baker(params, s)
   | Vote(params)            -> vote(params, s)
   | Is_banned_baker(params) -> is_banned_baker(params, s)
+  | Default                 -> default(s)
   end

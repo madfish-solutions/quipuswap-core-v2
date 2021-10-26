@@ -11,7 +11,12 @@ import env from "../../env";
 
 import { confirmOperation } from "../../scripts/confirmation";
 
-import { BanBaker, DivestTez, TezStoreStorage } from "../types/TezStore";
+import {
+  TezStoreStorage,
+  DivestTez,
+  InvestTez,
+  BanBaker,
+} from "../types/TezStore";
 
 import { Utils } from "./Utils";
 
@@ -84,11 +89,11 @@ export class TezStore {
   }
 
   async investTez(
-    receiver: string,
+    params: InvestTez,
     mutezAmount: number = 0
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
-      .invest_tez(receiver)
+      .invest_tez(...Utils.destructObj(params))
       .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);

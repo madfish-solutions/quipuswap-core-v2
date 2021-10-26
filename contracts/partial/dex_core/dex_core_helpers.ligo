@@ -172,24 +172,32 @@ function check_tez_or_token_and_transfer(
   const inv_liq_params : invest_liquidity_t;
   const tokens_required : nat;
   const token_type      : token_t;
+  const total_supply    : nat;
   const tez_store_opt   : option(address))
                         : operation is
   if token_type = Tez
-  then get_invest_tez_op(inv_liq_params.shares_recipient, get_tez_store_or_fail(tez_store_opt))
+  then block {
+    const invest_params : invest_tez_t = record [
+      user         = inv_liq_params.shares_recipient;
+      total_supply = total_supply;
+    ];
+  } with get_invest_tez_op(invest_params, get_tez_store_or_fail(tez_store_opt))
   else transfer_token(Tezos.sender, Tezos.self_address, tokens_required, token_type)
 
 function divest_tez_or_transfer_tokens(
   const recipient       : address;
   const tokens_divested : nat;
   const token_type      : token_t;
+  const total_supply    : nat;
   const tez_store_opt   : option(address))
                         : operation is
   if token_type = Tez
   then block {
     const divest_params : divest_tez_t = record [
-      recipient = (get_contract(recipient) : contract(unit));
-      user      = Tezos.sender;
-      amt       = tokens_divested;
+      recipient    = (get_contract(recipient) : contract(unit));
+      user         = Tezos.sender;
+      amt          = tokens_divested;
+      total_supply = total_supply;
     ];
   } with get_divest_tez_op(divest_params, get_tez_store_or_fail(tez_store_opt))
   else transfer_token(Tezos.self_address, recipient, tokens_divested, token_type)
@@ -199,6 +207,7 @@ function get_tez_store_initial_storage(
   const share_recipient : address;
   const tez_bal         : nat;
   const init_shares     : nat;
+  const cycle_duration  : nat;
   const baker_registry  : address)
                         : tez_store_t is
   record [
@@ -216,11 +225,20 @@ function get_tez_store_initial_storage(
         votes          = init_shares;
       ]
     ];
+    user_rewards = (Big_map.empty : big_map(address, user_reward_info_t));
     current_delegated = candidate;
     next_candidate = Constants.zero_key_hash;
     baker_registry = baker_registry;
     dex_core = Tezos.self_address;
     total_votes = init_shares;
+    reward = 0n;
+    total_reward = 0n;
+    reward_per_share = 0n;
+    reward_per_second = 0n;
+    cycle_duration = cycle_duration;
+    period_finish = Tezos.level;
+    last_update_level = Tezos.level;
+    total_supply = init_shares;
   ]
 
 function form_swap_data(

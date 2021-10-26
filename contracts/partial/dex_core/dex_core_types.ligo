@@ -169,8 +169,6 @@ type check_is_banned_t  is [@layout:comb] record [
   check_params            : is_banned_baker_t;
 ]
 
-type default_t          is unit
-
 type action_t           is
 (* DEX *)
 | Launch_exchange         of launch_exchange_t
@@ -217,7 +215,6 @@ type full_return_t      is list(operation) * full_storage_t
 type full_action_t      is
 | Use                     of action_t
 | Setup_func              of setup_func_t
-| Default                 of default_t
 
 type deploy_tez_store_t is (option(key_hash) * tez * tez_store_t) -> (operation * address)
 

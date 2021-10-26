@@ -119,7 +119,7 @@ export const compileLambdas = async (
         { maxBuffer: 1024 * 500 }
       ).toString();
 
-      res.push(JSON.parse(michelson).args[0].args[0]);
+      res.push(JSON.parse(michelson).args[0]);
 
       console.log(
         lambda.index + 1 + ". " + lambda.name + " successfully compiled."

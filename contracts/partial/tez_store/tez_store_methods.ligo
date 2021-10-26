@@ -1,13 +1,14 @@
 function invest_tez(
-  const user            : invest_tez_t;
+  const params          : invest_tez_t;
   var s                 : storage_t)
                         : return_t is
   block {
     only_dex_core(s.dex_core);
 
-    const voter : voter_t = get_voter(user, s.voters);
+    const voter : voter_t = get_voter(params.user, s.voters);
 
-    s.voters[user] := voter with record [ tez_bal = voter.tez_bal + Tezos.amount / 1mutez ];
+    s.voters[params.user] := voter with record [ tez_bal = voter.tez_bal + Tezos.amount / 1mutez ];
+    s.total_supply := params.total_supply;
   } with ((nil : list(operation)), s)
 
 function divest_tez(
@@ -24,6 +25,7 @@ function divest_tez(
     else skip;
 
     s.voters[params.user] := voter with record [ tez_bal = abs(voter.tez_bal - params.amt)];
+    s.total_supply := params.total_supply;
   } with (list [transfer_tez(params.recipient, params.amt)], s)
 
 function ban_baker(
@@ -138,3 +140,11 @@ function is_banned_baker(
       params.callback
     )
   ], s)
+
+function default(
+  var s                 : storage_t)
+                        : return_t is
+  block {
+    s := update_rewards(s);
+    s.reward := s.reward + Tezos.amount / 1mutez;
+  } with ((nil : list(operation)), s)

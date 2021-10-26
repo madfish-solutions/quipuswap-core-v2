@@ -45,3 +45,33 @@ function get_baker_registry_validate_entrypoint(
   | Some(contr) -> contr
   | None        -> (failwith(TezStore.err_baker_registry_validate_entrypoint_404) : contract(key_hash))
   end
+
+function update_rewards(
+  var s                 : storage_t)
+                        : storage_t is
+  block {
+    const rewards_time : nat =
+      if Tezos.level > s.period_finish
+      then s.period_finish
+      else Tezos.level;
+    const new_reward : nat = abs(rewards_time - s.last_update_level) * s.reward_per_second;
+
+    s.reward_per_share := s.reward_per_share + new_reward / s.total_supply;
+    s.last_update_level := Tezos.level;
+
+    if Tezos.level > s.period_finish
+    then {
+      const period_duration : nat = ((abs(Tezos.level - s.period_finish) / Constants.voting_period) + 1n) *
+        Constants.voting_period;
+
+      s.reward_per_second :=  s.reward * Constants.precision / period_duration;
+
+      const new_reward : nat = abs(Tezos.level - s.period_finish) * s.reward_per_second;
+
+      s.period_finish := s.period_finish + period_duration;
+      s.reward_per_share := s.reward_per_share + new_reward / s.total_supply;
+      s.reward := 0n;
+      s.total_reward := s.total_reward + s.reward_per_second * period_duration / Constants.precision;
+    }
+    else skip;
+  } with s
