@@ -77,7 +77,7 @@
              SWAP ;
              SENDER ;
              COMPARE ;
-             NEQ ;
+             EQ ;
              IF { DROP } { FAILWITH } ;
              UNIT } ;
          SWAP ;
@@ -301,7 +301,7 @@
                      DUP 4 ;
                      GET 5 ;
                      COMPARE ;
-                     GT ;
+                     LE ;
                      PUSH mutez 1 ;
                      BALANCE ;
                      EDIV ;
@@ -310,8 +310,8 @@
                      DUP 5 ;
                      GET 5 ;
                      COMPARE ;
-                     GT ;
-                     OR ;
+                     LE ;
+                     AND ;
                      IF { DROP } { FAILWITH } ;
                      DIG 2 ;
                      DUP ;

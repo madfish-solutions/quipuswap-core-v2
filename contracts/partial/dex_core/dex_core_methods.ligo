@@ -51,7 +51,7 @@ function setup_func(
   var s                 : full_storage_t)
                         : full_return_t is
   block {
-    assert_with_error(params.idx > dex_core_methods_max_index, DexCore.err_high_func_index);
+    assert_with_error(params.idx <= dex_core_methods_max_index, DexCore.err_high_func_index);
 
     case s.dex_core_lambdas[params.idx] of
     | Some(_) -> failwith(DexCore.err_func_set)

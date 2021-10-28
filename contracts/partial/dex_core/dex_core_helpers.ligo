@@ -303,13 +303,13 @@ function swap_internal(
   block {
     const pair : pair_t = get_pair(params.pair_id, tmp.s.pairs);
 
-    assert_with_error(pair.token_a_pool * pair.token_b_pool = 0n, DexCore.err_no_liquidity);
-    assert_with_error(tmp.amount_in = 0n, DexCore.err_zero_in);
+    assert_with_error(pair.token_a_pool * pair.token_b_pool =/= 0n, DexCore.err_no_liquidity);
+    assert_with_error(tmp.amount_in =/= 0n, DexCore.err_zero_in);
 
     const tokens : tokens_t = get_tokens(params.pair_id, tmp.s.tokens);
     var swap: swap_data_t := form_swap_data(pair, tokens, params.direction);
 
-    assert_with_error(swap.from_.token =/= tmp.token_in, DexCore.err_wrong_route);
+    assert_with_error(swap.from_.token = tmp.token_in, DexCore.err_wrong_route);
 
     const from_in_with_fee : nat = tmp.amount_in * (tmp.s.fees.interface_fee + tmp.s.fees.swap_fee);
     const numerator : nat = from_in_with_fee * swap.to_.pool;

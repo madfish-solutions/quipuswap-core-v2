@@ -22,18 +22,18 @@ function launch_exchange(
 
     case action of
     | Launch_exchange(params) -> {
-        assert_with_error(params.pair.token_a >= params.pair.token_b, DexCore.err_wrong_pair_order);
+        assert_with_error(params.pair.token_a < params.pair.token_b, DexCore.err_wrong_pair_order);
 
         const pair_info : (pair_t * nat) = get_pair_info(params.pair, s.token_to_id, s.pairs, s.tokens_count);
         var pair : pair_t := pair_info.0;
         const token_id : nat = pair_info.1;
 
-        assert_with_error(params.token_a_in < 1n, DexCore.err_zero_a_in);
+        assert_with_error(params.token_a_in >= 1n, DexCore.err_zero_a_in);
         assert_with_error(
-          (params.pair.token_b = Tez and Tezos.amount < 1mutez) or params.token_b_in < 1n,
+          (params.pair.token_b =/= Tez and Tezos.amount >= 1mutez) or params.token_b_in >= 1n,
           DexCore.err_zero_b_in
         );
-        assert_with_error(pair.total_supply =/= 0n, DexCore.err_pair_listed);
+        assert_with_error(pair.total_supply = 0n, DexCore.err_pair_listed);
 
         const init_shares : nat = Math.min_nat(params.token_a_in, params.token_b_in);
 
@@ -98,17 +98,17 @@ function invest_liquidity(
     | Invest_liquidity(params) -> {
         var pair : pair_t := get_pair(params.pair_id, s.pairs);
 
-        assert_with_error(pair.token_a_pool * pair.token_b_pool = 0n, DexCore.err_no_liquidity);
-        assert_with_error(params.shares = 0n, DexCore.err_no_shares_expected);
+        assert_with_error(pair.token_a_pool * pair.token_b_pool =/= 0n, DexCore.err_no_liquidity);
+        assert_with_error(params.shares =/= 0n, DexCore.err_no_shares_expected);
 
         const tokens : tokens_t = get_tokens(params.pair_id, s.tokens);
         const tokens_a_required : nat = div_ceil(params.shares * pair.token_a_pool, pair.total_supply);
         const tokens_b_required : nat = div_ceil(params.shares * pair.token_b_pool, pair.total_supply);
 
-        assert_with_error(tokens_a_required > params.token_a_in, DexCore.err_low_token_a_in);
+        assert_with_error(tokens_a_required <= params.token_a_in, DexCore.err_low_token_a_in);
         assert_with_error(
-          (tokens.token_b = Tez and tokens_b_required > Tezos.amount / 1mutez)
-            or tokens_b_required > params.token_b_in,
+          (tokens.token_b =/= Tez and tokens_b_required <= Tezos.amount / 1mutez)
+            or tokens_b_required <= params.token_b_in,
           DexCore.err_low_token_b_in
         );
 
@@ -160,20 +160,20 @@ function divest_liquidity(
     | Divest_liquidity(params) -> {
         var pair : pair_t := get_pair(params.pair_id, s.pairs);
 
-        assert_with_error(pair.token_a_pool * pair.token_b_pool = 0n, DexCore.err_no_liquidity);
+        assert_with_error(pair.token_a_pool * pair.token_b_pool =/= 0n, DexCore.err_no_liquidity);
 
         const sender_balance : nat = get_token_balance(Tezos.sender, params.pair_id, s.ledger);
 
-        assert_with_error(params.shares > sender_balance, DexCore.err_insufficient_lp);
+        assert_with_error(params.shares <= sender_balance, DexCore.err_insufficient_lp);
 
         s.ledger[(Tezos.sender, params.pair_id)] := abs(sender_balance - params.shares);
 
         const token_a_divested : nat = pair.token_a_pool * params.shares / pair.total_supply;
         const token_b_divested : nat = pair.token_b_pool * params.shares / pair.total_supply;
 
-        assert_with_error(params.min_token_a_out = 0n or params.min_token_b_out = 0n, DexCore.err_dust_out);
+        assert_with_error(params.min_token_a_out =/= 0n or params.min_token_b_out =/= 0n, DexCore.err_dust_out);
         assert_with_error(
-          token_a_divested < params.min_token_a_out or token_b_divested < params.min_token_b_out,
+          token_a_divested >= params.min_token_a_out or token_b_divested >= params.min_token_b_out,
           DexCore.err_high_min_out
         );
 
@@ -233,7 +233,7 @@ function swap(
 
         if token =/= Tez
         then ops := transfer_token(Tezos.sender, Tezos.self_address, params.amount_in, token) # ops
-        else assert_with_error(params.amount_in = Tezos.amount / 1mutez, DexCore.err_wrong_tez_amount);
+        else assert_with_error(params.amount_in =/= Tezos.amount / 1mutez, DexCore.err_wrong_tez_amount);
 
         const tmp : tmp_swap_t = List.fold(
           swap_internal,
@@ -247,7 +247,7 @@ function swap(
           ]
         );
 
-        assert_with_error(tmp.amount_in < params.min_amount_out, DexCore.err_high_min_out);
+        assert_with_error(tmp.amount_in >= params.min_amount_out, DexCore.err_high_min_out);
 
         s := tmp.s;
 

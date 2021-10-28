@@ -53,6 +53,9 @@ describe("DexCore tests (admin's methods)", async () => {
 
     dexCoreStorage.storage.admin = alice.pkh;
     dexCoreStorage.storage.baker_registry = bakerRegistry.contract.address;
+    dexCoreStorage.storage.last_block_timestamp = String(
+      (await utils.getLastBlockTimestamp()) / 1000
+    );
 
     dexCore = await DexCore.originate(utils.tezos, dexCoreStorage);
 
