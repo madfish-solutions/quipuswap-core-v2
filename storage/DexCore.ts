@@ -1,6 +1,7 @@
 import { MichelsonMap } from "@taquito/michelson-encoder";
 
 import { BigNumber } from "bignumber.js";
+import { string } from "yargs";
 
 import { zeroAddress } from "../test/helpers/Utils";
 
@@ -23,6 +24,7 @@ export const dexCoreStorage: DexCoreStorage = {
       interface_fee: new BigNumber(0),
       swap_fee: new BigNumber(0),
     },
+    last_block_timestamp: null,
     admin: zeroAddress,
     pending_admin: zeroAddress,
     baker_registry: zeroAddress,

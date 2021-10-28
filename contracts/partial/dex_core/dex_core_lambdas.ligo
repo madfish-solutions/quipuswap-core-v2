@@ -22,30 +22,20 @@ function launch_exchange(
 
     case action of
     | Launch_exchange(params) -> {
-        if params.pair.token_a >= params.pair.token_b
-        then failwith(DexCore.err_wrong_pair_order)
-        else skip;
+        assert_with_error(params.pair.token_a >= params.pair.token_b, DexCore.err_wrong_pair_order);
 
         const pair_info : (pair_t * nat) = get_pair_info(params.pair, s.token_to_id, s.pairs, s.tokens_count);
         var pair : pair_t := pair_info.0;
         const token_id : nat = pair_info.1;
 
-        if params.token_a_in < 1n
-        then failwith(DexCore.err_zero_a_in)
-        else skip;
+        assert_with_error(params.token_a_in < 1n, DexCore.err_zero_a_in);
+        assert_with_error(
+          (params.pair.token_b = Tez and Tezos.amount < 1mutez) or params.token_b_in < 1n,
+          DexCore.err_zero_b_in
+        );
+        assert_with_error(pair.total_supply =/= 0n, DexCore.err_pair_listed);
 
-        if (params.pair.token_b = Tez and Tezos.amount < 1mutez) or params.token_b_in < 1n
-        then failwith(DexCore.err_zero_b_in)
-        else skip;
-
-        if pair.total_supply =/= 0n
-        then failwith(DexCore.err_pair_listed)
-        else skip;
-
-        const init_shares : nat =
-          if params.token_a_in < params.token_b_in
-          then params.token_a_in
-          else params.token_b_in;
+        const init_shares : nat = Math.min_nat(params.token_a_in, params.token_b_in);
 
         pair.token_a_pool := params.token_a_in;
         pair.token_b_pool := params.token_b_in;
@@ -108,26 +98,19 @@ function invest_liquidity(
     | Invest_liquidity(params) -> {
         var pair : pair_t := get_pair(params.pair_id, s.pairs);
 
-        if pair.token_a_pool * pair.token_b_pool = 0n
-        then failwith(DexCore.err_no_liquidity)
-        else skip;
-
-        if params.shares = 0n
-        then failwith(DexCore.err_no_shares_expected)
-        else skip;
+        assert_with_error(pair.token_a_pool * pair.token_b_pool = 0n, DexCore.err_no_liquidity);
+        assert_with_error(params.shares = 0n, DexCore.err_no_shares_expected);
 
         const tokens : tokens_t = get_tokens(params.pair_id, s.tokens);
         const tokens_a_required : nat = div_ceil(params.shares * pair.token_a_pool, pair.total_supply);
         const tokens_b_required : nat = div_ceil(params.shares * pair.token_b_pool, pair.total_supply);
 
-        if tokens_a_required > params.token_a_in
-        then failwith(DexCore.err_low_token_a_in)
-        else skip;
-
-        if (tokens.token_b = Tez and tokens_b_required > Tezos.amount / 1mutez)
-          or tokens_b_required > params.token_b_in
-        then failwith(DexCore.err_low_token_b_in)
-        else skip;
+        assert_with_error(tokens_a_required > params.token_a_in, DexCore.err_low_token_a_in);
+        assert_with_error(
+          (tokens.token_b = Tez and tokens_b_required > Tezos.amount / 1mutez)
+            or tokens_b_required > params.token_b_in,
+          DexCore.err_low_token_b_in
+        );
 
         const sender_balance : nat = get_token_balance(params.shares_recipient, params.pair_id, s.ledger);
 
@@ -175,34 +158,24 @@ function divest_liquidity(
 
     case action of
     | Divest_liquidity(params) -> {
-        if s.tokens_count = params.pair_id
-        then failwith(DexCore.err_pair_not_listed)
-        else skip;
-
         var pair : pair_t := get_pair(params.pair_id, s.pairs);
 
-        if pair.token_a_pool * pair.token_b_pool = 0n
-        then failwith(DexCore.err_no_liquidity)
-        else skip;
+        assert_with_error(pair.token_a_pool * pair.token_b_pool = 0n, DexCore.err_no_liquidity);
 
         const sender_balance : nat = get_token_balance(Tezos.sender, params.pair_id, s.ledger);
 
-        if params.shares > sender_balance
-        then failwith(DexCore.err_insufficient_lp)
-        else skip;
+        assert_with_error(params.shares > sender_balance, DexCore.err_insufficient_lp);
 
         s.ledger[(Tezos.sender, params.pair_id)] := abs(sender_balance - params.shares);
 
         const token_a_divested : nat = pair.token_a_pool * params.shares / pair.total_supply;
         const token_b_divested : nat = pair.token_b_pool * params.shares / pair.total_supply;
 
-        if params.min_token_a_out = 0n or params.min_token_b_out = 0n
-        then failwith(DexCore.err_dust_out)
-        else skip;
-
-        if token_a_divested < params.min_token_a_out or token_b_divested < params.min_token_b_out
-        then failwith(DexCore.err_high_min_out)
-        else skip;
+        assert_with_error(params.min_token_a_out = 0n or params.min_token_b_out = 0n, DexCore.err_dust_out);
+        assert_with_error(
+          token_a_divested < params.min_token_a_out or token_b_divested < params.min_token_b_out,
+          DexCore.err_high_min_out
+        );
 
         pair.token_a_pool := abs(pair.token_a_pool - token_a_divested);
         pair.token_b_pool := abs(pair.token_b_pool - token_b_divested);
@@ -274,9 +247,7 @@ function swap(
           ]
         );
 
-        if tmp.amount_in < params.min_amount_out
-        then failwith(DexCore.err_high_min_out)
-        else skip;
+        assert_with_error(tmp.amount_in < params.min_amount_out, DexCore.err_high_min_out);
 
         s := tmp.s;
 
@@ -439,17 +410,10 @@ function get_reserves(
         const pair_id   : reserves_req_t)
                         : list(reserves_res_t) is
         block {
-          if pair_id > s.tokens_count
-          then failwith(DexCore.err_pair_not_listed)
-          else skip;
-
-          const tokens : tokens_t = get_tokens(pair_id, s.tokens);
           const pair : pair_t = get_pair(pair_id, s.pairs);
           const response : reserves_res_t = record [
             request  = pair_id;
             reserves = record [
-              token_a      = tokens.token_a;
-              token_b      = tokens.token_b;
               token_a_pool = pair.token_a_pool;
               token_b_pool = pair.token_b_pool;
             ];
@@ -482,10 +446,6 @@ function get_total_supply(
         const pair_id   : total_supply_req_t)
                         : list(total_supply_res_t) is
         block {
-          if pair_id > s.tokens_count
-          then failwith(DexCore.err_pair_not_listed)
-          else skip;
-
           const pair : pair_t = get_pair(pair_id, s.pairs);
           const response : total_supply_res_t = record [
             request      = pair_id;
@@ -518,6 +478,94 @@ function check_is_banned_baker(
 
         ops := get_check_is_banned_baker_op(params.check_params, get_tez_store_or_fail(pair.tez_store)) # ops;
       }
+    | _ -> skip
+    end
+  } with (ops, s)
+
+function get_swap_min_res(
+  const action          : action_t;
+  const s               : storage_t)
+                        : return_t is
+  block {
+    var ops : list(operation) := nil;
+
+    case action of
+    | Get_swap_min_res(_params) -> {
+      skip;
+    }
+    | _ -> skip
+    end
+  } with (ops, s)
+
+function get_toks_per_share(
+  const action          : action_t;
+  const s               : storage_t)
+                        : return_t is
+  block {
+    var ops : list(operation) := nil;
+
+    case action of
+    | Get_toks_per_share(params) -> {
+      function look_up_toks_per_share(
+        const l         : list(toks_per_shr_res_t);
+        const request   : toks_per_shr_req_t)
+                        : list(toks_per_shr_res_t) is
+        block {
+          const pair : pair_t = get_pair(request.pair_id, s.pairs);
+          const response : toks_per_shr_res_t = record [
+            request          = request;
+            tokens_per_share = record [
+              token_a_amt = request.shares_amt * pair.token_a_pool / pair.total_supply;
+              token_b_amt = request.shares_amt * pair.token_b_pool / pair.total_supply;
+            ];
+          ];
+        } with response # l;
+
+      const response : list(toks_per_shr_res_t) = List.fold(
+        look_up_toks_per_share,
+        params.requests,
+        (nil : list(toks_per_shr_res_t))
+      );
+
+      ops := Tezos.transaction(response, 0mutez, params.callback) # ops;
+    }
+    | _ -> skip
+    end
+  } with (ops, s)
+
+function get_cumulative_prices(
+  const action          : action_t;
+  const s               : storage_t)
+                        : return_t is
+  block {
+    var ops : list(operation) := nil;
+
+    case action of
+    | Get_cumulative_prices(params) -> {
+      function look_up_cumulative_prices(
+        const l         : list(cum_prices_res_t);
+        const pair_id   : token_id_t)
+                        : list(cum_prices_res_t) is
+        block {
+          const pair : pair_t = get_pair(pair_id, s.pairs);
+          const response : cum_prices_res_t = record [
+            request           = pair_id;
+            cumulative_prices = record [
+              last_block_timestamp = s.last_block_timestamp;
+              token_a_price_cum    = pair.token_a_price_cum;
+              token_b_price_cum    = pair.token_b_price_cum;
+            ];
+          ];
+        } with response # l;
+
+      const response : list(cum_prices_res_t) = List.fold(
+        look_up_cumulative_prices,
+        params.requests,
+        (nil : list(cum_prices_res_t))
+      );
+
+      ops := Tezos.transaction(response, 0mutez, params.callback) # ops;
+    }
     | _ -> skip
     end
   } with (ops, s)

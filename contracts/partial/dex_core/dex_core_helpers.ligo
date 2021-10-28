@@ -43,10 +43,12 @@ function get_token_metadata(
     end;
     const pair : pair_t = case pairs[token_id] of
     | None    -> record [
-        token_a_pool = 0n;
-        token_b_pool = 0n;
-        total_supply = 0n;
-        tez_store    = (None : option(address));
+        token_a_pool      = 0n;
+        token_b_pool      = 0n;
+        token_a_price_cum = 0n;
+        token_b_price_cum = 0n;
+        total_supply      = 0n;
+        tez_store         = (None : option(address));
       ]
     | Some(p) -> p
     end;
@@ -269,22 +271,28 @@ function form_swap_data(
 function form_pools(
   const from_pool       : nat;
   const to_pool         : nat;
+  const tok_a_price_cum : nat;
+  const tok_b_price_cum : nat;
   const supply          : nat;
   const tez_store_opt   : option(address);
   const direction       : swap_direction_t)
                         : pair_t is
   case direction of
   | B_to_a -> record [
-      token_a_pool = to_pool;
-      token_b_pool = from_pool;
-      total_supply = supply;
-      tez_store    = tez_store_opt;
+      token_a_pool      = to_pool;
+      token_b_pool      = from_pool;
+      token_a_price_cum = tok_a_price_cum;
+      token_b_price_cum = tok_b_price_cum;
+      total_supply      = supply;
+      tez_store         = tez_store_opt;
     ]
   | A_to_b -> record [
-      token_a_pool = from_pool;
-      token_b_pool = to_pool;
-      total_supply = supply;
-      tez_store    = tez_store_opt;
+      token_a_pool      = from_pool;
+      token_b_pool      = to_pool;
+      token_a_price_cum = tok_b_price_cum;
+      token_b_price_cum = tok_a_price_cum;
+      total_supply      = supply;
+      tez_store         = tez_store_opt;
     ]
   end
 
@@ -295,20 +303,13 @@ function swap_internal(
   block {
     const pair : pair_t = get_pair(params.pair_id, tmp.s.pairs);
 
-    if pair.token_a_pool * pair.token_b_pool = 0n
-    then failwith(DexCore.err_no_liquidity)
-    else skip;
-
-    if tmp.amount_in = 0n
-    then failwith(DexCore.err_zero_in)
-    else skip;
+    assert_with_error(pair.token_a_pool * pair.token_b_pool = 0n, DexCore.err_no_liquidity);
+    assert_with_error(tmp.amount_in = 0n, DexCore.err_zero_in);
 
     const tokens : tokens_t = get_tokens(params.pair_id, tmp.s.tokens);
     var swap: swap_data_t := form_swap_data(pair, tokens, params.direction);
 
-    if swap.from_.token =/= tmp.token_in
-    then failwith(DexCore.err_wrong_route)
-    else skip;
+    assert_with_error(swap.from_.token =/= tmp.token_in, DexCore.err_wrong_route);
 
     const from_in_with_fee : nat = tmp.amount_in * (tmp.s.fees.interface_fee + tmp.s.fees.swap_fee);
     const numerator : nat = from_in_with_fee * swap.to_.pool;
@@ -324,6 +325,8 @@ function swap_internal(
     const updated_pair : pair_t = form_pools(
       swap.from_.pool,
       swap.to_.pool,
+      pair.token_a_price_cum,
+      pair.token_b_price_cum,
       pair.total_supply,
       pair.tez_store,
       params.direction
@@ -335,3 +338,25 @@ function swap_internal(
     then tmp.operation := Some(transfer_tez((get_contract(tmp.receiver) : contract(unit)), out))
     else tmp.operation := Some(transfer_token(Tezos.self_address, tmp.receiver, out, swap.to_.token));
   } with tmp
+
+function update(
+  var pair              : pair_t;
+  const last_block_time : timestamp;
+  const new_tok_a_pool  : nat;
+  const new_tok_b_pool  : nat)
+                        : (pair_t * timestamp) is
+  block {
+    const time_elasped : nat = abs(Tezos.now - last_block_time);
+
+    if (time_elasped > 0n and pair.token_a_pool =/= 0n and pair.token_b_pool =/= 0n)
+    then {
+      (* price_cumulative = price_cumulative + (price_a * time_elasped) *)
+      pair.token_a_price_cum := pair.token_a_price_cum + ((pair.token_b_pool / pair.token_a_pool) * time_elasped);
+      (* price_cumulative = price_cumulative + (price_b * time_elasped) *)
+      pair.token_b_price_cum := pair.token_b_price_cum + ((pair.token_a_pool / pair.token_b_pool) * time_elasped);
+    }
+    else skip;
+
+    pair.token_a_pool := new_tok_a_pool;
+    pair.token_b_pool := new_tok_b_pool;
+  } with (pair, Tezos.now)

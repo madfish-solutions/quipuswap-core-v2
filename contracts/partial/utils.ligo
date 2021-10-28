@@ -16,3 +16,13 @@ module Constants is {
     "thumbnailUri" -> 0x68747470733a2f2f7175697075737761702e636f6d2f51504c502e706e67;
   ];
 }
+
+module Math is {
+  function min_nat(
+    const a             : nat;
+    const b             : nat)
+                        : nat is
+    if a < b
+    then a
+    else b
+}

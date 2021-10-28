@@ -67,6 +67,7 @@ export type DexCoreStorage = {
     referral_tez: MichelsonMap<MichelsonMapKey, unknown>;
     managers: string[];
     fees: Fees;
+    last_block_timestamp: string;
     admin: string;
     pending_admin: string;
     baker_registry: string;

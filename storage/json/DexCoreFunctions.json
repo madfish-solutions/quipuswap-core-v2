@@ -74,5 +74,17 @@
   {
     "index": 18,
     "name": "check_is_banned_baker"
+  },
+  {
+    "index": 19,
+    "name": "get_swap_min_res"
+  },
+  {
+    "index": 20,
+    "name": "get_toks_per_share"
+  },
+  {
+    "index": 21,
+    "name": "get_cumulative_prices"
   }
 ]

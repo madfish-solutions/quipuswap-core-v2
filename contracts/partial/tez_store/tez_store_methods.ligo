@@ -20,9 +20,10 @@ function divest_tez(
 
     const voter : voter_t = get_voter(params.user, s.voters);
 
-    if params.amt > Tezos.balance / 1mutez or params.amt > voter.tez_bal
-    then failwith(TezStore.err_insufficient_tez_balance)
-    else skip;
+    assert_with_error(
+      params.amt > Tezos.balance / 1mutez or params.amt > voter.tez_bal,
+      TezStore.err_insufficient_tez_balance
+    );
 
     s.voters[params.user] := voter with record [ tez_bal = abs(voter.tez_bal - params.amt)];
     s.total_supply := params.total_supply;

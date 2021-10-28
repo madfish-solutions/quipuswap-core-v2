@@ -2,27 +2,21 @@ function only_admin(
   const admin           : address)
                         : unit is
   block {
-    if Tezos.sender =/= admin
-    then failwith(Common.err_not_admin)
-    else skip;
+    assert_with_error(Tezos.sender =/= admin, Common.err_not_admin);
   } with unit
 
 function only_pending_admin(
   const pending_admin   : address)
                         : unit is
   block {
-    if Tezos.sender =/= pending_admin
-    then failwith(Common.err_not_pending_admin)
-    else skip;
+    assert_with_error(Tezos.sender =/= pending_admin, Common.err_not_pending_admin);
   } with unit
 
 function only_manager(
   const managers        : set(address))
                         : unit is
   block {
-    if not Set.mem(Tezos.sender, managers)
-    then failwith(Common.err_not_manager)
-    else skip;
+    assert_with_error(not Set.mem(Tezos.sender, managers), Common.err_not_manager);
   } with unit
 
 function get_fa12_token_transfer_entrypoint(

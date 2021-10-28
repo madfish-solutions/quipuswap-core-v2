@@ -59,21 +59,18 @@ function iterate_transfer(
       const dst         : transfer_dst_t)
                         : storage_t is
       block {
-        if dst.token_id > s.tokens_count
-        then failwith("FA2_TOKEN_UNDEFINED")
-        else skip;
+        assert_with_error(dst.token_id > s.tokens_count, "FA2_TOKEN_UNDEFINED");
 
         const sender_account : account_t = get_account(transfer_param.from_, dst.token_id, s.accounts);
 
-        if transfer_param.from_ =/= Tezos.sender and not (Set.mem(Tezos.sender, sender_account.allowances))
-        then failwith("FA2_NOT_OPERATOR")
-        else skip;
+        assert_with_error(
+          transfer_param.from_ =/= Tezos.sender and not (Set.mem(Tezos.sender, sender_account.allowances)),
+          "FA2_NOT_OPERATOR"
+        );
 
         const sender_balance : nat = get_token_balance(transfer_param.from_, dst.token_id, s.ledger);
 
-        if sender_balance < dst.amount
-        then failwith("FA2_INSUFFICIENT_BALANCE")
-        else skip;
+        assert_with_error(sender_balance < dst.amount, "FA2_INSUFFICIENT_BALANCE");
 
         s.ledger[(transfer_param.from_, dst.token_id)] := abs(sender_balance - dst.amount);
 
@@ -93,13 +90,8 @@ function update_operator(
     | Remove_operator(param) ->  (param, False)
     end;
 
-    if param.token_id > s.tokens_count
-    then failwith("FA2_TOKEN_UNDEFINED")
-    else skip;
-
-    if Tezos.sender =/= param.owner
-    then failwith("FA2_NOT_OWNER")
-    else skip;
+    assert_with_error(param.token_id > s.tokens_count, "FA2_TOKEN_UNDEFINED");
+    assert_with_error(Tezos.sender =/= param.owner, "FA2_NOT_OWNER");
 
     var account : account_t := get_account(param.owner, param.token_id, s.accounts);
 
@@ -149,9 +141,7 @@ function balance_of(
         const request   : balance_request_t)
                         : list(balance_response_t) is
         block {
-          if request.token_id > s.tokens_count
-          then failwith("FA2_TOKEN_UNDEFINED")
-          else skip;
+          assert_with_error(request.token_id > s.tokens_count, "FA2_TOKEN_UNDEFINED");
 
           const bal : nat = get_token_balance(request.owner, request.token_id, s.ledger);
           const response : balance_response_t = record [

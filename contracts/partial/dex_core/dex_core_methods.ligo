@@ -28,6 +28,9 @@ function call_dex_core(
     | Get_reserves(_)          -> 16n
     | Get_total_supply(_)      -> 17n
     | Check_is_banned_baker(_) -> 18n
+    | Get_swap_min_res(_)      -> 19n
+    | Get_toks_per_share(_)    -> 20n
+    | Get_cumulative_prices(_) -> 21n
     end;
 
     const lambda_bytes : bytes = case s.dex_core_lambdas[id] of
@@ -48,9 +51,7 @@ function setup_func(
   var s                 : full_storage_t)
                         : full_return_t is
   block {
-    if params.idx > dex_core_methods_max_index
-    then failwith(DexCore.err_high_func_index)
-    else skip;
+    assert_with_error(params.idx > dex_core_methods_max_index, DexCore.err_high_func_index);
 
     case s.dex_core_lambdas[params.idx] of
     | Some(_) -> failwith(DexCore.err_func_set)

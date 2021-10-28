@@ -7,6 +7,8 @@ type account_t          is [@layout:comb] record [
 type pair_t             is [@layout:comb] record [
   token_a_pool            : nat;
   token_b_pool            : nat;
+  token_a_price_cum       : nat;
+  token_b_price_cum       : nat;
   total_supply            : nat;
   tez_store               : option(address);
 ]
@@ -33,6 +35,7 @@ type storage_t          is [@layout:comb] record [
   referral_tez            : big_map((token_id_t * address), nat);
   managers                : set(address);
   fees                    : fees_t;
+  last_block_timestamp    : timestamp;
   admin                   : address;
   pending_admin           : address;
   baker_registry          : address;
@@ -134,8 +137,6 @@ type ban_t              is [@layout:comb] record [
 ]
 
 type reserves_t         is [@layout:comb] record [
-  token_a                 : token_t;
-  token_b                 : token_t;
   token_a_pool            : nat;
   token_b_pool            : nat;
 ]
@@ -169,6 +170,50 @@ type check_is_banned_t  is [@layout:comb] record [
   check_params            : is_banned_baker_t;
 ]
 
+type get_swap_min_res_t is [@layout:comb] record [
+  swaps                   : list(swap_slice_t);
+  amount_in               : nat;
+  callback                : contract(nat);
+]
+
+type toks_per_shr_t     is [@layout:comb] record [
+  token_a_amt             : nat;
+  token_b_amt             : nat;
+]
+
+type toks_per_shr_req_t is [@layout:comb] record [
+  pair_id                 : token_id_t;
+  shares_amt              : nat;
+]
+
+type toks_per_shr_res_t is [@layout:comb] record [
+  request                 : toks_per_shr_req_t;
+  tokens_per_share        : toks_per_shr_t;
+]
+
+type get_toks_per_shr_t is [@layout:comb] record [
+  requests                : list(toks_per_shr_req_t);
+  callback                : contract(list(toks_per_shr_res_t));
+]
+
+type cum_prices_t       is [@layout:comb] record [
+  last_block_timestamp    : timestamp;
+  token_a_price_cum       : nat;
+  token_b_price_cum       : nat;
+]
+
+type cum_prices_req_t   is token_id_t
+
+type cum_prices_res_t   is [@layout:comb] record [
+  request                 : cum_prices_req_t;
+  cumulative_prices       : cum_prices_t;
+]
+
+type get_cum_prices_t   is [@layout:comb] record [
+  requests                : list(cum_prices_req_t);
+  callback                : contract(list(cum_prices_res_t));
+]
+
 type action_t           is
 (* DEX *)
 | Launch_exchange         of launch_exchange_t
@@ -194,6 +239,9 @@ type action_t           is
 | Get_reserves            of get_reserves_t
 | Get_total_supply        of get_total_supply_t
 | Check_is_banned_baker   of check_is_banned_t
+| Get_swap_min_res        of get_swap_min_res_t
+| Get_toks_per_share      of get_toks_per_shr_t
+| Get_cumulative_prices   of get_cum_prices_t
 
 type return_t           is list(operation) * storage_t
 
@@ -218,4 +266,4 @@ type full_action_t      is
 
 type deploy_tez_store_t is (option(key_hash) * tez * tez_store_t) -> (operation * address)
 
-[@inline] const dex_core_methods_max_index : nat = 19n;
+[@inline] const dex_core_methods_max_index : nat = 21n;

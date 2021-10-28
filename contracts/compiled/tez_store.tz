@@ -73,11 +73,12 @@
            (pair (pair (pair string string) string) address)
            unit
            { UNPAIR ;
+             CDR ;
              SWAP ;
              SENDER ;
              COMPARE ;
              NEQ ;
-             IF { CDR ; FAILWITH } { DROP } ;
+             IF { DROP } { FAILWITH } ;
              UNIT } ;
          SWAP ;
          APPLY ;
@@ -290,9 +291,14 @@
                      IF_NONE
                        { NONE key_hash ; PUSH nat 0 ; PUSH nat 0 ; SWAP ; PAIR ; SWAP ; PAIR }
                        {} ;
+                     DIG 3 ;
+                     CAR ;
+                     CDR ;
+                     SWAP ;
                      DUP ;
+                     DUG 2 ;
                      GET 3 ;
-                     DUP 3 ;
+                     DUP 4 ;
                      GET 5 ;
                      COMPARE ;
                      GT ;
@@ -301,12 +307,12 @@
                      EDIV ;
                      IF_NONE { PUSH string "DIV by 0" ; FAILWITH } {} ;
                      CAR ;
-                     DUP 4 ;
+                     DUP 5 ;
                      GET 5 ;
                      COMPARE ;
                      GT ;
                      OR ;
-                     IF { DIG 3 ; CAR ; CDR ; FAILWITH } { DIG 3 ; DROP } ;
+                     IF { DROP } { FAILWITH } ;
                      DIG 2 ;
                      DUP ;
                      CAR ;
