@@ -110,12 +110,9 @@ export class DexCore {
     for (let i: number = 0; i < dexCorelambdas.length / 2; ++i) {
       batch1.push({
         kind: OpKind.TRANSACTION,
-        to: this.contract.address,
-        amount: 0,
-        parameter: {
-          entrypoint: "setup_func",
-          value: dexCorelambdas[i],
-        },
+        ...this.contract.methods
+          .setup_func(i, dexCorelambdas[i])
+          .toTransferParams(),
       });
     }
 
@@ -126,12 +123,9 @@ export class DexCore {
     ) {
       batch2.push({
         kind: OpKind.TRANSACTION,
-        to: this.contract.address,
-        amount: 0,
-        parameter: {
-          entrypoint: "setup_func",
-          value: dexCorelambdas[i],
-        },
+        ...this.contract.methods
+          .setup_func(i, dexCorelambdas[i])
+          .toTransferParams(),
       });
     }
 

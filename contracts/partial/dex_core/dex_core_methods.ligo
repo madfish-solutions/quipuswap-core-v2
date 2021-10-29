@@ -24,13 +24,6 @@ function call_dex_core(
     | Transfer(_)              -> 13n
     | Update_operators(_)      -> 14n
     | Balance_of(_)            -> 15n
-    (* VIEWS *)
-    | Get_reserves(_)          -> 16n
-    | Get_total_supply(_)      -> 17n
-    | Check_is_banned_baker(_) -> 18n
-    | Get_swap_min_res(_)      -> 19n
-    | Get_toks_per_share(_)    -> 20n
-    | Get_cumulative_prices(_) -> 21n
     end;
 
     const lambda_bytes : bytes = case s.dex_core_lambdas[id] of

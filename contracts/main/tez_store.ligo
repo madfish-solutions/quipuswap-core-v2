@@ -11,6 +11,7 @@
 
 #include "../partial/tez_store/tez_store_types.ligo"
 #include "../partial/tez_store/tez_store_helpers.ligo"
+#include "../partial/tez_store/tez_store_views.ligo"
 #include "../partial/tez_store/tez_store_methods.ligo"
 
 function main(
@@ -22,6 +23,5 @@ function main(
   | Divest_tez(params)      -> divest_tez(params, s)
   | Ban_baker(params)       -> ban_baker(params, s)
   | Vote(params)            -> vote(params, s)
-  | Is_banned_baker(params) -> is_banned_baker(params, s)
   | Default                 -> default(s)
   end

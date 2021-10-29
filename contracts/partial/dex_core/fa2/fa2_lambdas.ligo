@@ -9,7 +9,7 @@ function transfer_sender_check(
       const param           : transfer_dst_t)
                             : is_tx_operator_t is
       block {
-        const user : account_t = get_account(is_tx_operator.owner, param.token_id, s.accounts);
+        const user : account_t = get_account_or_default(is_tx_operator.owner, param.token_id, s.accounts);
 
         is_tx_operator.approved := is_tx_operator.approved and
           (is_tx_operator.owner = Tezos.sender or Set.mem(Tezos.sender, user.allowances));
@@ -61,20 +61,20 @@ function iterate_transfer(
       block {
         assert_with_error(dst.token_id <= s.tokens_count, "FA2_TOKEN_UNDEFINED");
 
-        const sender_account : account_t = get_account(transfer_param.from_, dst.token_id, s.accounts);
+        const sender_account : account_t = get_account_or_default(transfer_param.from_, dst.token_id, s.accounts);
 
         assert_with_error(
           transfer_param.from_ = Tezos.sender or Set.mem(Tezos.sender, sender_account.allowances),
           "FA2_NOT_OPERATOR"
         );
 
-        const sender_balance : nat = get_token_balance(transfer_param.from_, dst.token_id, s.ledger);
+        const sender_balance : nat = get_token_balance_or_default(transfer_param.from_, dst.token_id, s.ledger);
 
         assert_with_error(sender_balance >= dst.amount, "FA2_INSUFFICIENT_BALANCE");
 
         s.ledger[(transfer_param.from_, dst.token_id)] := abs(sender_balance - dst.amount);
 
-        const recipient_balance : nat = get_token_balance(dst.to_, dst.token_id, s.ledger);
+        const recipient_balance : nat = get_token_balance_or_default(dst.to_, dst.token_id, s.ledger);
 
         s.ledger[(dst.to_, dst.token_id)] := recipient_balance + dst.amount;
       } with s
@@ -93,7 +93,7 @@ function update_operator(
     assert_with_error(param.token_id <= s.tokens_count, "FA2_TOKEN_UNDEFINED");
     assert_with_error(Tezos.sender = param.owner, "FA2_NOT_OWNER");
 
-    var account : account_t := get_account(param.owner, param.token_id, s.accounts);
+    var account : account_t := get_account_or_default(param.owner, param.token_id, s.accounts);
 
     account.allowances := Set.update(param.operator, should_add, account.allowances);
 
@@ -143,7 +143,7 @@ function balance_of(
         block {
           assert_with_error(request.token_id <= s.tokens_count, "FA2_TOKEN_UNDEFINED");
 
-          const bal : nat = get_token_balance(request.owner, request.token_id, s.ledger);
+          const bal : nat = get_token_balance_or_default(request.owner, request.token_id, s.ledger);
           const response : balance_response_t = record [
             request = request;
             balance = bal;

@@ -1,4 +1,4 @@
-[@inline] function get_account(
+[@inline] function get_account_or_default(
   const user_addr       : address;
   const token_id        : token_id_t;
   const accounts        : big_map((address * token_id_t), account_t))
@@ -10,7 +10,7 @@
   | Some(account) -> account
   end
 
-[@inline] function get_token_balance(
+[@inline] function get_token_balance_or_default(
   const user_addr       : address;
   const token_id        : token_id_t;
   const ledger          : big_map((address * token_id_t), nat))
@@ -20,7 +20,7 @@
   | Some(bal) -> bal
   end
 
-function get_token_metadata(
+function get_token_metadata_or_fail(
   const token_id        : token_id_t;
   const token_metadata  : big_map(token_id_t, token_metadata_t))
                         : token_metadata_t is
@@ -29,7 +29,7 @@ function get_token_metadata(
   | Some(metadata) -> metadata
   end
 
-[@inline] function get_pair_info(
+[@inline] function get_pair_info_or_default(
   const key             : tokens_t;
   const token_to_id     : big_map(bytes, nat);
   const pairs           : big_map(nat, pair_t);
@@ -54,7 +54,7 @@ function get_token_metadata(
     end;
   } with (pair, token_id)
 
-function get_pair(
+function get_pair_or_fail(
   const pair_id         : nat;
   const pairs           : big_map(nat, pair_t))
                         : pair_t is
@@ -63,7 +63,7 @@ function get_pair(
   | Some(pair) -> pair
   end
 
-function get_tokens(
+function get_tokens_or_fail(
   const pair_id         : nat;
   const tokens          : big_map(nat, tokens_t))
                         : tokens_t is
@@ -112,14 +112,6 @@ function get_tez_store_vote_entrypoint(
   | None        -> (failwith(DexCore.err_tez_store_vote_entrypoint_404) : contract(vote_t))
   end
 
-function get_tez_store_is_banned_baker_entrypoint(
-  const tez_store       : address)
-                        : contract(is_banned_baker_t) is
-  case (Tezos.get_entrypoint_opt("%is_banned_baker", tez_store) : option(contract(is_banned_baker_t))) of
-  | Some(contr) -> contr
-  | None        -> (failwith(DexCore.err_tez_store_is_banned_baker_entrypoint_404) : contract(is_banned_baker_t))
-  end
-
 function get_invest_tez_op(
   const invest_params   : invest_tez_t;
   const tez_store       : address)
@@ -158,16 +150,6 @@ function get_vote_op(
     vote_params,
     0mutez,
     get_tez_store_vote_entrypoint(tez_store)
-  )
-
-function get_check_is_banned_baker_op(
-  const check_params    : is_banned_baker_t;
-  const tez_store       : address)
-                        : operation is
-  Tezos.transaction(
-    check_params,
-    0mutez,
-    get_tez_store_is_banned_baker_entrypoint(tez_store)
   )
 
 function check_tez_or_token_and_transfer(
@@ -323,12 +305,12 @@ function swap_internal(
   const params          : swap_slice_t)
                         : tmp_swap_t is
   block {
-    const pair : pair_t = get_pair(params.pair_id, tmp.s.pairs);
+    const pair : pair_t = get_pair_or_fail(params.pair_id, tmp.s.pairs);
 
     assert_with_error(pair.token_a_pool * pair.token_b_pool =/= 0n, DexCore.err_no_liquidity);
     assert_with_error(tmp.amount_in =/= 0n, DexCore.err_zero_in);
 
-    const tokens : tokens_t = get_tokens(params.pair_id, tmp.s.tokens);
+    const tokens : tokens_t = get_tokens_or_fail(params.pair_id, tmp.s.tokens);
     var swap: swap_data_t := form_swap_data(pair, tokens, params.direction);
 
     assert_with_error(swap.from_.token = tmp.token_in, DexCore.err_wrong_route);

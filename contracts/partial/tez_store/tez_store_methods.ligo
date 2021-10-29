@@ -5,7 +5,7 @@ function invest_tez(
   block {
     only_dex_core(s.dex_core);
 
-    const voter : voter_t = get_voter(params.user, s.voters);
+    const voter : voter_t = get_voter_or_default(params.user, s.voters);
 
     s.voters[params.user] := voter with record [ tez_bal = voter.tez_bal + Tezos.amount / 1mutez ];
     s.total_supply := params.total_supply;
@@ -18,7 +18,7 @@ function divest_tez(
   block {
     only_dex_core(s.dex_core);
 
-    const voter : voter_t = get_voter(params.user, s.voters);
+    const voter : voter_t = get_voter_or_default(params.user, s.voters);
 
     assert_with_error(
       params.amt <= Tezos.balance / 1mutez and params.amt <= voter.tez_bal,
@@ -36,7 +36,7 @@ function ban_baker(
   block {
     only_dex_core(s.dex_core);
 
-    var baker : baker_t := get_baker(params.baker, s.bakers);
+    var baker : baker_t := get_baker_or_default(params.baker, s.bakers);
 
     baker.ban_period := params.ban_period;
     baker.ban_start_time := Tezos.now;
@@ -54,12 +54,12 @@ function vote(
 
     only_dex_core(s.dex_core);
 
-    var voter : voter_t := get_voter(params.voter, s.voters);
+    var voter : voter_t := get_voter_or_default(params.voter, s.voters);
 
     case voter.candidate of
       None            -> skip
     | Some(voter_candidate) -> {
-      var candidate : baker_t := get_baker(voter_candidate, s.bakers);
+      var candidate : baker_t := get_baker_or_default(voter_candidate, s.bakers);
 
       s.bakers[voter_candidate] := case is_nat(candidate.votes - voter.votes) of
       | None        -> candidate
@@ -68,7 +68,7 @@ function vote(
     }
     end;
 
-    const voter_candidate : baker_t = get_baker(params.candidate, s.bakers);
+    const voter_candidate : baker_t = get_baker_or_default(params.candidate, s.bakers);
     const voter_candidate_votes : nat = voter_candidate.votes + params.votes;
 
     s.bakers[params.candidate] := voter_candidate;
@@ -81,8 +81,8 @@ function vote(
 
     s.voters[params.voter] := voter;
 
-    const current_delegated : baker_t = get_baker(s.current_delegated, s.bakers);
-    const next_candidate : baker_t = get_baker(s.next_candidate, s.bakers);
+    const current_delegated : baker_t = get_baker_or_default(s.current_delegated, s.bakers);
+    const next_candidate : baker_t = get_baker_or_default(s.next_candidate, s.bakers);
 
     if voter_candidate_votes > current_delegated.votes
     then {
@@ -129,18 +129,6 @@ function vote(
       else skip;
     };
   } with (ops, s)
-
-function is_banned_baker(
-  const params          : is_banned_baker_t;
-  const s               : storage_t)
-                        : return_t is
-  (list [
-    Tezos.transaction(
-      get_is_banned_baker(get_baker(params.baker, s.bakers)),
-      0mutez,
-      params.callback
-    )
-  ], s)
 
 function default(
   var s                 : storage_t)

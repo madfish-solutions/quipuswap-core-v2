@@ -15,6 +15,7 @@
 
 #include "../partial/dex_core/dex_core_types.ligo"
 #include "../partial/dex_core/dex_core_helpers.ligo"
+#include "../partial/dex_core/dex_core_views.ligo"
 #include "../partial/dex_core/dex_core_methods.ligo"
 #include "../partial/dex_core/dex_core_lambdas.ligo"
 

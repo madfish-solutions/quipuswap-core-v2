@@ -58,10 +58,7 @@ type vote_t             is [@layout:comb] record [
   cycle_duration          : nat;
 ]
 
-type is_banned_baker_t  is [@layout:comb] record [
-  baker                   : key_hash;
-  callback                : contract(bool);
-]
+type is_banned_baker_t  is key_hash
 
 type default_t          is unit
 
@@ -70,7 +67,6 @@ type action_t           is
 | Divest_tez              of divest_tez_t
 | Ban_baker               of ban_baker_t
 | Vote                    of vote_t
-| Is_banned_baker         of is_banned_baker_t
 | Default                 of default_t
 
 type return_t           is list(operation) * storage_t

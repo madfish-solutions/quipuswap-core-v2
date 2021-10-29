@@ -5,7 +5,7 @@ function only_dex_core(
     assert_with_error(Tezos.sender = dex_core, TezStore.err_not_dex_core);
   } with unit
 
-[@inline] function get_baker(
+[@inline] function get_baker_or_default(
   const baker           : key_hash;
   const bakers          : big_map(key_hash, baker_t))
                         : baker_t is
@@ -18,7 +18,7 @@ function only_dex_core(
   | Some(baker) -> baker
   end
 
-[@inline] function get_voter(
+[@inline] function get_voter_or_default(
   const voter           : address;
   const voters          : big_map(address, voter_t))
                         : voter_t is
