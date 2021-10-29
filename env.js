@@ -7,7 +7,7 @@ module.exports = {
   buildDir: "build",
   migrationsDir: "migrations",
   contractsDir: "contracts/main",
-  ligoVersion: "0.27.0",
+  ligoVersion: "0.28.0",
   network: "development",
   networks: {
     development: {
@@ -15,14 +15,14 @@ module.exports = {
       network_id: "*",
       secretKey: alice.sk,
     },
-    granadanet: {
-      rpc: "https://granadanet.smartpy.io",
+    hangzhounet: {
+      rpc: "https://hangzhounet.api.tez.ie/",
       port: 443,
       network_id: "*",
       secretKey: dev.sk,
     },
     mainnet: {
-      rpc: "https://mainnet.smartpy.io",
+      rpc: "https://mainnet.api.tez.ie",
       port: 443,
       network_id: "*",
       secretKey: dev.sk,

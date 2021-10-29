@@ -243,6 +243,28 @@ function get_tez_store_initial_storage(
     total_supply = init_shares;
   ]
 
+function calc_cumulative_prices(
+  var pair              : pair_t;
+  const last_block_time : timestamp;
+  const new_tok_a_pool  : nat;
+  const new_tok_b_pool  : nat)
+                        : (pair_t * timestamp) is
+  block {
+    const time_elasped : nat = abs(Tezos.now - last_block_time);
+
+    if (time_elasped > 0n and pair.token_a_pool =/= 0n and pair.token_b_pool =/= 0n)
+    then {
+      (* price_cumulative = price_cumulative + (price_a * time_elasped) *)
+      pair.token_a_price_cum := pair.token_a_price_cum + ((pair.token_b_pool / pair.token_a_pool) * time_elasped);
+      (* price_cumulative = price_cumulative + (price_b * time_elasped) *)
+      pair.token_b_price_cum := pair.token_b_price_cum + ((pair.token_a_pool / pair.token_b_pool) * time_elasped);
+    }
+    else skip;
+
+    pair.token_a_pool := new_tok_a_pool;
+    pair.token_b_pool := new_tok_b_pool;
+  } with (pair, Tezos.now)
+
 function form_swap_data(
   const pair            : pair_t;
   const swap            : tokens_t;
@@ -322,7 +344,7 @@ function swap_internal(
     tmp.amount_in := out;
     tmp.token_in := swap.to_.token;
 
-    const updated_pair : pair_t = form_pools(
+    const updated_pair_1 : pair_t = form_pools(
       swap.from_.pool,
       swap.to_.pool,
       pair.token_a_price_cum,
@@ -332,31 +354,17 @@ function swap_internal(
       params.direction
     );
 
-    tmp.s.pairs[params.pair_id] := updated_pair;
+    var (updated_pair_2, last_block_timestamp) := calc_cumulative_prices(
+      updated_pair_1,
+      tmp.s.last_block_timestamp,
+      updated_pair_1.token_a_pool,
+      updated_pair_1.token_b_pool
+    );
+
+    tmp.s.last_block_timestamp := last_block_timestamp;
+    tmp.s.pairs[params.pair_id] := updated_pair_2;
 
     if swap.to_.token = Tez
     then tmp.operation := Some(transfer_tez((get_contract(tmp.receiver) : contract(unit)), out))
     else tmp.operation := Some(transfer_token(Tezos.self_address, tmp.receiver, out, swap.to_.token));
   } with tmp
-
-function update(
-  var pair              : pair_t;
-  const last_block_time : timestamp;
-  const new_tok_a_pool  : nat;
-  const new_tok_b_pool  : nat)
-                        : (pair_t * timestamp) is
-  block {
-    const time_elasped : nat = abs(Tezos.now - last_block_time);
-
-    if (time_elasped > 0n and pair.token_a_pool =/= 0n and pair.token_b_pool =/= 0n)
-    then {
-      (* price_cumulative = price_cumulative + (price_a * time_elasped) *)
-      pair.token_a_price_cum := pair.token_a_price_cum + ((pair.token_b_pool / pair.token_a_pool) * time_elasped);
-      (* price_cumulative = price_cumulative + (price_b * time_elasped) *)
-      pair.token_b_price_cum := pair.token_b_price_cum + ((pair.token_a_pool / pair.token_b_pool) * time_elasped);
-    }
-    else skip;
-
-    pair.token_a_pool := new_tok_a_pool;
-    pair.token_b_pool := new_tok_b_pool;
-  } with (pair, Tezos.now)
