@@ -1,7 +1,6 @@
 import { MichelsonMap } from "@taquito/michelson-encoder";
 
 import { BigNumber } from "bignumber.js";
-import { string } from "yargs";
 
 import { zeroAddress } from "../test/helpers/Utils";
 

@@ -115,3 +115,11 @@ function div_ceil(
       else result.0
   | None         -> failwith(DexCore.err_no_liquidity)
   end
+
+function is_nat_or_fail(
+  const number          : int)
+                        : nat is
+  case is_nat(number) of
+  | Some(n) -> n
+  | None    -> failwith(Common.err_not_a_nat)
+  end

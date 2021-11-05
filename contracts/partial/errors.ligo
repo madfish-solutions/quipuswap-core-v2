@@ -39,4 +39,5 @@ module Common is {
   [@inline] const err_not_manager                  : string = "302";
   [@inline] const err_fa12_transfer_entrypoint_404 : string = "303";
   [@inline] const err_fa2_transfer_entrypoint_404  : string = "304";
+  [@inline] const err_not_a_nat                    : string = "305";
 }

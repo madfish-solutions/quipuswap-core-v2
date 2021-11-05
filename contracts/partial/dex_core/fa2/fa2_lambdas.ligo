@@ -86,7 +86,7 @@ function update_operator(
                         : storage_t is
   block {
     const (param, should_add) = case params of
-    | Add_operator(param) -> (param, True)
+    | Add_operator(param)    -> (param, True)
     | Remove_operator(param) ->  (param, False)
     end;
 
