@@ -25,42 +25,46 @@
   },
   {
     "index": 6,
-    "name": "add_managers"
+    "name": "set_flash_swaps_proxy"
   },
   {
     "index": 7,
-    "name": "set_fees"
+    "name": "add_managers"
   },
   {
     "index": 8,
-    "name": "set_cycle_duration"
+    "name": "set_fees"
   },
   {
     "index": 9,
-    "name": "update_token_metadata"
+    "name": "set_cycle_duration"
   },
   {
     "index": 10,
-    "name": "ban"
+    "name": "update_token_metadata"
   },
   {
     "index": 11,
-    "name": "permit"
+    "name": "ban"
   },
   {
     "index": 12,
-    "name": "set_expiry"
+    "name": "permit"
   },
   {
     "index": 13,
-    "name": "transfer"
+    "name": "set_expiry"
   },
   {
     "index": 14,
-    "name": "update_operators"
+    "name": "transfer"
   },
   {
     "index": 15,
+    "name": "update_operators"
+  },
+  {
+    "index": 16,
     "name": "balance_of"
   }
 ]

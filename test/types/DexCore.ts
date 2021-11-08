@@ -70,6 +70,7 @@ export type DexCoreStorage = {
     admin: string;
     pending_admin: string;
     baker_registry: string;
+    flash_swaps_proxy: string;
     permits_counter: BigNumber;
     default_expiry: BigNumber;
     cycle_duration: BigNumber;

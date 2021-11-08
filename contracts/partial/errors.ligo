@@ -28,16 +28,16 @@ module DexCore is {
 }
 
 module TezStore is {
-  [@inline] const err_not_dex_core                           : string = "200";
-  [@inline] const err_insufficient_tez_balance               : string = "201";
-  [@inline] const err_baker_registry_validate_entrypoint_404 : string = "202";
+  [@inline] const err_insufficient_tez_balance               : string = "200";
+  [@inline] const err_baker_registry_validate_entrypoint_404 : string = "201";
 }
 
 module Common is {
   [@inline] const err_not_admin                    : string = "300";
   [@inline] const err_not_pending_admin            : string = "301";
   [@inline] const err_not_manager                  : string = "302";
-  [@inline] const err_fa12_transfer_entrypoint_404 : string = "303";
-  [@inline] const err_fa2_transfer_entrypoint_404  : string = "304";
-  [@inline] const err_not_a_nat                    : string = "305";
+  [@inline] const err_not_dex_core                 : string = "303";
+  [@inline] const err_fa12_transfer_entrypoint_404 : string = "304";
+  [@inline] const err_fa2_transfer_entrypoint_404  : string = "305";
+  [@inline] const err_not_a_nat                    : string = "306";
 }

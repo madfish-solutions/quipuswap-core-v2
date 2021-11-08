@@ -19,6 +19,13 @@ function only_manager(
     assert_with_error(Set.mem(Tezos.sender, managers), Common.err_not_manager);
   } with unit
 
+function only_dex_core(
+  const dex_core        : address)
+                        : unit is
+  block {
+    assert_with_error(Tezos.sender = dex_core, Common.err_not_dex_core);
+  } with unit
+
 function get_fa12_token_transfer_entrypoint(
   const token           : address)
                         : contract(fa12_transfer_t) is

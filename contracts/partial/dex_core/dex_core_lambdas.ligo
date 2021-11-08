@@ -321,6 +321,21 @@ function confirm_admin(
     end
   } with ((nil : list(operation)), s)
 
+function set_flash_swaps_proxy(
+  const action          : action_t;
+  var s                 : storage_t)
+                        : return_t is
+  block {
+    case action of
+    | Set_flash_swaps_proxy(flash_swaps_proxy) -> {
+        only_admin(s.admin);
+
+        s.flash_swaps_proxy := flash_swaps_proxy;
+      }
+    | _ -> skip
+    end
+  } with ((nil : list(operation)), s)
+
 function add_managers(
   const action          : action_t;
   var s                 : storage_t)

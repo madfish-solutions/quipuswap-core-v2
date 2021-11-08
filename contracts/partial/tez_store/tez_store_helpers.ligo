@@ -1,10 +1,3 @@
-function only_dex_core(
-  const dex_core        : address)
-                        : unit is
-  block {
-    assert_with_error(Tezos.sender = dex_core, TezStore.err_not_dex_core);
-  } with unit
-
 [@inline] function get_baker_or_default(
   const baker           : key_hash;
   const bakers          : big_map(key_hash, baker_t))

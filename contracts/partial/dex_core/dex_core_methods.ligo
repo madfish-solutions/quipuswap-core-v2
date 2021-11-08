@@ -12,18 +12,19 @@ function call_dex_core(
     (* ADMIN *)
     | Set_admin(_)             -> 4n
     | Confirm_admin(_)         -> 5n
-    | Add_managers(_)          -> 6n
-    | Set_fees(_)              -> 7n
-    | Set_cycle_duration(_)    -> 8n
-    | Update_token_metadata(_) -> 9n
-    | Ban(_)                   -> 10n
+    | Set_flash_swaps_proxy(_) -> 6n
+    | Add_managers(_)          -> 7n
+    | Set_fees(_)              -> 8n
+    | Set_cycle_duration(_)    -> 9n
+    | Update_token_metadata(_) -> 10n
+    | Ban(_)                   -> 11n
     (* PERMIT *)
-    | Permit(_)                -> 11n
-    | Set_expiry(_)            -> 12n
+    | Permit(_)                -> 12n
+    | Set_expiry(_)            -> 13n
     (* FA2 *)
-    | Transfer(_)              -> 13n
-    | Update_operators(_)      -> 14n
-    | Balance_of(_)            -> 15n
+    | Transfer(_)              -> 14n
+    | Update_operators(_)      -> 15n
+    | Balance_of(_)            -> 16n
     end;
 
     const lambda_bytes : bytes = case s.dex_core_lambdas[id] of

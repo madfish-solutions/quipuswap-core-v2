@@ -51,9 +51,17 @@
      - ✅ should return false if baker is not banned;
      - ✅ should return false if baker's banning period is finished.
 
+## FlashSwapsProxy
+
+- 02_flash_swaps_proxy.spec.ts
+
+  1.  `quipuswap_v2_call`:
+
+      -
+
 ## DexCore
 
-- 02_dex_core_admin_methods.spec.ts
+- 03_dex_core_admin_methods.spec.ts
 
   1. `launch_exchange`:
 
@@ -81,7 +89,11 @@
      - ✅ should fail if not pending admin is trying to confirm new admin;
      - ✅ should confirm new admin by pending admin.
 
-  7. `add_managers`:
+  7. `set_flash_swaps_proxy`:
+
+     -
+
+  8. `add_managers`:
 
      - ✅ should fail if not admin is trying to add new manager;
      - ✅ should add one manager;
@@ -90,17 +102,17 @@
      - ✅ should remove a group of managers;
      - ✅ shoud add/remove some groups of managers.
 
-  8. `set_fees`:
+  9. `set_fees`:
 
      - ✅ should fail if not admin is trying to set fees;
      - ✅ should update fees.
 
-  9. `set_cycle_duration`:
+  10. `set_cycle_duration`:
 
-     - ✅ should fail if not admin is trying to set cycle duration;
-     - ✅ should update cycle duration.
+      - ✅ should fail if not admin is trying to set cycle duration;
+      - ✅ should update cycle duration.
 
-  10. `update_token_metadata`:
+  11. `update_token_metadata`:
 
       - ✅ should fail if not manager is trying to update token metadata;
       - ✅ should fail if pair not listed;
@@ -108,7 +120,7 @@
       - ✅ should set new fields in token metadata;
       - ✅ should update existing and set new fields in token metadata.
 
-  11. `ban`:
+  12. `ban`:
 
       - ✅ should fail if not admin is trying to ban baker;
       - ✅ should fail if pair not listed;
@@ -116,34 +128,34 @@
       - ✅ should ban baker;
       - ✅ should unban baker.
 
-  12. `permit`:
+  13. `permit`:
 
       -
 
-  13. `ser_expiry`:
+  14. `ser_expiry`:
 
       -
 
-  14. `transfer`:
+  15. `transfer`:
 
       -
 
-  15. `update_operators`:
+  16. `update_operators`:
 
       -
 
-  16. `balance_of`:
+  17. `balance_of`:
 
       -
 
-  17. `get_reserves`:
+  18. `get_reserves`:
 
       -
 
-  18. `get_total_supply`:
+  19. `get_total_supply`:
 
       -
 
-  19. `check_is_banned_baker`:
+  20. `check_is_banned_baker`:
 
       -

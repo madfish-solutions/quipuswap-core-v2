@@ -39,6 +39,7 @@ type storage_t          is [@layout:comb] record [
   admin                   : address;
   pending_admin           : address;
   baker_registry          : address;
+  flash_swaps_proxy       : address;
   permits_counter         : counter_t;
   default_expiry          : seconds_t;
   cycle_duration          : nat;
@@ -109,6 +110,8 @@ type swap_t             is [@layout:comb] record [
 type set_admin_t        is address
 
 type confirm_admin_t    is unit
+
+type set_swaps_proxy_t  is address
 
 type add_manager_t      is [@layout:comb] record [
   manager                 : address;
@@ -202,6 +205,7 @@ type action_t           is
 (* ADMIN *)
 | Set_admin               of set_admin_t
 | Confirm_admin           of confirm_admin_t
+| Set_flash_swaps_proxy   of set_swaps_proxy_t
 | Add_managers            of add_managers_t
 | Set_fees                of set_fees_t
 | Set_cycle_duration      of set_cycle_dur_t
@@ -238,4 +242,4 @@ type full_action_t      is
 
 type deploy_tez_store_t is (option(key_hash) * tez * tez_store_t) -> (operation * address)
 
-[@inline] const dex_core_methods_max_index : nat = 15n;
+[@inline] const dex_core_methods_max_index : nat = 16n;

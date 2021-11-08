@@ -1,4 +1,4 @@
-import { TezStore as TezStoreErrors } from "./helpers/Errors";
+import { Common, TezStore as TezStoreErrors } from "./helpers/Errors";
 import { BakerRegistry } from "./helpers/BakerRegistry";
 import { TezStore } from "./helpers/TezStore";
 import { Utils } from "./helpers/Utils";
@@ -57,7 +57,7 @@ describe("TezStore tests", async () => {
     };
 
     await rejects(tezStore.investTez(investTez, 1), (err: Error) => {
-      expect(err.message).to.equal(TezStoreErrors.ERR_NOT_DEX_CORE);
+      expect(err.message).to.equal(Common.ERR_NOT_DEX_CORE);
 
       return true;
     });
@@ -134,7 +134,7 @@ describe("TezStore tests", async () => {
 
     await utils.setProvider(alice.sk);
     await rejects(tezStore.divestTez(divestTez), (err: Error) => {
-      expect(err.message).to.equal(TezStoreErrors.ERR_NOT_DEX_CORE);
+      expect(err.message).to.equal(Common.ERR_NOT_DEX_CORE);
 
       return true;
     });
@@ -272,7 +272,7 @@ describe("TezStore tests", async () => {
 
     await utils.setProvider(alice.sk);
     await rejects(tezStore.banBaker(banBaker), (err: Error) => {
-      expect(err.message).to.equal(TezStoreErrors.ERR_NOT_DEX_CORE);
+      expect(err.message).to.equal(Common.ERR_NOT_DEX_CORE);
 
       return true;
     });
@@ -313,36 +313,36 @@ describe("TezStore tests", async () => {
     ).to.be.lte(await utils.getLastBlockTimestamp());
   });
 
-  it("should return false if baker is not banned", async () => {
-    const isBannedAlice: Promise<any> = await tezStore.contract.views
-      .is_banned_baker(alice.pkh)
-      .read(lambdaContract.address);
+  // it("should return false if baker is not banned", async () => {
+  //   const isBannedAlice: Promise<any> = await tezStore.contract.views
+  //     .is_banned_baker(alice.pkh)
+  //     .read(lambdaContract.address);
 
-    expect(isBannedAlice).to.be.false;
-  });
+  //   expect(isBannedAlice).to.be.false;
+  // });
 
-  it("should return true if baker is banned", async () => {
-    const banBaker: BanBaker = {
-      baker: alice.pkh,
-      ban_period: new BigNumber(5),
-    };
+  // it("should return true if baker is banned", async () => {
+  //   const banBaker: BanBaker = {
+  //     baker: alice.pkh,
+  //     ban_period: new BigNumber(5),
+  //   };
 
-    await tezStore.banBaker(banBaker);
+  //   await tezStore.banBaker(banBaker);
 
-    const isBannedAlice: Promise<any> = await tezStore.contract.views
-      .is_banned_baker(alice.pkh)
-      .read(lambdaContract.address);
+  //   const isBannedAlice: Promise<any> = await tezStore.contract.views
+  //     .is_banned_baker(alice.pkh)
+  //     .read(lambdaContract.address);
 
-    expect(isBannedAlice).to.be.true;
-  });
+  //   expect(isBannedAlice).to.be.true;
+  // });
 
-  it("should return false if baker's banning period is finished", async () => {
-    await utils.bakeBlocks(4);
+  // it("should return false if baker's banning period is finished", async () => {
+  //   await utils.bakeBlocks(4);
 
-    const isBannedAlice: Promise<any> = await tezStore.contract.views
-      .is_banned_baker(alice.pkh)
-      .read(lambdaContract.address);
+  //   const isBannedAlice: Promise<any> = await tezStore.contract.views
+  //     .is_banned_baker(alice.pkh)
+  //     .read(lambdaContract.address);
 
-    expect(isBannedAlice).to.be.false;
-  });
+  //   expect(isBannedAlice).to.be.false;
+  // });
 });

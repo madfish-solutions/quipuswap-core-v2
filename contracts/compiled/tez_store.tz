@@ -28,8 +28,6 @@
                                                                                   (pair (nat %period_finish) (pair (nat %last_update_level) (nat %total_supply)))))))))))))))) ;
   code { PUSH string "200" ;
          PUSH string "201" ;
-         PUSH string "202" ;
-         PAIR ;
          PAIR ;
          PUSH key_hash "tz1ZZZZZZZZZZZZZZZZZZZZZZZZZZZZNkiRg" ;
          PUSH address "tz1ZZZZZZZZZZZZZZZZZZZZZZZZZZZZNkiRg" ;
@@ -65,22 +63,16 @@
          PAIR ;
          PAIR ;
          PAIR ;
-         SWAP ;
-         DUP ;
-         DUG 2 ;
          LAMBDA
-           (pair (pair (pair string string) string) address)
+           address
            unit
-           { UNPAIR ;
-             CDR ;
+           { PUSH string "303" ;
              SWAP ;
              SENDER ;
              COMPARE ;
              EQ ;
              IF { DROP } { FAILWITH } ;
              UNIT } ;
-         SWAP ;
-         APPLY ;
          DIG 3 ;
          UNPAIR ;
          IF_LEFT
@@ -291,7 +283,6 @@
                        { NONE key_hash ; PUSH nat 0 ; PUSH nat 0 ; SWAP ; PAIR ; SWAP ; PAIR }
                        {} ;
                      DIG 3 ;
-                     CAR ;
                      CDR ;
                      SWAP ;
                      DUP ;
@@ -594,7 +585,7 @@
                        DUG 2 ;
                        GET 11 ;
                        CONTRACT %validate key_hash ;
-                       IF_NONE { DIG 2 ; CAR ; CAR ; FAILWITH } { DIG 3 ; DROP } ;
+                       IF_NONE { DIG 2 ; CAR ; FAILWITH } { DIG 3 ; DROP } ;
                        PUSH mutez 0 ;
                        DUP 4 ;
                        GET 7 ;
