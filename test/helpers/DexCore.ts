@@ -26,7 +26,6 @@ import {
   LaunchExchange,
   DexCoreStorage,
   AddManager,
-  Token,
   Fees,
   Ban,
 } from "../types/DexCore";

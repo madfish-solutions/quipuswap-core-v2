@@ -17,6 +17,7 @@
 #include "../partial/dex_core/dex_core_helpers.ligo"
 #include "../partial/dex_core/dex_core_views.ligo"
 #include "../partial/dex_core/dex_core_methods.ligo"
+#include "../partial/dex_core/dex_core_callbacks.ligo"
 #include "../partial/dex_core/dex_core_lambdas.ligo"
 
 #include "../partial/dex_core/permits/permits_methods.ligo"

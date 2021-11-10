@@ -47,6 +47,8 @@ type balance_of_t       is [@layout:comb] record [
   callback                : contract(list(balance_response_t));
 ]
 
+type fa2_balance_of_t   is FA2_balance_of of balance_of_t
+
 type is_tx_operator_t   is [@laoyout:comb] record [
   owner                   : address;
   approved                : bool;

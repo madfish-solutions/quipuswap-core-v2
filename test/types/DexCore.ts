@@ -4,11 +4,6 @@ import { BigNumber } from "bignumber.js";
 
 import { BanBaker } from "./TezStore";
 
-export type Fees = {
-  interface_fee: BigNumber;
-  swap_fee: BigNumber;
-};
-
 export type Tez = undefined;
 
 export type FA12Token = string;
@@ -23,6 +18,38 @@ export type Token = { tez: Tez } | { fa12: FA12Token } | { fa2: FA2Token };
 export type Tokens = {
   token_a: Token;
   token_b: Token;
+};
+
+export type FlashSwap = {
+  lambda: string;
+  pair_id: BigNumber;
+  receiver: string;
+  amount_a_out: BigNumber;
+  amount_b_out: BigNumber;
+};
+
+export type Pair = {
+  token_a_pool: BigNumber;
+  token_b_pool: BigNumber;
+  token_a_price_cum: BigNumber;
+  token_b_price_cum: BigNumber;
+  total_supply: BigNumber;
+  tez_store: string | null | undefined;
+};
+
+export type Fees = {
+  interface_fee: BigNumber;
+  swap_fee: BigNumber;
+};
+
+export type Tmp = {
+  pair_id: BigNumber;
+  amount_a_out: BigNumber;
+  amount_b_out: BigNumber;
+  token_a_balance_1: BigNumber;
+  token_b_balance_1: BigNumber;
+  token_a_balance_2: BigNumber;
+  token_b_balance_2: BigNumber;
 };
 
 export type LaunchExchange = {
@@ -66,6 +93,7 @@ export type DexCoreStorage = {
     referral_tez: MichelsonMap<MichelsonMapKey, unknown>;
     managers: string[];
     fees: Fees;
+    tmp: Tmp;
     last_block_timestamp: string;
     admin: string;
     pending_admin: string;

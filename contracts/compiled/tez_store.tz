@@ -614,5 +614,14 @@
          CAR ;
          ADD ;
          COMPARE ;
-         GT } }
+         GT } ;
+  view "get_tez_balance"
+       unit
+       nat
+       { DROP ;
+         PUSH mutez 1 ;
+         BALANCE ;
+         EDIV ;
+         IF_NONE { PUSH string "DIV by 0" ; FAILWITH } {} ;
+         CAR } }
 

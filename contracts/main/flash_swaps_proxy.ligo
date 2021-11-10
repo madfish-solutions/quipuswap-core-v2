@@ -15,5 +15,5 @@ function main(
   const s               : storage_t)
                         : return_t is
   case action of
-  | Quipuswap_v2_call(params) -> quipuswap_v2_call(params, s)
+  | Call(params) -> call(params, s)
   end

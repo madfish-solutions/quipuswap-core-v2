@@ -350,3 +350,93 @@ function swap_internal(
     then tmp.operation := Some(transfer_tez((get_contract(tmp.receiver) : contract(unit)), out))
     else tmp.operation := Some(transfer_token(Tezos.self_address, tmp.receiver, out, swap.to_.token));
   } with tmp
+
+function get_flash_swaps_proxy_call_entrypoint(
+  const swaps_proxy     : address)
+                        : contract(unit -> list(operation)) is
+  case (Tezos.get_entrypoint_opt("%call", swaps_proxy) : option(contract(unit -> list(operation)))) of
+  | Some(contr) -> contr
+  | None        -> (failwith(DexCore.err_flash_swaps_proxy_call_entrypoint_404) : contract(unit -> list(operation)))
+  end
+
+function call_flash_swaps_proxy(
+  const lambda          : unit -> list(operation);
+  const swaps_proxy     : address)
+                        : operation is
+  Tezos.transaction(
+    lambda,
+    0mutez,
+    get_flash_swaps_proxy_call_entrypoint(swaps_proxy)
+  )
+
+function get_token_address_or_fail(
+  const token           : token_t)
+                        : address is
+  case token of
+  | Fa12(token_address) -> token_address
+  | Fa2(token_info)     -> token_info.token
+  | Tez                 -> (failwith(Common.err_wrong_token_type) : address)
+  end
+
+function get_token_id_or_fail(
+  const token           : token_t)
+                        : token_id_t is
+  case token of
+  | Fa12(_)         -> (failwith(Common.err_wrong_token_type) : token_id_t)
+  | Fa2(token_info) -> token_info.id
+  | Tez             -> (failwith(Common.err_wrong_token_type) : token_id_t)
+  end
+
+function get_flash_swap_callback(
+  const self            : address)
+                        : contract(flash_swap_2_t) is
+  case (Tezos.get_entrypoint_opt("%flash_swap_callback", self) : option(contract(flash_swap_2_t))) of
+  | Some(contr) -> contr
+  | None        -> (failwith(DexCore.err_flash_swap_callback_404) : contract(flash_swap_2_t))
+  end
+
+function call_flash_swap_callback(
+  const _               : unit)
+                        : operation is
+  Tezos.transaction(
+    Unit,
+    0mutez,
+    get_flash_swap_callback(Tezos.self_address)
+  )
+
+function get_fa12_balance_callback_1(const contr : address) : contract(nat) is
+  case (Tezos.get_entrypoint_opt("%fa12_balance_callback_1", contr) : option(contract(nat))) of
+  | Some(contr) -> contr
+  | None        -> (failwith(DexCore.err_fa12_balance_callback_1_404) : contract(nat))
+  end
+
+function get_fa2_balance_callback_1(const contr : address) : contract(list(balance_response_t)) is
+  case (Tezos.get_entrypoint_opt("%fa2_balance_callback_1", contr) : option(contract(list(balance_response_t)))) of
+  | Some(contr) -> contr
+  | None        -> (failwith(DexCore.err_fa2_balance_callback_1_404) : contract(list(balance_response_t)))
+  end
+
+function get_fa12_balance_callback_2(const contr : address) : contract(nat) is
+  case (Tezos.get_entrypoint_opt("%fa12_balance_callback_2", contr) : option(contract(nat))) of
+  | Some(contr) -> contr
+  | None        -> (failwith(DexCore.err_fa12_balance_callback_2_404) : contract(nat))
+  end
+
+function get_fa2_balance_callback_2(const contr : address) : contract(list(balance_response_t)) is
+  case (Tezos.get_entrypoint_opt("%fa2_balance_callback_2", contr) : option(contract(list(balance_response_t)))) of
+  | Some(contr) -> contr
+  | None        -> (failwith(DexCore.err_fa2_balance_callback_2_404) : contract(list(balance_response_t)))
+  end
+
+function get_default_tmp(
+  const _               : unit)
+                        : tmp_t is
+  record [
+    pair_id           = 0n;
+    amount_a_out      = 0n;
+    amount_b_out      = 0n;
+    token_a_balance_1 = 0n;
+    token_b_balance_1 = 0n;
+    token_a_balance_2 = 0n;
+    token_b_balance_2 = 0n;
+  ]

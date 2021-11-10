@@ -23,6 +23,26 @@ type fees_t             is [@layout:comb] record [
   swap_fee                : nat;
 ]
 
+type flash_swap_t       is [@layout:comb] record [
+  lambda                  : unit -> list(operation);
+  pair_id                 : token_id_t;
+  receiver                : address;
+  amount_a_out            : nat;
+  amount_b_out            : nat;
+]
+
+type flash_swap_2_t     is unit
+
+type tmp_t              is [@layout:comb] record [
+  pair_id                 : token_id_t;
+  amount_a_out            : nat;
+  amount_b_out            : nat;
+  token_a_balance_1       : nat;
+  token_b_balance_1       : nat;
+  token_a_balance_2       : nat;
+  token_b_balance_2       : nat;
+]
+
 type storage_t          is [@layout:comb] record [
   token_metadata          : big_map(token_id_t, token_metadata_t);
   ledger                  : big_map((address * token_id_t), nat);
@@ -35,6 +55,7 @@ type storage_t          is [@layout:comb] record [
   referral_tez            : big_map((token_id_t * address), nat);
   managers                : set(address);
   fees                    : fees_t;
+  tmp                     : tmp_t;
   last_block_timestamp    : timestamp;
   admin                   : address;
   pending_admin           : address;
@@ -139,6 +160,10 @@ type ban_t              is [@layout:comb] record [
   ban_params              : ban_baker_t;
 ]
 
+type fa12_balance_res_t is nat
+
+type fa2_balance_res_t  is list(balance_response_t)
+
 type reserves_t         is [@layout:comb] record [
   token_a_pool            : nat;
   token_b_pool            : nat;
@@ -201,6 +226,7 @@ type action_t           is
 | Launch_exchange         of launch_exchange_t
 | Invest_liquidity        of invest_liquidity_t
 | Divest_liquidity        of divest_liquidity_t
+| Flash_swap              of flash_swap_t
 | Swap                    of swap_t
 (* ADMIN *)
 | Set_admin               of set_admin_t
@@ -218,6 +244,12 @@ type action_t           is
 | Transfer                of transfers_t
 | Update_operators        of update_operators_t
 | Balance_of              of balance_of_t
+(* CALLBACKS *)
+| Fa12_balance_callback_1 of fa12_balance_res_t
+| Fa2_balance_callback_1  of fa2_balance_res_t
+| Fa12_balance_callback_2 of fa12_balance_res_t
+| Fa2_balance_callback_2  of fa2_balance_res_t
+| Flash_swap_callback     of flash_swap_2_t
 
 type return_t           is list(operation) * storage_t
 
@@ -242,4 +274,4 @@ type full_action_t      is
 
 type deploy_tez_store_t is (option(key_hash) * tez * tez_store_t) -> (operation * address)
 
-[@inline] const dex_core_methods_max_index : nat = 16n;
+[@inline] const dex_core_methods_max_index : nat = 22n;
