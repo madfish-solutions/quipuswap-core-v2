@@ -24,6 +24,7 @@ export type FlashSwap = {
   lambda: string;
   pair_id: BigNumber;
   receiver: string;
+  referrer: string;
   amount_a_out: BigNumber;
   amount_b_out: BigNumber;
 };
@@ -46,6 +47,7 @@ export type Tmp = {
   pair_id: BigNumber;
   amount_a_out: BigNumber;
   amount_b_out: BigNumber;
+  referrer: string;
   token_a_balance_1: BigNumber;
   token_b_balance_1: BigNumber;
   token_a_balance_2: BigNumber;

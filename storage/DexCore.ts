@@ -26,6 +26,7 @@ export const dexCoreStorage: DexCoreStorage = {
       pair_id: new BigNumber(0),
       amount_a_out: new BigNumber(0),
       amount_b_out: new BigNumber(0),
+      referrer: zeroAddress,
       token_a_balance_1: new BigNumber(0),
       token_b_balance_1: new BigNumber(0),
       token_a_balance_2: new BigNumber(0),

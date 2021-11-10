@@ -27,6 +27,7 @@ type flash_swap_t       is [@layout:comb] record [
   lambda                  : unit -> list(operation);
   pair_id                 : token_id_t;
   receiver                : address;
+  referrer                : address;
   amount_a_out            : nat;
   amount_b_out            : nat;
 ]
@@ -37,6 +38,7 @@ type tmp_t              is [@layout:comb] record [
   pair_id                 : token_id_t;
   amount_a_out            : nat;
   amount_b_out            : nat;
+  referrer                : address;
   token_a_balance_1       : nat;
   token_b_balance_1       : nat;
   token_a_balance_2       : nat;

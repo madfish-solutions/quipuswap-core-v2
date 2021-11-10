@@ -435,6 +435,7 @@ function get_default_tmp(
     pair_id           = 0n;
     amount_a_out      = 0n;
     amount_b_out      = 0n;
+    referrer          = Constants.zero_address;
     token_a_balance_1 = 0n;
     token_b_balance_1 = 0n;
     token_a_balance_2 = 0n;

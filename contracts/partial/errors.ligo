@@ -33,6 +33,7 @@ module DexCore is {
   [@inline] const err_fa12_balance_callback_2_404           : string = "131";
   [@inline] const err_fa2_balance_callback_2_404            : string = "132";
   [@inline] const err_wrong_flash_swap_returns              : string = "133";
+  [@inline] const err_can_not_refer_yourself                : string = "134";
 }
 
 module TezStore is {

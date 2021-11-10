@@ -262,6 +262,7 @@ function flash_swap(
 
     case action of
     | Flash_swap(params) -> {
+        assert_with_error(params.referrer =/= Tezos.sender, DexCore.err_can_not_refer_yourself);
         assert_with_error(params.amount_a_out > 0n or params.amount_b_out > 0n, DexCore.err_dust_out);
 
         const tokens : tokens_t = get_tokens_or_fail(params.pair_id, s.tokens);
@@ -274,6 +275,7 @@ function flash_swap(
           pair_id           = params.pair_id;
           amount_a_out      = params.amount_a_out;
           amount_b_out      = params.amount_b_out;
+          referrer          = params.referrer;
           token_a_balance_1 = 0n;
           token_b_balance_1 = 0n;
           token_a_balance_2 = 0n;
@@ -342,6 +344,8 @@ function swap(
 
     case action of
     | Swap(params) -> {
+        assert_with_error(params.referrer =/= Tezos.sender, DexCore.err_can_not_refer_yourself);
+
         const first_swap : swap_slice_t = case List.head_opt(params.swaps) of
         | Some(swap) -> swap
         | None       -> failwith(DexCore.err_empty_route)
