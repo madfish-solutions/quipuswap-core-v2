@@ -395,8 +395,15 @@ function withdraw_profit(
     case action of
     | Withdraw_profit(params) -> {
         const pair : pair_t = get_pair_or_fail(params.pair_id, s.pairs);
+        const user_balance : nat = get_token_balance_or_default(Tezos.sender, params.pair_id, s.ledger);
 
-        ops := get_withdraw_profit_op(Tezos.sender, params.receiver, get_tez_store_or_fail(pair.tez_store)) # ops;
+        ops := get_withdraw_profit_op(
+          Tezos.sender,
+          params.receiver,
+          user_balance,
+          user_balance,
+          get_tez_store_or_fail(pair.tez_store)
+        ) # ops;
       }
     | _ -> skip
     end

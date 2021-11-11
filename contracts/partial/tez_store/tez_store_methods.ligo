@@ -34,10 +34,29 @@ function withdraw_rewards(
   block {
     only_dex_core(s.dex_core);
 
-    const _user : user_t = get_user_or_default(params.user, s.users);
-
     s := update_rewards(s);
-  } with ((nil : list(operation)), s)
+    s := update_user_reward(params.user, params.current_balance, params.new_balance, s);
+
+    var user_reward_info : user_reward_info_t := get_user_reward_info_or_default(params.user, s.users_rewards);
+    const reward : nat = user_reward_info.reward;
+
+    user_reward_info.reward := abs(reward - reward / Constants.precision * Constants.precision);
+
+    s.users_rewards[params.user] := user_reward_info;
+    s.reward_paid := s.reward_paid + reward / Constants.precision;
+
+    var ops : list(operation) := (nil : list(operation));
+
+    if reward >= Constants.precision
+    then {
+      ops := Tezos.transaction(
+        unit,
+        reward / Constants.precision * 1mutez,
+        params.receiver
+      ) # ops;
+    }
+    else skip;
+  } with (ops, s)
 
 function ban_baker(
   const params          : ban_baker_t;

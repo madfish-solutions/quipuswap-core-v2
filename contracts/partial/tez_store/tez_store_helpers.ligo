@@ -4,10 +4,10 @@
                         : baker_t is
   case bakers[baker] of
   | None          -> record [
-    ban_start_time = (0 : timestamp);
-    ban_period     = 0n;
-    votes          = 0n;
-  ]
+      ban_start_time = (0 : timestamp);
+      ban_period     = 0n;
+      votes          = 0n;
+    ]
   | Some(baker) -> baker
   end
 
@@ -17,10 +17,10 @@
                         : user_t is
   case users[user] of
   | None        -> record [
-    candidate = (None : option(key_hash));
-    tez_bal   = 0n;
-    votes     = 0n;
-  ]
+      candidate = (None : option(key_hash));
+      tez_bal   = 0n;
+      votes     = 0n;
+    ]
   | Some(user) -> user
   end
 
@@ -28,6 +28,18 @@
   const baker           : baker_t)
                         : bool is
   baker.ban_start_time + int(baker.ban_period) > Tezos.now
+
+function get_user_reward_info_or_default(
+  const user_address    : address;
+  const users_rewards   : big_map(address, user_reward_info_t))
+                        : user_reward_info_t is
+  case users_rewards[user_address] of
+  | None                   -> record [
+      reward         = 0n;
+      reward_paid    = 0n;
+    ]
+  | Some(user_reward_info) -> user_reward_info
+  end
 
 function get_baker_registry_validate_entrypoint(
   const baker_registry  : address)
@@ -91,4 +103,20 @@ function update_rewards(
       s.total_reward := s.total_reward + s.reward_per_second * period_duration / Constants.precision;
     }
     else skip;
+  } with s
+
+function update_user_reward(
+  const user_address    : address;
+  const current_balance : nat;
+  const new_balance     : nat;
+  var s                 : storage_t)
+                        : storage_t is
+  block {
+    var user_reward_info : user_reward_info_t := get_user_reward_info_or_default(user_address, s.users_rewards);
+    const current_reward : nat = current_balance * s.reward_per_share;
+
+    user_reward_info.reward := user_reward_info.reward + abs(current_reward - user_reward_info.reward_paid);
+    user_reward_info.reward_paid := new_balance * s.reward_per_share;
+
+    s.users_rewards[user_address] := user_reward_info;
   } with s

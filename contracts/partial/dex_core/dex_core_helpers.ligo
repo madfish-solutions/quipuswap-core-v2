@@ -5,8 +5,8 @@
                         : account_t is
   case accounts[(user_addr, token_id)] of
   | None          -> record [
-    allowances = (Set.empty : set(address));
-  ]
+      allowances = (Set.empty : set(address));
+    ]
   | Some(account) -> account
   end
 
@@ -202,7 +202,7 @@ function get_tez_store_initial_storage(
         votes          = init_shares;
       ]
     ];
-    user_rewards      = (Big_map.empty : big_map(address, user_reward_info_t));
+    users_rewards     = (Big_map.empty : big_map(address, user_reward_info_t));
     current_delegated = candidate;
     next_candidate    = Constants.zero_key_hash;
     baker_registry    = baker_registry;
@@ -211,6 +211,7 @@ function get_tez_store_initial_storage(
     total_votes       = init_shares;
     reward            = 0n;
     total_reward      = 0n;
+    reward_paid       = 0n;
     reward_per_share  = 0n;
     reward_per_second = 0n;
     cycle_duration    = cycle_duration;
@@ -444,12 +445,16 @@ function get_tez_store_withdraw_rewards_entrypoint(const tez_store : address) : 
 function get_withdraw_profit_op(
   const user            : address;
   const receiver        : contract(unit);
+  const current_balance : nat;
+  const new_balance     : nat;
   const tez_store       : address)
                         : operation is
   Tezos.transaction(
     record [
-      user     = user;
-      receiver = receiver;
+      user            = user;
+      receiver        = receiver;
+      current_balance = current_balance;
+      new_balance     = new_balance;
     ],
     0mutez,
     get_tez_store_withdraw_rewards_entrypoint(tez_store)

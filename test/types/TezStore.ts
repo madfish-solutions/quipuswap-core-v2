@@ -22,7 +22,7 @@ export type BanBaker = {
 export type TezStoreStorage = {
   users: MichelsonMap<MichelsonMapKey, unknown>;
   bakers: MichelsonMap<MichelsonMapKey, unknown>;
-  user_rewards: MichelsonMap<MichelsonMapKey, unknown>;
+  users_rewards: MichelsonMap<MichelsonMapKey, unknown>;
   current_delegated: string | undefined | null;
   next_candidate: string | undefined | null;
   baker_registry: string;
@@ -31,6 +31,7 @@ export type TezStoreStorage = {
   total_votes: BigNumber;
   reward: BigNumber;
   total_reward: BigNumber;
+  reward_paid: BigNumber;
   reward_per_share: BigNumber;
   reward_per_second: BigNumber;
   cycle_duration: BigNumber;

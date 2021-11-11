@@ -18,7 +18,7 @@ type user_reward_info_t is [@layout:comb] record [
 type storage_t          is [@layout:comb] record [
   users                   : big_map(address, user_t);
   bakers                  : big_map(key_hash, baker_t);
-  user_rewards            : big_map(address, user_reward_info_t);
+  users_rewards           : big_map(address, user_reward_info_t);
   current_delegated       : key_hash;
   next_candidate          : key_hash;
   baker_registry          : address;
@@ -27,6 +27,7 @@ type storage_t          is [@layout:comb] record [
   total_votes             : nat;
   reward                  : nat;
   total_reward            : nat;
+  reward_paid             : nat;
   reward_per_share        : nat;
   reward_per_second       : nat;
   cycle_duration          : nat;
@@ -45,6 +46,8 @@ type divest_tez_t       is [@layout:comb] record [
 type withdraw_rewards_t is [@layout:comb] record [
   receiver                : contract(unit);
   user                    : address;
+  current_balance         : nat;
+  new_balance             : nat;
 ]
 
 type ban_baker_t        is [@layout:comb] record [
