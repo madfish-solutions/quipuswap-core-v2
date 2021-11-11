@@ -78,15 +78,13 @@ function vote(
   var s                 : storage_t)
                         : return_t is
   block {
-    const prev_current_delegated : key_hash = s.current_delegated;
-    var ops: list(operation) := nil;
-
     only_dex_core(s.dex_core);
 
+    const prev_current_delegated : key_hash = s.current_delegated;
     var user : user_t := get_user_or_default(params.voter, s.users);
 
     case user.candidate of
-      None            -> skip
+      None                 -> skip
     | Some(user_candidate) -> {
       var candidate : baker_t := get_baker_or_default(user_candidate, s.bakers);
 
@@ -118,7 +116,7 @@ function vote(
       s.next_candidate := s.current_delegated;
       s.current_delegated := params.candidate;
     }
-    else if user_candidate.votes > next_candidate.votes
+    else if user_candidate.votes > next_candidate.votes and params.candidate =/= s.current_delegated
     then {
       s.next_candidate := params.candidate;
     }
@@ -134,6 +132,8 @@ function vote(
     if get_is_banned_baker(next_candidate)
     then s.next_candidate := Constants.zero_key_hash
     else skip;
+
+    var ops: list(operation) := nil;
 
     if get_is_banned_baker(current_delegated)
     then {

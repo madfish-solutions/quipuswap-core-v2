@@ -561,12 +561,21 @@
                  COMPARE ;
                  GT ;
                  IF { DIG 3 ; DROP ; DIG 2 ; DUP ; GET 7 ; UPDATE 9 ; DIG 3 ; GET 3 ; UPDATE 7 }
-                    { DUP ;
+                    { DUP 3 ;
+                      GET 7 ;
+                      DUP 6 ;
+                      GET 3 ;
+                      COMPARE ;
+                      NEQ ;
+                      SWAP ;
+                      DUP ;
+                      DUG 2 ;
                       GET 4 ;
-                      DIG 4 ;
+                      DIG 5 ;
                       GET 4 ;
                       COMPARE ;
                       GT ;
+                      AND ;
                       IF { DIG 2 ; DIG 3 ; GET 3 ; UPDATE 9 }
                          { DIG 3 ;
                            DROP ;
