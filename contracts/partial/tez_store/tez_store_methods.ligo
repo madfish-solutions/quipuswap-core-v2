@@ -5,9 +5,9 @@ function invest_tez(
   block {
     only_dex_core(s.dex_core);
 
-    const voter : voter_t = get_voter_or_default(params.user, s.voters);
+    const user : user_t = get_user_or_default(params.user, s.users);
 
-    s.voters[params.user] := voter with record [ tez_bal = voter.tez_bal + Tezos.amount / 1mutez ];
+    s.users[params.user] := user with record [ tez_bal = user.tez_bal + Tezos.amount / 1mutez ];
     s.total_supply := params.total_supply;
   } with ((nil : list(operation)), s)
 
@@ -18,16 +18,28 @@ function divest_tez(
   block {
     only_dex_core(s.dex_core);
 
-    const voter : voter_t = get_voter_or_default(params.user, s.voters);
+    const user : user_t = get_user_or_default(params.user, s.users);
 
     assert_with_error(
-      params.amt <= Tezos.balance / 1mutez and params.amt <= voter.tez_bal,
+      params.amt <= Tezos.balance / 1mutez and params.amt <= user.tez_bal,
       TezStore.err_insufficient_tez_balance
     );
 
-    s.voters[params.user] := voter with record [ tez_bal = abs(voter.tez_bal - params.amt)];
+    s.users[params.user] := user with record [ tez_bal = abs(user.tez_bal - params.amt)];
     s.total_supply := params.total_supply;
-  } with (list [transfer_tez(params.recipient, params.amt)], s)
+  } with (list [transfer_tez(params.receiver, params.amt)], s)
+
+function withdraw_rewards(
+  const params          : withdraw_rewards_t;
+  var s                 : storage_t)
+                        : return_t is
+  block {
+    only_dex_core(s.dex_core);
+
+    const _user : user_t = get_user_or_default(params.user, s.users);
+
+    s := update_rewards(s);
+  } with ((nil : list(operation)), s)
 
 function ban_baker(
   const params          : ban_baker_t;
@@ -54,42 +66,42 @@ function vote(
 
     only_dex_core(s.dex_core);
 
-    var voter : voter_t := get_voter_or_default(params.voter, s.voters);
+    var user : user_t := get_user_or_default(params.voter, s.users);
 
-    case voter.candidate of
+    case user.candidate of
       None            -> skip
-    | Some(voter_candidate) -> {
-      var candidate : baker_t := get_baker_or_default(voter_candidate, s.bakers);
+    | Some(user_candidate) -> {
+      var candidate : baker_t := get_baker_or_default(user_candidate, s.bakers);
 
-      s.bakers[voter_candidate] := case is_nat(candidate.votes - voter.votes) of
+      s.bakers[user_candidate] := case is_nat(candidate.votes - user.votes) of
       | None        -> candidate
       | Some(value) -> candidate with record [ votes = value ]
       end;
     }
     end;
 
-    const voter_candidate : baker_t = get_baker_or_default(params.candidate, s.bakers);
-    const voter_candidate_votes : nat = voter_candidate.votes + params.votes;
+    const user_candidate : baker_t = get_baker_or_default(params.candidate, s.bakers);
+    const user_candidate_votes : nat = user_candidate.votes + params.votes;
 
-    s.bakers[params.candidate] := voter_candidate;
+    s.bakers[params.candidate] := user_candidate;
 
-    if voter.votes =/= 0n
-    then voter.candidate := Some(params.candidate)
-    else voter.candidate := (None : option(key_hash));
+    if user.votes =/= 0n
+    then user.candidate := Some(params.candidate)
+    else user.candidate := (None : option(key_hash));
 
-    voter.votes := params.votes;
+    user.votes := params.votes;
 
-    s.voters[params.voter] := voter;
+    s.users[params.voter] := user;
 
     const current_delegated : baker_t = get_baker_or_default(s.current_delegated, s.bakers);
     const next_candidate : baker_t = get_baker_or_default(s.next_candidate, s.bakers);
 
-    if voter_candidate_votes > current_delegated.votes
+    if user_candidate_votes > current_delegated.votes
     then {
       s.next_candidate := s.current_delegated;
       s.current_delegated := params.candidate;
     }
-    else if voter_candidate.votes > next_candidate.votes
+    else if user_candidate.votes > next_candidate.votes
     then {
       s.next_candidate := params.candidate;
     }

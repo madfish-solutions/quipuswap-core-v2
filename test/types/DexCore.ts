@@ -58,7 +58,7 @@ export type LaunchExchange = {
   pair: Tokens;
   token_a_in: BigNumber;
   token_b_in: BigNumber;
-  shares_recipient: string;
+  shares_receiver: string;
   candidate: string;
 };
 

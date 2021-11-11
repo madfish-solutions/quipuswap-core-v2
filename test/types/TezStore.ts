@@ -8,7 +8,7 @@ export type InvestTez = {
 };
 
 export type DivestTez = {
-  recipient: string;
+  receiver: string;
   user: string;
   amt: BigNumber;
   total_supply: BigNumber;

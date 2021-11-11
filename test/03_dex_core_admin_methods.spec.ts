@@ -303,7 +303,7 @@ describe("DexCore tests (admin's methods)", async () => {
       },
       token_a_in: new BigNumber(1),
       token_b_in: new BigNumber(1),
-      shares_recipient: bob.pkh,
+      shares_receiver: bob.pkh,
       candidate: bob.pkh,
     };
     const updateTokenMetadata: UpdateTokenMetadata = {
@@ -527,7 +527,7 @@ describe("DexCore tests (admin's methods)", async () => {
       },
       token_a_in: new BigNumber(1),
       token_b_in: new BigNumber(1),
-      shares_recipient: bob.pkh,
+      shares_receiver: bob.pkh,
       candidate: bob.pkh,
     };
     const ban: Ban = {

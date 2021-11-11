@@ -35,21 +35,29 @@
      - ✅ should divest tez for carol - 1;
      - ✅ should divest tez for carol - 2.
 
-  3. `ban_baker`:
+  3. `withdraw_rewards`:
+
+     -
+
+  4. `ban_baker`:
 
      - ✅ should fail if not dex core is trying to ban baker;
      - ✅ should ban baker;
      - ✅ should unban baker.
 
-  4. `vote`:
+  5. `vote`:
 
      -
 
-  5. `is_banned_baker`:
+  6. `is_banned_baker` [VIEW]:
 
      - ✅ should return true if baker is banned;
      - ✅ should return false if baker is not banned;
      - ✅ should return false if baker's banning period is finished.
+
+  7. `get_tez_balance` [VIEW]:
+
+     -
 
 ## FlashSwapsProxy
 
@@ -75,44 +83,52 @@
 
      -
 
-  4. `swap`:
+  4. `flash_swap`:
 
      -
 
-  5. `set_admin`:
+  5. `swap`:
+
+     -
+
+  6. `withdraw_profit`:
+
+     -
+
+  7. `set_admin`:
 
      - ✅ should fail if not admin is trying to setup new pending admin;
      - ✅ should setup new pending admin by admin.
 
-  6. `confirm_admin`:
+  8. `confirm_admin`:
 
      - ✅ should fail if not pending admin is trying to confirm new admin;
      - ✅ should confirm new admin by pending admin.
 
-  7. `set_flash_swaps_proxy`:
+  9. `set_flash_swaps_proxy`:
 
      -
 
-  8. `add_managers`:
+  10. `add_managers`:
 
-     - ✅ should fail if not admin is trying to add new manager;
-     - ✅ should add one manager;
-     - ✅ should remove one manager;
-     - ✅ should add a group of managers;
-     - ✅ should remove a group of managers;
-     - ✅ shoud add/remove some groups of managers.
+      - ✅ should fail if not admin is trying to add new manager;
+      - ✅ should add one manager;
+      - ✅ should remove one manager;
+      - ✅ should add a group of managers;
+      - ✅ should remove a group of managers;
+      - ✅ shoud add/remove some groups of managers.
 
-  9. `set_fees`:
+  11. `set_fees`:
 
-     - ✅ should fail if not admin is trying to set fees;
-     - ✅ should update fees.
+      - ✅ should fail if not admin is trying to set fees;
+      - ✅ should update fees.
 
-  10. `set_cycle_duration`:
+  12. `set_cycle_duration`:
 
       - ✅ should fail if not admin is trying to set cycle duration;
       - ✅ should update cycle duration.
 
-  11. `update_token_metadata`:
+  13. `update_token_metadata`:
 
       - ✅ should fail if not manager is trying to update token metadata;
       - ✅ should fail if pair not listed;
@@ -120,7 +136,7 @@
       - ✅ should set new fields in token metadata;
       - ✅ should update existing and set new fields in token metadata.
 
-  12. `ban`:
+  14. `ban`:
 
       - ✅ should fail if not admin is trying to ban baker;
       - ✅ should fail if pair not listed;
@@ -128,34 +144,66 @@
       - ✅ should ban baker;
       - ✅ should unban baker.
 
-  13. `permit`:
+  15. `permit`:
 
       -
 
-  14. `ser_expiry`:
+  16. `ser_expiry`:
 
       -
 
-  15. `transfer`:
+  17. `transfer`:
 
       -
 
-  16. `update_operators`:
+  18. `update_operators`:
 
       -
 
-  17. `balance_of`:
+  19. `balance_of`:
 
       -
 
-  18. `get_reserves`:
+  20. `fa12_balance_callback_1`:
 
       -
 
-  19. `get_total_supply`:
+  21. `fa2_balance_callback_1`:
 
       -
 
-  20. `check_is_banned_baker`:
+  22. `fa12_balance_callback_2`:
+
+      -
+
+  23. `fa2_balance_callback_2`:
+
+      -
+
+  24. `flash_swap_callback`:
+
+      -
+
+  25. `check_is_banned_baker` [VIEW]:
+
+      -
+
+  26. `get_reserves` [VIEW]:
+
+      -
+
+  27. `get_total_supply` [VIEW]:
+
+      -
+
+  28. `get_swap_min_res` [VIEW]:
+
+      -
+
+  29. `get_toks_per_share` [VIEW]:
+
+      -
+
+  30. `get_cumulative_prices` [VIEW]:
 
       -

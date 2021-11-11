@@ -69,7 +69,7 @@ function launch_exchange(
               0mutez,
               get_tez_store_initial_storage(
                 params.candidate,
-                params.shares_recipient,
+                params.shares_receiver,
                 Tezos.amount / 1mutez,
                 init_shares,
                 s.cycle_duration,
@@ -85,7 +85,7 @@ function launch_exchange(
         }
         else skip;
 
-        s.ledger[(params.shares_recipient, token_id)] := init_shares;
+        s.ledger[(params.shares_receiver, token_id)] := init_shares;
         s.tokens[token_id] := params.pair;
         s.pairs[token_id] := updated_pair;
 
@@ -124,9 +124,9 @@ function invest_liquidity(
           DexCore.err_low_token_b_in
         );
 
-        const sender_balance : nat = get_token_balance_or_default(params.shares_recipient, params.pair_id, s.ledger);
+        const sender_balance : nat = get_token_balance_or_default(params.shares_receiver, params.pair_id, s.ledger);
 
-        s.ledger[(params.shares_recipient, params.pair_id)] := sender_balance + params.shares;
+        s.ledger[(params.shares_receiver, params.pair_id)] := sender_balance + params.shares;
 
         var (updated_pair, last_block_timestamp) := calc_cumulative_prices(
           pair,
@@ -145,7 +145,7 @@ function invest_liquidity(
         then {
           ops := get_vote_op(
             record [
-              voter          = params.shares_recipient;
+              voter          = params.shares_receiver;
               candidate      = params.candidate;
               votes          = sender_balance + params.shares;
               cycle_duration = s.cycle_duration;
@@ -225,9 +225,9 @@ function divest_liquidity(
         }
         else skip;
 
-        ops := transfer_token(Tezos.self_address, params.liquidity_recipient, token_a_divested, tokens.token_a) # ops;
+        ops := transfer_token(Tezos.self_address, params.liquidity_receiver, token_a_divested, tokens.token_a) # ops;
         ops := divest_tez_or_transfer_tokens(
-          params.liquidity_recipient,
+          params.liquidity_receiver,
           token_b_divested,
           tokens.token_b,
           updated_pair.total_supply,
@@ -382,6 +382,23 @@ function swap(
         end;
 
         ops := last_op # ops;
+      }
+    | _ -> skip
+    end
+  } with (ops, s)
+
+function withdraw_profit(
+  const action          : action_t;
+  var s                 : storage_t)
+                        : return_t is
+  block {
+    var ops: list(operation) := nil;
+
+    case action of
+    | Withdraw_profit(params) -> {
+        const pair : pair_t = get_pair_or_fail(params.pair_id, s.pairs);
+
+        ops := get_withdraw_profit_op(Tezos.sender, params.receiver, get_tez_store_or_fail(pair.tez_store)) # ops;
       }
     | _ -> skip
     end

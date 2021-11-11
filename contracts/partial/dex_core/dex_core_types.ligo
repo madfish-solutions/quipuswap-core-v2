@@ -73,7 +73,7 @@ type launch_exchange_t  is [@layout:comb] record [
   pair                    : tokens_t;
   token_a_in              : nat;
   token_b_in              : nat;
-  shares_recipient        : address;
+  shares_receiver         : address;
   candidate               : key_hash;
 ]
 
@@ -82,7 +82,7 @@ type invest_liquidity_t is [@layout:comb] record [
   token_a_in              : nat;
   token_b_in              : nat;
   shares                  : nat;
-  shares_recipient        : address;
+  shares_receiver         : address;
   candidate               : key_hash;
 ]
 
@@ -91,7 +91,7 @@ type divest_liquidity_t is [@layout:comb] record [
   min_token_a_out         : nat;
   min_token_b_out         : nat;
   shares                  : nat;
-  liquidity_recipient     : address;
+  liquidity_receiver      : address;
   candidate               : key_hash;
 ]
 
@@ -128,6 +128,11 @@ type swap_t             is [@layout:comb] record [
   referrer                : address;
   amount_in               : nat;
   min_amount_out          : nat;
+]
+
+type withdraw_profit_t  is [@layout:comb] record [
+  receiver                : contract(unit);
+  pair_id                 : token_id_t;
 ]
 
 type set_admin_t        is address
@@ -230,6 +235,7 @@ type action_t           is
 | Divest_liquidity        of divest_liquidity_t
 | Flash_swap              of flash_swap_t
 | Swap                    of swap_t
+| Withdraw_profit         of withdraw_profit_t
 (* ADMIN *)
 | Set_admin               of set_admin_t
 | Confirm_admin           of confirm_admin_t
@@ -276,4 +282,4 @@ type full_action_t      is
 
 type deploy_tez_store_t is (option(key_hash) * tez * tez_store_t) -> (operation * address)
 
-[@inline] const dex_core_methods_max_index : nat = 22n;
+[@inline] const dex_core_methods_max_index : nat = 23n;

@@ -10,28 +10,29 @@ function call_dex_core(
     | Divest_liquidity(_)        -> 2n
     | Flash_swap(_)              -> 3n
     | Swap(_)                    -> 4n
+    | Withdraw_profit(_)         -> 5n
     (* ADMIN *)
-    | Set_admin(_)               -> 5n
-    | Confirm_admin(_)           -> 6n
-    | Set_flash_swaps_proxy(_)   -> 7n
-    | Add_managers(_)            -> 8n
-    | Set_fees(_)                -> 9n
-    | Set_cycle_duration(_)      -> 10n
-    | Update_token_metadata(_)   -> 11n
-    | Ban(_)                     -> 12n
+    | Set_admin(_)               -> 6n
+    | Confirm_admin(_)           -> 7n
+    | Set_flash_swaps_proxy(_)   -> 8n
+    | Add_managers(_)            -> 9n
+    | Set_fees(_)                -> 10n
+    | Set_cycle_duration(_)      -> 11n
+    | Update_token_metadata(_)   -> 12n
+    | Ban(_)                     -> 13n
     (* PERMIT *)
-    | Permit(_)                  -> 13n
-    | Set_expiry(_)              -> 14n
+    | Permit(_)                  -> 14n
+    | Set_expiry(_)              -> 15n
     (* FA2 *)
-    | Transfer(_)                -> 15n
-    | Update_operators(_)        -> 16n
-    | Balance_of(_)              -> 17n
+    | Transfer(_)                -> 16n
+    | Update_operators(_)        -> 17n
+    | Balance_of(_)              -> 18n
     (* CALLBACKS *)
-    | Fa12_balance_callback_1(_) -> 18n
-    | Fa2_balance_callback_1(_)  -> 19n
-    | Fa12_balance_callback_2(_) -> 20n
-    | Fa2_balance_callback_2(_)  -> 21n
-    | Flash_swap_callback(_)     -> 22n
+    | Fa12_balance_callback_1(_) -> 19n
+    | Fa2_balance_callback_1(_)  -> 20n
+    | Fa12_balance_callback_2(_) -> 21n
+    | Fa2_balance_callback_2(_)  -> 22n
+    | Flash_swap_callback(_)     -> 23n
     end;
 
     const lambda_bytes : bytes = case s.dex_core_lambdas[id] of

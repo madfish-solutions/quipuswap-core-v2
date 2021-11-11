@@ -11,17 +11,17 @@
   | Some(baker) -> baker
   end
 
-[@inline] function get_voter_or_default(
-  const voter           : address;
-  const voters          : big_map(address, voter_t))
-                        : voter_t is
-  case voters[voter] of
+[@inline] function get_user_or_default(
+  const user            : address;
+  const users           : big_map(address, user_t))
+                        : user_t is
+  case users[user] of
   | None        -> record [
     candidate = (None : option(key_hash));
     tez_bal   = 0n;
     votes     = 0n;
   ]
-  | Some(voter) -> voter
+  | Some(user) -> user
   end
 
 [@inline] function get_is_banned_baker(

@@ -162,14 +162,14 @@ function check_tez_or_token_and_transfer(
   if token_type = Tez
   then block {
     const invest_params : invest_tez_t = record [
-      user         = inv_liq_params.shares_recipient;
+      user         = inv_liq_params.shares_receiver;
       total_supply = total_supply;
     ];
   } with get_invest_tez_op(invest_params, get_tez_store_or_fail(tez_store_opt))
   else transfer_token(Tezos.sender, Tezos.self_address, tokens_required, token_type)
 
 function divest_tez_or_transfer_tokens(
-  const recipient       : address;
+  const receiver        : address;
   const tokens_divested : nat;
   const token_type      : token_t;
   const total_supply    : nat;
@@ -178,51 +178,51 @@ function divest_tez_or_transfer_tokens(
   if token_type = Tez
   then block {
     const divest_params : divest_tez_t = record [
-      recipient    = (get_contract(recipient) : contract(unit));
+      receiver     = (get_contract(receiver) : contract(unit));
       user         = Tezos.sender;
       amt          = tokens_divested;
       total_supply = total_supply;
     ];
   } with get_divest_tez_op(divest_params, get_tez_store_or_fail(tez_store_opt))
-  else transfer_token(Tezos.self_address, recipient, tokens_divested, token_type)
+  else transfer_token(Tezos.self_address, receiver, tokens_divested, token_type)
 
 function get_tez_store_initial_storage(
   const candidate       : key_hash;
-  const share_recipient : address;
+  const share_receiver  : address;
   const tez_bal         : nat;
   const init_shares     : nat;
   const cycle_duration  : nat;
   const baker_registry  : address)
                         : tez_store_t is
   record [
-    voters = big_map [
-      share_recipient -> record [
+    users             = big_map [
+      share_receiver -> record [
         candidate = Some(candidate);
         tez_bal   = tez_bal;
         votes     = init_shares;
       ]
     ];
-    bakers = big_map [
+    bakers            = big_map [
       candidate -> record [
         ban_start_time = Tezos.now;
         ban_period     = 0n;
         votes          = init_shares;
       ]
     ];
-    user_rewards = (Big_map.empty : big_map(address, user_reward_info_t));
+    user_rewards      = (Big_map.empty : big_map(address, user_reward_info_t));
     current_delegated = candidate;
-    next_candidate = Constants.zero_key_hash;
-    baker_registry = baker_registry;
-    dex_core = Tezos.self_address;
-    total_votes = init_shares;
-    reward = 0n;
-    total_reward = 0n;
-    reward_per_share = 0n;
+    next_candidate    = Constants.zero_key_hash;
+    baker_registry    = baker_registry;
+    dex_core          = Tezos.self_address;
+    total_votes       = init_shares;
+    reward            = 0n;
+    total_reward      = 0n;
+    reward_per_share  = 0n;
     reward_per_second = 0n;
-    cycle_duration = cycle_duration;
-    period_finish = Tezos.level;
+    cycle_duration    = cycle_duration;
+    period_finish     = Tezos.level;
     last_update_level = Tezos.level;
-    total_supply = init_shares;
+    total_supply      = init_shares;
   ]
 
 function calc_cumulative_prices(
@@ -441,3 +441,23 @@ function get_default_tmp(
     token_a_balance_2 = 0n;
     token_b_balance_2 = 0n;
   ]
+
+function get_tez_store_withdraw_rewards_entrypoint(const tez_store : address) : contract(withdraw_rewards_t) is
+  case (Tezos.get_entrypoint_opt("%withdraw_rewards", tez_store) : option(contract(withdraw_rewards_t))) of
+  | Some(contr) -> contr
+  | None        -> (failwith(DexCore.err_tez_store_withdraw_rewards_entrypoint_404) : contract(withdraw_rewards_t))
+  end
+
+function get_withdraw_profit_op(
+  const user            : address;
+  const receiver        : contract(unit);
+  const tez_store       : address)
+                        : operation is
+  Tezos.transaction(
+    record [
+      user     = user;
+      receiver = receiver;
+    ],
+    0mutez,
+    get_tez_store_withdraw_rewards_entrypoint(tez_store)
+  )

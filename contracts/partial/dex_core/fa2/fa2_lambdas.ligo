@@ -74,9 +74,9 @@ function iterate_transfer(
 
         s.ledger[(transfer_param.from_, dst.token_id)] := abs(sender_balance - dst.amount);
 
-        const recipient_balance : nat = get_token_balance_or_default(dst.to_, dst.token_id, s.ledger);
+        const receiver_balance : nat = get_token_balance_or_default(dst.to_, dst.token_id, s.ledger);
 
-        s.ledger[(dst.to_, dst.token_id)] := recipient_balance + dst.amount;
+        s.ledger[(dst.to_, dst.token_id)] := receiver_balance + dst.amount;
       } with s
   } with (List.fold(make_transfer, transfer_param.txs, s))
 

@@ -126,7 +126,7 @@ describe("TezStore tests", async () => {
 
   it("should fail if not dex core is trying to divest tez", async () => {
     const divestTez: DivestTez = {
-      recipient: alice.pkh,
+      receiver: alice.pkh,
       user: alice.pkh,
       amt: new BigNumber(100),
       total_supply: new BigNumber(100),
@@ -142,7 +142,7 @@ describe("TezStore tests", async () => {
 
   it("should fail if tez store have not enough TEZ on contract's balance", async () => {
     const divestTez: DivestTez = {
-      recipient: alice.pkh,
+      receiver: alice.pkh,
       user: alice.pkh,
       amt: new BigNumber(100_000),
       total_supply: new BigNumber(100_000),
@@ -162,7 +162,7 @@ describe("TezStore tests", async () => {
     await tezStore.updateStorage({ voters: [user] });
 
     const divestTez: DivestTez = {
-      recipient: alice.pkh,
+      receiver: alice.pkh,
       user: user,
       amt: tezStore.storage.voters[user].tez_bal.plus(1),
       total_supply: new BigNumber(
@@ -180,7 +180,7 @@ describe("TezStore tests", async () => {
   it("should divest tez for alice", async () => {
     const user: string = alice.pkh;
     const divestTez: DivestTez = {
-      recipient: alice.pkh,
+      receiver: alice.pkh,
       user: user,
       amt: tezStore.storage.voters[user].tez_bal,
       total_supply: new BigNumber(tezStore.storage.voters[user].tez_bal),
@@ -190,7 +190,7 @@ describe("TezStore tests", async () => {
       tezStore.contract.address
     );
     const prevRecipientTezBalance: BigNumber = await utils.tezos.tz.getBalance(
-      divestTez.recipient
+      divestTez.receiver
     );
 
     await tezStore.divestTez(divestTez);
@@ -203,14 +203,14 @@ describe("TezStore tests", async () => {
       await utils.tezos.tz.getBalance(tezStore.contract.address)
     ).to.be.bignumber.equal(prevTezStoreTezBalance.minus(divestTez.amt));
     expect(
-      await utils.tezos.tz.getBalance(divestTez.recipient)
+      await utils.tezos.tz.getBalance(divestTez.receiver)
     ).to.be.bignumber.equal(prevRecipientTezBalance.plus(divestTez.amt));
   });
 
   it("should divest tez for carol - 1", async () => {
     const user: string = carol.pkh;
     const divestTez: DivestTez = {
-      recipient: dev.pkh,
+      receiver: dev.pkh,
       user: user,
       amt: new BigNumber(666),
       total_supply: new BigNumber(666),
@@ -223,7 +223,7 @@ describe("TezStore tests", async () => {
       tezStore.contract.address
     );
     const prevRecipientTezBalance: BigNumber = await utils.tezos.tz.getBalance(
-      divestTez.recipient
+      divestTez.receiver
     );
 
     await tezStore.divestTez(divestTez);
@@ -236,20 +236,20 @@ describe("TezStore tests", async () => {
       await utils.tezos.tz.getBalance(tezStore.contract.address)
     ).to.be.bignumber.equal(prevTezStoreTezBalance.minus(divestTez.amt));
     expect(
-      await utils.tezos.tz.getBalance(divestTez.recipient)
+      await utils.tezos.tz.getBalance(divestTez.receiver)
     ).to.be.bignumber.equal(prevRecipientTezBalance.plus(divestTez.amt));
   });
 
   it("should divest tez for carol - 2", async () => {
     const user: string = carol.pkh;
     const divestTez: DivestTez = {
-      recipient: carol.pkh,
+      receiver: carol.pkh,
       user: user,
       amt: tezStore.storage.voters[user].tez_bal,
       total_supply: new BigNumber(tezStore.storage.voters[user].tez_bal),
     };
     const prevRecipientTezBalance: BigNumber = await utils.tezos.tz.getBalance(
-      divestTez.recipient
+      divestTez.receiver
     );
 
     await tezStore.divestTez(divestTez);
@@ -260,7 +260,7 @@ describe("TezStore tests", async () => {
       await utils.tezos.tz.getBalance(tezStore.contract.address)
     ).to.be.bignumber.equal(0);
     expect(
-      await utils.tezos.tz.getBalance(divestTez.recipient)
+      await utils.tezos.tz.getBalance(divestTez.receiver)
     ).to.be.bignumber.equal(prevRecipientTezBalance.plus(divestTez.amt));
   });
 

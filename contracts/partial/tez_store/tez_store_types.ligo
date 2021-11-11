@@ -1,4 +1,4 @@
-type voter_t            is [@layout:comb] record [
+type user_t             is [@layout:comb] record [
   candidate               : option(key_hash);
   tez_bal                 : nat;
   votes                   : nat;
@@ -16,7 +16,7 @@ type user_reward_info_t is [@layout:comb] record [
 ]
 
 type storage_t          is [@layout:comb] record [
-  voters                  : big_map(address, voter_t);
+  users                   : big_map(address, user_t);
   bakers                  : big_map(key_hash, baker_t);
   user_rewards            : big_map(address, user_reward_info_t);
   current_delegated       : key_hash;
@@ -40,10 +40,15 @@ type invest_tez_t       is [@layout:comb] record [
 ]
 
 type divest_tez_t       is [@layout:comb] record [
-  recipient               : contract(unit);
+  receiver                : contract(unit);
   user                    : address;
   amt                     : nat;
   total_supply            : nat;
+]
+
+type withdraw_rewards_t is [@layout:comb] record [
+  receiver                : contract(unit);
+  user                    : address;
 ]
 
 type ban_baker_t        is [@layout:comb] record [
@@ -65,6 +70,7 @@ type default_t          is unit
 type action_t           is
 | Invest_tez              of invest_tez_t
 | Divest_tez              of divest_tez_t
+| Withdraw_rewards        of withdraw_rewards_t
 | Ban_baker               of ban_baker_t
 | Vote                    of vote_t
 | Default                 of default_t
