@@ -20,7 +20,7 @@ export type BanBaker = {
 };
 
 export type TezStoreStorage = {
-  voters: MichelsonMap<MichelsonMapKey, unknown>;
+  users: MichelsonMap<MichelsonMapKey, unknown>;
   bakers: MichelsonMap<MichelsonMapKey, unknown>;
   user_rewards: MichelsonMap<MichelsonMapKey, unknown>;
   current_delegated: string | undefined | null;

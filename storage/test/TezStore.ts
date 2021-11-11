@@ -7,7 +7,7 @@ import { zeroAddress } from "test/helpers/Utils";
 import { TezStoreStorage } from "test/types/TezStore";
 
 export const tezStoreStorage: TezStoreStorage = {
-  voters: MichelsonMap.fromLiteral({}),
+  users: MichelsonMap.fromLiteral({}),
   bakers: MichelsonMap.fromLiteral({}),
   user_rewards: MichelsonMap.fromLiteral({}),
   current_delegated: zeroAddress,
