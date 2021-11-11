@@ -14,6 +14,7 @@ export const tezStoreStorage: TezStoreStorage = {
   next_candidate: zeroAddress,
   baker_registry: null,
   dex_core: null,
+  pair_id: new BigNumber(0),
   total_votes: new BigNumber(0),
   reward: new BigNumber(0),
   total_reward: new BigNumber(0),
@@ -22,5 +23,4 @@ export const tezStoreStorage: TezStoreStorage = {
   cycle_duration: new BigNumber(0),
   period_finish: new BigNumber(0),
   last_update_level: new BigNumber(0),
-  total_supply: new BigNumber(0),
 };

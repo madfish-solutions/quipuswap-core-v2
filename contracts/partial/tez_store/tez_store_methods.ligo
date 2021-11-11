@@ -1,14 +1,13 @@
 function invest_tez(
-  const params          : invest_tez_t;
+  const user_address    : invest_tez_t;
   var s                 : storage_t)
                         : return_t is
   block {
     only_dex_core(s.dex_core);
 
-    const user : user_t = get_user_or_default(params.user, s.users);
+    const user : user_t = get_user_or_default(user_address, s.users);
 
-    s.users[params.user] := user with record [ tez_bal = user.tez_bal + Tezos.amount / 1mutez ];
-    s.total_supply := params.total_supply;
+    s.users[user_address] := user with record [ tez_bal = user.tez_bal + Tezos.amount / 1mutez ];
   } with ((nil : list(operation)), s)
 
 function divest_tez(
@@ -26,7 +25,6 @@ function divest_tez(
     );
 
     s.users[params.user] := user with record [ tez_bal = abs(user.tez_bal - params.amt)];
-    s.total_supply := params.total_supply;
   } with (list [transfer_tez(params.receiver, params.amt)], s)
 
 function withdraw_rewards(

@@ -27,6 +27,7 @@ export type TezStoreStorage = {
   next_candidate: string | undefined | null;
   baker_registry: string;
   dex_core: string;
+  pair_id: BigNumber;
   total_votes: BigNumber;
   reward: BigNumber;
   total_reward: BigNumber;
@@ -35,5 +36,4 @@ export type TezStoreStorage = {
   cycle_duration: BigNumber;
   period_finish: BigNumber;
   last_update_level: BigNumber;
-  total_supply: BigNumber;
 };

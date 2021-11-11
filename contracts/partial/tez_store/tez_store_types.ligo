@@ -23,6 +23,7 @@ type storage_t          is [@layout:comb] record [
   next_candidate          : key_hash;
   baker_registry          : address;
   dex_core                : address;
+  pair_id                 : token_id_t;
   total_votes             : nat;
   reward                  : nat;
   total_reward            : nat;
@@ -31,19 +32,14 @@ type storage_t          is [@layout:comb] record [
   cycle_duration          : nat;
   period_finish           : nat;
   last_update_level       : nat;
-  total_supply            : nat;
 ]
 
-type invest_tez_t       is [@layout:comb] record [
-  user                    : address;
-  total_supply            : nat;
-]
+type invest_tez_t       is address
 
 type divest_tez_t       is [@layout:comb] record [
   receiver                : contract(unit);
   user                    : address;
   amt                     : nat;
-  total_supply            : nat;
 ]
 
 type withdraw_rewards_t is [@layout:comb] record [

@@ -156,23 +156,16 @@ function check_tez_or_token_and_transfer(
   const inv_liq_params : invest_liquidity_t;
   const tokens_required : nat;
   const token_type      : token_t;
-  const total_supply    : nat;
   const tez_store_opt   : option(address))
                         : operation is
   if token_type = Tez
-  then block {
-    const invest_params : invest_tez_t = record [
-      user         = inv_liq_params.shares_receiver;
-      total_supply = total_supply;
-    ];
-  } with get_invest_tez_op(invest_params, get_tez_store_or_fail(tez_store_opt))
+  then get_invest_tez_op(inv_liq_params.shares_receiver, get_tez_store_or_fail(tez_store_opt))
   else transfer_token(Tezos.sender, Tezos.self_address, tokens_required, token_type)
 
 function divest_tez_or_transfer_tokens(
   const receiver        : address;
   const tokens_divested : nat;
   const token_type      : token_t;
-  const total_supply    : nat;
   const tez_store_opt   : option(address))
                         : operation is
   if token_type = Tez
@@ -181,7 +174,6 @@ function divest_tez_or_transfer_tokens(
       receiver     = (get_contract(receiver) : contract(unit));
       user         = Tezos.sender;
       amt          = tokens_divested;
-      total_supply = total_supply;
     ];
   } with get_divest_tez_op(divest_params, get_tez_store_or_fail(tez_store_opt))
   else transfer_token(Tezos.self_address, receiver, tokens_divested, token_type)
@@ -192,6 +184,7 @@ function get_tez_store_initial_storage(
   const tez_bal         : nat;
   const init_shares     : nat;
   const cycle_duration  : nat;
+  const pair_id         : nat;
   const baker_registry  : address)
                         : tez_store_t is
   record [
@@ -214,6 +207,7 @@ function get_tez_store_initial_storage(
     next_candidate    = Constants.zero_key_hash;
     baker_registry    = baker_registry;
     dex_core          = Tezos.self_address;
+    pair_id           = pair_id;
     total_votes       = init_shares;
     reward            = 0n;
     total_reward      = 0n;
@@ -222,7 +216,6 @@ function get_tez_store_initial_storage(
     cycle_duration    = cycle_duration;
     period_finish     = Tezos.level;
     last_update_level = Tezos.level;
-    total_supply      = init_shares;
   ]
 
 function calc_cumulative_prices(

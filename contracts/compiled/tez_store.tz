@@ -1,9 +1,7 @@
 { parameter
     (or (or (or (pair %ban_baker (key_hash %baker) (nat %ban_period)) (unit %default))
-            (or (pair %divest_tez
-                   (contract %receiver unit)
-                   (pair (address %user) (pair (nat %amt) (nat %total_supply))))
-                (pair %invest_tez (address %user) (nat %total_supply))))
+            (or (pair %divest_tez (contract %receiver unit) (pair (address %user) (nat %amt)))
+                (address %invest_tez)))
         (or (pair %vote
                (address %voter)
                (pair (key_hash %candidate) (pair (nat %votes) (nat %cycle_duration))))
@@ -20,15 +18,17 @@
                             (pair (key_hash %next_candidate)
                                   (pair (address %baker_registry)
                                         (pair (address %dex_core)
-                                              (pair (nat %total_votes)
-                                                    (pair (nat %reward)
-                                                          (pair (nat %total_reward)
-                                                                (pair (nat %reward_per_share)
-                                                                      (pair (nat %reward_per_second)
-                                                                            (pair (nat %cycle_duration)
-                                                                                  (pair (nat %period_finish) (pair (nat %last_update_level) (nat %total_supply)))))))))))))))) ;
+                                              (pair (nat %pair_id)
+                                                    (pair (nat %total_votes)
+                                                          (pair (nat %reward)
+                                                                (pair (nat %total_reward)
+                                                                      (pair (nat %reward_per_share)
+                                                                            (pair (nat %reward_per_second)
+                                                                                  (pair (nat %cycle_duration) (pair (nat %period_finish) (nat %last_update_level)))))))))))))))) ;
   code { PUSH string "200" ;
+         PUSH string "202" ;
          PUSH string "201" ;
+         PAIR ;
          PAIR ;
          PUSH key_hash "tz1ZZZZZZZZZZZZZZZZZZZZZZZZZZZZNkiRg" ;
          PUSH address "tz1ZZZZZZZZZZZZZZZZZZZZZZZZZZZZNkiRg" ;
@@ -74,11 +74,12 @@
              EQ ;
              IF { DROP } { FAILWITH } ;
              UNIT } ;
-         SWAP ;
-         DUP ;
-         DUG 2 ;
+         DUP 3 ;
+         DUP 3 ;
+         PAIR ;
          LAMBDA
-           (pair (pair (pair (pair (map string bytes) nat) (pair nat address)) key_hash)
+           (pair (pair (pair (pair (pair (map string bytes) nat) (pair nat address)) key_hash)
+                       (pair (pair string string) string))
                  (pair (big_map address (pair (option key_hash) (pair nat nat)))
                        (pair (big_map key_hash (pair timestamp (pair nat nat)))
                              (pair (big_map address (pair nat nat))
@@ -96,56 +97,76 @@
                                                (pair address
                                                      (pair nat (pair nat (pair nat (pair nat (pair nat (pair nat (pair nat (pair nat nat)))))))))))))))
            { UNPAIR ;
-             SWAP ;
+             UNPAIR ;
+             DIG 2 ;
              DUP ;
-             GET 27 ;
-             LEVEL ;
-             COMPARE ;
-             GT ;
-             IF { DUP ; GET 27 } { LEVEL } ;
+             GET 13 ;
+             NIL nat ;
+             DUP 3 ;
+             GET 15 ;
+             CONS ;
+             VIEW "get_total_supply" (list (pair (nat %request) (nat %total_supply))) ;
+             IF_NONE { DIG 2 ; CAR ; CDR ; FAILWITH } { DIG 3 ; DROP } ;
              SWAP ;
              DUP ;
              DUG 2 ;
-             GET 23 ;
-             DUP 3 ;
+             GET 15 ;
+             SWAP ;
+             PUSH nat 0 ;
+             SWAP ;
+             ITER { SWAP ;
+                    DUP 3 ;
+                    DUP 3 ;
+                    CAR ;
+                    COMPARE ;
+                    EQ ;
+                    IF { DROP ; CDR } { SWAP ; DROP } } ;
+             SWAP ;
+             DROP ;
+             SWAP ;
+             DUP ;
+             DUG 2 ;
              GET 29 ;
+             LEVEL ;
+             COMPARE ;
+             GT ;
+             IF { SWAP ; DUP ; DUG 2 ; GET 29 } { LEVEL } ;
+             DUP 3 ;
+             GET 25 ;
+             DUP 4 ;
+             GET 30 ;
              DIG 2 ;
              SUB ;
              ABS ;
              MUL ;
-             SWAP ;
-             DUP ;
-             DUP ;
-             DUG 3 ;
-             GET 30 ;
+             DUP 3 ;
+             DUP 3 ;
              DIG 2 ;
              EDIV ;
              IF_NONE { PUSH string "DIV by 0" ; FAILWITH } {} ;
              CAR ;
-             DIG 2 ;
-             GET 21 ;
+             DIG 3 ;
+             GET 23 ;
              ADD ;
-             UPDATE 21 ;
+             UPDATE 23 ;
              LEVEL ;
-             UPDATE 29 ;
+             UPDATE 30 ;
              DUP ;
-             GET 27 ;
+             GET 29 ;
              LEVEL ;
              COMPARE ;
              GT ;
-             IF { SWAP ;
-                  DUP ;
-                  DUG 2 ;
+             IF { DUP 3 ;
                   CAR ;
                   CDR ;
                   CAR ;
                   PUSH nat 1 ;
-                  DUP 4 ;
+                  DUP 5 ;
                   CAR ;
                   CDR ;
                   CAR ;
                   DUP 4 ;
-                  GET 27 ;
+                  GET 29 ;
                   LEVEL ;
                   SUB ;
                   ABS ;
@@ -160,23 +181,23 @@
                   SWAP ;
                   DUP ;
                   DUG 2 ;
-                  DUP 5 ;
+                  DUP 6 ;
                   CAR ;
                   CAR ;
                   CDR ;
                   DIG 4 ;
-                  GET 17 ;
+                  GET 19 ;
                   MUL ;
                   EDIV ;
                   IF_NONE { PUSH string "DIV by 0" ; FAILWITH } {} ;
                   CAR ;
-                  UPDATE 23 ;
+                  UPDATE 25 ;
                   DUP ;
-                  GET 23 ;
+                  GET 25 ;
                   SWAP ;
                   DUP ;
                   DUG 2 ;
-                  GET 27 ;
+                  GET 29 ;
                   LEVEL ;
                   SUB ;
                   ABS ;
@@ -186,40 +207,38 @@
                   DUG 2 ;
                   DUP 4 ;
                   DIG 3 ;
-                  GET 27 ;
+                  GET 29 ;
                   ADD ;
-                  UPDATE 27 ;
+                  UPDATE 29 ;
                   DUP ;
-                  DUP ;
-                  DUG 2 ;
-                  GET 30 ;
+                  DIG 4 ;
                   DIG 3 ;
+                  EDIV ;
+                  IF_NONE { PUSH string "DIV by 0" ; FAILWITH } {} ;
+                  CAR ;
+                  DIG 2 ;
+                  GET 23 ;
+                  ADD ;
+                  UPDATE 23 ;
+                  PUSH nat 0 ;
+                  UPDATE 19 ;
+                  DUP ;
+                  DIG 3 ;
+                  CAR ;
+                  CAR ;
+                  CDR ;
+                  DIG 3 ;
+                  DUP 4 ;
+                  GET 25 ;
+                  MUL ;
                   EDIV ;
                   IF_NONE { PUSH string "DIV by 0" ; FAILWITH } {} ;
                   CAR ;
                   DIG 2 ;
                   GET 21 ;
                   ADD ;
-                  UPDATE 21 ;
-                  PUSH nat 0 ;
-                  UPDATE 17 ;
-                  DUP ;
-                  DIG 3 ;
-                  CAR ;
-                  CAR ;
-                  CDR ;
-                  DIG 3 ;
-                  DUP 4 ;
-                  GET 23 ;
-                  MUL ;
-                  EDIV ;
-                  IF_NONE { PUSH string "DIV by 0" ; FAILWITH } {} ;
-                  CAR ;
-                  DIG 2 ;
-                  GET 19 ;
-                  ADD ;
-                  UPDATE 19 }
-                { SWAP ; DROP } } ;
+                  UPDATE 21 }
+                { SWAP ; DIG 2 ; DROP 2 } } ;
          SWAP ;
          APPLY ;
          DIG 4 ;
@@ -283,9 +302,9 @@
                      IF_NONE { PUSH string "DIV by 0" ; FAILWITH } {} ;
                      CAR ;
                      DIG 2 ;
-                     GET 17 ;
+                     GET 19 ;
                      ADD ;
-                     UPDATE 17 ;
+                     UPDATE 19 ;
                      NIL operation ;
                      PAIR } }
                { DIG 2 ;
@@ -318,7 +337,7 @@
                      DUG 2 ;
                      GET 3 ;
                      DUP 4 ;
-                     GET 5 ;
+                     GET 4 ;
                      COMPARE ;
                      LE ;
                      PUSH mutez 1 ;
@@ -327,7 +346,7 @@
                      IF_NONE { PUSH string "DIV by 0" ; FAILWITH } {} ;
                      CAR ;
                      DUP 5 ;
-                     GET 5 ;
+                     GET 4 ;
                      COMPARE ;
                      LE ;
                      AND ;
@@ -337,7 +356,7 @@
                      CAR ;
                      DUP 3 ;
                      DUP 5 ;
-                     GET 5 ;
+                     GET 4 ;
                      DIG 4 ;
                      GET 3 ;
                      SUB ;
@@ -350,14 +369,9 @@
                      SWAP ;
                      UPDATE ;
                      UPDATE 1 ;
-                     SWAP ;
-                     DUP ;
-                     DUG 2 ;
-                     GET 6 ;
-                     UPDATE 30 ;
                      NIL operation ;
                      DUP 3 ;
-                     GET 5 ;
+                     GET 4 ;
                      DIG 3 ;
                      CAR ;
                      PUSH mutez 1 ;
@@ -384,7 +398,6 @@
                      SWAP ;
                      DUP ;
                      DUG 2 ;
-                     CAR ;
                      GET ;
                      IF_NONE
                        { NONE key_hash ; PUSH nat 0 ; PUSH nat 0 ; SWAP ; PAIR ; SWAP ; PAIR }
@@ -402,16 +415,12 @@
                      GET 3 ;
                      ADD ;
                      UPDATE 3 ;
-                     DUP 4 ;
-                     CAR ;
+                     DIG 3 ;
                      SWAP ;
                      SOME ;
                      SWAP ;
                      UPDATE ;
                      UPDATE 1 ;
-                     SWAP ;
-                     CDR ;
-                     UPDATE 30 ;
                      NIL operation ;
                      PAIR } } }
            { IF_LEFT
@@ -617,7 +626,7 @@
                            DUG 2 ;
                            GET 11 ;
                            CONTRACT %validate key_hash ;
-                           IF_NONE { DIG 2 ; CAR ; FAILWITH } { DIG 3 ; DROP } ;
+                           IF_NONE { DIG 2 ; CAR ; CAR ; FAILWITH } { DIG 3 ; DROP } ;
                            PUSH mutez 0 ;
                            DUP 4 ;
                            GET 7 ;

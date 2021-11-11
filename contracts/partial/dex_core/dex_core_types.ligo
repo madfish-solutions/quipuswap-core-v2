@@ -183,13 +183,6 @@ type reserves_res_t     is [@layout:comb] record [
   reserves                : reserves_t;
 ]
 
-type total_supply_req_t is token_id_t
-
-type total_supply_res_t is [@layout:comb] record [
-  request                 : total_supply_req_t;
-  total_supply            : nat;
-]
-
 type get_swap_min_res_t is [@layout:comb] record [
   swaps                   : list(swap_slice_t);
   amount_in               : nat;

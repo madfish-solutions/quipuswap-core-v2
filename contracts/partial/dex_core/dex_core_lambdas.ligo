@@ -73,6 +73,7 @@ function launch_exchange(
                 Tezos.amount / 1mutez,
                 init_shares,
                 s.cycle_duration,
+                token_id,
                 s.baker_registry
               )
             );
@@ -160,7 +161,6 @@ function invest_liquidity(
           params,
           tokens_b_required,
           tokens.token_b,
-          updated_pair.total_supply,
           updated_pair.tez_store
         ) # ops;
       }
@@ -230,7 +230,6 @@ function divest_liquidity(
           params.liquidity_receiver,
           token_b_divested,
           tokens.token_b,
-          updated_pair.total_supply,
           updated_pair.tez_store
         ) # ops;
       }
@@ -292,7 +291,6 @@ function flash_swap(
             params.receiver,
             params.amount_b_out,
             tokens.token_b,
-            pair.total_supply,
             pair.tez_store
           ) # ops;
         }
