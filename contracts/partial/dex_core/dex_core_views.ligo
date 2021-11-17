@@ -63,12 +63,31 @@
   } with response
 
 [@view] function get_swap_min_res(
-  const _params         : get_swap_min_res_t;
-  const _s              : full_storage_t)
+  const params          : get_swap_min_res_t;
+  const s               : full_storage_t)
                         : nat is
   block {
-    skip;
-  } with 0n
+    const first_swap : swap_slice_t = case List.head_opt(params.swaps) of
+    | Some(swap) -> swap
+    | None       -> failwith(DexCore.err_empty_route)
+    end;
+    const tokens : tokens_t = get_tokens_or_fail(first_swap.pair_id, s.storage.tokens);
+    const token : token_t = case first_swap.direction of
+    | A_to_b -> tokens.token_a
+    | B_to_a -> tokens.token_b
+    end;
+    const tmp : tmp_swap_t = List.fold(
+      swap_internal,
+      params.swaps,
+      record [
+        s         = s.storage;
+        operation = (None : option(operation));
+        token_in  = token;
+        receiver  = Constants.zero_address;
+        amount_in = params.amount_in;
+      ]
+    );
+  } with tmp.amount_in
 
 [@view] function get_toks_per_share(
   const requests        : list(toks_per_shr_req_t);
