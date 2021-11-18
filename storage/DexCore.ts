@@ -15,7 +15,7 @@ export const dexCoreStorage: DexCoreStorage = {
     token_to_id: MichelsonMap.fromLiteral({}),
     pairs: MichelsonMap.fromLiteral({}),
     permits: MichelsonMap.fromLiteral({}),
-    interface_tokens_fee: MichelsonMap.fromLiteral({}),
+    interface_fees: MichelsonMap.fromLiteral({}),
     managers: [],
     fees: {
       interface_fee: new BigNumber(0),

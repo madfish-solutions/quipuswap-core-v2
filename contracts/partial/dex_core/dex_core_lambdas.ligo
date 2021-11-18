@@ -388,7 +388,7 @@ function swap(
 
 function withdraw_profit(
   const action          : action_t;
-  var s                 : storage_t)
+  const s               : storage_t)
                         : return_t is
   block {
     var ops: list(operation) := nil;
@@ -405,6 +405,75 @@ function withdraw_profit(
           user_balance,
           get_tez_store_or_fail(pair.tez_store)
         ) # ops;
+      }
+    | _ -> skip
+    end
+  } with (ops, s)
+
+function claim_tok_interface_fee(
+  const action          : action_t;
+  var s                 : storage_t)
+                        : return_t is
+  block {
+    var ops: list(operation) := nil;
+
+    case action of
+    | Claim_tok_interface_fee(params) -> {
+        const interface_fee : nat = get_tok_interface_fee_or_default(
+          (params.token, Tezos.sender),
+          s.tok_interface_fee
+        );
+
+        assert_with_error(
+          params.amount * Constants.precision <= interface_fee,
+          DexCore.err_insufficient_interface_fee_balance
+        );
+
+        if interface_fee > 0n
+        then {
+          ops := transfer_token(Tezos.self_address, params.receiver, params.amount, params.token) # ops;
+
+          s.tok_interface_fee[(params.token, Tezos.sender)] := abs(
+            interface_fee - params.amount * Constants.precision
+          );
+        }
+        else skip;
+      }
+    | _ -> skip
+    end
+  } with (ops, s)
+
+function claim_tez_interface_fee(
+  const action          : action_t;
+  var s                 : storage_t)
+                        : return_t is
+  block {
+    var ops: list(operation) := nil;
+
+    case action of
+    | Claim_tez_interface_fee(params) -> {
+        const interface_fee : nat = get_tez_interface_fee_or_default(
+          (params.pair_id, Tezos.sender),
+          s.tez_interface_fee
+        );
+
+        assert_with_error(
+          params.amount * Constants.precision <= interface_fee,
+          DexCore.err_insufficient_interface_fee_balance
+        );
+
+        if interface_fee > 0n
+        then {
+          const pair : pair_t = get_pair_or_fail(params.pair_id, s.pairs);
+          const divest_params : divest_tez_t = record [
+            receiver     = (get_contract(params.receiver) : contract(unit));
+            user         = Tezos.sender;
+            amt          = params.amount;
+          ];
+
+          ops := get_divest_tez_op(divest_params, get_tez_store_or_fail(pair.tez_store)) # ops;
+        }
+        else skip;
       }
     | _ -> skip
     end
@@ -540,7 +609,7 @@ function update_token_metadata(
 
 function ban(
   const action          : action_t;
-  var s                 : storage_t)
+  const s               : storage_t)
                         : return_t is
   block {
     var ops : list(operation) := nil;

@@ -91,7 +91,7 @@ export type DexCoreStorage = {
     token_to_id: MichelsonMap<MichelsonMapKey, unknown>;
     pairs: MichelsonMap<MichelsonMapKey, unknown>;
     permits: MichelsonMap<MichelsonMapKey, unknown>;
-    interface_tokens_fee: MichelsonMap<MichelsonMapKey, unknown>;
+    interface_fees: MichelsonMap<MichelsonMapKey, unknown>;
     managers: string[];
     fees: Fees;
     tmp: Tmp;

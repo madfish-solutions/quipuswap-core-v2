@@ -25,74 +25,82 @@
   },
   {
     "index": 6,
-    "name": "set_admin"
+    "name": "claim_tok_interface_fee"
   },
   {
     "index": 7,
-    "name": "confirm_admin"
+    "name": "claim_tez_interface_fee"
   },
   {
     "index": 8,
-    "name": "set_flash_swaps_proxy"
+    "name": "set_admin"
   },
   {
     "index": 9,
-    "name": "add_managers"
+    "name": "confirm_admin"
   },
   {
     "index": 10,
-    "name": "set_fees"
+    "name": "set_flash_swaps_proxy"
   },
   {
     "index": 11,
-    "name": "set_cycle_duration"
+    "name": "add_managers"
   },
   {
     "index": 12,
-    "name": "update_token_metadata"
+    "name": "set_fees"
   },
   {
     "index": 13,
-    "name": "ban"
+    "name": "set_cycle_duration"
   },
   {
     "index": 14,
-    "name": "permit"
+    "name": "update_token_metadata"
   },
   {
     "index": 15,
-    "name": "set_expiry"
+    "name": "ban"
   },
   {
     "index": 16,
-    "name": "transfer"
+    "name": "permit"
   },
   {
     "index": 17,
-    "name": "update_operators"
+    "name": "set_expiry"
   },
   {
     "index": 18,
-    "name": "balance_of"
+    "name": "transfer"
   },
   {
     "index": 19,
-    "name": "fa12_balance_callback_1"
+    "name": "update_operators"
   },
   {
     "index": 20,
-    "name": "fa2_balance_callback_1"
+    "name": "balance_of"
   },
   {
     "index": 21,
-    "name": "fa12_balance_callback_2"
+    "name": "fa12_balance_callback_1"
   },
   {
     "index": 22,
-    "name": "fa2_balance_callback_2"
+    "name": "fa2_balance_callback_1"
   },
   {
     "index": 23,
+    "name": "fa12_balance_callback_2"
+  },
+  {
+    "index": 24,
+    "name": "fa2_balance_callback_2"
+  },
+  {
+    "index": 25,
     "name": "flash_swap_callback"
   }
 ]
