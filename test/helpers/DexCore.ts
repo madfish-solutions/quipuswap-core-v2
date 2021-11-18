@@ -103,40 +103,28 @@ export class DexCore {
   }
 
   async setLambdas(): Promise<void> {
-    let batch1: WalletParamsWithKind[] = [];
-    let batch2: WalletParamsWithKind[] = [];
+    let params: WalletParamsWithKind[] = [];
 
-    for (let i: number = 0; i < dexCorelambdas.length / 2; ++i) {
-      batch1.push({
-        kind: OpKind.TRANSACTION,
-        ...this.contract.methods
-          .setup_func(i, dexCorelambdas[i])
-          .toTransferParams(),
-      });
+    for (let i: number = 0; i < dexCorelambdas.length; ) {
+      for (let j: number = 0; j < Math.ceil(dexCorelambdas.length / 4); ++j) {
+        if (i + j >= dexCorelambdas.length) break;
+
+        params.push({
+          kind: OpKind.TRANSACTION,
+          ...this.contract.methods
+            .setup_func(i + j, dexCorelambdas[i + j])
+            .toTransferParams(),
+        });
+      }
+
+      const batch: WalletOperationBatch = this.tezos.wallet.batch(params);
+      const operation: WalletOperation = await batch.send();
+
+      await confirmOperation(this.tezos, operation.opHash);
+
+      params = [];
+      i += Math.ceil(dexCorelambdas.length / 4);
     }
-
-    for (
-      let i: number = Math.ceil(dexCorelambdas.length / 2);
-      i < dexCorelambdas.length;
-      ++i
-    ) {
-      batch2.push({
-        kind: OpKind.TRANSACTION,
-        ...this.contract.methods
-          .setup_func(i, dexCorelambdas[i])
-          .toTransferParams(),
-      });
-    }
-
-    let batch: WalletOperationBatch = this.tezos.wallet.batch(batch1);
-    let operation: WalletOperation = await batch.send();
-
-    await confirmOperation(this.tezos, operation.opHash);
-
-    batch = this.tezos.wallet.batch(batch2);
-    operation = await batch.send();
-
-    await confirmOperation(this.tezos, operation.opHash);
   }
 
   async launchExchange(
