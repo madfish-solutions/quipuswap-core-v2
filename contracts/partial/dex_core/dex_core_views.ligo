@@ -84,6 +84,7 @@
         operation = (None : option(operation));
         token_in  = token;
         receiver  = Constants.zero_address;
+        referrer  = Constants.zero_address;
         amount_in = params.amount_in;
       ]
     );

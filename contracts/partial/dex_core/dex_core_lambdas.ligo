@@ -366,6 +366,7 @@ function swap(
             operation = (None : option(operation));
             token_in  = token;
             receiver  = params.receiver;
+            referrer  = params.referrer;
             amount_in = params.amount_in;
           ]
         );

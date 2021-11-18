@@ -35,6 +35,7 @@ module DexCore is {
   [@inline] const err_wrong_flash_swap_returns                  : string = "133";
   [@inline] const err_can_not_refer_yourself                    : string = "134";
   [@inline] const err_tez_store_withdraw_rewards_entrypoint_404 : string = "135";
+  [@inline] const err_high_out                                  : string = "136";
 }
 
 module TezStore is {

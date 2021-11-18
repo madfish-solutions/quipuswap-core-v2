@@ -241,6 +241,15 @@ function calc_cumulative_prices(
     pair.token_b_pool := new_tok_b_pool;
   } with (pair, Tezos.now)
 
+function get_interface_tokens_fee(
+  const key             : token_t * address;
+  const fees            : big_map((token_t * address), nat))
+                        : nat is
+  case fees[key] of
+  | None      -> 0n
+  | Some(fee) -> fee
+  end
+
 function form_swap_data(
   const pair            : pair_t;
   const swap            : tokens_t;
@@ -309,13 +318,28 @@ function swap_internal(
 
     assert_with_error(swap.from_.token = tmp.token_in, DexCore.err_wrong_route);
 
-    const from_in_with_fee : nat = tmp.amount_in * (tmp.s.fees.interface_fee + tmp.s.fees.swap_fee);
-    const numerator : nat = from_in_with_fee * swap.to_.pool;
-    const denominator : nat = swap.from_.pool * Constants.precision + from_in_with_fee;
+    const fees : fees_t = tmp.s.fees;
+    const fee_rate : nat = fees.interface_fee + fees.swap_fee;
+    const rate_without_fee : nat = abs(Constants.precision - fee_rate);
+
+    const from_in_with_fee : nat = tmp.amount_in * rate_without_fee;
+    const numerator : nat = from_in_with_fee * swap.to_.pool / Constants.precision;
+    const denominator : nat = swap.from_.pool + from_in_with_fee;
     const out : nat = numerator / denominator;
 
+    const interface_fee : nat = tmp.amount_in * fees.interface_fee;
+
+    tmp.s.interface_tokens_fee[(tmp.token_in, tmp.referrer)] := get_interface_tokens_fee(
+      (tmp.token_in, tmp.referrer),
+      tmp.s.interface_tokens_fee
+    ) + interface_fee;
+
+    if out * Constants.precision > swap.to_.pool / 3n
+    then failwith(DexCore.err_high_out)
+    else skip;
+
     swap.to_.pool := abs(swap.to_.pool - out);
-    swap.from_.pool := abs(swap.from_.pool + tmp.amount_in - tmp.s.fees.interface_fee);
+    swap.from_.pool := abs(swap.from_.pool + tmp.amount_in * Constants.precision - interface_fee);
 
     tmp.amount_in := out;
     tmp.token_in := swap.to_.token;

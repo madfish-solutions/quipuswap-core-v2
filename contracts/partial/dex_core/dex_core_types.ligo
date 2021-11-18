@@ -53,8 +53,7 @@ type storage_t          is [@layout:comb] record [
   token_to_id             : big_map(bytes, token_id_t);
   pairs                   : big_map(token_id_t, pair_t);
   permits                 : big_map(address, user_permits_t);
-  referral_tokens         : big_map((token_t * address), nat);
-  referral_tez            : big_map((token_id_t * address), nat);
+  interface_tokens_fee    : big_map((token_t * address), nat);
   managers                : set(address);
   fees                    : fees_t;
   tmp                     : tmp_t;
@@ -110,6 +109,7 @@ type tmp_swap_t         is [@layout:comb] record [
   operation               : option(operation);
   token_in                : token_t;
   receiver                : address;
+  referrer                : address;
   amount_in               : nat;
 ]
 
