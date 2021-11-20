@@ -81,39 +81,45 @@ function iterate_transfer(
 
         s.ledger[(dst.to_, dst.token_id)] := receiver_balance + dst.amount;
 
-        const pair : pair_t = get_pair_or_fail(dst.token_id, s.pairs);
-        const tez_store : address = get_tez_store_or_fail(pair.tez_store);
-        const sender_candidate : key_hash =
-          case (Tezos.call_view("get_user_candidate", transfer_param.from_, tez_store) : option(key_hash)) of
-        | Some(v) -> v
-        | None    -> failwith(DexCore.err_tez_store_get_user_candidate_view_404)
-        end;
-        const receiver_candidate : key_hash =
-          case (Tezos.call_view("get_user_candidate", dst.to_, tez_store) : option(key_hash)) of
-        | Some(v) -> v
-        | None    -> failwith(DexCore.err_tez_store_get_user_candidate_view_404)
-        end;
+        const tokens : tokens_t = get_tokens_or_fail(dst.token_id, s.tokens);
 
-        ops := get_vote_op(
-          record [
-            voter          = dst.to_;
-            candidate      = receiver_candidate;
-            votes          = get_token_balance_or_default(dst.to_, dst.token_id, s.ledger);
-            cycle_duration = s.cycle_duration;
-            execute_voting = True;
-          ],
-          get_tez_store_or_fail(pair.tez_store)
-        ) # ops;
-        ops := get_vote_op(
-          record [
-            voter          = transfer_param.from_;
-            candidate      = sender_candidate;
-            votes          = get_token_balance_or_default(transfer_param.from_, dst.token_id, s.ledger);
-            cycle_duration = s.cycle_duration;
-            execute_voting = False;
-          ],
-          get_tez_store_or_fail(pair.tez_store)
-        ) # ops;
+        if tokens.token_b = Tez
+        then {
+          const pair : pair_t = get_pair_or_fail(dst.token_id, s.pairs);
+          const tez_store : address = get_tez_store_or_fail(pair.tez_store);
+          const sender_candidate : key_hash =
+            case (Tezos.call_view("get_user_candidate", transfer_param.from_, tez_store) : option(key_hash)) of
+          | Some(v) -> v
+          | None    -> failwith(DexCore.err_tez_store_get_user_candidate_view_404)
+          end;
+          const receiver_candidate : key_hash =
+            case (Tezos.call_view("get_user_candidate", dst.to_, tez_store) : option(key_hash)) of
+          | Some(v) -> v
+          | None    -> failwith(DexCore.err_tez_store_get_user_candidate_view_404)
+          end;
+
+          ops := get_vote_op(
+            record [
+              voter          = dst.to_;
+              candidate      = receiver_candidate;
+              votes          = get_token_balance_or_default(dst.to_, dst.token_id, s.ledger);
+              cycle_duration = s.cycle_duration;
+              execute_voting = True;
+            ],
+            get_tez_store_or_fail(pair.tez_store)
+          ) # ops;
+          ops := get_vote_op(
+            record [
+              voter          = transfer_param.from_;
+              candidate      = sender_candidate;
+              votes          = get_token_balance_or_default(transfer_param.from_, dst.token_id, s.ledger);
+              cycle_duration = s.cycle_duration;
+              execute_voting = False;
+            ],
+            get_tez_store_or_fail(pair.tez_store)
+          ) # ops;
+        }
+        else skip;
       } with (ops, s)
   } with (List.fold(make_transfer, transfer_param.txs, result))
 
