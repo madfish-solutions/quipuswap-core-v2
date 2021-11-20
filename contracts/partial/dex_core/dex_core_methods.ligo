@@ -35,6 +35,7 @@ function call_dex_core(
     | Fa12_balance_callback_2(_) -> 23n
     | Fa2_balance_callback_2(_)  -> 24n
     | Flash_swap_callback(_)     -> 25n
+    | Launch_callback(_)         -> 26n
     end;
 
     const lambda_bytes : bytes = case s.dex_core_lambdas[id] of

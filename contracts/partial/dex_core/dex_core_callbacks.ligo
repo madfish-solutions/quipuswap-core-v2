@@ -143,3 +143,20 @@ function flash_swap_callback(
     | _ -> skip
     end
   } with (ops, s)
+
+function launch_callback(
+  const action          : action_t;
+  var s                 : storage_t)
+                        : return_t is
+  block {
+    var ops: list(operation) := nil;
+
+    case action of
+    | Launch_callback(params) -> {
+        only_dex_core(Tezos.self_address);
+
+        ops := get_vote_op(params.vote_params, params.tez_store) # ops;
+      }
+    | _ -> skip
+    end
+  } with (ops, s)

@@ -60,6 +60,7 @@ type vote_t             is [@layout:comb] record [
   candidate               : key_hash;
   votes                   : nat;
   cycle_duration          : nat;
+  execute_voting          : bool;
 ]
 
 type is_banned_baker_t  is key_hash

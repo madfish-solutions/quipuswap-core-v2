@@ -438,26 +438,26 @@ function call_flash_swap_callback(
     get_flash_swap_callback(Tezos.self_address)
   )
 
-function get_fa12_balance_callback_1(const contr : address) : contract(nat) is
-  case (Tezos.get_entrypoint_opt("%fa12_balance_callback_1", contr) : option(contract(nat))) of
+function get_fa12_balance_callback_1(const this : address) : contract(nat) is
+  case (Tezos.get_entrypoint_opt("%fa12_balance_callback_1", this) : option(contract(nat))) of
   | Some(contr) -> contr
   | None        -> (failwith(DexCore.err_fa12_balance_callback_1_404) : contract(nat))
   end
 
-function get_fa2_balance_callback_1(const contr : address) : contract(list(balance_response_t)) is
-  case (Tezos.get_entrypoint_opt("%fa2_balance_callback_1", contr) : option(contract(list(balance_response_t)))) of
+function get_fa2_balance_callback_1(const this : address) : contract(list(balance_response_t)) is
+  case (Tezos.get_entrypoint_opt("%fa2_balance_callback_1", this) : option(contract(list(balance_response_t)))) of
   | Some(contr) -> contr
   | None        -> (failwith(DexCore.err_fa2_balance_callback_1_404) : contract(list(balance_response_t)))
   end
 
-function get_fa12_balance_callback_2(const contr : address) : contract(nat) is
-  case (Tezos.get_entrypoint_opt("%fa12_balance_callback_2", contr) : option(contract(nat))) of
+function get_fa12_balance_callback_2(const this : address) : contract(nat) is
+  case (Tezos.get_entrypoint_opt("%fa12_balance_callback_2", this) : option(contract(nat))) of
   | Some(contr) -> contr
   | None        -> (failwith(DexCore.err_fa12_balance_callback_2_404) : contract(nat))
   end
 
-function get_fa2_balance_callback_2(const contr : address) : contract(list(balance_response_t)) is
-  case (Tezos.get_entrypoint_opt("%fa2_balance_callback_2", contr) : option(contract(list(balance_response_t)))) of
+function get_fa2_balance_callback_2(const this : address) : contract(list(balance_response_t)) is
+  case (Tezos.get_entrypoint_opt("%fa2_balance_callback_2", this) : option(contract(list(balance_response_t)))) of
   | Some(contr) -> contr
   | None        -> (failwith(DexCore.err_fa2_balance_callback_2_404) : contract(list(balance_response_t)))
   end
@@ -498,4 +498,19 @@ function get_withdraw_profit_op(
     ],
     0mutez,
     get_tez_store_withdraw_rewards_entrypoint(tez_store)
+  )
+
+function get_launch_exchange_callback(const this : address) : contract(launch_callback_t) is
+  case (Tezos.get_entrypoint_opt("%launch_callback", this) : option(contract(launch_callback_t))) of
+  | Some(contr) -> contr
+  | None        -> (failwith(DexCore.err_launch_callback_404) : contract(launch_callback_t))
+  end
+
+function get_launch_exchange_callback_op(
+  const params          : launch_callback_t)
+                        : operation is
+  Tezos.transaction(
+    params,
+    0mutez,
+    get_launch_exchange_callback(Tezos.self_address)
   )

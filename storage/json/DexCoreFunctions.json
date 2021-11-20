@@ -102,5 +102,9 @@
   {
     "index": 25,
     "name": "flash_swap_callback"
+  },
+  {
+    "index": 26,
+    "name": "launch_callback"
   }
 ]

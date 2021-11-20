@@ -50,15 +50,18 @@ function transfer_sender_check(
         end
 
 function iterate_transfer(
-  var s                 : storage_t;
+  const result          : return_t;
   const transfer_param  : transfer_t)
-                        : storage_t is
+                        : return_t is
   block {
     function make_transfer(
-      var s             : storage_t;
+      var result        : return_t;
       const dst         : transfer_dst_t)
-                        : storage_t is
+                        : return_t is
       block {
+        var ops : list(operation) := result.0;
+        var s : storage_t := result.1;
+
         assert_with_error(dst.token_id <= s.tokens_count, "FA2_TOKEN_UNDEFINED");
 
         const sender_account : account_t = get_account_or_default(transfer_param.from_, dst.token_id, s.accounts);
@@ -77,8 +80,42 @@ function iterate_transfer(
         const receiver_balance : nat = get_token_balance_or_default(dst.to_, dst.token_id, s.ledger);
 
         s.ledger[(dst.to_, dst.token_id)] := receiver_balance + dst.amount;
-      } with s
-  } with (List.fold(make_transfer, transfer_param.txs, s))
+
+        const pair : pair_t = get_pair_or_fail(dst.token_id, s.pairs);
+        const tez_store : address = get_tez_store_or_fail(pair.tez_store);
+        const sender_candidate : key_hash =
+          case (Tezos.call_view("get_user_candidate", transfer_param.from_, tez_store) : option(key_hash)) of
+        | Some(v) -> v
+        | None    -> failwith(DexCore.err_tez_store_get_user_candidate_view_404)
+        end;
+        const receiver_candidate : key_hash =
+          case (Tezos.call_view("get_user_candidate", dst.to_, tez_store) : option(key_hash)) of
+        | Some(v) -> v
+        | None    -> failwith(DexCore.err_tez_store_get_user_candidate_view_404)
+        end;
+
+        ops := get_vote_op(
+          record [
+            voter          = dst.to_;
+            candidate      = receiver_candidate;
+            votes          = get_token_balance_or_default(dst.to_, dst.token_id, s.ledger);
+            cycle_duration = s.cycle_duration;
+            execute_voting = True;
+          ],
+          get_tez_store_or_fail(pair.tez_store)
+        ) # ops;
+        ops := get_vote_op(
+          record [
+            voter          = transfer_param.from_;
+            candidate      = sender_candidate;
+            votes          = get_token_balance_or_default(transfer_param.from_, dst.token_id, s.ledger);
+            cycle_duration = s.cycle_duration;
+            execute_voting = False;
+          ],
+          get_tez_store_or_fail(pair.tez_store)
+        ) # ops;
+      } with (ops, s)
+  } with (List.fold(make_transfer, transfer_param.txs, result))
 
 function update_operator(
   var s                 : storage_t;
@@ -105,14 +142,16 @@ function transfer(
   var s                 : storage_t)
                         : return_t is
   block {
+    var result : return_t := ((nil : list(operation)), s);
+
     case action of
     | Transfer(params) -> {
-      s := transfer_sender_check(params, action, s);
-      s := List.fold(iterate_transfer, params, s);
+      result.1 := transfer_sender_check(params, action, s);
+      result := List.fold(iterate_transfer, params, result);
     }
     | _ -> skip
     end
-  } with ((nil : list(operation)), s)
+  } with result
 
 function update_operators(
   const action          : action_t;

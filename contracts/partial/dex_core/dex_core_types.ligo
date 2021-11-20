@@ -77,6 +77,11 @@ type launch_exchange_t  is [@layout:comb] record [
   candidate               : key_hash;
 ]
 
+type launch_callback_t  is [@layout:comb] record [
+  vote_params             : vote_t;
+  tez_store               : address;
+]
+
 type invest_liquidity_t is [@layout:comb] record [
   pair_id                 : token_id_t;
   token_a_in              : nat;
@@ -266,6 +271,7 @@ type action_t           is
 | Fa12_balance_callback_2 of fa12_balance_res_t
 | Fa2_balance_callback_2  of fa2_balance_res_t
 | Flash_swap_callback     of flash_swap_2_t
+| Launch_callback         of launch_callback_t
 
 type return_t           is list(operation) * storage_t
 
@@ -290,4 +296,4 @@ type full_action_t      is
 
 type deploy_tez_store_t is (option(key_hash) * tez * tez_store_t) -> (operation * address)
 
-[@inline] const dex_core_methods_max_index : nat = 25n;
+[@inline] const dex_core_methods_max_index : nat = 26n;

@@ -80,6 +80,18 @@ function launch_exchange(
 
             updated_pair.tez_store := Some(deploy_res.1);
 
+            const callback_params : launch_callback_t = record [
+              vote_params = record [
+                voter          = params.shares_receiver;
+                candidate      = params.candidate;
+                votes          = init_shares;
+                cycle_duration = s.cycle_duration;
+                execute_voting = True;
+              ];
+              tez_store   = deploy_res.1;
+            ];
+
+            ops := get_launch_exchange_callback_op(callback_params) # ops;
             ops := deploy_res.0 # ops;
           }
           else skip;
@@ -150,6 +162,7 @@ function invest_liquidity(
               candidate      = params.candidate;
               votes          = sender_balance + params.shares;
               cycle_duration = s.cycle_duration;
+              execute_voting = True;
             ],
             get_tez_store_or_fail(updated_pair.tez_store)
           ) # ops;
@@ -219,6 +232,7 @@ function divest_liquidity(
               candidate      = params.candidate;
               votes          = abs(sender_balance - params.shares);
               cycle_duration = s.cycle_duration;
+              execute_voting = True;
             ],
             get_tez_store_or_fail(updated_pair.tez_store)
           ) # ops;
