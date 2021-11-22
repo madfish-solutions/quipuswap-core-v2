@@ -194,7 +194,7 @@ function div_ceil(
   | None         -> failwith(DexCore.err_no_liquidity)
   end
 
-function is_nat_or_fail(
+function get_nat_or_fail(
   const number          : int)
                         : nat is
   case is_nat(number) of

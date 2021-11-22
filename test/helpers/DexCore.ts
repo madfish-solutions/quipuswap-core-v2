@@ -1,12 +1,12 @@
 import {
   OriginationOperation,
+  TransactionOperation,
   WalletParamsWithKind,
   WalletOperationBatch,
   WalletOperation,
   TezosToolkit,
   Contract,
   OpKind,
-  TransactionOperation,
 } from "@taquito/taquito";
 
 import fs from "fs";
@@ -104,9 +104,14 @@ export class DexCore {
 
   async setLambdas(): Promise<void> {
     let params: WalletParamsWithKind[] = [];
+    const parts: number = 6;
 
     for (let i: number = 0; i < dexCorelambdas.length; ) {
-      for (let j: number = 0; j < Math.ceil(dexCorelambdas.length / 4); ++j) {
+      for (
+        let j: number = 0;
+        j < Math.ceil(dexCorelambdas.length / parts);
+        ++j
+      ) {
         if (i + j >= dexCorelambdas.length) break;
 
         params.push({
@@ -123,7 +128,7 @@ export class DexCore {
       await confirmOperation(this.tezos, operation.opHash);
 
       params = [];
-      i += Math.ceil(dexCorelambdas.length / 4);
+      i += Math.ceil(dexCorelambdas.length / parts);
     }
   }
 

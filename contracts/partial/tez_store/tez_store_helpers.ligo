@@ -50,11 +50,15 @@ function get_baker_registry_validate_entrypoint(
   end
 
 function get_pair_total_supply(
-  const response        : list(total_supply_res_t);
+  const dex_core        : address;
   const pair_id         : token_id_t)
                         : nat is
   block {
-    var total_supply : nat := 0n;
+    const total_supply_response : list(total_supply_res_t) =
+      case (Tezos.call_view("get_total_supply", list [pair_id], dex_core) : option(list(total_supply_res_t))) of
+    | Some(v) -> v
+    | None    -> failwith(TezStore.err_dex_core_get_total_supply_view_404)
+    end;
 
     function get_total_supply(
       var total_supply  : nat;
@@ -65,42 +69,68 @@ function get_pair_total_supply(
         then total_supply := v.total_supply
         else skip;
       } with total_supply;
+  } with List.fold(get_total_supply, total_supply_response, 0n)
 
-    total_supply := List.fold(get_total_supply, response, total_supply);
-  } with total_supply
+function get_voting_period(
+  const dex_core        : address)
+                        : nat is
+  block {
+    const voting_period : nat = case (Tezos.call_view("get_voting_period", Unit, dex_core) : option(nat)) of
+    | Some(v) -> v
+    | None    -> failwith(TezStore.err_dex_core_get_voting_period_view_404)
+    end;
+  } with voting_period
+
+function get_collecting_period(
+  const dex_core        : address)
+                        : nat is
+  block {
+    const collecting_period : nat = case (Tezos.call_view("get_collecting_period", Unit, dex_core) : option(nat)) of
+    | Some(v) -> v
+    | None    -> failwith(TezStore.err_dex_core_get_collecting_period_view_404)
+    end;
+  } with collecting_period
+
+function get_cycle_duration(
+  const dex_core        : address)
+                        : nat is
+  block {
+    const cycle_duration : nat = case (Tezos.call_view("get_cycle_duration", Unit, dex_core) : option(nat)) of
+    | Some(v) -> v
+    | None    -> failwith(TezStore.err_dex_core_get_cycle_duration_view_404)
+    end;
+  } with cycle_duration
 
 function update_rewards(
+  var new_amount        : nat;
   var s                 : storage_t)
                         : storage_t is
   block {
-    const total_supply_response : list(total_supply_res_t) =
-      case (Tezos.call_view("get_total_supply", list [s.pair_id], s.dex_core) : option(list(total_supply_res_t))) of
-    | Some(v) -> v
-    | None    -> failwith(TezStore.err_dex_core_get_total_supply_view_404)
-    end;
-    const total_supply : nat = get_pair_total_supply(total_supply_response, s.pair_id);
-    const rewards_time : nat =
-      if Tezos.level > s.period_finish
-      then s.period_finish
+    const total_supply : nat = get_pair_total_supply(s.dex_core, s.pair_id);
+    const rewards_level : nat =
+      if Tezos.level > s.collecting_period_ends
+      then s.collecting_period_ends
       else Tezos.level;
-    const new_reward : nat = abs(rewards_time - s.last_update_level) * s.reward_per_second;
+    const new_reward : nat = get_nat_or_fail(rewards_level - s.last_update_level) * s.reward_per_block;
 
     s.reward_per_share := s.reward_per_share + new_reward / total_supply;
+    s.next_reward := s.next_reward + new_amount;
     s.last_update_level := Tezos.level;
 
-    if Tezos.level > s.period_finish
+    if Tezos.level > s.collecting_period_ends
     then {
-      const period_duration : nat = ((abs(Tezos.level - s.period_finish) / Constants.voting_period) + 1n) *
-        Constants.voting_period;
+      const collecting_period : nat = get_collecting_period(s.dex_core);
+      const period_duration : nat = ((get_nat_or_fail(Tezos.level - s.collecting_period_ends) / collecting_period) + 1n) *
+        collecting_period * get_cycle_duration(s.dex_core);
 
-      s.reward_per_second :=  s.reward * Constants.precision / period_duration;
+      s.reward_per_block :=  s.next_reward * Constants.precision / period_duration;
 
-      const new_reward : nat = abs(Tezos.level - s.period_finish) * s.reward_per_second;
+      const new_reward : nat = get_nat_or_fail(Tezos.level - s.collecting_period_ends) * s.reward_per_block;
 
-      s.period_finish := s.period_finish + period_duration;
+      s.collecting_period_ends := s.collecting_period_ends + collecting_period;
       s.reward_per_share := s.reward_per_share + new_reward / total_supply;
-      s.reward := 0n;
-      s.total_reward := s.total_reward + s.reward_per_second * period_duration / Constants.precision;
+      s.total_reward := s.total_reward + s.reward_per_block * period_duration / Constants.precision;
+      s.next_reward := 0n;
     }
     else skip;
   } with s
@@ -115,7 +145,7 @@ function update_user_reward(
     var user_reward_info : user_reward_info_t := get_user_reward_info_or_default(user_address, s.users_rewards);
     const current_reward : nat = current_balance * s.reward_per_share;
 
-    user_reward_info.reward := user_reward_info.reward + abs(current_reward - user_reward_info.reward_paid);
+    user_reward_info.reward := user_reward_info.reward + get_nat_or_fail(current_reward - user_reward_info.reward_paid);
     user_reward_info.reward_paid := new_balance * s.reward_per_share;
 
     s.users_rewards[user_address] := user_reward_info;

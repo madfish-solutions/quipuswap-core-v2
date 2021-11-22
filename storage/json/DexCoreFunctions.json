@@ -57,54 +57,62 @@
   },
   {
     "index": 14,
-    "name": "update_token_metadata"
+    "name": "set_voting_period"
   },
   {
     "index": 15,
-    "name": "ban"
+    "name": "set_collecting_period"
   },
   {
     "index": 16,
-    "name": "permit"
+    "name": "update_token_metadata"
   },
   {
     "index": 17,
-    "name": "set_expiry"
+    "name": "ban"
   },
   {
     "index": 18,
-    "name": "transfer"
+    "name": "permit"
   },
   {
     "index": 19,
-    "name": "update_operators"
+    "name": "set_expiry"
   },
   {
     "index": 20,
-    "name": "balance_of"
+    "name": "transfer"
   },
   {
     "index": 21,
-    "name": "fa12_balance_callback_1"
+    "name": "update_operators"
   },
   {
     "index": 22,
-    "name": "fa2_balance_callback_1"
+    "name": "balance_of"
   },
   {
     "index": 23,
-    "name": "fa12_balance_callback_2"
+    "name": "fa12_balance_callback_1"
   },
   {
     "index": 24,
-    "name": "fa2_balance_callback_2"
+    "name": "fa2_balance_callback_1"
   },
   {
     "index": 25,
-    "name": "flash_swap_callback"
+    "name": "fa12_balance_callback_2"
   },
   {
     "index": 26,
+    "name": "fa2_balance_callback_2"
+  },
+  {
+    "index": 27,
+    "name": "flash_swap_callback"
+  },
+  {
+    "index": 28,
     "name": "launch_callback"
   }
 ]

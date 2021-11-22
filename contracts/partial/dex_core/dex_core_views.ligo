@@ -144,3 +144,21 @@
       (nil : list(cum_prices_res_t))
     );
   } with response
+
+[@view] function get_voting_period(
+  const _               : unit;
+  const s               : full_storage_t)
+                        : nat is
+  s.storage.voting_period
+
+[@view] function get_collecting_period(
+  const _               : unit;
+  const s               : full_storage_t)
+                        : nat is
+  s.storage.collecting_period
+
+[@view] function get_cycle_duration(
+  const _               : unit;
+  const s               : full_storage_t)
+                        : nat is
+  s.storage.cycle_duration

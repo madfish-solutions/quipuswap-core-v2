@@ -42,9 +42,12 @@ module DexCore is {
 }
 
 module TezStore is {
-  [@inline] const err_insufficient_tez_balance               : string = "200";
-  [@inline] const err_baker_registry_validate_entrypoint_404 : string = "201";
-  [@inline] const err_dex_core_get_total_supply_view_404     : string = "202";
+  [@inline] const err_insufficient_tez_balance                : string = "200";
+  [@inline] const err_baker_registry_validate_entrypoint_404  : string = "201";
+  [@inline] const err_dex_core_get_total_supply_view_404      : string = "202";
+  [@inline] const err_dex_core_get_voting_period_view_404     : string = "203";
+  [@inline] const err_dex_core_get_collecting_period_view_404 : string = "204";
+  [@inline] const err_dex_core_get_cycle_duration_view_404    : string = "205";
 }
 
 module Common is {

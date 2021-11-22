@@ -5,8 +5,6 @@ module Constants is {
 
   [@inline] const precision : nat = 1_000_000_000_000_000_000n; (* 10 ^ 18 *)
 
-  [@inline] const voting_period : nat = 12n; (* 12 cycles *)
-
   [@inline] const default_token_metadata : map(string, bytes) = map [
     "name" -> 0x517569707573776170204c5020546f6b656e;
     "symbol" -> 0x515054;

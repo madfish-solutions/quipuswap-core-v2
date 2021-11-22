@@ -130,8 +130,8 @@ function flash_swap_callback(
         const tok_a_bal_delta : int = s.tmp.token_a_balance_2 - s.tmp.token_a_balance_1;
         const tok_b_bal_delta : int = s.tmp.token_b_balance_2 - s.tmp.token_b_balance_1;
 
-        const new_token_a_pool : nat = abs(pair.token_a_pool + tok_a_bal_delta);
-        const new_token_b_pool : nat = abs(pair.token_b_pool + tok_b_bal_delta);
+        const new_token_a_pool : nat = get_nat_or_fail(pair.token_a_pool + tok_a_bal_delta);
+        const new_token_b_pool : nat = get_nat_or_fail(pair.token_b_pool + tok_b_bal_delta);
 
         assert_with_error(
           new_token_a_pool * new_token_b_pool >= pair.token_a_pool * pair.token_b_pool,

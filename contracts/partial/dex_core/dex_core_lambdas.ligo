@@ -70,11 +70,11 @@ function launch_exchange(
               get_tez_store_initial_storage(
                 params.candidate,
                 params.shares_receiver,
+                s.baker_registry,
                 Tezos.amount / 1mutez,
                 init_shares,
-                s.cycle_duration,
                 token_id,
-                s.baker_registry
+                s.collecting_period
               )
             );
 
@@ -82,11 +82,12 @@ function launch_exchange(
 
             const callback_params : launch_callback_t = record [
               vote_params = record [
-                voter          = params.shares_receiver;
-                candidate      = params.candidate;
-                votes          = init_shares;
-                cycle_duration = s.cycle_duration;
-                execute_voting = True;
+                voter           = params.shares_receiver;
+                candidate       = params.candidate;
+                execute_voting  = True;
+                votes           = init_shares;
+                current_balance = 0n;
+                new_balance     = init_shares;
               ];
               tez_store   = deploy_res.1;
             ];
@@ -158,11 +159,12 @@ function invest_liquidity(
         then {
           ops := get_vote_op(
             record [
-              voter          = params.shares_receiver;
-              candidate      = params.candidate;
-              votes          = sender_balance + params.shares;
-              cycle_duration = s.cycle_duration;
-              execute_voting = True;
+              voter           = params.shares_receiver;
+              candidate       = params.candidate;
+              execute_voting  = True;
+              votes           = sender_balance + params.shares;
+              current_balance = sender_balance;
+              new_balance     = get_token_balance_or_default(params.shares_receiver, params.pair_id, s.ledger);
             ],
             get_tez_store_or_fail(updated_pair.tez_store)
           ) # ops;
@@ -198,7 +200,7 @@ function divest_liquidity(
 
         assert_with_error(params.shares <= sender_balance, DexCore.err_insufficient_liquidity);
 
-        s.ledger[(Tezos.sender, params.pair_id)] := abs(sender_balance - params.shares);
+        s.ledger[(Tezos.sender, params.pair_id)] := get_nat_or_fail(sender_balance - params.shares);
 
         const token_a_divested : nat = pair.token_a_pool * params.shares / pair.total_supply;
         const token_b_divested : nat = pair.token_b_pool * params.shares / pair.total_supply;
@@ -212,13 +214,13 @@ function divest_liquidity(
         var (updated_pair, last_block_timestamp) := calc_cumulative_prices(
           pair,
           s.last_block_timestamp,
-          abs(pair.token_a_pool - token_a_divested),
-          abs(pair.token_b_pool - token_b_divested)
+          get_nat_or_fail(pair.token_a_pool - token_a_divested),
+          get_nat_or_fail(pair.token_b_pool - token_b_divested)
         );
 
         s.last_block_timestamp := last_block_timestamp;
 
-        updated_pair.total_supply := abs(updated_pair.total_supply - params.shares);
+        updated_pair.total_supply := get_nat_or_fail(updated_pair.total_supply - params.shares);
 
         s.pairs[params.pair_id] := updated_pair;
 
@@ -228,11 +230,12 @@ function divest_liquidity(
         then {
           ops := get_vote_op(
             record [
-              voter          = Tezos.sender;
-              candidate      = params.candidate;
-              votes          = abs(sender_balance - params.shares);
-              cycle_duration = s.cycle_duration;
-              execute_voting = True;
+              voter           = Tezos.sender;
+              candidate       = params.candidate;
+              execute_voting  = True;
+              votes           = get_nat_or_fail(sender_balance - params.shares);
+              current_balance = sender_balance;
+              new_balance     = get_token_balance_or_default(Tezos.sender, params.pair_id, s.ledger);
             ],
             get_tez_store_or_fail(updated_pair.tez_store)
           ) # ops;
@@ -447,7 +450,7 @@ function claim_tok_interface_fee(
         then {
           ops := transfer_token(Tezos.self_address, params.receiver, params.amount, params.token) # ops;
 
-          s.tok_interface_fee[(params.token, Tezos.sender)] := abs(
+          s.tok_interface_fee[(params.token, Tezos.sender)] := get_nat_or_fail(
             interface_fee - params.amount * Constants.precision
           );
         }
@@ -589,6 +592,36 @@ function set_cycle_duration(
         only_admin(s.admin);
 
         s.cycle_duration := cycle_duration;
+      }
+    | _ -> skip
+    end
+  } with ((nil : list(operation)), s)
+
+function set_voting_period(
+  const action          : action_t;
+  var s                 : storage_t)
+                        : return_t is
+  block {
+    case action of
+    | Set_voting_period(voting_period) -> {
+        only_admin(s.admin);
+
+        s.voting_period := voting_period;
+      }
+    | _ -> skip
+    end
+  } with ((nil : list(operation)), s)
+
+function set_collecting_period(
+  const action          : action_t;
+  var s                 : storage_t)
+                        : return_t is
+  block {
+    case action of
+    | Set_collecting_period(collecting_period) -> {
+        only_admin(s.admin);
+
+        s.collecting_period := collecting_period;
       }
     | _ -> skip
     end

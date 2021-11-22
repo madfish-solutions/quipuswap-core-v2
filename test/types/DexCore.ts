@@ -103,8 +103,10 @@ export type DexCoreStorage = {
     flash_swaps_proxy: string;
     permits_counter: BigNumber;
     default_expiry: BigNumber;
-    cycle_duration: BigNumber;
     tokens_count: BigNumber;
+    cycle_duration: BigNumber;
+    collecting_period: BigNumber;
+    voting_period: BigNumber;
   };
   dex_core_lambdas: MichelsonMap<MichelsonMapKey, unknown>;
   metadata: MichelsonMap<MichelsonMapKey, unknown>;

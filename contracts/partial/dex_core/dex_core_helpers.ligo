@@ -181,42 +181,41 @@ function divest_tez_or_transfer_tokens(
 function get_tez_store_initial_storage(
   const candidate       : key_hash;
   const share_receiver  : address;
+  const baker_registry  : address;
   const tez_bal         : nat;
   const init_shares     : nat;
-  const cycle_duration  : nat;
   const pair_id         : nat;
-  const baker_registry  : address)
+  const collect_period  : nat)
                         : tez_store_t is
   record [
-    users             = big_map [
+    users              = big_map [
       share_receiver -> record [
         candidate = Some(candidate);
         tez_bal   = tez_bal;
         votes     = init_shares;
       ]
     ];
-    bakers            = big_map [
+    bakers             = big_map [
       candidate -> record [
         ban_start_time = Tezos.now;
         ban_period     = 0n;
         votes          = init_shares;
       ]
     ];
-    users_rewards     = (Big_map.empty : big_map(address, user_reward_info_t));
-    current_delegated = candidate;
-    next_candidate    = Constants.zero_key_hash;
-    baker_registry    = baker_registry;
-    dex_core          = Tezos.self_address;
-    pair_id           = pair_id;
-    total_votes       = init_shares;
-    reward            = 0n;
-    total_reward      = 0n;
-    reward_paid       = 0n;
-    reward_per_share  = 0n;
-    reward_per_second = 0n;
-    cycle_duration    = cycle_duration;
-    period_finish     = Tezos.level;
-    last_update_level = Tezos.level;
+    users_rewards          = (Big_map.empty : big_map(address, user_reward_info_t));
+    current_delegated      = candidate;
+    next_candidate         = Constants.zero_key_hash;
+    baker_registry         = baker_registry;
+    dex_core               = Tezos.self_address;
+    pair_id                = pair_id;
+    next_reward            = 0n;
+    total_reward           = 0n;
+    reward_paid            = 0n;
+    reward_per_share       = 0n;
+    reward_per_block       = 0n;
+    last_update_level      = Tezos.level;
+    collecting_period_ends = Tezos.level + collect_period;
+    voting_period_ends     = Tezos.level;
   ]
 
 function calc_cumulative_prices(
@@ -226,7 +225,7 @@ function calc_cumulative_prices(
   const new_tok_b_pool  : nat)
                         : (pair_t * timestamp) is
   block {
-    const time_elasped : nat = abs(Tezos.now - last_block_time);
+    const time_elasped : nat = get_nat_or_fail(Tezos.now - last_block_time);
 
     if (time_elasped > 0n and pair.token_a_pool =/= 0n and pair.token_b_pool =/= 0n)
     then {
@@ -329,7 +328,7 @@ function swap_internal(
 
     const fees : fees_t = tmp.s.fees;
     const fee_rate : nat = fees.interface_fee + fees.swap_fee;
-    const rate_without_fee : nat = abs(Constants.precision - fee_rate);
+    const rate_without_fee : nat = get_nat_or_fail(Constants.precision - fee_rate);
 
     const from_in_with_fee : nat = tmp.amount_in * rate_without_fee;
     const numerator : nat = from_in_with_fee * swap.to_.pool / Constants.precision;
@@ -354,8 +353,8 @@ function swap_internal(
 
     assert_with_error(out * Constants.precision <= swap.to_.pool / 3n, DexCore.err_high_out);
 
-    swap.to_.pool := abs(swap.to_.pool - out);
-    swap.from_.pool := abs(swap.from_.pool + tmp.amount_in * Constants.precision - interface_fee);
+    swap.to_.pool := get_nat_or_fail(swap.to_.pool - out);
+    swap.from_.pool := get_nat_or_fail(swap.from_.pool + tmp.amount_in * Constants.precision - interface_fee);
 
     tmp.amount_in := out;
     tmp.token_in := swap.to_.token;

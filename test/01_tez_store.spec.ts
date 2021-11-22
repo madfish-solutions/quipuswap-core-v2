@@ -5,8 +5,6 @@ import { Utils } from "./helpers/Utils";
 
 import { rejects } from "assert";
 
-import { Contract, OriginationOperation, VIEW_LAMBDA } from "@taquito/taquito";
-
 import chai, { expect } from "chai";
 
 import { BigNumber } from "bignumber.js";
@@ -24,7 +22,6 @@ describe("TezStore tests", async () => {
   var utils: Utils;
   var bakerRegistry: BakerRegistry;
   var tezStore: TezStore;
-  var lambdaContract: Contract;
 
   before("setup", async () => {
     utils = new Utils();
@@ -40,14 +37,6 @@ describe("TezStore tests", async () => {
     tezStoreStorage.dex_core = bob.pkh;
 
     tezStore = await TezStore.originate(utils.tezos, tezStoreStorage);
-
-    const operation: OriginationOperation =
-      await utils.tezos.contract.originate({
-        code: VIEW_LAMBDA.code,
-        storage: VIEW_LAMBDA.storage,
-      });
-
-    lambdaContract = await operation.contract();
   });
 
   it("should fail if not dex core is trying to invest tez", async () => {

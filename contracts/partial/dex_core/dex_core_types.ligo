@@ -65,8 +65,10 @@ type storage_t          is [@layout:comb] record [
   flash_swaps_proxy       : address;
   permits_counter         : counter_t;
   default_expiry          : seconds_t;
-  cycle_duration          : nat;
   tokens_count            : nat;
+  cycle_duration          : nat;
+  collecting_period       : nat;
+  voting_period           : nat;
 ]
 
 type launch_exchange_t  is [@layout:comb] record [
@@ -170,6 +172,10 @@ type set_fees_t         is fees_t
 
 type set_cycle_dur_t    is nat
 
+type set_vote_period_t  is nat
+
+type set_coll_period_t  is nat
+
 type metadata_pair_t    is [@layout:comb] record [
   key                     : string;
   value                   : bytes;
@@ -256,6 +262,8 @@ type action_t           is
 | Add_managers            of add_managers_t
 | Set_fees                of set_fees_t
 | Set_cycle_duration      of set_cycle_dur_t
+| Set_voting_period       of set_vote_period_t
+| Set_collecting_period   of set_coll_period_t
 | Update_token_metadata   of upd_tok_meta_t
 | Ban                     of ban_t
 (* PERMIT *)
@@ -296,4 +304,4 @@ type full_action_t      is
 
 type deploy_tez_store_t is (option(key_hash) * tez * tez_store_t) -> (operation * address)
 
-[@inline] const dex_core_methods_max_index : nat = 26n;
+[@inline] const dex_core_methods_max_index : nat = 28n;

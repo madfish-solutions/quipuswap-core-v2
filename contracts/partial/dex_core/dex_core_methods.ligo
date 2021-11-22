@@ -20,22 +20,24 @@ function call_dex_core(
     | Add_managers(_)            -> 11n
     | Set_fees(_)                -> 12n
     | Set_cycle_duration(_)      -> 13n
-    | Update_token_metadata(_)   -> 14n
-    | Ban(_)                     -> 15n
+    | Set_voting_period(_)       -> 14n
+    | Set_collecting_period(_)   -> 15n
+    | Update_token_metadata(_)   -> 16n
+    | Ban(_)                     -> 17n
     (* PERMIT *)
-    | Permit(_)                  -> 16n
-    | Set_expiry(_)              -> 17n
+    | Permit(_)                  -> 18n
+    | Set_expiry(_)              -> 19n
     (* FA2 *)
-    | Transfer(_)                -> 18n
-    | Update_operators(_)        -> 19n
-    | Balance_of(_)              -> 20n
+    | Transfer(_)                -> 20n
+    | Update_operators(_)        -> 21n
+    | Balance_of(_)              -> 22n
     (* CALLBACKS *)
-    | Fa12_balance_callback_1(_) -> 21n
-    | Fa2_balance_callback_1(_)  -> 22n
-    | Fa12_balance_callback_2(_) -> 23n
-    | Fa2_balance_callback_2(_)  -> 24n
-    | Flash_swap_callback(_)     -> 25n
-    | Launch_callback(_)         -> 26n
+    | Fa12_balance_callback_1(_) -> 23n
+    | Fa2_balance_callback_1(_)  -> 24n
+    | Fa12_balance_callback_2(_) -> 25n
+    | Fa2_balance_callback_2(_)  -> 26n
+    | Flash_swap_callback(_)     -> 27n
+    | Launch_callback(_)         -> 28n
     end;
 
     const lambda_bytes : bytes = case s.dex_core_lambdas[id] of

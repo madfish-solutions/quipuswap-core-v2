@@ -75,7 +75,7 @@ function iterate_transfer(
 
         assert_with_error(sender_balance >= dst.amount, "FA2_INSUFFICIENT_BALANCE");
 
-        s.ledger[(transfer_param.from_, dst.token_id)] := abs(sender_balance - dst.amount);
+        s.ledger[(transfer_param.from_, dst.token_id)] := get_nat_or_fail(sender_balance - dst.amount);
 
         const receiver_balance : nat = get_token_balance_or_default(dst.to_, dst.token_id, s.ledger);
 
@@ -97,24 +97,28 @@ function iterate_transfer(
           | Some(v) -> v
           | None    -> failwith(DexCore.err_tez_store_get_user_candidate_view_404)
           end;
+          const new_sender_balance : nat = get_token_balance_or_default(transfer_param.from_, dst.token_id, s.ledger);
+          const new_receiver_balance : nat = get_token_balance_or_default(dst.to_, dst.token_id, s.ledger);
 
           ops := get_vote_op(
             record [
-              voter          = dst.to_;
-              candidate      = receiver_candidate;
-              votes          = get_token_balance_or_default(dst.to_, dst.token_id, s.ledger);
-              cycle_duration = s.cycle_duration;
-              execute_voting = True;
+              voter           = dst.to_;
+              candidate       = receiver_candidate;
+              execute_voting  = True;
+              votes           = new_receiver_balance;
+              current_balance = receiver_balance;
+              new_balance     = new_receiver_balance;
             ],
             get_tez_store_or_fail(pair.tez_store)
           ) # ops;
           ops := get_vote_op(
             record [
-              voter          = transfer_param.from_;
-              candidate      = sender_candidate;
-              votes          = get_token_balance_or_default(transfer_param.from_, dst.token_id, s.ledger);
-              cycle_duration = s.cycle_duration;
-              execute_voting = False;
+              voter           = transfer_param.from_;
+              candidate       = sender_candidate;
+              execute_voting  = False;
+              votes           = new_sender_balance;
+              current_balance = sender_balance;
+              new_balance     = new_sender_balance;
             ],
             get_tez_store_or_fail(pair.tez_store)
           ) # ops;

@@ -24,15 +24,14 @@ type storage_t          is [@layout:comb] record [
   baker_registry          : address;
   dex_core                : address;
   pair_id                 : token_id_t;
-  total_votes             : nat;
-  reward                  : nat;
+  next_reward             : nat;
   total_reward            : nat;
   reward_paid             : nat;
   reward_per_share        : nat;
-  reward_per_second       : nat;
-  cycle_duration          : nat;
-  period_finish           : nat;
+  reward_per_block        : nat;
   last_update_level       : nat;
+  collecting_period_ends  : nat;
+  voting_period_ends      : nat;
 ]
 
 type invest_tez_t       is address
@@ -58,9 +57,10 @@ type ban_baker_t        is [@layout:comb] record [
 type vote_t             is [@layout:comb] record [
   voter                   : address;
   candidate               : key_hash;
-  votes                   : nat;
-  cycle_duration          : nat;
   execute_voting          : bool;
+  votes                   : nat;
+  current_balance         : nat;
+  new_balance             : nat;
 ]
 
 type is_banned_baker_t  is key_hash

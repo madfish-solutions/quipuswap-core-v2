@@ -24,7 +24,7 @@ function divest_tez(
       TezStore.err_insufficient_tez_balance
     );
 
-    s.users[params.user] := user with record [ tez_bal = abs(user.tez_bal - params.amt)];
+    s.users[params.user] := user with record [ tez_bal = get_nat_or_fail(user.tez_bal - params.amt)];
   } with (list [transfer_tez(params.receiver, params.amt)], s)
 
 function withdraw_rewards(
@@ -34,13 +34,13 @@ function withdraw_rewards(
   block {
     only_dex_core(s.dex_core);
 
-    s := update_rewards(s);
+    s := update_rewards(0n, s);
     s := update_user_reward(params.user, params.current_balance, params.new_balance, s);
 
     var user_reward_info : user_reward_info_t := get_user_reward_info_or_default(params.user, s.users_rewards);
     const reward : nat = user_reward_info.reward;
 
-    user_reward_info.reward := abs(reward - reward / Constants.precision * Constants.precision);
+    user_reward_info.reward := get_nat_or_fail(reward - reward / Constants.precision * Constants.precision);
 
     s.users_rewards[params.user] := user_reward_info;
     s.reward_paid := s.reward_paid + reward / Constants.precision;
@@ -79,6 +79,9 @@ function vote(
                         : return_t is
   block {
     only_dex_core(s.dex_core);
+
+    s := update_rewards(0n, s);
+    s := update_user_reward(params.voter, params.current_balance, params.new_balance, s);
 
     const prev_current_delegated : key_hash = s.current_delegated;
     var user : user_t := get_user_or_default(params.voter, s.users);
@@ -131,7 +134,7 @@ function vote(
 
     var ops: list(operation) := nil;
 
-    if params.execute_voting
+    if Tezos.level >= s.voting_period_ends and params.execute_voting
     then {
       if get_is_banned_baker(next_candidate)
       then s.next_candidate := Constants.zero_key_hash
@@ -159,6 +162,8 @@ function vote(
         }
         else skip;
       };
+
+      s.voting_period_ends := Tezos.level + (get_cycle_duration(s.dex_core) * get_voting_period(s.dex_core));
     }
     else skip;
   } with (ops, s)
@@ -167,6 +172,5 @@ function default(
   var s                 : storage_t)
                         : return_t is
   block {
-    s := update_rewards(s);
-    s.reward := s.reward + Tezos.amount / 1mutez;
+    s := update_rewards(Tezos.amount / 1mutez, s);
   } with ((nil : list(operation)), s)

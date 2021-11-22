@@ -128,7 +128,15 @@
       - ✅ should fail if not admin is trying to set cycle duration;
       - ✅ should update cycle duration.
 
-  13. `update_token_metadata`:
+  13. `set_voting_period`:
+
+      -
+
+  14. `set_collecting_period`:
+
+      -
+
+  15. `update_token_metadata`:
 
       - ✅ should fail if not manager is trying to update token metadata;
       - ✅ should fail if pair not listed;
@@ -136,7 +144,7 @@
       - ✅ should set new fields in token metadata;
       - ✅ should update existing and set new fields in token metadata.
 
-  14. `ban`:
+  16. `ban`:
 
       - ✅ should fail if not admin is trying to ban baker;
       - ✅ should fail if pair not listed;
@@ -144,66 +152,78 @@
       - ✅ should ban baker;
       - ✅ should unban baker.
 
-  15. `permit`:
+  17. `permit`:
 
       -
 
-  16. `ser_expiry`:
+  18. `ser_expiry`:
 
       -
 
-  17. `transfer`:
+  19. `transfer`:
 
       -
 
-  18. `update_operators`:
+  20. `update_operators`:
 
       -
 
-  19. `balance_of`:
+  21. `balance_of`:
 
       -
 
-  20. `fa12_balance_callback_1`:
+  22. `fa12_balance_callback_1`:
 
       -
 
-  21. `fa2_balance_callback_1`:
+  23. `fa2_balance_callback_1`:
 
       -
 
-  22. `fa12_balance_callback_2`:
+  24. `fa12_balance_callback_2`:
 
       -
 
-  23. `fa2_balance_callback_2`:
+  25. `fa2_balance_callback_2`:
 
       -
 
-  24. `flash_swap_callback`:
+  26. `flash_swap_callback`:
 
       -
 
-  25. `check_is_banned_baker` [VIEW]:
+  27. `check_is_banned_baker` [VIEW]:
 
       -
 
-  26. `get_reserves` [VIEW]:
+  28. `get_reserves` [VIEW]:
 
       -
 
-  27. `get_total_supply` [VIEW]:
+  29. `get_total_supply` [VIEW]:
 
       -
 
-  28. `get_swap_min_res` [VIEW]:
+  30. `get_swap_min_res` [VIEW]:
 
       -
 
-  29. `get_toks_per_share` [VIEW]:
+  31. `get_toks_per_share` [VIEW]:
 
       -
 
-  30. `get_cumulative_prices` [VIEW]:
+  32. `get_cumulative_prices` [VIEW]:
+
+      -
+
+  33. `get_voting_period` [VIEW]:
+
+      -
+
+  34. `get_collecting_period` [VIEW]:
+
+      -
+
+  35. `get_cycle_duration` [VIEW]:
 
       -
