@@ -12,10 +12,10 @@ yargs
         alias: "f",
         type: "string",
       },
-      contract: {
+      contracts_list: {
         description: "the contract to compile",
         alias: "c",
-        type: "string",
+        type: "array",
       },
       contracts_dir: {
         description: "contracts directory",
@@ -36,7 +36,7 @@ yargs
     async (argv) => {
       compile(
         argv.format,
-        argv.contract,
+        argv.contracts_list as string[],
         argv.contracts_dir,
         argv.output_dir,
         argv.ligo_version

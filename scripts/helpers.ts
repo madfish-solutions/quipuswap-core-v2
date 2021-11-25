@@ -53,13 +53,15 @@ export const getMigrationsList = () => {
 
 export const compile = async (
   format: string,
-  contract: string = undefined,
+  contractsList: string[] = [],
   contractsDir: string = env.contractsDir,
   outputDir: string = env.buildDir,
   ligoVersion: string = env.ligoVersion
 ) => {
   const ligo: string = getLigo(true, ligoVersion);
-  const contracts: string[] = !contract ? getContractsList() : [contract];
+  const contracts: string[] = !contractsList.length
+    ? getContractsList()
+    : contractsList;
 
   contracts.forEach((contract) => {
     const michelson: string = execSync(
