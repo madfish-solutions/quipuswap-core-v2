@@ -258,6 +258,15 @@ function get_tez_interface_fee_or_default(
   | Some(fee) -> fee
   end
 
+function get_auction_fee_or_default(
+  const token           : token_t;
+  const fees            : big_map(token_t, nat))
+                        : nat is
+  case fees[token] of
+  | None      -> 0n
+  | Some(fee) -> fee
+  end
+
 function form_swap_data(
   const pair            : pair_t;
   const swap            : tokens_t;
@@ -327,7 +336,7 @@ function swap_internal(
     assert_with_error(swap.from_.token = tmp.token_in, DexCore.err_wrong_route);
 
     const fees : fees_t = tmp.s.fees;
-    const fee_rate : nat = fees.interface_fee + fees.swap_fee;
+    const fee_rate : nat = fees.interface_fee + fees.swap_fee + fees.auction_fee;
     const rate_without_fee : nat = get_nat_or_fail(Constants.precision - fee_rate);
 
     const from_in_with_fee : nat = tmp.amount_in * rate_without_fee;
@@ -336,6 +345,7 @@ function swap_internal(
     const out : nat = numerator / denominator;
 
     const interface_fee : nat = tmp.amount_in * fees.interface_fee;
+    const auction_fee : nat = tmp.amount_in * fees.auction_fee;
 
     if tmp.token_in = Tez
     then {
@@ -351,10 +361,14 @@ function swap_internal(
       ) + interface_fee;
     };
 
+    tmp.s.auction_fee[tmp.token_in] := get_auction_fee_or_default(tmp.token_in, tmp.s.auction_fee) + auction_fee;
+
     assert_with_error(out * Constants.precision <= swap.to_.pool / 3n, DexCore.err_high_out);
 
     swap.to_.pool := get_nat_or_fail(swap.to_.pool - out);
-    swap.from_.pool := get_nat_or_fail(swap.from_.pool + tmp.amount_in * Constants.precision - interface_fee);
+    swap.from_.pool := get_nat_or_fail(
+      swap.from_.pool + tmp.amount_in * Constants.precision - interface_fee - auction_fee
+    );
 
     tmp.amount_in := out;
     tmp.token_in := swap.to_.token;
@@ -512,4 +526,22 @@ function get_launch_exchange_callback_op(
     params,
     0mutez,
     get_launch_exchange_callback(Tezos.self_address)
+  )
+
+function get_auction_receive_fee_entrypoint(
+  const auction         : address)
+                        : contract(receive_fee_t) is
+  case (Tezos.get_entrypoint_opt("%receive_fee", auction) : option(contract(receive_fee_t))) of
+  | Some(contr) -> contr
+  | None        -> (failwith(DexCore.err_auction_receive_fee_entrypoint_404) : contract(receive_fee_t))
+  end
+
+function get_auction_receive_fee_op(
+  const params          : receive_fee_t;
+  const auction         : address)
+                        : operation is
+  Tezos.transaction(
+    params,
+    0mutez,
+    get_auction_receive_fee_entrypoint(auction)
   )

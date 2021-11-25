@@ -39,6 +39,7 @@ module DexCore is {
   [@inline] const err_insufficient_interface_fee_balance        : string = "137";
   [@inline] const err_tez_store_get_user_candidate_view_404     : string = "138";
   [@inline] const err_launch_callback_404                       : string = "139";
+  [@inline] const err_auction_receive_fee_entrypoint_404        : string = "140";
 }
 
 module TezStore is {

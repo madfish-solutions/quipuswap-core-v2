@@ -34,11 +34,6 @@ type storage_t          is [@layout:comb] record [
   min_bid                 : nat;
 ]
 
-type receive_fee_t      is [@layout:comb] record [
-  token                   : token_t;
-  fee                     : nat;
-]
-
 type launch_auction_t   is [@layout:comb] record [
   token                   : token_t;
   amt                     : nat;

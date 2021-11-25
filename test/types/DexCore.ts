@@ -41,6 +41,8 @@ export type Pair = {
 export type Fees = {
   interface_fee: BigNumber;
   swap_fee: BigNumber;
+  auction_fee: BigNumber;
+  withdraw_fee_reward: BigNumber;
 };
 
 export type Tmp = {
@@ -93,6 +95,7 @@ export type DexCoreStorage = {
     permits: MichelsonMap<MichelsonMapKey, unknown>;
     tok_interface_fee: MichelsonMap<MichelsonMapKey, unknown>;
     tez_interface_fee: MichelsonMap<MichelsonMapKey, unknown>;
+    auction_fee: MichelsonMap<MichelsonMapKey, unknown>;
     managers: string[];
     fees: Fees;
     tmp: Tmp;
@@ -101,6 +104,7 @@ export type DexCoreStorage = {
     pending_admin: string;
     baker_registry: string;
     flash_swaps_proxy: string;
+    auction: string;
     permits_counter: BigNumber;
     default_expiry: BigNumber;
     tokens_count: BigNumber;

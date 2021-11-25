@@ -17,10 +17,13 @@ export const dexCoreStorage: DexCoreStorage = {
     permits: MichelsonMap.fromLiteral({}),
     tok_interface_fee: MichelsonMap.fromLiteral({}),
     tez_interface_fee: MichelsonMap.fromLiteral({}),
+    auction_fee: MichelsonMap.fromLiteral({}),
     managers: [],
     fees: {
       interface_fee: new BigNumber(0),
       swap_fee: new BigNumber(0),
+      auction_fee: new BigNumber(0),
+      withdraw_fee_reward: new BigNumber(0),
     },
     tmp: {
       pair_id: new BigNumber(0),
@@ -37,6 +40,7 @@ export const dexCoreStorage: DexCoreStorage = {
     pending_admin: zeroAddress,
     baker_registry: zeroAddress,
     flash_swaps_proxy: zeroAddress,
+    auction: zeroAddress,
     permits_counter: new BigNumber(0),
     default_expiry: new BigNumber(0),
     tokens_count: new BigNumber(0),

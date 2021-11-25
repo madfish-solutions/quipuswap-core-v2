@@ -21,6 +21,8 @@ type tokens_t           is [@layout:comb] record [
 type fees_t             is [@layout:comb] record [
   interface_fee           : nat;
   swap_fee                : nat;
+  auction_fee             : nat;
+  withdraw_fee_reward     : nat;
 ]
 
 type flash_swap_t       is [@layout:comb] record [
@@ -55,6 +57,7 @@ type storage_t          is [@layout:comb] record [
   permits                 : big_map(address, user_permits_t);
   tok_interface_fee       : big_map((token_t * address), nat);
   tez_interface_fee       : big_map((token_id_t * address), nat);
+  auction_fee             : big_map(token_t, nat);
   managers                : set(address);
   fees                    : fees_t;
   tmp                     : tmp_t;
@@ -63,6 +66,7 @@ type storage_t          is [@layout:comb] record [
   pending_admin           : address;
   baker_registry          : address;
   flash_swaps_proxy       : address;
+  auction                 : address;
   permits_counter         : counter_t;
   default_expiry          : seconds_t;
   tokens_count            : nat;
@@ -155,11 +159,15 @@ type claim_tez_fee_t    is [@layout:comb] record [
   amount                  : nat;
 ]
 
+type withdraw_fee_t     is token_t
+
 type set_admin_t        is address
 
 type confirm_admin_t    is unit
 
 type set_swaps_proxy_t  is address
+
+type set_aution_t       is address
 
 type add_manager_t      is [@layout:comb] record [
   manager                 : address;
@@ -255,10 +263,12 @@ type action_t           is
 | Withdraw_profit         of withdraw_profit_t
 | Claim_tok_interface_fee of claim_tok_fee_t
 | Claim_tez_interface_fee of claim_tez_fee_t
+| Withdraw_auction_fee    of withdraw_fee_t
 (* ADMIN *)
 | Set_admin               of set_admin_t
 | Confirm_admin           of confirm_admin_t
 | Set_flash_swaps_proxy   of set_swaps_proxy_t
+| Set_auction             of set_aution_t
 | Add_managers            of add_managers_t
 | Set_fees                of set_fees_t
 | Set_cycle_duration      of set_cycle_dur_t
@@ -304,4 +314,4 @@ type full_action_t      is
 
 type deploy_tez_store_t is (option(key_hash) * tez * tez_store_t) -> (operation * address)
 
-[@inline] const dex_core_methods_max_index : nat = 28n;
+[@inline] const dex_core_methods_max_index : nat = 30n;

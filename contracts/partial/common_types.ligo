@@ -18,3 +18,8 @@ type total_supply_res_t is [@layout:comb] record [
   request                 : total_supply_req_t;
   total_supply            : nat;
 ]
+
+type receive_fee_t      is [@layout:comb] record [
+  token                   : token_t;
+  fee                     : nat;
+]

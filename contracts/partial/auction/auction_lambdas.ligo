@@ -11,18 +11,11 @@ function receive_fee(
     | Receive_fee(params) -> {
         only_dex_core(s.dex_core);
 
-        var fee : nat := params.fee;
-
-        case params.token of
-        | Tez -> fee := Tezos.amount / 1mutez
-        | _   -> ops := transfer_token(Tezos.sender, Tezos.self_address, fee, params.token) # ops
-        end;
-
-        const dev_fee : nat = fee * s.fees.dev_fee / Constants.precision;
+        const dev_fee : nat = params.fee * s.fees.dev_fee / Constants.precision;
 
         s.dev_fee_balance[params.token] := get_fee(params.token, s.dev_fee_balance) + dev_fee;
         s.public_fee_balance[params.token] := get_fee(params.token, s.public_fee_balance) +
-          get_nat_or_fail(fee - dev_fee);
+          get_nat_or_fail(params.fee - dev_fee);
       }
     | _ -> skip
     end

@@ -104,7 +104,7 @@ export class DexCore {
 
   async setLambdas(): Promise<void> {
     let params: WalletParamsWithKind[] = [];
-    const parts: number = 6;
+    const parts: number = 7;
 
     for (let i: number = 0; i < dexCorelambdas.length; ) {
       for (

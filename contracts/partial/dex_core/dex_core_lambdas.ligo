@@ -496,6 +496,32 @@ function claim_tez_interface_fee(
     end
   } with (ops, s)
 
+function withdraw_auction_fee(
+  const action          : action_t;
+  var s                 : storage_t)
+                        : return_t is
+  block {
+    var ops : list(operation) := nil;
+
+    case action of
+    | Withdraw_auction_fee(token) -> {
+        const auction_fee : nat = get_auction_fee_or_default(token, s.auction_fee);
+        const reward : nat = auction_fee * s.fees.withdraw_fee_reward / Constants.precision;
+        const params : receive_fee_t = record [
+          token = token;
+          fee   = auction_fee;
+        ];
+
+        ops := get_auction_receive_fee_op(params, s.auction) # ops;
+        ops := transfer_token(Tezos.self_address, s.auction, get_nat_or_fail(auction_fee - reward), token) # ops;
+        ops := transfer_token(Tezos.self_address, Tezos.sender, reward, token) # ops;
+
+        s.auction_fee[token] := 0n;
+      }
+    | _ -> skip
+    end
+  } with (ops, s)
+
 (* ADMIN *)
 
 function set_admin(
@@ -539,6 +565,21 @@ function set_flash_swaps_proxy(
         only_admin(s.admin);
 
         s.flash_swaps_proxy := flash_swaps_proxy;
+      }
+    | _ -> skip
+    end
+  } with ((nil : list(operation)), s)
+
+function set_auction(
+  const action          : action_t;
+  var s                 : storage_t)
+                        : return_t is
+  block {
+    case action of
+    | Set_auction(auction) -> {
+        only_admin(s.admin);
+
+        s.auction := auction;
       }
     | _ -> skip
     end

@@ -203,6 +203,8 @@ describe("DexCore tests (admin's methods)", async () => {
     const fees: Fees = {
       interface_fee: new BigNumber(100),
       swap_fee: new BigNumber(666),
+      auction_fee: new BigNumber(13),
+      withdraw_fee_reward: new BigNumber(21),
     };
 
     await utils.setProvider(alice.sk);
@@ -217,6 +219,8 @@ describe("DexCore tests (admin's methods)", async () => {
     const fees: Fees = {
       interface_fee: new BigNumber(100),
       swap_fee: new BigNumber(666),
+      auction_fee: new BigNumber(13),
+      withdraw_fee_reward: new BigNumber(21),
     };
 
     await utils.setProvider(bob.sk);
@@ -229,6 +233,12 @@ describe("DexCore tests (admin's methods)", async () => {
     expect(dexCore.storage.storage.fees.swap_fee).to.be.bignumber.equal(
       fees.swap_fee
     );
+    expect(dexCore.storage.storage.fees.auction_fee).to.be.bignumber.equal(
+      fees.auction_fee
+    );
+    expect(
+      dexCore.storage.storage.fees.withdraw_fee_reward
+    ).to.be.bignumber.equal(fees.withdraw_fee_reward);
   });
 
   it("should fail if not admin is trying to set cycle duration", async () => {
