@@ -18,7 +18,7 @@ function launch_exchange(
   var s                 : storage_t)
                         : return_t is
   block {
-    var ops: list(operation) := nil;
+    var ops : list(operation) := nil;
 
     case action of
     | Launch_exchange(params) -> {
@@ -118,7 +118,7 @@ function invest_liquidity(
   var s                 : storage_t)
                         : return_t is
   block {
-    var ops: list(operation) := nil;
+    var ops : list(operation) := nil;
 
     case action of
     | Invest_liquidity(params) -> {
@@ -188,7 +188,7 @@ function divest_liquidity(
   var s                 : storage_t)
                         : return_t is
   block {
-    var ops: list(operation) := nil;
+    var ops : list(operation) := nil;
 
     case action of
     | Divest_liquidity(params) -> {
@@ -274,7 +274,7 @@ function flash_swap(
   var s                 : storage_t)
                         : return_t is
   block {
-    var ops: list(operation) := nil;
+    var ops : list(operation) := nil;
 
     case action of
     | Flash_swap(params) -> {
@@ -355,7 +355,7 @@ function swap(
   var s                 : storage_t)
                         : return_t is
   block {
-    var ops: list(operation) := nil;
+    var ops : list(operation) := nil;
 
     case action of
     | Swap(params) -> {
@@ -408,7 +408,7 @@ function withdraw_profit(
   const s               : storage_t)
                         : return_t is
   block {
-    var ops: list(operation) := nil;
+    var ops : list(operation) := nil;
 
     case action of
     | Withdraw_profit(params) -> {
@@ -432,7 +432,7 @@ function claim_tok_interface_fee(
   var s                 : storage_t)
                         : return_t is
   block {
-    var ops: list(operation) := nil;
+    var ops : list(operation) := nil;
 
     case action of
     | Claim_tok_interface_fee(params) -> {
@@ -465,7 +465,7 @@ function claim_tez_interface_fee(
   var s                 : storage_t)
                         : return_t is
   block {
-    var ops: list(operation) := nil;
+    var ops : list(operation) := nil;
 
     case action of
     | Claim_tez_interface_fee(params) -> {

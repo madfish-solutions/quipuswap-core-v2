@@ -1,0 +1,58 @@
+[
+  {
+    "index": 0,
+    "name": "receive_fee"
+  },
+  {
+    "index": 1,
+    "name": "launch_auction"
+  },
+  {
+    "index": 2,
+    "name": "place_bid"
+  },
+  {
+    "index": 3,
+    "name": "claim"
+  },
+  {
+    "index": 4,
+    "name": "set_admin"
+  },
+  {
+    "index": 5,
+    "name": "confirm_admin"
+  },
+  {
+    "index": 6,
+    "name": "set_baker"
+  },
+  {
+    "index": 7,
+    "name": "set_fees"
+  },
+  {
+    "index": 8,
+    "name": "set_auction_duration"
+  },
+  {
+    "index": 9,
+    "name": "set_min_bid"
+  },
+  {
+    "index": 10,
+    "name": "update_whitelist"
+  },
+  {
+    "index": 11,
+    "name": "withdraw_dev_fee"
+  },
+  {
+    "index": 12,
+    "name": "withdraw_public_fee"
+  },
+  {
+    "index": 13,
+    "name": "burn_bid_fee"
+  }
+]

@@ -33,6 +33,14 @@ To just compile lambdas run the next command:
   yarn compile-lambdas
 ```
 
+As well, you can separate compile lambdas for `DexCore` or `Auction` contracts.
+For this purpose run one of the next commands:
+
+```shell
+yarn compile-dex-core-lambdas
+yarn compile-auction-lambdas
+```
+
 Also, you can pre compile `TezStore` contract separately (in `.tz` format, needed
 for deploying from the `DexCore`). For this purpose run the next command:
 
@@ -67,7 +75,7 @@ By default, the contracts will be deployed to the `development` network (in the
 Docker container).
 
 Also, you can specify the network for deploying (possible networks:
-`hangzhounet`, `mainnet`):
+`hangzhounet`, `idiazabalnet`, `mainnet`):
 
 ```shell
   yarn migrate -n [network_name]
@@ -77,5 +85,6 @@ Or just execute one of this commands:
 
 ```shell
   yarn migrate-hangzhounet
+  yarn migrate-idiazabalnet
   yarn migrate-mainnet
 ```

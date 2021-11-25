@@ -41,8 +41,8 @@
          PAIR ;
          PAIR ;
          PAIR ;
-         PUSH string "303" ;
-         PUSH string "306" ;
+         PUSH string "403" ;
+         PUSH string "406" ;
          PAIR ;
          PUSH key_hash "tz1ZZZZZZZZZZZZZZZZZZZZZZZZZZZZNkiRg" ;
          PUSH nat 1000000000000000000 ;

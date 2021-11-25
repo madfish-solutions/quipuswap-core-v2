@@ -50,15 +50,29 @@ module TezStore is {
   [@inline] const err_dex_core_get_cycle_duration_view_404    : string = "205";
 }
 
+module Auction is {
+  [@inline] const err_unknown_func          : string = "300";
+  [@inline] const err_cant_unpack_lambda    : string = "301";
+  [@inline] const err_high_func_index       : string = "302";
+  [@inline] const err_func_set              : string = "303";
+  [@inline] const err_auction_not_found     : string = "304";
+  [@inline] const err_whitelisted_token     : string = "305";
+  [@inline] const err_not_whitelisted_token : string = "306";
+  [@inline] const err_insufficient_balance  : string = "307";
+  [@inline] const err_low_bid               : string = "308";
+  [@inline] const err_auction_finished      : string = "309";
+  [@inline] const err_auction_not_finished  : string = "310";
+}
+
 module Common is {
-  [@inline] const err_not_admin                      : string = "300";
-  [@inline] const err_not_pending_admin              : string = "301";
-  [@inline] const err_not_manager                    : string = "302";
-  [@inline] const err_not_dex_core                   : string = "303";
-  [@inline] const err_fa12_transfer_entrypoint_404   : string = "304";
-  [@inline] const err_fa2_transfer_entrypoint_404    : string = "305";
-  [@inline] const err_not_a_nat                      : string = "306";
-  [@inline] const err_fa12_balance_of_entrypoint_404 : string = "307";
-  [@inline] const err_fa2_balance_of_entrypoint_404  : string = "308";
-  [@inline] const err_wrong_token_type               : string = "309";
+  [@inline] const err_not_admin                      : string = "400";
+  [@inline] const err_not_pending_admin              : string = "401";
+  [@inline] const err_not_manager                    : string = "402";
+  [@inline] const err_not_dex_core                   : string = "403";
+  [@inline] const err_fa12_transfer_entrypoint_404   : string = "404";
+  [@inline] const err_fa2_transfer_entrypoint_404    : string = "405";
+  [@inline] const err_not_a_nat                      : string = "406";
+  [@inline] const err_fa12_balance_of_entrypoint_404 : string = "407";
+  [@inline] const err_fa2_balance_of_entrypoint_404  : string = "408";
+  [@inline] const err_wrong_token_type               : string = "409";
 }

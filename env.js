@@ -21,6 +21,12 @@ module.exports = {
       network_id: "*",
       secretKey: dev.sk,
     },
+    idiazabalnet: {
+      rpc: "https://idiazabalnet.ecadinfra.com/",
+      port: 443,
+      network_id: "*",
+      secretKey: dev.sk,
+    },
     mainnet: {
       rpc: "https://mainnet.api.tez.ie",
       port: 443,

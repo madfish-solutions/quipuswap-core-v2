@@ -89,7 +89,7 @@ function flash_swap_callback(
   var s                 : storage_t)
                         : return_t is
   block {
-    var ops: list(operation) := nil;
+    var ops : list(operation) := nil;
 
     case action of
     | Flash_swap_callback(_) -> {
@@ -149,7 +149,7 @@ function launch_callback(
   var s                 : storage_t)
                         : return_t is
   block {
-    var ops: list(operation) := nil;
+    var ops : list(operation) := nil;
 
     case action of
     | Launch_callback(params) -> {
