@@ -17,7 +17,7 @@ import env from "../../env";
 
 import { confirmOperation } from "../../scripts/confirmation";
 
-import dexCorelambdas from "../../build/lambdas/dex_core_lambdas.json";
+import auctionLambdas from "../../build/lambdas/auction_lambdas.json";
 
 import { Utils } from "./Utils";
 
@@ -107,18 +107,18 @@ export class Auction {
     let params: WalletParamsWithKind[] = [];
     const parts: number = 1;
 
-    for (let i: number = 0; i < dexCorelambdas.length; ) {
+    for (let i: number = 0; i < auctionLambdas.length; ) {
       for (
         let j: number = 0;
-        j < Math.ceil(dexCorelambdas.length / parts);
+        j < Math.ceil(auctionLambdas.length / parts);
         ++j
       ) {
-        if (i + j >= dexCorelambdas.length) break;
+        if (i + j >= auctionLambdas.length) break;
 
         params.push({
           kind: OpKind.TRANSACTION,
           ...this.contract.methods
-            .setup_func(i + j, dexCorelambdas[i + j])
+            .setup_func(i + j, auctionLambdas[i + j])
             .toTransferParams(),
         });
       }
@@ -129,7 +129,7 @@ export class Auction {
       await confirmOperation(this.tezos, operation.opHash);
 
       params = [];
-      i += Math.ceil(dexCorelambdas.length / parts);
+      i += Math.ceil(auctionLambdas.length / parts);
     }
   }
 

@@ -133,7 +133,10 @@ export const compileLambdas = async (
     }
 
     fs.writeFileSync(
-      `${env.buildDir}/lambdas/dex_core_lambdas.json`,
+      `${env.buildDir}/lambdas/${contract.slice(
+        15,
+        contract.length - 5
+      )}_lambdas.json`,
       JSON.stringify(res)
     );
   } catch (e) {

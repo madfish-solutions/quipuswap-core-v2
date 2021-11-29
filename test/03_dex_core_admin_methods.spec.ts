@@ -1,11 +1,11 @@
 import { Common, DexCore as DexCoreErrors } from "./helpers/Errors";
 import { BakerRegistry } from "./helpers/BakerRegistry";
+import { FlashSwapsProxy } from "./helpers/FlashSwapsProxy";
+import { Auction } from "./helpers/Auction";
 import { Utils, zeroAddress } from "./helpers/Utils";
 import { DexCore } from "./helpers/DexCore";
 import { FA12 } from "./helpers/FA12";
 import { FA2 } from "./helpers/FA2";
-
-import { Contract, OriginationOperation, VIEW_LAMBDA } from "@taquito/taquito";
 
 import { rejects } from "assert";
 
@@ -18,6 +18,8 @@ import { alice, bob, dev } from "../scripts/sandbox/accounts";
 import { confirmOperation } from "../scripts/confirmation";
 
 import { bakerRegistryStorage } from "../storage/BakerRegistry";
+import { flashSwapsProxyStorage } from "../storage/FlashSwapsProxy";
+import { auctionStorage } from "../storage/Auction";
 import { dexCoreStorage } from "../storage/DexCore";
 import { fa12Storage } from "../storage/test/FA12";
 import { fa2Storage } from "../storage/test/FA2";
@@ -36,10 +38,12 @@ chai.use(require("chai-bignumber")(BigNumber));
 describe("DexCore tests (admin's methods)", async () => {
   var utils: Utils;
   var bakerRegistry: BakerRegistry;
+  var flashSwapsProxy: FlashSwapsProxy;
+  var auction: Auction;
   var dexCore: DexCore;
   var firstToken: FA12;
   var secondToken: FA2;
-  var lambdaContract: Contract;
+  var quipuToken: FA2;
 
   before("setup", async () => {
     utils = new Utils();
@@ -61,6 +65,13 @@ describe("DexCore tests (admin's methods)", async () => {
 
     await dexCore.setLambdas();
 
+    flashSwapsProxyStorage.dex_core = dexCore.contract.address;
+
+    flashSwapsProxy = await FlashSwapsProxy.originate(
+      utils.tezos,
+      flashSwapsProxyStorage
+    );
+
     const transferOperation = await utils.tezos.contract.transfer({
       to: dev.pkh,
       amount: 50_000_000,
@@ -71,14 +82,15 @@ describe("DexCore tests (admin's methods)", async () => {
 
     firstToken = await FA12.originate(utils.tezos, fa12Storage);
     secondToken = await FA2.originate(utils.tezos, fa2Storage);
+    quipuToken = await FA2.originate(utils.tezos, fa2Storage);
 
-    const operation: OriginationOperation =
-      await utils.tezos.contract.originate({
-        code: VIEW_LAMBDA.code,
-        storage: VIEW_LAMBDA.storage,
-      });
+    auctionStorage.storage.admin = alice.pkh;
+    auctionStorage.storage.dex_core = dexCore.contract.address;
+    auctionStorage.storage.quipu_token = quipuToken.contract.address;
 
-    lambdaContract = await operation.contract();
+    auction = await Auction.originate(utils.tezos, auctionStorage);
+
+    await auction.setLambdas();
   });
 
   it("should fail if not admin is trying to setup new pending admin", async () => {
@@ -114,6 +126,52 @@ describe("DexCore tests (admin's methods)", async () => {
 
     expect(dexCore.storage.storage.admin).to.equal(bob.pkh);
     expect(dexCore.storage.storage.pending_admin).to.equal(zeroAddress);
+  });
+
+  it("should fail if not admin is trying to setup new flash swaps proxy", async () => {
+    await utils.setProvider(alice.sk);
+    await rejects(
+      dexCore.setFlashSwapsProxy(flashSwapsProxy.contract.address),
+      (err: Error) => {
+        expect(err.message).to.equal(Common.ERR_NOT_ADMIN);
+
+        return true;
+      }
+    );
+  });
+
+  it("should setup new flash swaps proxy", async () => {
+    expect(dexCore.storage.storage.flash_swaps_proxy).to.equal(zeroAddress);
+
+    await utils.setProvider(bob.sk);
+    await dexCore.setFlashSwapsProxy(flashSwapsProxy.contract.address);
+    await dexCore.updateStorage();
+
+    expect(dexCore.storage.storage.flash_swaps_proxy).to.equal(
+      flashSwapsProxy.contract.address
+    );
+  });
+
+  it("should fail if not admin is trying to setup new auction", async () => {
+    await utils.setProvider(alice.sk);
+    await rejects(
+      dexCore.setAuction(auction.contract.address),
+      (err: Error) => {
+        expect(err.message).to.equal(Common.ERR_NOT_ADMIN);
+
+        return true;
+      }
+    );
+  });
+
+  it("should setup new auction", async () => {
+    expect(dexCore.storage.storage.auction).to.equal(zeroAddress);
+
+    await utils.setProvider(bob.sk);
+    await dexCore.setAuction(auction.contract.address);
+    await dexCore.updateStorage();
+
+    expect(dexCore.storage.storage.auction).to.equal(auction.contract.address);
   });
 
   it("should fail if not admin is trying to add new manager", async () => {
@@ -194,9 +252,15 @@ describe("DexCore tests (admin's methods)", async () => {
     await dexCore.updateStorage();
 
     expect(dexCore.storage.storage.managers.length).to.equal(2);
-    expect(dexCore.storage.storage.managers).to.contain(alice.pkh);
-    expect(dexCore.storage.storage.managers).to.contain(bob.pkh);
-    expect(dexCore.storage.storage.managers).to.not.contain(dev.pkh);
+    expect(dexCore.storage.storage.managers).to.contain(
+      addManagerParams[0].manager
+    );
+    expect(dexCore.storage.storage.managers).to.contain(
+      addManagerParams[1].manager
+    );
+    expect(dexCore.storage.storage.managers).to.not.contain(
+      addManagerParams[2].manager
+    );
   });
 
   it("should fail if not admin is trying to set fees", async () => {
@@ -242,15 +306,14 @@ describe("DexCore tests (admin's methods)", async () => {
   });
 
   it("should fail if not admin is trying to set cycle duration", async () => {
-    await utils.setProvider(alice.sk);
-    await rejects(
-      dexCore.setCycleDuration(new BigNumber(666)),
-      (err: Error) => {
-        expect(err.message).to.equal(Common.ERR_NOT_ADMIN);
+    const cycleDuration: BigNumber = new BigNumber(666);
 
-        return true;
-      }
-    );
+    await utils.setProvider(alice.sk);
+    await rejects(dexCore.setCycleDuration(cycleDuration), (err: Error) => {
+      expect(err.message).to.equal(Common.ERR_NOT_ADMIN);
+
+      return true;
+    });
   });
 
   it("should update cycle duration", async () => {
@@ -262,6 +325,59 @@ describe("DexCore tests (admin's methods)", async () => {
 
     expect(dexCore.storage.storage.cycle_duration).to.be.bignumber.equal(
       cycleDuration
+    );
+  });
+
+  it("should fail if not admin is trying to setup new voting period", async () => {
+    const votingPeriod: BigNumber = new BigNumber(666);
+
+    await utils.setProvider(alice.sk);
+    await rejects(dexCore.setVotingPeriod(votingPeriod), (err: Error) => {
+      expect(err.message).to.equal(Common.ERR_NOT_ADMIN);
+
+      return true;
+    });
+  });
+
+  it("should setup new voting period", async () => {
+    expect(dexCore.storage.storage.voting_period).to.be.bignumber.equal(0);
+
+    const votingPeriod: BigNumber = new BigNumber(666);
+
+    await utils.setProvider(bob.sk);
+    await dexCore.setVotingPeriod(votingPeriod);
+    await dexCore.updateStorage();
+
+    expect(dexCore.storage.storage.voting_period).to.be.bignumber.equal(
+      votingPeriod
+    );
+  });
+
+  it("should fail if not admin is trying to setup new collecting period", async () => {
+    const collectingPeriod: BigNumber = new BigNumber(666);
+
+    await utils.setProvider(alice.sk);
+    await rejects(
+      dexCore.setCollectingPeriod(collectingPeriod),
+      (err: Error) => {
+        expect(err.message).to.equal(Common.ERR_NOT_ADMIN);
+
+        return true;
+      }
+    );
+  });
+
+  it("should setup new collecting period", async () => {
+    expect(dexCore.storage.storage.collecting_period).to.be.bignumber.equal(0);
+
+    const collectingPeriod: BigNumber = new BigNumber(666);
+
+    await utils.setProvider(bob.sk);
+    await dexCore.setCollectingPeriod(collectingPeriod);
+    await dexCore.updateStorage();
+
+    expect(dexCore.storage.storage.collecting_period).to.be.bignumber.equal(
+      collectingPeriod
     );
   });
 

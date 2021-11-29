@@ -43,7 +43,7 @@ export class FlashSwapsProxy {
     const operation: OriginationOperation = await tezos.contract
       .originate({
         code: artifacts.michelson,
-        storage: storage,
+        storage: storage.dex_core,
       })
       .catch((e) => {
         console.error(e);

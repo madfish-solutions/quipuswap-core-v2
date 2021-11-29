@@ -55,9 +55,9 @@
 
   7. `is_banned_baker` [VIEW]:
 
-     - ✅ should return true if baker is banned;
-     - ✅ should return false if baker is not banned;
-     - ✅ should return false if baker's banning period is finished.
+     - should return true if baker is banned;
+     - should return false if baker is not banned;
+     - should return false if baker's banning period is finished.
 
   8. `get_tez_balance` [VIEW]:
 
@@ -127,11 +127,13 @@
 
   12. `set_flash_swaps_proxy`:
 
-      -
+      - ✅ should fail if not admin is trying to setup new flash swaps proxy;
+      - ✅ should setup new flash swaps proxy.
 
   13. `set_auction`:
 
-      -
+      - ✅ should fail if not admin is trying to setup new auction;
+      - ✅ should setup new auction.
 
   14. `add_managers`:
 
@@ -154,11 +156,13 @@
 
   17. `set_voting_period`:
 
-      -
+      - ✅ should fail if not admin is trying to setup new voting period;
+      - ✅ should setup new voting period.
 
   18. `set_collecting_period`:
 
-      -
+      - ✅ should fail if not admin is trying to setup new collecting period;
+      - ✅ should setup new collecting period.
 
   19. `update_token_metadata`:
 
