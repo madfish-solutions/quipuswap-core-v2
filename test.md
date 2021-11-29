@@ -49,13 +49,21 @@
 
      -
 
-  6. `is_banned_baker` [VIEW]:
+  6. `default`:
+
+     -
+
+  7. `is_banned_baker` [VIEW]:
 
      - ✅ should return true if baker is banned;
      - ✅ should return false if baker is not banned;
      - ✅ should return false if baker's banning period is finished.
 
-  7. `get_tez_balance` [VIEW]:
+  8. `get_tez_balance` [VIEW]:
+
+     -
+
+  9. `get_user_candidate` [VIEW]:
 
      -
 
@@ -63,7 +71,7 @@
 
 - 02_flash_swaps_proxy.spec.ts
 
-  1.  `quipuswap_v2_call`:
+  1.  `call`:
 
       -
 
@@ -95,21 +103,37 @@
 
      -
 
-  7. `set_admin`:
-
-     - ✅ should fail if not admin is trying to setup new pending admin;
-     - ✅ should setup new pending admin by admin.
-
-  8. `confirm_admin`:
-
-     - ✅ should fail if not pending admin is trying to confirm new admin;
-     - ✅ should confirm new admin by pending admin.
-
-  9. `set_flash_swaps_proxy`:
+  7. `claim_tok_interface_fee`:
 
      -
 
-  10. `add_managers`:
+  8. `claim_tez_interface_fee`:
+
+     -
+
+  9. `withdraw_auction_fee`:
+
+     -
+
+  10. `set_admin`:
+
+      - ✅ should fail if not admin is trying to setup new pending admin;
+      - ✅ should setup new pending admin by admin.
+
+  11. `confirm_admin`:
+
+      - ✅ should fail if not pending admin is trying to confirm new admin;
+      - ✅ should confirm new admin by pending admin.
+
+  12. `set_flash_swaps_proxy`:
+
+      -
+
+  13. `set_auction`:
+
+      -
+
+  14. `add_managers`:
 
       - ✅ should fail if not admin is trying to add new manager;
       - ✅ should add one manager;
@@ -118,25 +142,25 @@
       - ✅ should remove a group of managers;
       - ✅ shoud add/remove some groups of managers.
 
-  11. `set_fees`:
+  15. `set_fees`:
 
       - ✅ should fail if not admin is trying to set fees;
       - ✅ should update fees.
 
-  12. `set_cycle_duration`:
+  16. `set_cycle_duration`:
 
       - ✅ should fail if not admin is trying to set cycle duration;
       - ✅ should update cycle duration.
 
-  13. `set_voting_period`:
+  17. `set_voting_period`:
 
       -
 
-  14. `set_collecting_period`:
+  18. `set_collecting_period`:
 
       -
 
-  15. `update_token_metadata`:
+  19. `update_token_metadata`:
 
       - ✅ should fail if not manager is trying to update token metadata;
       - ✅ should fail if pair not listed;
@@ -144,7 +168,7 @@
       - ✅ should set new fields in token metadata;
       - ✅ should update existing and set new fields in token metadata.
 
-  16. `ban`:
+  20. `ban`:
 
       - ✅ should fail if not admin is trying to ban baker;
       - ✅ should fail if pair not listed;
@@ -152,78 +176,142 @@
       - ✅ should ban baker;
       - ✅ should unban baker.
 
-  17. `permit`:
+  21. `permit`:
 
       -
 
-  18. `ser_expiry`:
+  22. `ser_expiry`:
 
       -
 
-  19. `transfer`:
+  23. `transfer`:
 
       -
 
-  20. `update_operators`:
+  24. `update_operators`:
 
       -
 
-  21. `balance_of`:
+  25. `balance_of`:
 
       -
 
-  22. `fa12_balance_callback_1`:
+  26. `fa12_balance_callback_1`:
 
       -
 
-  23. `fa2_balance_callback_1`:
+  27. `fa2_balance_callback_1`:
 
       -
 
-  24. `fa12_balance_callback_2`:
+  28. `fa12_balance_callback_2`:
 
       -
 
-  25. `fa2_balance_callback_2`:
+  29. `fa2_balance_callback_2`:
 
       -
 
-  26. `flash_swap_callback`:
+  30. `flash_swap_callback`:
 
       -
 
-  27. `check_is_banned_baker` [VIEW]:
+  31. `launch_callback`:
 
       -
 
-  28. `get_reserves` [VIEW]:
+  32. `check_is_banned_baker` [VIEW]:
 
       -
 
-  29. `get_total_supply` [VIEW]:
+  33. `get_reserves` [VIEW]:
 
       -
 
-  30. `get_swap_min_res` [VIEW]:
+  34. `get_total_supply` [VIEW]:
 
       -
 
-  31. `get_toks_per_share` [VIEW]:
+  35. `get_swap_min_res` [VIEW]:
 
       -
 
-  32. `get_cumulative_prices` [VIEW]:
+  36. `get_toks_per_share` [VIEW]:
 
       -
 
-  33. `get_voting_period` [VIEW]:
+  37. `get_cumulative_prices` [VIEW]:
 
       -
 
-  34. `get_collecting_period` [VIEW]:
+  38. `get_voting_period` [VIEW]:
 
       -
 
-  35. `get_cycle_duration` [VIEW]:
+  39. `get_collecting_period` [VIEW]:
+
+      -
+
+  40. `get_cycle_duration` [VIEW]:
+
+      -
+
+## Auction
+
+- 04_auction.spec.ts
+
+  1. `receive_fee`:
+
+     -
+
+  2. `launch_auction`:
+
+     -
+
+  3. `place_bid`:
+
+     -
+
+  4. `claim`:
+
+     -
+
+  5. `set_admin`:
+
+     -
+
+  6. `confirm_admin`:
+
+     -
+
+  7. `set_baker`:
+
+     -
+
+  8. `set_fees`:
+
+     -
+
+  9. `set_auction_duration`:
+
+     -
+
+  10. `set_min_bid`:
+
+      -
+
+  11. `update_whitelist`:
+
+      -
+
+  12. `withdraw_dev_fee`:
+
+      -
+
+  13. `withdraw_public_fee`:
+
+      -
+
+  14. `burn_bid_fee`:
 
       -

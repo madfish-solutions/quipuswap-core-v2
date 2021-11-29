@@ -2,6 +2,34 @@ import { MichelsonMap, MichelsonMapKey } from "@taquito/michelson-encoder";
 
 import { BigNumber } from "bignumber.js";
 
+import { Token } from "./Common";
+
+export type ReceiveFee = {
+  token: Token;
+  id: BigNumber;
+};
+
+export type LaunchAuction = {
+  token: Token;
+  amt: BigNumber;
+  bid: BigNumber;
+};
+
+export type PlaceBid = {
+  auction_id: BigNumber;
+  amt: BigNumber;
+};
+
+export type UpdateWhitelist = {
+  token: Token;
+  add: boolean;
+};
+
+export type WithdrawFee = {
+  token: Token;
+  receiver: string;
+};
+
 export type Fees = {
   dev_fee: BigNumber;
   bid_fee: BigNumber;

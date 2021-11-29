@@ -2,21 +2,31 @@ import { MichelsonMap, MichelsonMapKey } from "@taquito/michelson-encoder";
 
 import { BigNumber } from "bignumber.js";
 
-export type InvestTez = {
-  user: string;
-  total_supply: BigNumber;
-};
-
 export type DivestTez = {
   receiver: string;
   user: string;
   amt: BigNumber;
-  total_supply: BigNumber;
+};
+
+export type WithdrawRewards = {
+  receiver: string;
+  user: string;
+  current_balance: BigNumber;
+  new_balance: BigNumber;
 };
 
 export type BanBaker = {
   baker: string;
   ban_period: BigNumber;
+};
+
+export type Vote = {
+  voter: string;
+  candidate: string;
+  execute_voting: boolean;
+  votes: BigNumber;
+  current_balance: BigNumber;
+  new_balance: BigNumber;
 };
 
 export type TezStoreStorage = {

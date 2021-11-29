@@ -1,5 +1,6 @@
 import {
   OriginationOperation,
+  TransactionOperation,
   WalletParamsWithKind,
   WalletOperationBatch,
   WalletOperation,
@@ -10,13 +11,25 @@ import {
 
 import fs from "fs";
 
+import { BigNumber } from "bignumber.js";
+
 import env from "../../env";
 
 import { confirmOperation } from "../../scripts/confirmation";
 
 import dexCorelambdas from "../../build/lambdas/dex_core_lambdas.json";
 
-import { AuctionStorage } from "../types/Auction";
+import { Utils } from "./Utils";
+
+import {
+  UpdateWhitelist,
+  AuctionStorage,
+  LaunchAuction,
+  WithdrawFee,
+  ReceiveFee,
+  PlaceBid,
+  Fees,
+} from "../types/Auction";
 
 export class Auction {
   contract: Contract;
@@ -118,5 +131,149 @@ export class Auction {
       params = [];
       i += Math.ceil(dexCorelambdas.length / parts);
     }
+  }
+
+  async receiveFee(params: ReceiveFee): Promise<TransactionOperation> {
+    const operation: TransactionOperation = await this.contract.methods
+      .receive_fee(...Utils.destructObj(params))
+      .send();
+
+    await confirmOperation(this.tezos, operation.hash);
+
+    return operation;
+  }
+
+  async launchAuction(params: LaunchAuction): Promise<TransactionOperation> {
+    const operation: TransactionOperation = await this.contract.methods
+      .launch_auction(...Utils.destructObj(params))
+      .send();
+
+    await confirmOperation(this.tezos, operation.hash);
+
+    return operation;
+  }
+
+  async placeBid(params: PlaceBid): Promise<TransactionOperation> {
+    const operation: TransactionOperation = await this.contract.methods
+      .place_bid(...Utils.destructObj(params))
+      .send();
+
+    await confirmOperation(this.tezos, operation.hash);
+
+    return operation;
+  }
+
+  async claim(auctionId: BigNumber): Promise<TransactionOperation> {
+    const operation: TransactionOperation = await this.contract.methods
+      .claim(auctionId.toString())
+      .send();
+
+    await confirmOperation(this.tezos, operation.hash);
+
+    return operation;
+  }
+
+  async setAdmin(admin: string): Promise<TransactionOperation> {
+    const operation: TransactionOperation = await this.contract.methods
+      .set_admin(admin)
+      .send();
+
+    await confirmOperation(this.tezos, operation.hash);
+
+    return operation;
+  }
+
+  async confirmAdmin(): Promise<TransactionOperation> {
+    const operation: TransactionOperation = await this.contract.methods
+      .confirm_admin([])
+      .send();
+
+    await confirmOperation(this.tezos, operation.hash);
+
+    return operation;
+  }
+
+  async setBaker(baker: string): Promise<TransactionOperation> {
+    const operation: TransactionOperation = await this.contract.methods
+      .set_baker(baker)
+      .send();
+
+    await confirmOperation(this.tezos, operation.hash);
+
+    return operation;
+  }
+
+  async setFees(params: Fees): Promise<TransactionOperation> {
+    const operation: TransactionOperation = await this.contract.methods
+      .set_fees(...Utils.destructObj(params))
+      .send();
+
+    await confirmOperation(this.tezos, operation.hash);
+
+    return operation;
+  }
+
+  async setAuctionDuration(
+    auctionDuration: BigNumber
+  ): Promise<TransactionOperation> {
+    const operation: TransactionOperation = await this.contract.methods
+      .set_auction_duration(auctionDuration.toString())
+      .send();
+
+    await confirmOperation(this.tezos, operation.hash);
+
+    return operation;
+  }
+
+  async setMinBid(minBid: BigNumber): Promise<TransactionOperation> {
+    const operation: TransactionOperation = await this.contract.methods
+      .set_min_bid(minBid.toString())
+      .send();
+
+    await confirmOperation(this.tezos, operation.hash);
+
+    return operation;
+  }
+
+  async updateWhitelist(
+    params: UpdateWhitelist
+  ): Promise<TransactionOperation> {
+    const operation: TransactionOperation = await this.contract.methods
+      .update_whitelist(...Utils.destructObj(params))
+      .send();
+
+    await confirmOperation(this.tezos, operation.hash);
+
+    return operation;
+  }
+
+  async withdrawDevFee(params: WithdrawFee): Promise<TransactionOperation> {
+    const operation: TransactionOperation = await this.contract.methods
+      .withdraw_dev_fee(...Utils.destructObj(params))
+      .send();
+
+    await confirmOperation(this.tezos, operation.hash);
+
+    return operation;
+  }
+
+  async withdrawPulicFee(params: WithdrawFee): Promise<TransactionOperation> {
+    const operation: TransactionOperation = await this.contract.methods
+      .withdraw_public_fee(...Utils.destructObj(params))
+      .send();
+
+    await confirmOperation(this.tezos, operation.hash);
+
+    return operation;
+  }
+
+  async burnBidFee(): Promise<TransactionOperation> {
+    const operation: TransactionOperation = await this.contract.methods
+      .burn_bid_fee([])
+      .send();
+
+    await confirmOperation(this.tezos, operation.hash);
+
+    return operation;
   }
 }

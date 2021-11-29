@@ -14,7 +14,7 @@ import { alice, bob, carol, dev } from "../scripts/sandbox/accounts";
 import { bakerRegistryStorage } from "../storage/BakerRegistry";
 import { tezStoreStorage } from "../storage/test/TezStore";
 
-import { BanBaker, DivestTez, InvestTez } from "./types/TezStore";
+import { BanBaker, DivestTez } from "./types/TezStore";
 
 chai.use(require("chai-bignumber")(BigNumber));
 
@@ -40,12 +40,7 @@ describe("TezStore tests", async () => {
   });
 
   it("should fail if not dex core is trying to invest tez", async () => {
-    const investTez: InvestTez = {
-      user: alice.pkh,
-      total_supply: new BigNumber(1),
-    };
-
-    await rejects(tezStore.investTez(investTez, 1), (err: Error) => {
+    await rejects(tezStore.investTez(alice.pkh, 1), (err: Error) => {
       expect(err.message).to.equal(Common.ERR_NOT_DEX_CORE);
 
       return true;
@@ -55,13 +50,9 @@ describe("TezStore tests", async () => {
   it("should invest tez for alice", async () => {
     const user: string = alice.pkh;
     const amt: number = 100;
-    const investTez: InvestTez = {
-      user: user,
-      total_supply: new BigNumber(amt),
-    };
 
     await utils.setProvider(bob.sk);
-    await tezStore.investTez(investTez, amt);
+    await tezStore.investTez(user, amt);
     await tezStore.updateStorage({ users: [user] });
 
     expect(tezStore.storage.users[user].tez_bal).to.be.bignumber.equal(amt);
@@ -73,15 +64,11 @@ describe("TezStore tests", async () => {
   it("should invest tez for carol - 1", async () => {
     const user: string = carol.pkh;
     const amt: number = 666;
-    const investTez: InvestTez = {
-      user: user,
-      total_supply: new BigNumber(amt),
-    };
     const prevTezStoreTezBalance: BigNumber = await utils.tezos.tz.getBalance(
       tezStore.contract.address
     );
 
-    await tezStore.investTez(investTez, amt);
+    await tezStore.investTez(user, amt);
     await tezStore.updateStorage({ users: [user] });
 
     expect(tezStore.storage.users[user].tez_bal).to.be.bignumber.equal(amt);
@@ -93,16 +80,12 @@ describe("TezStore tests", async () => {
   it("should invest tez for carol - 2", async () => {
     const user: string = carol.pkh;
     const amt: number = 13;
-    const investTez: InvestTez = {
-      user: user,
-      total_supply: new BigNumber(amt),
-    };
     const prevAmt: BigNumber = tezStore.storage.users[user].tez_bal;
     const prevTezStoreTezBalance: BigNumber = await utils.tezos.tz.getBalance(
       tezStore.contract.address
     );
 
-    await tezStore.investTez(investTez, amt);
+    await tezStore.investTez(user, amt);
     await tezStore.updateStorage({ users: [user] });
 
     expect(tezStore.storage.users[user].tez_bal).to.be.bignumber.equal(
@@ -118,7 +101,6 @@ describe("TezStore tests", async () => {
       receiver: alice.pkh,
       user: alice.pkh,
       amt: new BigNumber(100),
-      total_supply: new BigNumber(100),
     };
 
     await utils.setProvider(alice.sk);
@@ -134,7 +116,6 @@ describe("TezStore tests", async () => {
       receiver: alice.pkh,
       user: alice.pkh,
       amt: new BigNumber(100_000),
-      total_supply: new BigNumber(100_000),
     };
 
     await utils.setProvider(bob.sk);
@@ -154,7 +135,6 @@ describe("TezStore tests", async () => {
       receiver: alice.pkh,
       user: user,
       amt: tezStore.storage.users[user].tez_bal.plus(1),
-      total_supply: new BigNumber(tezStore.storage.users[user].tez_bal.plus(1)),
     };
 
     await rejects(tezStore.divestTez(divestTez), (err: Error) => {
@@ -170,7 +150,6 @@ describe("TezStore tests", async () => {
       receiver: alice.pkh,
       user: user,
       amt: tezStore.storage.users[user].tez_bal,
-      total_supply: new BigNumber(tezStore.storage.users[user].tez_bal),
     };
     const prevAmt: BigNumber = tezStore.storage.users[user].tez_bal;
     const prevTezStoreTezBalance: BigNumber = await utils.tezos.tz.getBalance(
@@ -200,7 +179,6 @@ describe("TezStore tests", async () => {
       receiver: dev.pkh,
       user: user,
       amt: new BigNumber(666),
-      total_supply: new BigNumber(666),
     };
 
     await tezStore.updateStorage({ users: [user] });
@@ -233,7 +211,6 @@ describe("TezStore tests", async () => {
       receiver: carol.pkh,
       user: user,
       amt: tezStore.storage.users[user].tez_bal,
-      total_supply: new BigNumber(tezStore.storage.users[user].tez_bal),
     };
     const prevRecipientTezBalance: BigNumber = await utils.tezos.tz.getBalance(
       divestTez.receiver

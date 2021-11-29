@@ -13,9 +13,10 @@ import { confirmOperation } from "../../scripts/confirmation";
 
 import {
   TezStoreStorage,
+  WithdrawRewards,
   DivestTez,
-  InvestTez,
   BanBaker,
+  Vote,
 } from "../types/TezStore";
 
 import { Utils } from "./Utils";
@@ -89,11 +90,11 @@ export class TezStore {
   }
 
   async investTez(
-    params: InvestTez,
+    user: string,
     mutezAmount: number = 0
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
-      .invest_tez(...Utils.destructObj(params))
+      .invest_tez(user)
       .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
@@ -111,10 +112,42 @@ export class TezStore {
     return operation;
   }
 
+  async withdrawRewards(
+    params: WithdrawRewards
+  ): Promise<TransactionOperation> {
+    const operation: TransactionOperation = await this.contract.methods
+      .withdraw_rewards(...Utils.destructObj(params))
+      .send();
+
+    await confirmOperation(this.tezos, operation.hash);
+
+    return operation;
+  }
+
   async banBaker(params: BanBaker): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
       .ban_baker(...Utils.destructObj(params))
       .send();
+
+    await confirmOperation(this.tezos, operation.hash);
+
+    return operation;
+  }
+
+  async vote(params: Vote): Promise<TransactionOperation> {
+    const operation: TransactionOperation = await this.contract.methods
+      .vote(...Utils.destructObj(params))
+      .send();
+
+    await confirmOperation(this.tezos, operation.hash);
+
+    return operation;
+  }
+
+  async default(mutezAmount: number = 0): Promise<TransactionOperation> {
+    const operation: TransactionOperation = await this.contract.methods
+      .default([])
+      .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
 
