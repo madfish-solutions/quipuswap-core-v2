@@ -11,5 +11,5 @@
     "types": ["node", "@types/mocha", "@types/chai", "@types/expect", "./test/types"],
   },
   "exclude": ["node_modules", "build", "cache", "artifacts"],
-  "include": ["./*.ts", "./test/*.ts", "./test/helpers/*.ts", "test/tests/dex_core/03_dex_core_admin_methods.spec.ts", "test/tests/flash_swaps_proxy/02_flash_swaps_proxy.spec.ts", "test/tests/tez_store/01_tez_store.spec.ts", "test/tests/baker_registry/00_baker_registry.spec.ts"]
+  "include": ["./*.ts", "./test/*.ts", "./test/**/*.ts",  "./test/**/**/*.ts", "./test/**/**/*.spec.ts"]
 }
