@@ -17,7 +17,7 @@
     "migrate-idiazabalnet": "yarn compile && ts-node scripts/cli.ts migrate -n idiazabalnet",
     "migrate-mainnet": "yarn compile && ts-node scripts/cli.ts migrate -n mainnet",
     "test-compile": "ts-node scripts/cli.ts compile -f json -p contracts/test -o test/contracts -c flash_swap_agent tez_receiver",
-    "test": "ts-mocha --paths test/*.spec.ts --bail"
+    "test": "ts-mocha --paths test/tests/**/*.spec.ts --bail"
   },
   "repository": {
     "type": "git",

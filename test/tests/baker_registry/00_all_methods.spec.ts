@@ -1,11 +1,11 @@
-import { Utils, zeroAddress } from "./helpers/Utils";
-import { BakerRegistry } from "./helpers/BakerRegistry";
+import { Utils, zeroAddress } from "../../helpers/Utils";
+import { BakerRegistry } from "../../helpers/BakerRegistry";
 
 import { rejects, ok, strictEqual } from "assert";
 
-import { alice, bob } from "../scripts/sandbox/accounts";
+import { alice, bob } from "../../../scripts/sandbox/accounts";
 
-import { bakerRegistryStorage } from "../storage/BakerRegistry";
+import { bakerRegistryStorage } from "../../../storage/BakerRegistry";
 
 describe("BakerRegistry tests", async () => {
   var utils: Utils;

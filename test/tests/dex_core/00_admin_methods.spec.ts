@@ -1,11 +1,11 @@
-import { Common, DexCore as DexCoreErrors } from "./helpers/Errors";
-import { BakerRegistry } from "./helpers/BakerRegistry";
-import { FlashSwapsProxy } from "./helpers/FlashSwapsProxy";
-import { Auction } from "./helpers/Auction";
-import { Utils, zeroAddress } from "./helpers/Utils";
-import { DexCore } from "./helpers/DexCore";
-import { FA12 } from "./helpers/FA12";
-import { FA2 } from "./helpers/FA2";
+import { Common, DexCore as DexCoreErrors } from "../../helpers/Errors";
+import { BakerRegistry } from "../../helpers/BakerRegistry";
+import { FlashSwapsProxy } from "../../helpers/FlashSwapsProxy";
+import { Auction } from "../../helpers/Auction";
+import { Utils, zeroAddress } from "../../helpers/Utils";
+import { DexCore } from "../../helpers/DexCore";
+import { FA12 } from "../../helpers/FA12";
+import { FA2 } from "../../helpers/FA2";
 
 import { rejects } from "assert";
 
@@ -13,16 +13,16 @@ import chai, { expect } from "chai";
 
 import { BigNumber } from "bignumber.js";
 
-import { alice, bob, dev } from "../scripts/sandbox/accounts";
+import { alice, bob, dev } from "../../../scripts/sandbox/accounts";
 
-import { confirmOperation } from "../scripts/confirmation";
+import { confirmOperation } from "../../../scripts/confirmation";
 
-import { bakerRegistryStorage } from "../storage/BakerRegistry";
-import { flashSwapsProxyStorage } from "../storage/FlashSwapsProxy";
-import { auctionStorage } from "../storage/Auction";
-import { dexCoreStorage } from "../storage/DexCore";
-import { fa12Storage } from "../storage/test/FA12";
-import { fa2Storage } from "../storage/test/FA2";
+import { bakerRegistryStorage } from "../../../storage/BakerRegistry";
+import { flashSwapsProxyStorage } from "../../../storage/FlashSwapsProxy";
+import { auctionStorage } from "../../../storage/Auction";
+import { dexCoreStorage } from "../../../storage/DexCore";
+import { fa12Storage } from "../../../storage/test/FA12";
+import { fa2Storage } from "../../../storage/test/FA2";
 
 import {
   UpdateTokenMetadata,
@@ -30,8 +30,8 @@ import {
   AddManager,
   Fees,
   Ban,
-} from "./types/DexCore";
-import { TezStore } from "./helpers/TezStore";
+} from "../../types/DexCore";
+import { TezStore } from "../../helpers/TezStore";
 
 chai.use(require("chai-bignumber")(BigNumber));
 

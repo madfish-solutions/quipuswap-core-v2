@@ -1,7 +1,7 @@
-import { Common, TezStore as TezStoreErrors } from "./helpers/Errors";
-import { BakerRegistry } from "./helpers/BakerRegistry";
-import { TezStore } from "./helpers/TezStore";
-import { Utils } from "./helpers/Utils";
+import { Common, TezStore as TezStoreErrors } from "../../helpers/Errors";
+import { BakerRegistry } from "../../helpers/BakerRegistry";
+import { TezStore } from "../../helpers/TezStore";
+import { Utils } from "../../helpers/Utils";
 
 import { rejects } from "assert";
 
@@ -9,12 +9,12 @@ import chai, { expect } from "chai";
 
 import { BigNumber } from "bignumber.js";
 
-import { alice, bob, carol, dev } from "../scripts/sandbox/accounts";
+import { alice, bob, carol, dev } from "../../../scripts/sandbox/accounts";
 
-import { bakerRegistryStorage } from "../storage/BakerRegistry";
-import { tezStoreStorage } from "../storage/test/TezStore";
+import { bakerRegistryStorage } from "../../../storage/BakerRegistry";
+import { tezStoreStorage } from "../../../storage/test/TezStore";
 
-import { BanBaker, DivestTez } from "./types/TezStore";
+import { BanBaker, DivestTez } from "../../types/TezStore";
 
 chai.use(require("chai-bignumber")(BigNumber));
 

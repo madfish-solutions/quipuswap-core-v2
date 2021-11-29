@@ -2,7 +2,7 @@
 
 ## BakerRegistry
 
-- 00_baker_registry.spec.ts
+- baker_registry/00_all_methods.spec.ts
 
   1.  `validate`:
 
@@ -17,7 +17,7 @@
 
 ## TezStore
 
-- 01_tez_store.spec.ts
+- tez_store/00_all_methods.spec.ts
 
   1. `invest_tez`:
 
@@ -69,7 +69,7 @@
 
 ## FlashSwapsProxy
 
-- 02_flash_swaps_proxy.spec.ts
+- flash_swaps_proxy/00_all_methods.spec.ts
 
   1.  `call`:
 
@@ -77,7 +77,7 @@
 
 ## DexCore
 
-- 03_dex_core_admin_methods.spec.ts
+- dex_core/00_admin_methods.spec.ts
 
   1. `launch_exchange`:
 
@@ -262,7 +262,7 @@
 
 ## Auction
 
-- 04_auction.spec.ts
+- auction/00_all_methods.spec.ts
 
   1. `receive_fee`:
 
