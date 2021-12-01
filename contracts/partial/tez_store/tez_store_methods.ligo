@@ -5,7 +5,7 @@ function invest_tez(
   block {
     only_dex_core(s.dex_core);
 
-    const user : user_t = get_user_or_default(user_address, s.users);
+    const user : user_t = unwrap_or(s.users[user_address], Constants.default_user);
 
     s.users[user_address] := user with record [ tez_bal = user.tez_bal + Tezos.amount / 1mutez ];
   } with ((nil : list(operation)), s)
@@ -17,7 +17,7 @@ function divest_tez(
   block {
     only_dex_core(s.dex_core);
 
-    const user : user_t = get_user_or_default(params.user, s.users);
+    const user : user_t = unwrap_or(s.users[params.user], Constants.default_user);
 
     assert_with_error(
       params.amt <= Tezos.balance / 1mutez and params.amt <= user.tez_bal,
@@ -37,7 +37,10 @@ function withdraw_rewards(
     s := update_rewards(0n, s);
     s := update_user_reward(params.user, params.current_balance, params.new_balance, s);
 
-    var user_reward_info : user_reward_info_t := get_user_reward_info_or_default(params.user, s.users_rewards);
+    var user_reward_info : user_reward_info_t := unwrap_or(
+      s.users_rewards[params.user],
+      Constants.default_user_reward_info
+    );
     const reward : nat = user_reward_info.reward;
 
     user_reward_info.reward := get_nat_or_fail(reward - reward / Constants.precision * Constants.precision);
@@ -65,7 +68,7 @@ function ban_baker(
   block {
     only_dex_core(s.dex_core);
 
-    var baker : baker_t := get_baker_or_default(params.baker, s.bakers);
+    var baker : baker_t := unwrap_or(s.bakers[params.baker], Constants.default_baker);
 
     baker.ban_period := params.ban_period;
     baker.ban_start_time := Tezos.now;
@@ -84,12 +87,12 @@ function vote(
     s := update_user_reward(params.voter, params.current_balance, params.new_balance, s);
 
     const prev_current_delegated : key_hash = s.current_delegated;
-    var user : user_t := get_user_or_default(params.voter, s.users);
+    var user : user_t := unwrap_or(s.users[params.voter], Constants.default_user);
 
     case user.candidate of
       None                 -> skip
     | Some(user_candidate) -> {
-      var candidate : baker_t := get_baker_or_default(user_candidate, s.bakers);
+      var candidate : baker_t := unwrap_or(s.bakers[user_candidate], Constants.default_baker);
 
       s.bakers[user_candidate] := case is_nat(candidate.votes - user.votes) of
       | None        -> candidate
@@ -98,7 +101,7 @@ function vote(
     }
     end;
 
-    const user_candidate : baker_t = get_baker_or_default(params.candidate, s.bakers);
+    const user_candidate : baker_t = unwrap_or(s.bakers[params.candidate], Constants.default_baker);
     const user_candidate_votes : nat = user_candidate.votes + params.votes;
 
     s.bakers[params.candidate] := user_candidate;
@@ -111,8 +114,8 @@ function vote(
 
     s.users[params.voter] := user;
 
-    const current_delegated : baker_t = get_baker_or_default(s.current_delegated, s.bakers);
-    const next_candidate : baker_t = get_baker_or_default(s.next_candidate, s.bakers);
+    const current_delegated : baker_t = unwrap_or(s.bakers[s.current_delegated], Constants.default_baker);
+    const next_candidate : baker_t = unwrap_or(s.bakers[s.next_candidate], Constants.default_baker);
 
     if user_candidate_votes > current_delegated.votes
     then {
@@ -120,9 +123,7 @@ function vote(
       s.current_delegated := params.candidate;
     }
     else if user_candidate.votes > next_candidate.votes and params.candidate =/= s.current_delegated
-    then {
-      s.next_candidate := params.candidate;
-    }
+    then s.next_candidate := params.candidate
     else if next_candidate.votes > current_delegated.votes
     then {
       const tmp : key_hash = s.current_delegated;
@@ -136,11 +137,11 @@ function vote(
 
     if Tezos.level >= s.voting_period_ends and params.execute_voting
     then {
-      if get_is_banned_baker(next_candidate)
+      if check_is_banned_baker(next_candidate)
       then s.next_candidate := Constants.zero_key_hash
       else skip;
 
-      if get_is_banned_baker(current_delegated)
+      if check_is_banned_baker(current_delegated)
       then {
         ops := list [
           Tezos.set_delegate((None : option(key_hash)))

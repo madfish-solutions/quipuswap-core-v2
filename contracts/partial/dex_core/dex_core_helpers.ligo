@@ -1,34 +1,3 @@
-[@inline] function get_account_or_default(
-  const user_addr       : address;
-  const token_id        : token_id_t;
-  const accounts        : big_map((address * token_id_t), account_t))
-                        : account_t is
-  case accounts[(user_addr, token_id)] of
-  | None          -> record [
-      allowances = (Set.empty : set(address));
-    ]
-  | Some(account) -> account
-  end
-
-[@inline] function get_token_balance_or_default(
-  const user_addr       : address;
-  const token_id        : token_id_t;
-  const ledger          : big_map((address * token_id_t), nat))
-                        : nat is
-  case ledger[(user_addr, token_id)] of
-  | None      -> 0n
-  | Some(bal) -> bal
-  end
-
-function get_token_metadata_or_fail(
-  const token_id        : token_id_t;
-  const token_metadata  : big_map(token_id_t, token_metadata_t))
-                        : token_metadata_t is
-  case token_metadata[token_id] of
-  | None           -> (failwith(DexCore.err_pair_not_listed) : token_metadata_t)
-  | Some(metadata) -> metadata
-  end
-
 [@inline] function get_pair_info_or_default(
   const key             : tokens_t;
   const token_to_id     : big_map(bytes, nat);
@@ -37,120 +6,65 @@ function get_token_metadata_or_fail(
                         : (pair_t * nat) is
   block {
     const token_bytes : bytes = Bytes.pack(key);
-    const token_id : nat = case token_to_id[token_bytes] of
-    | None     -> tokens_count
-    | Some(id) -> id
-    end;
-    const pair : pair_t = case pairs[token_id] of
-    | None    -> record [
-        token_a_pool      = 0n;
-        token_b_pool      = 0n;
-        token_a_price_cum = 0n;
-        token_b_price_cum = 0n;
-        total_supply      = 0n;
-        tez_store         = (None : option(address));
-      ]
-    | Some(p) -> p
-    end;
+    const token_id : nat = unwrap_or(token_to_id[token_bytes], tokens_count);
+    const pair : pair_t = unwrap_or(pairs[token_id], Constants.default_pair);
   } with (pair, token_id)
-
-function get_pair_or_fail(
-  const pair_id         : nat;
-  const pairs           : big_map(nat, pair_t))
-                        : pair_t is
-  case pairs[pair_id] of
-  | None       -> failwith(DexCore.err_pair_not_listed)
-  | Some(pair) -> pair
-  end
-
-function get_tokens_or_fail(
-  const pair_id         : nat;
-  const tokens          : big_map(nat, tokens_t))
-                        : tokens_t is
-  case tokens[pair_id] of
-  | None         -> failwith(DexCore.err_pair_not_listed)
-  | Some(tokens) -> tokens
-  end
-
-function get_tez_store_or_fail(
-  const tez_store_opt   : option(address))
-                        : address is
-  case tez_store_opt of
-  | None            -> (failwith(DexCore.err_tez_store_404) : address)
-  | Some(tez_store) -> tez_store
-  end
 
 function get_tez_store_invest_tez_entrypoint(
   const tez_store       : address)
                         : contract(invest_tez_t) is
-  case (Tezos.get_entrypoint_opt("%invest_tez", tez_store) : option(contract(invest_tez_t))) of
-  | Some(contr) -> contr
-  | None        -> (failwith(DexCore.err_tez_store_invest_tez_entrypoint_404) : contract(invest_tez_t))
-  end
+  unwrap(
+    (Tezos.get_entrypoint_opt("%invest_tez", tez_store) : option(contract(invest_tez_t))),
+    DexCore.err_tez_store_invest_tez_entrypoint_404
+  )
 
 function get_tez_store_divest_tez_entrypoint(
   const tez_store       : address)
                         : contract(divest_tez_t) is
-  case (Tezos.get_entrypoint_opt("%divest_tez", tez_store) : option(contract(divest_tez_t))) of
-  | Some(contr) -> contr
-  | None        -> (failwith(DexCore.err_tez_store_divest_tez_entrypoint_404) : contract(divest_tez_t))
-  end
+  unwrap(
+    (Tezos.get_entrypoint_opt("%divest_tez", tez_store) : option(contract(divest_tez_t))),
+    DexCore.err_tez_store_divest_tez_entrypoint_404
+  )
 
 function get_tez_store_ban_baker_entrypoint(
   const tez_store       : address)
                         : contract(ban_baker_t) is
-  case (Tezos.get_entrypoint_opt("%ban_baker", tez_store) : option(contract(ban_baker_t))) of
-  | Some(contr) -> contr
-  | None        -> (failwith(DexCore.err_tez_store_ban_baker_entrypoint_404) : contract(ban_baker_t))
-  end
+  unwrap(
+    (Tezos.get_entrypoint_opt("%ban_baker", tez_store) : option(contract(ban_baker_t))),
+    DexCore.err_tez_store_ban_baker_entrypoint_404
+  )
 
 function get_tez_store_vote_entrypoint(
   const tez_store       : address)
                         : contract(vote_t) is
-  case (Tezos.get_entrypoint_opt("%vote", tez_store) : option(contract(vote_t))) of
-  | Some(contr) -> contr
-  | None        -> (failwith(DexCore.err_tez_store_vote_entrypoint_404) : contract(vote_t))
-  end
+  unwrap(
+    (Tezos.get_entrypoint_opt("%vote", tez_store) : option(contract(vote_t))),
+    DexCore.err_tez_store_vote_entrypoint_404
+  )
 
 function get_invest_tez_op(
   const invest_params   : invest_tez_t;
   const tez_store       : address)
                         : operation is
-  Tezos.transaction(
-    invest_params,
-    Tezos.amount,
-    get_tez_store_invest_tez_entrypoint(tez_store)
-  )
+  Tezos.transaction(invest_params, Tezos.amount, get_tez_store_invest_tez_entrypoint(tez_store))
 
 function get_divest_tez_op(
   const divest_params   : divest_tez_t;
   const tez_store       : address)
                         : operation is
-  Tezos.transaction(
-    divest_params,
-    0mutez,
-    get_tez_store_divest_tez_entrypoint(tez_store)
-  )
+  Tezos.transaction(divest_params, 0mutez, get_tez_store_divest_tez_entrypoint(tez_store))
 
 function get_ban_baker_op(
   const ban_params      : ban_baker_t;
   const tez_store       : address)
                         : operation is
-  Tezos.transaction(
-    ban_params,
-    0mutez,
-    get_tez_store_ban_baker_entrypoint(tez_store)
-  )
+  Tezos.transaction(ban_params, 0mutez, get_tez_store_ban_baker_entrypoint(tez_store))
 
 function get_vote_op(
   const vote_params     : vote_t;
   const tez_store       : address)
                         : operation is
-  Tezos.transaction(
-    vote_params,
-    0mutez,
-    get_tez_store_vote_entrypoint(tez_store)
-  )
+  Tezos.transaction(vote_params, 0mutez, get_tez_store_vote_entrypoint(tez_store))
 
 function check_tez_or_token_and_transfer(
   const inv_liq_params : invest_liquidity_t;
@@ -159,7 +73,7 @@ function check_tez_or_token_and_transfer(
   const tez_store_opt   : option(address))
                         : operation is
   if token_type = Tez
-  then get_invest_tez_op(inv_liq_params.shares_receiver, get_tez_store_or_fail(tez_store_opt))
+  then get_invest_tez_op(inv_liq_params.shares_receiver, unwrap(tez_store_opt, DexCore.err_tez_store_404))
   else transfer_token(Tezos.sender, Tezos.self_address, tokens_required, token_type)
 
 function divest_tez_or_transfer_tokens(
@@ -175,7 +89,7 @@ function divest_tez_or_transfer_tokens(
       user         = Tezos.sender;
       amt          = tokens_divested;
     ];
-  } with get_divest_tez_op(divest_params, get_tez_store_or_fail(tez_store_opt))
+  } with get_divest_tez_op(divest_params, unwrap(tez_store_opt, DexCore.err_tez_store_404))
   else transfer_token(Tezos.self_address, receiver, tokens_divested, token_type)
 
 function get_tez_store_initial_storage(
@@ -240,33 +154,6 @@ function calc_cumulative_prices(
     pair.token_b_pool := new_tok_b_pool;
   } with (pair, Tezos.now)
 
-function get_tok_interface_fee_or_default(
-  const key             : token_t * address;
-  const fees            : big_map((token_t * address), nat))
-                        : nat is
-  case fees[key] of
-  | None      -> 0n
-  | Some(fee) -> fee
-  end
-
-function get_tez_interface_fee_or_default(
-  const key             : token_id_t * address;
-  const fees            : big_map((token_id_t * address), nat))
-                        : nat is
-  case fees[key] of
-  | None      -> 0n
-  | Some(fee) -> fee
-  end
-
-function get_auction_fee_or_default(
-  const token           : token_t;
-  const fees            : big_map(token_t, nat))
-                        : nat is
-  case fees[token] of
-  | None      -> 0n
-  | Some(fee) -> fee
-  end
-
 function form_swap_data(
   const pair            : pair_t;
   const swap            : tokens_t;
@@ -325,12 +212,12 @@ function swap_internal(
   const params          : swap_slice_t)
                         : tmp_swap_t is
   block {
-    const pair : pair_t = get_pair_or_fail(params.pair_id, tmp.s.pairs);
+    const pair : pair_t = unwrap(tmp.s.pairs[params.pair_id], DexCore.err_pair_not_listed);
 
     assert_with_error(pair.token_a_pool * pair.token_b_pool =/= 0n, DexCore.err_no_liquidity);
     assert_with_error(tmp.amount_in =/= 0n, DexCore.err_zero_in);
 
-    const tokens : tokens_t = get_tokens_or_fail(params.pair_id, tmp.s.tokens);
+    const tokens : tokens_t = unwrap(tmp.s.tokens[params.pair_id], DexCore.err_pair_not_listed);
     var swap: swap_data_t := form_swap_data(pair, tokens, params.direction);
 
     assert_with_error(swap.from_.token = tmp.token_in, DexCore.err_wrong_route);
@@ -349,19 +236,19 @@ function swap_internal(
 
     if tmp.token_in = Tez
     then {
-      tmp.s.tez_interface_fee[(params.pair_id, tmp.referrer)] := get_tez_interface_fee_or_default(
-        (params.pair_id, tmp.referrer),
-        tmp.s.tez_interface_fee
+      tmp.s.tez_interface_fee[(params.pair_id, tmp.referrer)] := unwrap_or(
+        tmp.s.tez_interface_fee[(params.pair_id, tmp.referrer)],
+        0n
       ) + interface_fee;
     }
     else {
-      tmp.s.tok_interface_fee[(tmp.token_in, tmp.referrer)] := get_tok_interface_fee_or_default(
-        (tmp.token_in, tmp.referrer),
-        tmp.s.tok_interface_fee
+      tmp.s.tok_interface_fee[(tmp.token_in, tmp.referrer)] := unwrap_or(
+        tmp.s.tok_interface_fee[(tmp.token_in, tmp.referrer)],
+        0n
       ) + interface_fee;
     };
 
-    tmp.s.auction_fee[tmp.token_in] := get_auction_fee_or_default(tmp.token_in, tmp.s.auction_fee) + auction_fee;
+    tmp.s.auction_fee[tmp.token_in] := unwrap_or(tmp.s.auction_fee[tmp.token_in], 0n) + auction_fee;
 
     assert_with_error(out * Constants.precision <= swap.to_.pool / 3n, DexCore.err_high_out);
 
@@ -401,20 +288,16 @@ function swap_internal(
 function get_flash_swaps_proxy_call_entrypoint(
   const swaps_proxy     : address)
                         : contract(unit -> list(operation)) is
-  case (Tezos.get_entrypoint_opt("%call", swaps_proxy) : option(contract(unit -> list(operation)))) of
-  | Some(contr) -> contr
-  | None        -> (failwith(DexCore.err_flash_swaps_proxy_call_entrypoint_404) : contract(unit -> list(operation)))
-  end
+  unwrap(
+    (Tezos.get_entrypoint_opt("%call", swaps_proxy) : option(contract(unit -> list(operation)))),
+    DexCore.err_flash_swaps_proxy_call_entrypoint_404
+  )
 
 function call_flash_swaps_proxy(
   const lambda          : unit -> list(operation);
   const swaps_proxy     : address)
                         : operation is
-  Tezos.transaction(
-    lambda,
-    0mutez,
-    get_flash_swaps_proxy_call_entrypoint(swaps_proxy)
-  )
+  Tezos.transaction(lambda, 0mutez, get_flash_swaps_proxy_call_entrypoint(swaps_proxy))
 
 function get_token_address_or_fail(
   const token           : token_t)
@@ -437,63 +320,55 @@ function get_token_id_or_fail(
 function get_flash_swap_callback(
   const self            : address)
                         : contract(flash_swap_2_t) is
-  case (Tezos.get_entrypoint_opt("%flash_swap_callback", self) : option(contract(flash_swap_2_t))) of
-  | Some(contr) -> contr
-  | None        -> (failwith(DexCore.err_flash_swap_callback_404) : contract(flash_swap_2_t))
-  end
+  unwrap(
+    (Tezos.get_entrypoint_opt("%flash_swap_callback", self) : option(contract(flash_swap_2_t))),
+    DexCore.err_flash_swap_callback_404
+  )
 
 function call_flash_swap_callback(
   const _               : unit)
                         : operation is
-  Tezos.transaction(
-    Unit,
-    0mutez,
-    get_flash_swap_callback(Tezos.self_address)
+  Tezos.transaction(Unit, 0mutez, get_flash_swap_callback(Tezos.self_address))
+
+function get_fa12_balance_callback_1(
+  const this            : address)
+                        : contract(nat) is
+  unwrap(
+    (Tezos.get_entrypoint_opt("%fa12_balance_callback_1", this) : option(contract(nat))),
+    DexCore.err_fa12_balance_callback_1_404
   )
 
-function get_fa12_balance_callback_1(const this : address) : contract(nat) is
-  case (Tezos.get_entrypoint_opt("%fa12_balance_callback_1", this) : option(contract(nat))) of
-  | Some(contr) -> contr
-  | None        -> (failwith(DexCore.err_fa12_balance_callback_1_404) : contract(nat))
-  end
+function get_fa2_balance_callback_1(
+  const this            : address)
+                        : contract(list(balance_response_t)) is
+  unwrap(
+    (Tezos.get_entrypoint_opt("%fa2_balance_callback_1", this) : option(contract(list(balance_response_t)))),
+    DexCore.err_fa2_balance_callback_1_404
+  )
 
-function get_fa2_balance_callback_1(const this : address) : contract(list(balance_response_t)) is
-  case (Tezos.get_entrypoint_opt("%fa2_balance_callback_1", this) : option(contract(list(balance_response_t)))) of
-  | Some(contr) -> contr
-  | None        -> (failwith(DexCore.err_fa2_balance_callback_1_404) : contract(list(balance_response_t)))
-  end
+function get_fa12_balance_callback_2(
+  const this            : address)
+                        : contract(nat) is
+  unwrap(
+    (Tezos.get_entrypoint_opt("%fa12_balance_callback_2", this) : option(contract(nat))),
+    DexCore.err_fa12_balance_callback_2_404
+  )
 
-function get_fa12_balance_callback_2(const this : address) : contract(nat) is
-  case (Tezos.get_entrypoint_opt("%fa12_balance_callback_2", this) : option(contract(nat))) of
-  | Some(contr) -> contr
-  | None        -> (failwith(DexCore.err_fa12_balance_callback_2_404) : contract(nat))
-  end
+function get_fa2_balance_callback_2(
+  const this            : address)
+                        : contract(list(balance_response_t)) is
+  unwrap(
+    (Tezos.get_entrypoint_opt("%fa2_balance_callback_2", this) : option(contract(list(balance_response_t)))),
+    DexCore.err_fa2_balance_callback_2_404
+  )
 
-function get_fa2_balance_callback_2(const this : address) : contract(list(balance_response_t)) is
-  case (Tezos.get_entrypoint_opt("%fa2_balance_callback_2", this) : option(contract(list(balance_response_t)))) of
-  | Some(contr) -> contr
-  | None        -> (failwith(DexCore.err_fa2_balance_callback_2_404) : contract(list(balance_response_t)))
-  end
-
-function get_default_tmp(
-  const _               : unit)
-                        : tmp_t is
-  record [
-    pair_id           = 0n;
-    amount_a_out      = 0n;
-    amount_b_out      = 0n;
-    referrer          = Constants.zero_address;
-    token_a_balance_1 = 0n;
-    token_b_balance_1 = 0n;
-    token_a_balance_2 = 0n;
-    token_b_balance_2 = 0n;
-  ]
-
-function get_tez_store_withdraw_rewards_entrypoint(const tez_store : address) : contract(withdraw_rewards_t) is
-  case (Tezos.get_entrypoint_opt("%withdraw_rewards", tez_store) : option(contract(withdraw_rewards_t))) of
-  | Some(contr) -> contr
-  | None        -> (failwith(DexCore.err_tez_store_withdraw_rewards_entrypoint_404) : contract(withdraw_rewards_t))
-  end
+function get_tez_store_withdraw_rewards_entrypoint(
+  const tez_store       : address)
+                        : contract(withdraw_rewards_t) is
+  unwrap(
+    (Tezos.get_entrypoint_opt("%withdraw_rewards", tez_store) : option(contract(withdraw_rewards_t))),
+    DexCore.err_tez_store_withdraw_rewards_entrypoint_404
+  )
 
 function get_withdraw_profit_op(
   const user            : address;
@@ -513,35 +388,29 @@ function get_withdraw_profit_op(
     get_tez_store_withdraw_rewards_entrypoint(tez_store)
   )
 
-function get_launch_exchange_callback(const this : address) : contract(launch_callback_t) is
-  case (Tezos.get_entrypoint_opt("%launch_callback", this) : option(contract(launch_callback_t))) of
-  | Some(contr) -> contr
-  | None        -> (failwith(DexCore.err_launch_callback_404) : contract(launch_callback_t))
-  end
+function get_launch_exchange_callback(
+  const this            : address)
+                        : contract(launch_callback_t) is
+  unwrap(
+    (Tezos.get_entrypoint_opt("%launch_callback", this) : option(contract(launch_callback_t))),
+    DexCore.err_launch_callback_404
+  )
 
 function get_launch_exchange_callback_op(
   const params          : launch_callback_t)
                         : operation is
-  Tezos.transaction(
-    params,
-    0mutez,
-    get_launch_exchange_callback(Tezos.self_address)
-  )
+  Tezos.transaction(params, 0mutez, get_launch_exchange_callback(Tezos.self_address))
 
 function get_auction_receive_fee_entrypoint(
   const auction         : address)
                         : contract(receive_fee_t) is
-  case (Tezos.get_entrypoint_opt("%receive_fee", auction) : option(contract(receive_fee_t))) of
-  | Some(contr) -> contr
-  | None        -> (failwith(DexCore.err_auction_receive_fee_entrypoint_404) : contract(receive_fee_t))
-  end
+  unwrap(
+    (Tezos.get_entrypoint_opt("%receive_fee", auction) : option(contract(receive_fee_t))),
+    DexCore.err_auction_receive_fee_entrypoint_404
+  )
 
 function get_auction_receive_fee_op(
   const params          : receive_fee_t;
   const auction         : address)
                         : operation is
-  Tezos.transaction(
-    params,
-    0mutez,
-    get_auction_receive_fee_entrypoint(auction)
-  )
+  Tezos.transaction(params, 0mutez, get_auction_receive_fee_entrypoint(auction))

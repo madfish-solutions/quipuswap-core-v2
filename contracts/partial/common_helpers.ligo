@@ -227,3 +227,21 @@ function get_fa2_token_balance(
 
     bal := List.fold(get_fa2_balance, response, bal);
   } with bal
+
+function unwrap_or(
+  const param           : option(_a);
+  const default         : _a)
+                        : _a is
+  case param of
+  | Some(instance) -> instance
+  | None           -> default
+  end
+
+function unwrap(
+  const param           : option(_a);
+  const error           : string)
+                        : _a is
+  case param of
+  | Some(instance) -> instance
+  | None           -> (failwith(error) : _a)
+  end

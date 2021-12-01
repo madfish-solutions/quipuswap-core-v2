@@ -91,11 +91,6 @@ type action_t           is
 
 type return_t           is list(operation) * storage_t
 
-type setup_func_t       is [@layout:comb] record [
-  idx                     : nat;
-  func_bytes              : bytes;
-]
-
 type auction_func_t     is (action_t * storage_t) -> return_t
 
 type full_storage_t     is [@layout:comb] record [

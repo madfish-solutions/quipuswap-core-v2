@@ -1,20 +1,3 @@
-type user_t             is [@layout:comb] record [
-  candidate               : option(key_hash);
-  tez_bal                 : nat;
-  votes                   : nat;
-]
-
-type baker_t            is [@layout:comb] record [
-  ban_start_time          : timestamp;
-  ban_period              : nat;
-  votes                   : nat;
-]
-
-type user_reward_info_t is [@layout:comb] record [
-  reward                  : nat;
-  reward_paid             : nat;
-]
-
 type storage_t          is [@layout:comb] record [
   users                   : big_map(address, user_t);
   bakers                  : big_map(key_hash, baker_t);

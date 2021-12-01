@@ -5,7 +5,7 @@ function fa12_balance_callback_1(
   block {
     case action of
     | Fa12_balance_callback_1(bal) -> {
-        const tokens : tokens_t = get_tokens_or_fail(s.tmp.pair_id, s.tokens);
+        const tokens : tokens_t = unwrap(s.tokens[s.tmp.pair_id], DexCore.err_pair_not_listed);
 
         if Tezos.sender = get_token_address_or_fail(tokens.token_a)
         then s.tmp.token_a_balance_1 := bal
@@ -24,17 +24,13 @@ function fa2_balance_callback_1(
   block {
     case action of
     | Fa2_balance_callback_1(params) -> {
-        const tokens : tokens_t = get_tokens_or_fail(s.tmp.pair_id, s.tokens);
+        const tokens : tokens_t = unwrap(s.tokens[s.tmp.pair_id], DexCore.err_pair_not_listed);
         const owner : address = Tezos.self_address;
 
         if Tezos.sender = get_token_address_or_fail(tokens.token_a)
-        then {
-          s.tmp.token_a_balance_1 := get_fa2_token_balance(params, get_token_id_or_fail(tokens.token_a), owner)
-        }
+        then s.tmp.token_a_balance_1 := get_fa2_token_balance(params, get_token_id_or_fail(tokens.token_a), owner)
         else if Tezos.sender = get_token_address_or_fail(tokens.token_b)
-        then {
-          s.tmp.token_b_balance_1 := get_fa2_token_balance(params, get_token_id_or_fail(tokens.token_b), owner)
-        }
+        then s.tmp.token_b_balance_1 := get_fa2_token_balance(params, get_token_id_or_fail(tokens.token_b), owner)
         else skip;
       }
     | _ -> skip
@@ -48,7 +44,7 @@ function fa12_balance_callback_2(
   block {
     case action of
     | Fa12_balance_callback_2(bal) -> {
-        const tokens : tokens_t = get_tokens_or_fail(s.tmp.pair_id, s.tokens);
+        const tokens : tokens_t = unwrap(s.tokens[s.tmp.pair_id], DexCore.err_pair_not_listed);
 
         if Tezos.sender = get_token_address_or_fail(tokens.token_a)
         then s.tmp.token_a_balance_2 := bal
@@ -67,17 +63,13 @@ function fa2_balance_callback_2(
   block {
     case action of
     | Fa2_balance_callback_2(params) -> {
-        const tokens : tokens_t = get_tokens_or_fail(s.tmp.pair_id, s.tokens);
+        const tokens : tokens_t = unwrap(s.tokens[s.tmp.pair_id], DexCore.err_pair_not_listed);
         const owner : address = Tezos.self_address;
 
         if Tezos.sender = get_token_address_or_fail(tokens.token_a)
-        then {
-          s.tmp.token_a_balance_2 := get_fa2_token_balance(params, get_token_id_or_fail(tokens.token_a), owner)
-        }
+        then s.tmp.token_a_balance_2 := get_fa2_token_balance(params, get_token_id_or_fail(tokens.token_a), owner)
         else if Tezos.sender = get_token_address_or_fail(tokens.token_b)
-        then {
-          s.tmp.token_b_balance_2 := get_fa2_token_balance(params, get_token_id_or_fail(tokens.token_b), owner)
-        }
+        then s.tmp.token_b_balance_2 := get_fa2_token_balance(params, get_token_id_or_fail(tokens.token_b), owner)
         else skip;
       }
     | _ -> skip
@@ -95,17 +87,17 @@ function flash_swap_callback(
     | Flash_swap_callback(_) -> {
         only_dex_core(Tezos.self_address);
 
-        const tokens : tokens_t = get_tokens_or_fail(s.tmp.pair_id, s.tokens);
-        const pair : pair_t = get_pair_or_fail(s.tmp.pair_id, s.pairs);
+        const tokens : tokens_t = unwrap(s.tokens[s.tmp.pair_id], DexCore.err_pair_not_listed);
+        const pair : pair_t = unwrap(s.pairs[s.tmp.pair_id], DexCore.err_pair_not_listed);
 
         if tokens.token_b = Tez
         then {
-          const tez_store : address = get_tez_store_or_fail(pair.tez_store);
+          const tez_store : address = unwrap(pair.tez_store, DexCore.err_tez_store_404);
 
-          case (Tezos.call_view("get_tez_balance", Unit, tez_store) : option(nat)) of
-          | Some(tez_balance) -> s.tmp.token_b_balance_1 := tez_balance
-          | None              -> failwith(DexCore.err_tez_store_get_tez_balance_view_404)
-          end;
+          s.tmp.token_b_balance_1 := unwrap(
+            (Tezos.call_view("get_tez_balance", Unit, tez_store) : option(nat)),
+            DexCore.err_tez_store_get_tez_balance_view_404
+          );
         }
         else {
           ops := get_balance_op_or_fail(
@@ -138,7 +130,7 @@ function flash_swap_callback(
           DexCore.err_wrong_flash_swap_returns
         );
 
-        s.tmp := get_default_tmp(Unit);
+        s.tmp := Constants.default_tmp;
       }
     | _ -> skip
     end

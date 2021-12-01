@@ -3,13 +3,12 @@
   const s               : full_storage_t)
                         : bool is
   block {
-    const pair : pair_t = get_pair_or_fail(params.pair_id, s.storage.pairs);
-    const tez_store : address = get_tez_store_or_fail(pair.tez_store);
-    const result : bool = case (Tezos.call_view("is_banned_baker", params.baker, tez_store) : option(bool)) of
-    | Some(v) -> v
-    | None    -> failwith(DexCore.err_tez_store_is_banned_baker_view_404)
-    end;
-  } with result
+    const pair : pair_t = unwrap(s.storage.pairs[params.pair_id], DexCore.err_pair_not_listed);
+    const tez_store : address = unwrap(pair.tez_store, DexCore.err_tez_store_404);
+  } with unwrap(
+    (Tezos.call_view("is_banned_baker", params.baker, tez_store) : option(bool)),
+    DexCore.err_tez_store_is_banned_baker_view_404
+  )
 
 [@view] function get_reserves(
   const requests        : list(reserves_req_t);
@@ -21,7 +20,7 @@
       const pair_id   : reserves_req_t)
                       : list(reserves_res_t) is
       block {
-        const pair : pair_t = get_pair_or_fail(pair_id, s.storage.pairs);
+        const pair : pair_t = unwrap(s.storage.pairs[pair_id], DexCore.err_pair_not_listed);
         const response : reserves_res_t = record [
           request  = pair_id;
           reserves = record [
@@ -31,11 +30,7 @@
         ];
       } with response # l;
 
-    const response : list(reserves_res_t) = List.fold(
-      look_up_reserves,
-      requests,
-      (nil : list(reserves_res_t))
-    );
+    const response : list(reserves_res_t) = List.fold(look_up_reserves, requests, (nil : list(reserves_res_t)));
   } with response
 
 [@view] function get_total_supply(
@@ -48,7 +43,7 @@
       const pair_id   : total_supply_req_t)
                       : list(total_supply_res_t) is
       block {
-        const pair : pair_t = get_pair_or_fail(pair_id, s.storage.pairs);
+        const pair : pair_t = unwrap(s.storage.pairs[pair_id], DexCore.err_pair_not_listed);
         const response : total_supply_res_t = record [
           request      = pair_id;
           total_supply = pair.total_supply;
@@ -67,11 +62,8 @@
   const s               : full_storage_t)
                         : nat is
   block {
-    const first_swap : swap_slice_t = case List.head_opt(params.swaps) of
-    | Some(swap) -> swap
-    | None       -> failwith(DexCore.err_empty_route)
-    end;
-    const tokens : tokens_t = get_tokens_or_fail(first_swap.pair_id, s.storage.tokens);
+    const first_swap : swap_slice_t = unwrap(List.head_opt(params.swaps), DexCore.err_empty_route);
+    const tokens : tokens_t = unwrap(s.storage.tokens[first_swap.pair_id], DexCore.err_pair_not_listed);
     const token : token_t = case first_swap.direction of
     | A_to_b -> tokens.token_a
     | B_to_a -> tokens.token_b
@@ -100,7 +92,7 @@
       const request   : toks_per_shr_req_t)
                       : list(toks_per_shr_res_t) is
       block {
-        const pair : pair_t = get_pair_or_fail(request.pair_id, s.storage.pairs);
+        const pair : pair_t = unwrap(s.storage.pairs[request.pair_id], DexCore.err_pair_not_listed);
         const response : toks_per_shr_res_t = record [
           request          = request;
           tokens_per_share = record [
@@ -127,7 +119,7 @@
       const pair_id   : token_id_t)
                       : list(cum_prices_res_t) is
       block {
-        const pair : pair_t = get_pair_or_fail(pair_id, s.storage.pairs);
+        const pair : pair_t = unwrap(s.storage.pairs[pair_id], DexCore.err_pair_not_listed);
         const response : cum_prices_res_t = record [
           request           = pair_id;
           cumulative_prices = record [

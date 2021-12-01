@@ -1,18 +1,5 @@
 type tez_store_t        is storage_t
 
-type account_t          is [@layout:comb] record [
-  allowances              : set(address);
-]
-
-type pair_t             is [@layout:comb] record [
-  token_a_pool            : nat;
-  token_b_pool            : nat;
-  token_a_price_cum       : nat;
-  token_b_price_cum       : nat;
-  total_supply            : nat;
-  tez_store               : option(address);
-]
-
 type tokens_t           is [@layout:comb] record [
   token_a                 : token_t;
   token_b                 : token_t;
@@ -35,17 +22,6 @@ type flash_swap_t       is [@layout:comb] record [
 ]
 
 type flash_swap_2_t     is unit
-
-type tmp_t              is [@layout:comb] record [
-  pair_id                 : token_id_t;
-  amount_a_out            : nat;
-  amount_b_out            : nat;
-  referrer                : address;
-  token_a_balance_1       : nat;
-  token_b_balance_1       : nat;
-  token_a_balance_2       : nat;
-  token_b_balance_2       : nat;
-]
 
 type storage_t          is [@layout:comb] record [
   token_metadata          : big_map(token_id_t, token_metadata_t);
@@ -292,11 +268,6 @@ type action_t           is
 | Launch_callback         of launch_callback_t
 
 type return_t           is list(operation) * storage_t
-
-type setup_func_t       is [@layout:comb] record [
-  idx                     : nat;
-  func_bytes              : bytes;
-]
 
 type dex_core_func_t    is (action_t * storage_t) -> return_t
 

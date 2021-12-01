@@ -5,6 +5,7 @@
 #include "../partial/dex_core/fa2/fa2_types.ligo"
 
 #include "../partial/common_types.ligo"
+
 #include "../partial/common_helpers.ligo"
 
 #include "../partial/flash_swaps_proxy/flash_swaps_proxy_types.ligo"

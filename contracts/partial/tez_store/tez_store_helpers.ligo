@@ -1,64 +1,25 @@
-[@inline] function get_baker_or_default(
-  const baker           : key_hash;
-  const bakers          : big_map(key_hash, baker_t))
-                        : baker_t is
-  case bakers[baker] of
-  | None          -> record [
-      ban_start_time = (0 : timestamp);
-      ban_period     = 0n;
-      votes          = 0n;
-    ]
-  | Some(baker) -> baker
-  end
-
-[@inline] function get_user_or_default(
-  const user            : address;
-  const users           : big_map(address, user_t))
-                        : user_t is
-  case users[user] of
-  | None        -> record [
-      candidate = (None : option(key_hash));
-      tez_bal   = 0n;
-      votes     = 0n;
-    ]
-  | Some(user) -> user
-  end
-
-[@inline] function get_is_banned_baker(
+[@inline] function check_is_banned_baker(
   const baker           : baker_t)
                         : bool is
   baker.ban_start_time + int(baker.ban_period) > Tezos.now
 
-function get_user_reward_info_or_default(
-  const user_address    : address;
-  const users_rewards   : big_map(address, user_reward_info_t))
-                        : user_reward_info_t is
-  case users_rewards[user_address] of
-  | None                   -> record [
-      reward         = 0n;
-      reward_paid    = 0n;
-    ]
-  | Some(user_reward_info) -> user_reward_info
-  end
-
 function get_baker_registry_validate_entrypoint(
   const baker_registry  : address)
                         : contract(key_hash) is
-  case (Tezos.get_entrypoint_opt("%validate", baker_registry) : option(contract(key_hash))) of
-  | Some(contr) -> contr
-  | None        -> (failwith(TezStore.err_baker_registry_validate_entrypoint_404) : contract(key_hash))
-  end
+  unwrap(
+    (Tezos.get_entrypoint_opt("%validate", baker_registry) : option(contract(key_hash))),
+    TezStore.err_baker_registry_validate_entrypoint_404
+  )
 
 function get_pair_total_supply(
   const dex_core        : address;
   const pair_id         : token_id_t)
                         : nat is
   block {
-    const total_supply_response : list(total_supply_res_t) =
-      case (Tezos.call_view("get_total_supply", list [pair_id], dex_core) : option(list(total_supply_res_t))) of
-    | Some(v) -> v
-    | None    -> failwith(TezStore.err_dex_core_get_total_supply_view_404)
-    end;
+    const total_supply_response : list(total_supply_res_t) = unwrap(
+      (Tezos.call_view("get_total_supply", list [pair_id], dex_core) : option(list(total_supply_res_t))),
+      TezStore.err_dex_core_get_total_supply_view_404
+    );
 
     function get_total_supply(
       var total_supply  : nat;
@@ -74,32 +35,26 @@ function get_pair_total_supply(
 function get_voting_period(
   const dex_core        : address)
                         : nat is
-  block {
-    const voting_period : nat = case (Tezos.call_view("get_voting_period", Unit, dex_core) : option(nat)) of
-    | Some(v) -> v
-    | None    -> failwith(TezStore.err_dex_core_get_voting_period_view_404)
-    end;
-  } with voting_period
+  unwrap(
+    (Tezos.call_view("get_voting_period", Unit, dex_core) : option(nat)),
+    TezStore.err_dex_core_get_voting_period_view_404
+  )
 
 function get_collecting_period(
   const dex_core        : address)
                         : nat is
-  block {
-    const collecting_period : nat = case (Tezos.call_view("get_collecting_period", Unit, dex_core) : option(nat)) of
-    | Some(v) -> v
-    | None    -> failwith(TezStore.err_dex_core_get_collecting_period_view_404)
-    end;
-  } with collecting_period
+  unwrap(
+    (Tezos.call_view("get_collecting_period", Unit, dex_core) : option(nat)),
+    TezStore.err_dex_core_get_collecting_period_view_404
+  )
 
 function get_cycle_duration(
   const dex_core        : address)
                         : nat is
-  block {
-    const cycle_duration : nat = case (Tezos.call_view("get_cycle_duration", Unit, dex_core) : option(nat)) of
-    | Some(v) -> v
-    | None    -> failwith(TezStore.err_dex_core_get_cycle_duration_view_404)
-    end;
-  } with cycle_duration
+  unwrap(
+    (Tezos.call_view("get_cycle_duration", Unit, dex_core) : option(nat)),
+    TezStore.err_dex_core_get_cycle_duration_view_404
+  )
 
 function update_rewards(
   var new_amount        : nat;
@@ -142,7 +97,10 @@ function update_user_reward(
   var s                 : storage_t)
                         : storage_t is
   block {
-    var user_reward_info : user_reward_info_t := get_user_reward_info_or_default(user_address, s.users_rewards);
+    var user_reward_info : user_reward_info_t := unwrap_or(
+      s.users_rewards[user_address],
+      Constants.default_user_reward_info
+    );
     const current_reward : nat = current_balance * s.reward_per_share;
 
     user_reward_info.reward := user_reward_info.reward + get_nat_or_fail(current_reward - user_reward_info.reward_paid);

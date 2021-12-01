@@ -13,8 +13,8 @@ function receive_fee(
 
         const dev_fee : nat = params.fee * s.fees.dev_fee / Constants.precision;
 
-        s.dev_fee_balance[params.token] := get_fee(params.token, s.dev_fee_balance) + dev_fee;
-        s.public_fee_balance[params.token] := get_fee(params.token, s.public_fee_balance) +
+        s.dev_fee_balance[params.token] := unwrap_or(s.dev_fee_balance[params.token], 0n) + dev_fee;
+        s.public_fee_balance[params.token] := unwrap_or(s.public_fee_balance[params.token], 0n) +
           get_nat_or_fail(params.fee - dev_fee);
       }
     | _ -> skip
@@ -32,7 +32,7 @@ function launch_auction(
     | Launch_auction(params) -> {
         is_not_whitelisted_token(params.token, s.whitelist);
 
-        const token_balance : nat = get_fee(params.token, s.public_fee_balance);
+        const token_balance : nat = unwrap_or(s.public_fee_balance[params.token], 0n);
 
         assert_with_error(params.amt <= token_balance, Auction.err_insufficient_balance);
         assert_with_error(params.bid >= s.min_bid, Auction.err_low_bid);
@@ -63,7 +63,7 @@ function place_bid(
 
     case action of
     | Place_bid(params) -> {
-        var auction : auction_t := get_auction(params.auction_id, s.auctions);
+        var auction : auction_t := unwrap(s.auctions[params.auction_id], Auction.err_auction_not_found);
 
         assert_with_error(Tezos.now < auction.start_time + s.auction_duration, Auction.err_auction_finished);
         assert_with_error(params.amt > auction.current_bid, Auction.err_low_bid);
@@ -95,7 +95,7 @@ function claim(
 
     case action of
     | Claim(auction_id) -> {
-        var auction : auction_t := get_auction(auction_id, s.auctions);
+        var auction : auction_t := unwrap(s.auctions[auction_id], Auction.err_auction_not_found);
 
         assert_with_error(Tezos.now >= auction.start_time + s.auction_duration, Auction.err_auction_not_finished);
         assert_with_error(auction.status =/= Finished, Auction.err_auction_finished);
@@ -244,7 +244,7 @@ function withdraw_dev_fee(
     | Withdraw_dev_fee(params) -> {
         only_admin(s.admin);
 
-        const dev_fee_balance : nat = get_fee(params.token, s.dev_fee_balance);
+        const dev_fee_balance : nat = unwrap_or(s.dev_fee_balance[params.token], 0n);
 
         if dev_fee_balance =/= 0n
         then ops := transfer_token(Tezos.self_address, params.receiver, dev_fee_balance, params.token) # ops
@@ -268,7 +268,7 @@ function withdraw_public_fee(
         only_admin(s.admin);
         is_whitelisted_token(params.token, s.whitelist);
 
-        const public_fee_balance : nat = get_fee(params.token, s.public_fee_balance);
+        const public_fee_balance : nat = unwrap_or(s.public_fee_balance[params.token], 0n);
 
         if public_fee_balance =/= 0n
         then ops := transfer_token(Tezos.self_address, params.receiver, public_fee_balance, params.token) # ops

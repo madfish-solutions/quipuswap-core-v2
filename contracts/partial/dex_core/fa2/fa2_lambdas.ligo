@@ -9,7 +9,10 @@ function transfer_sender_check(
       const param           : transfer_dst_t)
                             : is_tx_operator_t is
       block {
-        const user : account_t = get_account_or_default(is_tx_operator.owner, param.token_id, s.accounts);
+        const user : account_t = unwrap_or(
+          s.accounts[(is_tx_operator.owner, param.token_id)],
+          Constants.default_account
+        );
 
         is_tx_operator.approved := is_tx_operator.approved and
           (is_tx_operator.owner = Tezos.sender or Set.mem(Tezos.sender, user.allowances));
@@ -64,29 +67,32 @@ function iterate_transfer(
 
         assert_with_error(dst.token_id <= s.tokens_count, "FA2_TOKEN_UNDEFINED");
 
-        const sender_account : account_t = get_account_or_default(transfer_param.from_, dst.token_id, s.accounts);
+        const sender_account : account_t = unwrap_or(
+          s.accounts[(transfer_param.from_, dst.token_id)],
+          Constants.default_account
+        );
 
         assert_with_error(
           transfer_param.from_ = Tezos.sender or Set.mem(Tezos.sender, sender_account.allowances),
           "FA2_NOT_OPERATOR"
         );
 
-        const sender_balance : nat = get_token_balance_or_default(transfer_param.from_, dst.token_id, s.ledger);
+        const sender_balance : nat = unwrap_or(s.ledger[(transfer_param.from_, dst.token_id)], 0n);
 
         assert_with_error(sender_balance >= dst.amount, "FA2_INSUFFICIENT_BALANCE");
 
         s.ledger[(transfer_param.from_, dst.token_id)] := get_nat_or_fail(sender_balance - dst.amount);
 
-        const receiver_balance : nat = get_token_balance_or_default(dst.to_, dst.token_id, s.ledger);
+        const receiver_balance : nat = unwrap_or(s.ledger[(dst.to_, dst.token_id)], 0n);
 
         s.ledger[(dst.to_, dst.token_id)] := receiver_balance + dst.amount;
 
-        const tokens : tokens_t = get_tokens_or_fail(dst.token_id, s.tokens);
+        const tokens : tokens_t = unwrap(s.tokens[dst.token_id], DexCore.err_pair_not_listed);
 
         if tokens.token_b = Tez
         then {
-          const pair : pair_t = get_pair_or_fail(dst.token_id, s.pairs);
-          const tez_store : address = get_tez_store_or_fail(pair.tez_store);
+          const pair : pair_t = unwrap(s.pairs[dst.token_id], DexCore.err_pair_not_listed);
+          const tez_store : address = unwrap(pair.tez_store, DexCore.err_tez_store_404);
           const sender_candidate : key_hash =
             case (Tezos.call_view("get_user_candidate", transfer_param.from_, tez_store) : option(key_hash)) of
           | Some(v) -> v
@@ -97,8 +103,8 @@ function iterate_transfer(
           | Some(v) -> v
           | None    -> failwith(DexCore.err_tez_store_get_user_candidate_view_404)
           end;
-          const new_sender_balance : nat = get_token_balance_or_default(transfer_param.from_, dst.token_id, s.ledger);
-          const new_receiver_balance : nat = get_token_balance_or_default(dst.to_, dst.token_id, s.ledger);
+          const new_sender_balance : nat = unwrap_or(s.ledger[(transfer_param.from_, dst.token_id)], 0n);
+          const new_receiver_balance : nat = unwrap_or(s.ledger[(dst.to_, dst.token_id)], 0n);
 
           ops := get_vote_op(
             record [
@@ -109,7 +115,7 @@ function iterate_transfer(
               current_balance = receiver_balance;
               new_balance     = new_receiver_balance;
             ],
-            get_tez_store_or_fail(pair.tez_store)
+            unwrap(pair.tez_store, DexCore.err_tez_store_404)
           ) # ops;
           ops := get_vote_op(
             record [
@@ -120,7 +126,7 @@ function iterate_transfer(
               current_balance = sender_balance;
               new_balance     = new_sender_balance;
             ],
-            get_tez_store_or_fail(pair.tez_store)
+            unwrap(pair.tez_store, DexCore.err_tez_store_404)
           ) # ops;
         }
         else skip;
@@ -140,7 +146,7 @@ function update_operator(
     assert_with_error(param.token_id <= s.tokens_count, "FA2_TOKEN_UNDEFINED");
     assert_with_error(Tezos.sender = param.owner, "FA2_NOT_OWNER");
 
-    var account : account_t := get_account_or_default(param.owner, param.token_id, s.accounts);
+    var account : account_t := unwrap_or(s.accounts[(param.owner, param.token_id)], Constants.default_account);
 
     account.allowances := Set.update(param.operator, should_add, account.allowances);
 
@@ -192,7 +198,7 @@ function balance_of(
         block {
           assert_with_error(request.token_id <= s.tokens_count, "FA2_TOKEN_UNDEFINED");
 
-          const bal : nat = get_token_balance_or_default(request.owner, request.token_id, s.ledger);
+          const bal : nat = unwrap_or(s.ledger[(request.owner, request.token_id)], 0n);
           const response : balance_response_t = record [
             request = request;
             balance = bal;

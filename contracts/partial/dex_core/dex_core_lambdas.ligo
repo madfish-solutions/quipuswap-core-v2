@@ -122,12 +122,12 @@ function invest_liquidity(
 
     case action of
     | Invest_liquidity(params) -> {
-        const pair : pair_t = get_pair_or_fail(params.pair_id, s.pairs);
+        const pair : pair_t = unwrap(s.pairs[params.pair_id], DexCore.err_pair_not_listed);
 
         assert_with_error(pair.token_a_pool * pair.token_b_pool =/= 0n, DexCore.err_no_liquidity);
         assert_with_error(params.shares =/= 0n, DexCore.err_no_shares_expected);
 
-        const tokens : tokens_t = get_tokens_or_fail(params.pair_id, s.tokens);
+        const tokens : tokens_t = unwrap(s.tokens[params.pair_id],DexCore.err_pair_not_listed );
         const tokens_a_required : nat = div_ceil(params.shares * pair.token_a_pool, pair.total_supply);
         const tokens_b_required : nat = div_ceil(params.shares * pair.token_b_pool, pair.total_supply);
 
@@ -138,7 +138,7 @@ function invest_liquidity(
           DexCore.err_low_token_b_in
         );
 
-        const sender_balance : nat = get_token_balance_or_default(params.shares_receiver, params.pair_id, s.ledger);
+        const sender_balance : nat = unwrap_or(s.ledger[(params.shares_receiver, params.pair_id)], 0n);
 
         s.ledger[(params.shares_receiver, params.pair_id)] := sender_balance + params.shares;
 
@@ -164,9 +164,9 @@ function invest_liquidity(
               execute_voting  = True;
               votes           = sender_balance + params.shares;
               current_balance = sender_balance;
-              new_balance     = get_token_balance_or_default(params.shares_receiver, params.pair_id, s.ledger);
+              new_balance     = unwrap_or(s.ledger[(params.shares_receiver, params.pair_id)], 0n);
             ],
-            get_tez_store_or_fail(updated_pair.tez_store)
+            unwrap(updated_pair.tez_store, DexCore.err_tez_store_404)
           ) # ops;
         }
         else skip;
@@ -192,11 +192,11 @@ function divest_liquidity(
 
     case action of
     | Divest_liquidity(params) -> {
-        const pair : pair_t = get_pair_or_fail(params.pair_id, s.pairs);
+        const pair : pair_t = unwrap(s.pairs[params.pair_id], DexCore.err_pair_not_listed);
 
         assert_with_error(pair.token_a_pool * pair.token_b_pool =/= 0n, DexCore.err_no_liquidity);
 
-        const sender_balance : nat = get_token_balance_or_default(Tezos.sender, params.pair_id, s.ledger);
+        const sender_balance : nat = unwrap_or(s.ledger[(Tezos.sender, params.pair_id)], 0n);
 
         assert_with_error(params.shares <= sender_balance, DexCore.err_insufficient_liquidity);
 
@@ -224,7 +224,7 @@ function divest_liquidity(
 
         s.pairs[params.pair_id] := updated_pair;
 
-        const tokens : tokens_t = get_tokens_or_fail(params.pair_id, s.tokens);
+        const tokens : tokens_t = unwrap(s.tokens[params.pair_id], DexCore.err_pair_not_listed);
 
         if tokens.token_b = Tez
         then {
@@ -235,9 +235,9 @@ function divest_liquidity(
               execute_voting  = True;
               votes           = get_nat_or_fail(sender_balance - params.shares);
               current_balance = sender_balance;
-              new_balance     = get_token_balance_or_default(Tezos.sender, params.pair_id, s.ledger);
+              new_balance     = unwrap_or(s.ledger[(Tezos.sender, params.pair_id)], 0n);
             ],
-            get_tez_store_or_fail(updated_pair.tez_store)
+            unwrap(updated_pair.tez_store, DexCore.err_tez_store_404)
           ) # ops;
         }
         else skip;
@@ -281,8 +281,8 @@ function flash_swap(
         assert_with_error(params.referrer =/= Tezos.sender, DexCore.err_can_not_refer_yourself);
         assert_with_error(params.amount_a_out > 0n or params.amount_b_out > 0n, DexCore.err_dust_out);
 
-        const tokens : tokens_t = get_tokens_or_fail(params.pair_id, s.tokens);
-        const pair : pair_t = get_pair_or_fail(params.pair_id, s.pairs);
+        const tokens : tokens_t = unwrap(s.tokens[params.pair_id], DexCore.err_pair_not_listed);
+        const pair : pair_t = unwrap(s.pairs[params.pair_id], DexCore.err_pair_not_listed);
 
         assert_with_error(params.amount_a_out < pair.token_a_pool, DexCore.err_insufficient_liquidity);
         assert_with_error(params.amount_b_out < pair.token_b_pool, DexCore.err_insufficient_liquidity);
@@ -299,7 +299,6 @@ function flash_swap(
         ];
 
         ops := call_flash_swap_callback(Unit) # ops;
-
         ops := call_flash_swaps_proxy(params.lambda, s.flash_swaps_proxy) # ops;
 
         if params.amount_b_out > 0n
@@ -319,12 +318,12 @@ function flash_swap(
 
         if tokens.token_b = Tez
         then {
-          const tez_store : address = get_tez_store_or_fail(pair.tez_store);
+          const tez_store : address = unwrap(pair.tez_store, DexCore.err_tez_store_404);
 
-          case (Tezos.call_view("get_tez_balance", Unit, tez_store) : option(nat)) of
-          | Some(tez_balance) -> s.tmp.token_b_balance_1 := tez_balance
-          | None              -> failwith(DexCore.err_tez_store_get_tez_balance_view_404)
-          end;
+          s.tmp.token_b_balance_1 := unwrap(
+            (Tezos.call_view("get_tez_balance", Unit, tez_store) : option(nat)),
+            DexCore.err_tez_store_get_tez_balance_view_404
+          );
         }
         else {
           ops := get_balance_op_or_fail(
@@ -361,11 +360,8 @@ function swap(
     | Swap(params) -> {
         assert_with_error(params.referrer =/= Tezos.sender, DexCore.err_can_not_refer_yourself);
 
-        const first_swap : swap_slice_t = case List.head_opt(params.swaps) of
-        | Some(swap) -> swap
-        | None       -> failwith(DexCore.err_empty_route)
-        end;
-        const tokens : tokens_t = get_tokens_or_fail(first_swap.pair_id, s.tokens);
+        const first_swap : swap_slice_t = unwrap(List.head_opt(params.swaps), DexCore.err_empty_route);
+        const tokens : tokens_t = unwrap(s.tokens[first_swap.pair_id], DexCore.err_pair_not_listed);
         const token : token_t = case first_swap.direction of
         | A_to_b -> tokens.token_a
         | B_to_a -> tokens.token_b
@@ -392,12 +388,7 @@ function swap(
 
         s := tmp.s;
 
-        const last_op : operation = case tmp.operation of
-        | Some(op) -> op
-        | None     -> failwith(DexCore.err_empty_route)
-        end;
-
-        ops := last_op # ops;
+        ops := unwrap(tmp.operation, DexCore.err_empty_route) # ops;
       }
     | _ -> skip
     end
@@ -412,15 +403,15 @@ function withdraw_profit(
 
     case action of
     | Withdraw_profit(params) -> {
-        const pair : pair_t = get_pair_or_fail(params.pair_id, s.pairs);
-        const user_balance : nat = get_token_balance_or_default(Tezos.sender, params.pair_id, s.ledger);
+        const pair : pair_t = unwrap(s.pairs[params.pair_id], DexCore.err_pair_not_listed);
+        const user_balance : nat = unwrap_or(s.ledger[(Tezos.sender, params.pair_id)], 0n);
 
         ops := get_withdraw_profit_op(
           Tezos.sender,
           params.receiver,
           user_balance,
           user_balance,
-          get_tez_store_or_fail(pair.tez_store)
+          unwrap(pair.tez_store, DexCore.err_tez_store_404)
         ) # ops;
       }
     | _ -> skip
@@ -436,10 +427,7 @@ function claim_tok_interface_fee(
 
     case action of
     | Claim_tok_interface_fee(params) -> {
-        const interface_fee : nat = get_tok_interface_fee_or_default(
-          (params.token, Tezos.sender),
-          s.tok_interface_fee
-        );
+        const interface_fee : nat = unwrap_or(s.tok_interface_fee[(params.token, Tezos.sender)], 0n);
 
         assert_with_error(
           params.amount * Constants.precision <= interface_fee,
@@ -469,10 +457,7 @@ function claim_tez_interface_fee(
 
     case action of
     | Claim_tez_interface_fee(params) -> {
-        const interface_fee : nat = get_tez_interface_fee_or_default(
-          (params.pair_id, Tezos.sender),
-          s.tez_interface_fee
-        );
+        const interface_fee : nat = unwrap_or(s.tez_interface_fee[(params.pair_id, Tezos.sender)], 0n);
 
         assert_with_error(
           params.amount * Constants.precision <= interface_fee,
@@ -481,14 +466,14 @@ function claim_tez_interface_fee(
 
         if interface_fee > 0n
         then {
-          const pair : pair_t = get_pair_or_fail(params.pair_id, s.pairs);
+          const pair : pair_t = unwrap(s.pairs[params.pair_id], DexCore.err_pair_not_listed);
           const divest_params : divest_tez_t = record [
             receiver     = (get_contract(params.receiver) : contract(unit));
             user         = Tezos.sender;
             amt          = params.amount;
           ];
 
-          ops := get_divest_tez_op(divest_params, get_tez_store_or_fail(pair.tez_store)) # ops;
+          ops := get_divest_tez_op(divest_params, unwrap(pair.tez_store, DexCore.err_tez_store_404)) # ops;
         }
         else skip;
       }
@@ -505,7 +490,7 @@ function withdraw_auction_fee(
 
     case action of
     | Withdraw_auction_fee(token) -> {
-        const auction_fee : nat = get_auction_fee_or_default(token, s.auction_fee);
+        const auction_fee : nat = unwrap_or(s.auction_fee[token], 0n);
         const reward : nat = auction_fee * s.fees.withdraw_fee_reward / Constants.precision;
         const params : receive_fee_t = record [
           token = token;
@@ -685,7 +670,7 @@ function update_token_metadata(
             metadata.token_info[pair.key] := pair.value;
           } with metadata;
 
-        var metadata : token_metadata_t := get_token_metadata_or_fail(params.token_id, s.token_metadata);
+        var metadata : token_metadata_t := unwrap(s.token_metadata[params.token_id], DexCore.err_pair_not_listed);
 
         metadata := List.fold(upd_token_metadata, params.token_info, metadata);
 
@@ -706,9 +691,9 @@ function ban(
       Ban(params) -> {
         only_admin(s.admin);
 
-        const pair : pair_t = get_pair_or_fail(params.pair_id, s.pairs);
+        const pair : pair_t = unwrap(s.pairs[params.pair_id], DexCore.err_pair_not_listed);
 
-        ops := get_ban_baker_op(params.ban_params, get_tez_store_or_fail(pair.tez_store)) # ops;
+        ops := get_ban_baker_op(params.ban_params, unwrap(pair.tez_store, DexCore.err_tez_store_404)) # ops;
       }
     | _ -> skip
     end

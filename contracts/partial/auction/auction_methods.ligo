@@ -22,10 +22,7 @@ function call_auction(
     | Burn_bid_fee(_)         -> 13n
     end;
 
-    const lambda_bytes : bytes = case s.auction_lambdas[id] of
-    | Some(v) -> v
-    | None    -> failwith(Auction.err_unknown_func)
-    end;
+    const lambda_bytes : bytes = unwrap(s.auction_lambdas[id], Auction.err_unknown_func);
 
     const res : return_t = case (Bytes.unpack(lambda_bytes) : option(auction_func_t)) of
     | Some(f) -> f(action, s.storage)
@@ -40,6 +37,8 @@ function setup_func(
   var s                 : full_storage_t)
                         : full_return_t is
   block {
+    only_admin(s.storage.admin);
+
     assert_with_error(params.idx <= auction_methods_max_index, Auction.err_high_func_index);
 
     case s.auction_lambdas[params.idx] of

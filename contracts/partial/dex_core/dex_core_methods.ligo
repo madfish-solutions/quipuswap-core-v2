@@ -42,10 +42,7 @@ function call_dex_core(
     | Launch_callback(_)         -> 30n
     end;
 
-    const lambda_bytes : bytes = case s.dex_core_lambdas[id] of
-    | Some(v) -> v
-    | None    -> failwith(DexCore.err_unknown_func)
-    end;
+    const lambda_bytes : bytes = unwrap(s.dex_core_lambdas[id], DexCore.err_unknown_func);
 
     const res : return_t = case (Bytes.unpack(lambda_bytes) : option(dex_core_func_t)) of
     | Some(f) -> f(action, s.storage)
@@ -60,6 +57,8 @@ function setup_func(
   var s                 : full_storage_t)
                         : full_return_t is
   block {
+    only_admin(s.storage.admin);
+
     assert_with_error(params.idx <= dex_core_methods_max_index, DexCore.err_high_func_index);
 
     case s.dex_core_lambdas[params.idx] of
