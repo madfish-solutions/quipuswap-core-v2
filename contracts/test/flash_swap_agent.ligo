@@ -30,10 +30,10 @@ function test(
   const s               : storage_t)
                         : return_t is
   block {
-   const ops : list(operation) = list [
+    const ops : list(operation) = list [
       transfer_token(Tezos.self_address, s.dex_core, params.token1_amt + fee_amt, params.token1);
       transfer_token(Tezos.self_address, s.dex_core, params.token2_amt + fee_amt, params.token2);
-   ];
+    ];
   } with (ops, s)
 
 function main(

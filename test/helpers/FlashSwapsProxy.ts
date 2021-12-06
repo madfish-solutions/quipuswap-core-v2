@@ -65,7 +65,7 @@ export class FlashSwapsProxy {
 
   async call(params: string): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
-      .call(params)
+      .default(params)
       .send();
 
     await confirmOperation(this.tezos, operation.hash);
