@@ -133,10 +133,13 @@ export class Auction {
     }
   }
 
-  async receiveFee(params: ReceiveFee): Promise<TransactionOperation> {
+  async receiveFee(
+    params: ReceiveFee,
+    mutezAmount: number = 0
+  ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
       .receive_fee(...Utils.destructObj(params))
-      .send();
+      .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
 

@@ -11,7 +11,7 @@ function receive_fee(
     | Receive_fee(params) -> {
         only_dex_core(s.dex_core);
 
-        const dev_fee : nat = params.fee * s.fees.dev_fee / Constants.precision;
+        const dev_fee : nat = params.fee * s.fees.dev_fee_f / Constants.precision;
 
         s.dev_fee_balance[params.token] := unwrap_or(s.dev_fee_balance[params.token], 0n) + dev_fee;
         s.public_fee_balance[params.token] := unwrap_or(s.public_fee_balance[params.token], 0n) +
@@ -68,7 +68,7 @@ function place_bid(
         assert_with_error(Tezos.now < auction.start_time + s.auction_duration, Auction.err_auction_finished);
         assert_with_error(params.amt > auction.current_bid, Auction.err_low_bid);
 
-        const burn_fee : nat = auction.current_bid * s.fees.bid_fee / Constants.precision;
+        const burn_fee : nat = auction.current_bid * s.fees.bid_fee_f / Constants.precision;
 
         s.bid_fee_balance := s.bid_fee_balance + burn_fee;
 

@@ -6,7 +6,7 @@ import { Token } from "./Common";
 
 export type ReceiveFee = {
   token: Token;
-  id: BigNumber;
+  fee: BigNumber;
 };
 
 export type LaunchAuction = {
@@ -31,8 +31,8 @@ export type WithdrawFee = {
 };
 
 export type Fees = {
-  dev_fee: BigNumber;
-  bid_fee: BigNumber;
+  dev_fee_f: BigNumber;
+  bid_fee_f: BigNumber;
 };
 
 export type AuctionStorage = {

@@ -13,8 +13,8 @@ export const auctionStorage: AuctionStorage = {
     public_fee_balance: MichelsonMap.fromLiteral({}),
     whitelist: [],
     fees: {
-      dev_fee: new BigNumber(0),
-      bid_fee: new BigNumber(0),
+      dev_fee_f: new BigNumber(0),
+      bid_fee_f: new BigNumber(0),
     },
     baker: zeroAddress,
     admin: zeroAddress,

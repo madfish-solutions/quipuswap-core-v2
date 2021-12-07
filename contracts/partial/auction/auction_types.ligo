@@ -12,8 +12,8 @@ type auction_t          is [@layout:comb] record [
 ]
 
 type fees_t             is [@layout:comb] record [
-  dev_fee                 : nat;
-  bid_fee                 : nat;
+  dev_fee_f               : nat;
+  bid_fee_f               : nat;
 ]
 
 type storage_t          is [@layout:comb] record [

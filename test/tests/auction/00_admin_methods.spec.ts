@@ -85,7 +85,7 @@ describe("Auction tests (admin's methods)", async () => {
 
   it("should setup a new baker and delegate for him", async () => {
     expect(
-      await auction.tezos.rpc.getDelegate(auction.contract.address)
+      await utils.tezos.rpc.getDelegate(auction.contract.address)
     ).to.equal(null);
 
     await utils.setProvider(bob.sk);
@@ -94,7 +94,7 @@ describe("Auction tests (admin's methods)", async () => {
 
     expect(auction.storage.storage.baker).to.equal(alice.pkh);
     expect(
-      await auction.tezos.rpc.getDelegate(auction.contract.address)
+      await utils.tezos.rpc.getDelegate(auction.contract.address)
     ).to.equal(alice.pkh);
   });
 
@@ -104,7 +104,7 @@ describe("Auction tests (admin's methods)", async () => {
 
     expect(auction.storage.storage.baker).to.equal(alice.pkh);
     expect(
-      await auction.tezos.rpc.getDelegate(auction.contract.address)
+      await utils.tezos.rpc.getDelegate(auction.contract.address)
     ).to.equal(alice.pkh);
   });
 
@@ -114,14 +114,14 @@ describe("Auction tests (admin's methods)", async () => {
 
     expect(auction.storage.storage.baker).to.equal(zeroAddress);
     expect(
-      await auction.tezos.rpc.getDelegate(auction.contract.address)
+      await utils.tezos.rpc.getDelegate(auction.contract.address)
     ).to.equal(null);
   });
 
   it("should fail if not admin is trying to setup a new fees", async () => {
     const fees: Fees = {
-      dev_fee: new BigNumber(666),
-      bid_fee: new BigNumber(666),
+      dev_fee_f: new BigNumber(666),
+      bid_fee_f: new BigNumber(666),
     };
 
     await utils.setProvider(alice.sk);
@@ -134,19 +134,19 @@ describe("Auction tests (admin's methods)", async () => {
 
   it("should setup a new fees by an admin", async () => {
     const fees: Fees = {
-      dev_fee: new BigNumber(666),
-      bid_fee: new BigNumber(13),
+      dev_fee_f: new BigNumber(666),
+      bid_fee_f: new BigNumber(13),
     };
 
     await utils.setProvider(bob.sk);
     await auction.setFees(fees);
     await auction.updateStorage();
 
-    expect(auction.storage.storage.fees.dev_fee).to.be.bignumber.equal(
-      fees.dev_fee
+    expect(auction.storage.storage.fees.dev_fee_f).to.be.bignumber.equal(
+      fees.dev_fee_f
     );
-    expect(auction.storage.storage.fees.bid_fee).to.be.bignumber.equal(
-      fees.bid_fee
+    expect(auction.storage.storage.fees.bid_fee_f).to.be.bignumber.equal(
+      fees.bid_fee_f
     );
   });
 
