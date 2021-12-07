@@ -4,31 +4,31 @@ import { BigNumber } from "bignumber.js";
 
 import { FA2Storage } from "../../test/types/FA2";
 
-import { alice, bob, carol, dev } from "../../scripts/sandbox/accounts";
+import accounts from "../../scripts/sandbox/accounts";
 
 const totalSupply: BigNumber = new BigNumber(100_000_000_000);
 
 export const fa2Storage: FA2Storage = {
   account_info: MichelsonMap.fromLiteral({
-    [alice.pkh]: {
+    [accounts.alice.pkh]: {
       balances: MichelsonMap.fromLiteral({
         [0]: totalSupply.dividedBy(4).integerValue(BigNumber.ROUND_DOWN),
       }),
       allowances: [],
     },
-    [bob.pkh]: {
+    [accounts.bob.pkh]: {
       balances: MichelsonMap.fromLiteral({
         [0]: totalSupply.dividedBy(4).integerValue(BigNumber.ROUND_DOWN),
       }),
       allowances: [],
     },
-    [carol.pkh]: {
+    [accounts.carol.pkh]: {
       balances: MichelsonMap.fromLiteral({
         [0]: totalSupply.dividedBy(4).integerValue(BigNumber.ROUND_DOWN),
       }),
       allowances: [],
     },
-    [dev.pkh]: {
+    [accounts.dev.pkh]: {
       balances: MichelsonMap.fromLiteral({
         [0]: totalSupply.dividedBy(4).integerValue(BigNumber.ROUND_DOWN),
       }),
@@ -40,7 +40,7 @@ export const fa2Storage: FA2Storage = {
   token_metadata: MichelsonMap.fromLiteral({}),
   minters_info: MichelsonMap.fromLiteral({}),
   last_token_id: new BigNumber(1),
-  admin: alice.pkh,
+  admin: accounts.alice.pkh,
   permit_counter: new BigNumber(0),
   permits: MichelsonMap.fromLiteral({}),
   default_expiry: new BigNumber(1000),

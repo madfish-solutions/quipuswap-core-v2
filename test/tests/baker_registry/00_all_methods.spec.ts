@@ -3,13 +3,18 @@ import { BakerRegistry } from "../../helpers/BakerRegistry";
 
 import { rejects, ok, strictEqual } from "assert";
 
-import { alice, bob } from "../../../scripts/sandbox/accounts";
+import accounts from "../../../scripts/sandbox/accounts";
 
 import { bakerRegistryStorage } from "../../../storage/BakerRegistry";
+
+import { SBAccount } from "test/types/Common";
 
 describe("BakerRegistry tests", async () => {
   var utils: Utils;
   var bakerRegistry: BakerRegistry;
+
+  var alice: SBAccount = accounts.alice;
+  var bob: SBAccount = accounts.bob;
 
   before("setup", async () => {
     utils = new Utils();

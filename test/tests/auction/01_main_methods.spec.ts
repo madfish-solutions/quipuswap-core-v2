@@ -9,12 +9,13 @@ import chai, { expect } from "chai";
 
 import { BigNumber } from "bignumber.js";
 
-import { alice, bob } from "../../../scripts/sandbox/accounts";
+import accounts from "../../../scripts/sandbox/accounts";
 
 import { auctionStorage } from "../../../storage/Auction";
 import { fa2Storage } from "../../../storage/test/FA2";
 
 import { ReceiveFee } from "test/types/Auction";
+import { SBAccount } from "test/types/Common";
 
 chai.use(require("chai-bignumber")(BigNumber));
 
@@ -22,6 +23,9 @@ describe("Auction tests (main methods)", async () => {
   var utils: Utils;
   var auction: Auction;
   var quipuToken: FA2;
+
+  var alice: SBAccount = accounts.alice;
+  var bob: SBAccount = accounts.bob;
 
   before("setup", async () => {
     utils = new Utils();

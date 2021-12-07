@@ -10,3 +10,9 @@ export type FA2Token = {
 };
 
 export type Token = { tez: Tez } | { fa12: FA12Token } | { fa2: FA2Token };
+
+export type SBAccount = {
+  pkh: string;
+  sk: string;
+  pk: string;
+};

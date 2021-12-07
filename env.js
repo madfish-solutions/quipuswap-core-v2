@@ -1,4 +1,4 @@
-const { alice, dev } = require("./scripts/sandbox/accounts");
+import accounts from "./scripts/sandbox/accounts";
 
 module.exports = {
   confirmationPollingTimeoutSecond: 500000,
@@ -13,25 +13,25 @@ module.exports = {
     development: {
       rpc: "http://localhost:8732",
       network_id: "*",
-      secretKey: alice.sk,
+      secretKey: accounts.alice.sk,
     },
     hangzhounet: {
       rpc: "https://hangzhounet.api.tez.ie/",
       port: 443,
       network_id: "*",
-      secretKey: dev.sk,
+      secretKey: accounts.dev.sk,
     },
     idiazabalnet: {
       rpc: "https://idiazabalnet.ecadinfra.com/",
       port: 443,
       network_id: "*",
-      secretKey: dev.sk,
+      secretKey: accounts.dev.sk,
     },
     mainnet: {
       rpc: "https://mainnet.api.tez.ie",
       port: 443,
       network_id: "*",
-      secretKey: dev.sk,
+      secretKey: accounts.dev.sk,
     },
   },
 };

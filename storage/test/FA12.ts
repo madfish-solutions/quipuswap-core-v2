@@ -4,26 +4,26 @@ import { BigNumber } from "bignumber.js";
 
 import { FA12Storage } from "../../test/types/FA12";
 
-import { alice, bob, carol, dev } from "../../scripts/sandbox/accounts";
+import accounts from "../../scripts/sandbox/accounts";
 
 const totalSupply: BigNumber = new BigNumber(100_000_000_000);
 
 export const fa12Storage: FA12Storage = {
   total_supply: totalSupply,
   ledger: MichelsonMap.fromLiteral({
-    [alice.pkh]: {
+    [accounts.alice.pkh]: {
       balance: totalSupply.dividedBy(4).integerValue(BigNumber.ROUND_DOWN),
       allowances: MichelsonMap.fromLiteral({}),
     },
-    [bob.pkh]: {
+    [accounts.bob.pkh]: {
       balance: totalSupply.dividedBy(4).integerValue(BigNumber.ROUND_DOWN),
       allowances: MichelsonMap.fromLiteral({}),
     },
-    [carol.pkh]: {
+    [accounts.carol.pkh]: {
       balance: totalSupply.dividedBy(4).integerValue(BigNumber.ROUND_DOWN),
       allowances: MichelsonMap.fromLiteral({}),
     },
-    [dev.pkh]: {
+    [accounts.dev.pkh]: {
       balance: totalSupply.dividedBy(4).integerValue(BigNumber.ROUND_DOWN),
       allowances: MichelsonMap.fromLiteral({}),
     },

@@ -43,6 +43,7 @@
 
 5. `vote`:
 
+   - ✅ should fail if not dex core is trying to vote;
    -
 
 6. `default`:

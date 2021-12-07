@@ -1,4 +1,4 @@
-export = {
+export default {
   alice: {
     pkh: "tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb",
     sk: "edsk3QoqBuvdamxouPhin7swCvkQNgq4jP5KZPbwWNnwdZpSpJiEbq",
@@ -17,5 +17,6 @@ export = {
   dev: {
     pkh: "tz1cnoQrSzqqzpfVyKBesRikg2cyNhHWfAQQ",
     sk: "edskRsRcJz77uZZwKHCud3uBktpzcDEwzzbdbU9e7t78kG51nPh1ZZZJ7TFLwmWXkDBdFAeevmZbH2WRdMErt9zubgxLkXwnYa",
+    pk: "",
   },
 };

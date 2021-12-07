@@ -1,6 +1,7 @@
 import { Common, DexCore as DexCoreErrors } from "../../helpers/Errors";
 import { BakerRegistry } from "../../helpers/BakerRegistry";
 import { FlashSwapsProxy } from "../../helpers/FlashSwapsProxy";
+import { TezStore } from "../../helpers/TezStore";
 import { Auction } from "../../helpers/Auction";
 import { Utils, zeroAddress } from "../../helpers/Utils";
 import { DexCore } from "../../helpers/DexCore";
@@ -13,7 +14,7 @@ import chai, { expect } from "chai";
 
 import { BigNumber } from "bignumber.js";
 
-import { alice, bob, dev } from "../../../scripts/sandbox/accounts";
+import accounts from "../../../scripts/sandbox/accounts";
 
 import { confirmOperation } from "../../../scripts/confirmation";
 
@@ -31,7 +32,7 @@ import {
   Fees,
   Ban,
 } from "../../types/DexCore";
-import { TezStore } from "../../helpers/TezStore";
+import { SBAccount } from "test/types/Common";
 
 chai.use(require("chai-bignumber")(BigNumber));
 
@@ -44,6 +45,10 @@ describe("DexCore tests (admin's methods)", async () => {
   var firstToken: FA12;
   var secondToken: FA2;
   var quipuToken: FA2;
+
+  var alice: SBAccount = accounts.alice;
+  var bob: SBAccount = accounts.bob;
+  var dev: SBAccount = accounts.dev;
 
   before("setup", async () => {
     utils = new Utils();

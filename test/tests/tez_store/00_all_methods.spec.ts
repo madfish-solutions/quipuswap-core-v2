@@ -9,12 +9,13 @@ import chai, { expect } from "chai";
 
 import { BigNumber } from "bignumber.js";
 
-import { alice, bob, carol, dev } from "../../../scripts/sandbox/accounts";
+import accounts from "../../../scripts/sandbox/accounts";
 
 import { bakerRegistryStorage } from "../../../storage/BakerRegistry";
 import { tezStoreStorage } from "../../../storage/test/TezStore";
 
 import { BanBaker, DivestTez } from "../../types/TezStore";
+import { SBAccount } from "test/types/Common";
 
 chai.use(require("chai-bignumber")(BigNumber));
 
@@ -22,6 +23,11 @@ describe("TezStore tests", async () => {
   var utils: Utils;
   var bakerRegistry: BakerRegistry;
   var tezStore: TezStore;
+
+  var alice: SBAccount = accounts.alice;
+  var bob: SBAccount = accounts.bob;
+  var carol: SBAccount = accounts.carol;
+  var dev: SBAccount = accounts.dev;
 
   before("setup", async () => {
     utils = new Utils();
