@@ -1,4 +1,4 @@
-[@inline] function check_is_banned_baker(
+function check_is_banned_baker(
   const baker           : baker_t)
                         : bool is
   baker.ban_start_time + int(baker.ban_period) > Tezos.now

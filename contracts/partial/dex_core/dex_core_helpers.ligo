@@ -1,4 +1,4 @@
-[@inline] function get_pair_info_or_default(
+function get_pair_info_or_default(
   const key             : tokens_t;
   const token_to_id     : big_map(bytes, nat);
   const pairs           : big_map(nat, pair_t);

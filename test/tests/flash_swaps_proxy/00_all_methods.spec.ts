@@ -53,7 +53,7 @@ describe("FlashSwapsProxy tests", async () => {
 
     fs.writeFile(
       "contracts/test/parameters.ligo",
-      `[@inline] const agent : address = ("${flashSwapAgent.contract.address}" : address);\n`,
+      `const agent : address = ("${flashSwapAgent.contract.address}" : address);\n`,
       function (err) {
         if (err) console.log(err.message);
       }

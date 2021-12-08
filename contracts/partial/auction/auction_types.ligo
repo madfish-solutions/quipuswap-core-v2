@@ -105,4 +105,4 @@ type full_action_t      is
 | Use                     of action_t
 | Setup_func              of setup_func_t
 
-[@inline] const auction_methods_max_index : nat = 13n;
+const auction_methods_max_index : nat = 13n;

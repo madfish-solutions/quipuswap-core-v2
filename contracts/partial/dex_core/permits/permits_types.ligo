@@ -34,9 +34,9 @@ type set_expiry_t       is [@layout:comb] record [
   permit_hash             : option(blake2b_hash_t);
 ]
 
-[@inline] const new_user_permits : user_permits_t = record [
+const new_user_permits : user_permits_t = record [
   permits = (Map.empty : map(blake2b_hash_t, permit_info_t));
   expiry  = (None : option(seconds_t))
 ]
 
-[@inline] const permit_expiry_limit : nat = 2592000n; (* 30 days *)
+const permit_expiry_limit : nat = 2592000n; (* 30 days *)

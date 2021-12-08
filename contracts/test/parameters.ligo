@@ -1,1 +1,1 @@
-[@inline] const agent : address = ("KT1CX2auMiZ3Ck6oSvySZHi1ZV5rkF8EVG3q" : address);
+const agent : address = ("KT1GPWMzERZcSmXKU8PnD9srBhuyvLjniXyV" : address);

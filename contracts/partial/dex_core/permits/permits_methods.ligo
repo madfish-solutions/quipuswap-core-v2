@@ -1,4 +1,4 @@
-[@inline] function has_expired(
+function has_expired(
   const default_expiry  : seconds_t;
   const user_expiry_opt : option(seconds_t);
   const permit_info     : permit_info_t)
@@ -13,7 +13,7 @@
     end
   } with permit_info.created_at + int(expiry) < Tezos.now
 
-[@inline] function delete_expired_permits(
+function delete_expired_permits(
   const default_expiry  : seconds_t;
   const user            : address;
   const permits         : permits_t)
@@ -21,7 +21,7 @@
   case Big_map.find_opt(user, permits) of
   | None               -> permits
   | Some(user_permits) -> block {
-    [@inline] function delete_expired_permit(
+    function delete_expired_permit(
       const permits     : map(blake2b_hash_t, permit_info_t);
       const key_value   : blake2b_hash_t * permit_info_t)
                         : map(blake2b_hash_t, permit_info_t) is
@@ -110,7 +110,7 @@ function sender_check(
       ]
     end
 
-[@inline] function set_user_default_expiry(
+function set_user_default_expiry(
   const user            : address;
   const new_expiry      : seconds_t;
   const permits         : permits_t)
@@ -123,7 +123,7 @@ function sender_check(
     const updated_user_permits : user_permits_t = user_permits with record [expiry = Some(new_expiry)];
   } with Big_map.update(user, Some(updated_user_permits), permits)
 
-[@inline] function set_permit_expiry_with_check(
+function set_permit_expiry_with_check(
   const permit_info     : permit_info_t;
   const new_expiry      : seconds_t)
                         : option(permit_info_t) is

@@ -285,4 +285,4 @@ type full_action_t      is
 
 type deploy_tez_store_t is (option(key_hash) * tez * tez_store_t) -> (operation * address)
 
-[@inline] const dex_core_methods_max_index : nat = 30n;
+const dex_core_methods_max_index : nat = 30n;

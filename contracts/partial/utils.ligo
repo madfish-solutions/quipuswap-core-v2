@@ -1,11 +1,11 @@
 module Constants is {
-  [@inline] const zero_address : address = ("tz1ZZZZZZZZZZZZZZZZZZZZZZZZZZZZNkiRg" : address);
+  const zero_address : address = ("tz1ZZZZZZZZZZZZZZZZZZZZZZZZZZZZNkiRg" : address);
 
-  [@inline] const zero_key_hash : key_hash = ("tz1ZZZZZZZZZZZZZZZZZZZZZZZZZZZZNkiRg" : key_hash);
+  const zero_key_hash : key_hash = ("tz1ZZZZZZZZZZZZZZZZZZZZZZZZZZZZNkiRg" : key_hash);
 
-  [@inline] const precision : nat = 1_000_000_000_000_000_000n; (* 10 ^ 18 *)
+  const precision : nat = 1_000_000_000_000_000_000n; (* 10 ^ 18 *)
 
-  [@inline] const default_token_metadata : map(string, bytes) = map [
+  const default_token_metadata : map(string, bytes) = map [
     "name" -> 0x517569707573776170204c5020546f6b656e;
     "symbol" -> 0x515054;
     "decimals" -> 0x36;
@@ -14,28 +14,28 @@ module Constants is {
     "thumbnailUri" -> 0x68747470733a2f2f7175697075737761702e636f6d2f51504c502e706e67;
   ];
 
-  [@inline] const default_baker : baker_t = record [
+  const default_baker : baker_t = record [
     ban_start_time = (0 : timestamp);
     ban_period     = 0n;
     votes          = 0n;
   ]
 
-  [@inline] const default_user : user_t = record [
+  const default_user : user_t = record [
     candidate = (None : option(key_hash));
     tez_bal   = 0n;
     votes     = 0n;
   ];
 
-  [@inline] const default_user_reward_info : user_reward_info_t = record [
+  const default_user_reward_info : user_reward_info_t = record [
     reward      = 0n;
     reward_paid = 0n;
   ];
 
-  [@inline] const default_account : account_t = record [
+  const default_account : account_t = record [
     allowances = (Set.empty : set(address));
   ];
 
-  [@inline] const default_tmp : tmp_t = record [
+  const default_tmp : tmp_t = record [
     pair_id           = 0n;
     amount_a_out      = 0n;
     amount_b_out      = 0n;
@@ -46,7 +46,7 @@ module Constants is {
     token_b_balance_2 = 0n;
   ];
 
-  [@inline] const default_pair : pair_t = record [
+  const default_pair : pair_t = record [
     token_a_pool      = 0n;
     token_b_pool      = 0n;
     token_a_price_cum = 0n;

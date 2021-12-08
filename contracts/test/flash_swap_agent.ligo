@@ -7,7 +7,7 @@
 #include "../partial/common_types.ligo"
 #include "../partial/common_helpers.ligo"
 
-[@inline] const fee_amt : nat = 10n;
+const fee_amt : nat = 10n;
 
 type storage_t          is [@layout:comb] record [
   dex_core                : address;

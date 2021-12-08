@@ -42,14 +42,14 @@ function get_fa2_token_transfer_entrypoint(
   | None        -> (failwith(Common.err_fa2_transfer_entrypoint_404) : contract(fa2_transfer_t))
   end
 
-[@inline] function wrap_fa12_transfer_trx(
+function wrap_fa12_transfer_trx(
   const from_           : address;
   const to_             : address;
   const amt             : nat)
                         : fa12_transfer_t is
   FA12_transfer(from_, (to_, amt))
 
-[@inline] function wrap_fa2_transfer_trx(
+function wrap_fa2_transfer_trx(
   const from_           : address;
   const to_             : address;
   const amt             : nat;
