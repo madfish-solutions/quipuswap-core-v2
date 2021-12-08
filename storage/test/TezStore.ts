@@ -2,9 +2,9 @@ import { MichelsonMap } from "@taquito/michelson-encoder";
 
 import { BigNumber } from "bignumber.js";
 
-import { zeroAddress } from "test/helpers/Utils";
+import { zeroAddress } from "../../test/helpers/Utils";
 
-import { TezStoreStorage } from "test/types/TezStore";
+import { TezStoreStorage } from "../../test/types/TezStore";
 
 export const tezStoreStorage: TezStoreStorage = {
   users: MichelsonMap.fromLiteral({}),
@@ -12,8 +12,8 @@ export const tezStoreStorage: TezStoreStorage = {
   users_rewards: MichelsonMap.fromLiteral({}),
   current_delegated: zeroAddress,
   next_candidate: zeroAddress,
-  baker_registry: null,
-  dex_core: null,
+  baker_registry: zeroAddress,
+  dex_core: zeroAddress,
   pair_id: new BigNumber(0),
   next_reward: new BigNumber(0),
   total_reward: new BigNumber(0),

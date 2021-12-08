@@ -7,7 +7,7 @@ type fa2_token_t        is [@layout:comb] record [
   id                      : nat;
 ]
 
-type token_t       is
+type token_t            is
 | Tez                     of tez_t
 | Fa12                    of fa12_token_t
 | Fa2                     of fa2_token_t

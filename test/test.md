@@ -68,6 +68,7 @@
 
 1.  `call`:
 
+    - should fail if not dex core is trying to call;
     -
 
 ## DexCore
