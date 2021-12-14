@@ -11,11 +11,11 @@ function receive_fee(
     | Receive_fee(params) -> {
         only_dex_core(s.dex_core);
 
-        const dev_fee : nat = params.fee * s.fees.dev_fee_f / Constants.precision;
+        const dev_fee : nat = params.fee * s.fees.dev_fee_f;
 
         s.dev_fee_balance[params.token] := unwrap_or(s.dev_fee_balance[params.token], 0n) + dev_fee;
         s.public_fee_balance[params.token] := unwrap_or(s.public_fee_balance[params.token], 0n) +
-          get_nat_or_fail(params.fee - dev_fee);
+          get_nat_or_fail(100n * params.fee * Constants.precision - dev_fee);
       }
     | _ -> skip
     end

@@ -3,22 +3,20 @@ const { InMemorySigner } = require("@taquito/signer");
 
 const { migrate } = require("../scripts/helpers");
 
-const { alice, dev } = require("../scripts/sandbox/accounts");
-
 const { bakerRegistryStorage } = require("../storage/BakerRegistry");
 
 const env = require("../env");
 
-module.exports = async (tezos) => {
-  const secretKey = env.network === "development" ? alice.sk : dev.sk;
+import accounts from "../scripts/sandbox/accounts";
 
+module.exports = async (tezos) => {
   tezos = new TezosToolkit(tezos.rpc.url);
 
   tezos.setProvider({
     config: {
       confirmationPollingTimeoutSecond: env.confirmationPollingTimeoutSecond,
     },
-    signer: await InMemorySigner.fromSecretKey(secretKey),
+    signer: await InMemorySigner.fromSecretKey(accounts.alice.sk),
   });
 
   const bakerRegistryAddress = await migrate(

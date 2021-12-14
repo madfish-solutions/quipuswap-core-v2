@@ -4,6 +4,11 @@ import { BigNumber } from "bignumber.js";
 
 import { Token } from "./Common";
 
+export type ReceiveFees = {
+  devFee: BigNumber;
+  publicFee: BigNumber;
+};
+
 export type ReceiveFee = {
   token: Token;
   fee: BigNumber;

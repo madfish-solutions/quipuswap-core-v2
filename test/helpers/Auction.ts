@@ -21,11 +21,14 @@ import auctionLambdas from "../../build/lambdas/auction_lambdas.json";
 
 import { Utils } from "./Utils";
 
+import { PRECISION } from "./Constants";
+
 import {
   UpdateWhitelist,
   AuctionStorage,
   LaunchAuction,
   WithdrawFee,
+  ReceiveFees,
   ReceiveFee,
   PlaceBid,
   Fees,
@@ -72,6 +75,21 @@ export class Auction {
       await tezos.contract.at(operation.contractAddress),
       tezos
     );
+  }
+
+  calculateReceiveFees(amount: BigNumber): ReceiveFees {
+    const devFee: BigNumber = amount.multipliedBy(
+      this.storage.storage.fees.dev_fee_f
+    );
+    const publicFee: BigNumber = amount
+      .multipliedBy(100)
+      .multipliedBy(PRECISION)
+      .minus(devFee);
+
+    return {
+      devFee,
+      publicFee,
+    };
   }
 
   async updateStorage(maps = {}): Promise<void> {

@@ -52,17 +52,21 @@
 
 7. `is_banned_baker` [VIEW]:
 
-   - should return true if baker is banned;
-   - should return false if baker is not banned;
-   - should return false if baker's banning period is finished.
+   - ✅ should return true if baker is banned;
+   - ✅ should return false if baker is not banned;
+   - ✅ should return false if baker's banning period is finished.
 
 8. `get_tez_balance` [VIEW]:
 
-   -
+   - ✅ should return zero balance;
+   - should return positive balance - 1;
+   - should return positive balance - 2.
 
 9. `get_user_candidate` [VIEW]:
 
-   -
+   - ✅ should return user's candidate is user have a candidate;
+   - ✅ should return current delegated if user does not have a candidate;
+   - ✅ should return `zero_key_hash` if contract does not have a delegate.
 
 ## FlashSwapsProxy
 
@@ -259,7 +263,7 @@
 1. `receive_fee`:
 
    - ✅ should fail if not dex core is trying to send fees;
-   - should receive TEZ tokens as fee and correctly update dev and public fee balances;
+   - ✅ should receive TEZ tokens as fee and correctly update dev and public fee balances;
    - should receive FA1.2 tokens as fee and correctly update dev and public fee balances;
    - should receive FA2 tokens as fee and correctly update dev and public fee balances.
 

@@ -7,8 +7,8 @@ export default {
   buildDir: "build",
   migrationsDir: "migrations",
   contractsDir: "contracts/main",
-  ligoVersion: "0.30.0",
-  network: "development",
+  ligoVersion: "0.31.0",
+  network: "hangzhounet",
   networks: {
     development: {
       rpc: "http://localhost:8732",

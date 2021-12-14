@@ -30,67 +30,17 @@
                                                                             (pair (nat %reward_per_block)
                                                                                   (pair (nat %last_update_level)
                                                                                         (pair (nat %collecting_period_ends) (nat %voting_period_ends)))))))))))))))) ;
-  code { PUSH string "200" ;
-         PUSH string "203" ;
-         PAIR ;
-         PUSH string "202" ;
-         PUSH string "205" ;
-         PAIR ;
-         PUSH string "204" ;
-         PUSH string "201" ;
-         PAIR ;
-         PAIR ;
-         PAIR ;
-         PUSH string "403" ;
-         PUSH string "406" ;
-         PAIR ;
-         PUSH key_hash "tz1ZZZZZZZZZZZZZZZZZZZZZZZZZZZZNkiRg" ;
-         PUSH nat 1000000000000000000 ;
-         PUSH nat 0 ;
-         PUSH nat 0 ;
-         SWAP ;
-         PAIR ;
-         PAIR ;
-         NONE key_hash ;
-         PUSH nat 0 ;
-         PUSH nat 0 ;
-         SWAP ;
-         PAIR ;
-         SWAP ;
-         PAIR ;
-         PUSH timestamp 0 ;
-         PUSH nat 0 ;
-         PUSH nat 0 ;
-         SWAP ;
-         PAIR ;
-         SWAP ;
-         PAIR ;
-         PAIR ;
-         PAIR ;
-         PAIR ;
-         SWAP ;
-         DUP ;
-         DUG 2 ;
-         LAMBDA
-           (pair (pair string string) address)
+  code { LAMBDA
+           address
            unit
-           { UNPAIR ;
-             CDR ;
+           { PUSH string "403" ;
              SWAP ;
              SENDER ;
              COMPARE ;
              EQ ;
              IF { DROP } { FAILWITH } ;
              UNIT } ;
-         SWAP ;
-         APPLY ;
-         DIG 2 ;
-         LAMBDA
-           (pair (pair string string) int)
-           nat
-           { UNPAIR ; SWAP ; ISNAT ; IF_NONE { CAR ; FAILWITH } { SWAP ; DROP } } ;
-         SWAP ;
-         APPLY ;
+         LAMBDA int nat { ISNAT ; IF_NONE { PUSH string "406" ; FAILWITH } {} } ;
          LAMBDA
            (pair (option (pair nat nat)) (pair nat nat))
            (pair nat nat)
@@ -121,20 +71,15 @@
              ADD ;
              COMPARE ;
              GT } ;
-         DUP 9 ;
-         DUP 3 ;
-         PAIR ;
+         SWAP ;
+         DUP ;
+         DUG 2 ;
          LAMBDA
-           (pair (pair (lambda (pair (option nat) string) nat)
-                       (pair (pair (pair string string) (pair string string)) (pair string string)))
-                 address)
+           (pair (lambda (pair (option nat) string) nat) address)
            nat
            { UNPAIR ;
-             UNPAIR ;
-             DUG 2 ;
-             CAR ;
-             CDR ;
-             CAR ;
+             SWAP ;
+             PUSH string "205" ;
              SWAP ;
              UNIT ;
              VIEW "get_cycle_duration" nat ;
@@ -142,20 +87,12 @@
              EXEC } ;
          SWAP ;
          APPLY ;
-         DUP 10 ;
-         DUP 10 ;
-         DUP 9 ;
-         DUP 6 ;
-         DUP 5 ;
-         PAIR 5 ;
+         DUP 7 ;
+         DUP 4 ;
+         DUP 3 ;
+         PAIR 3 ;
          LAMBDA
-           (pair (pair (lambda address nat)
-                       (pair (lambda (pair (option nat) string) nat)
-                             (pair (lambda int nat)
-                                   (pair (pair (pair (pair (pair timestamp (pair nat nat)) (pair (option key_hash) (pair nat nat)))
-                                                     (pair (pair nat nat) nat))
-                                               key_hash)
-                                         (pair (pair (pair string string) (pair string string)) (pair string string))))))
+           (pair (pair (lambda address nat) (pair (lambda (pair (option nat) string) nat) (lambda int nat)))
                  (pair nat
                        (pair (big_map address (pair (option key_hash) (pair nat nat)))
                              (pair (big_map key_hash (pair timestamp (pair nat nat)))
@@ -174,8 +111,8 @@
                                                (pair address
                                                      (pair nat (pair nat (pair nat (pair nat (pair nat (pair nat (pair nat (pair nat nat)))))))))))))))
            { UNPAIR ;
-             UNPAIR 5 ;
-             DIG 5 ;
+             UNPAIR 3 ;
+             DIG 3 ;
              UNPAIR ;
              SWAP ;
              DUP ;
@@ -183,10 +120,7 @@
              GET 15 ;
              DUP 3 ;
              GET 13 ;
-             DUP 9 ;
-             CAR ;
-             CDR ;
-             CDR ;
+             PUSH string "202" ;
              SWAP ;
              NIL nat ;
              DUP 4 ;
@@ -243,10 +177,7 @@
              LEVEL ;
              COMPARE ;
              GT ;
-             IF { DIG 6 ;
-                  CAR ;
-                  CAR ;
-                  CDR ;
+             IF { PUSH string "204" ;
                   SWAP ;
                   DUP ;
                   DUG 2 ;
@@ -286,10 +217,7 @@
                   SWAP ;
                   DUP ;
                   DUG 2 ;
-                  DUP 8 ;
-                  CAR ;
-                  CDR ;
-                  CDR ;
+                  PUSH nat 1000000000000000000 ;
                   DIG 5 ;
                   GET 17 ;
                   MUL ;
@@ -328,10 +256,7 @@
                   ADD ;
                   UPDATE 23 ;
                   DUP ;
-                  DIG 3 ;
-                  CAR ;
-                  CDR ;
-                  CDR ;
+                  PUSH nat 1000000000000000000 ;
                   DIG 3 ;
                   DUP 4 ;
                   GET 25 ;
@@ -345,19 +270,14 @@
                   UPDATE 19 ;
                   PUSH nat 0 ;
                   UPDATE 17 }
-                { SWAP ; DIG 2 ; DIG 3 ; DIG 4 ; DIG 5 ; DIG 6 ; DROP 6 } } ;
+                { SWAP ; DIG 2 ; DIG 3 ; DIG 4 ; DROP 4 } } ;
          SWAP ;
          APPLY ;
-         DUP 10 ;
-         DUP 9 ;
-         DUP 9 ;
-         PAIR 3 ;
+         DUP 8 ;
+         DUP 8 ;
+         PAIR ;
          LAMBDA
-           (pair (pair (lambda (pair (option (pair nat nat)) (pair nat nat)) (pair nat nat))
-                       (pair (lambda int nat)
-                             (pair (pair (pair (pair timestamp (pair nat nat)) (pair (option key_hash) (pair nat nat)))
-                                         (pair (pair nat nat) nat))
-                                   key_hash)))
+           (pair (pair (lambda (pair (option (pair nat nat)) (pair nat nat)) (pair nat nat)) (lambda int nat))
                  (pair (pair address nat)
                        (pair nat
                              (pair (big_map address (pair (option key_hash) (pair nat nat)))
@@ -377,16 +297,16 @@
                                                (pair address
                                                      (pair nat (pair nat (pair nat (pair nat (pair nat (pair nat (pair nat (pair nat nat)))))))))))))))
            { UNPAIR ;
-             UNPAIR 3 ;
-             DIG 3 ;
+             UNPAIR ;
+             DIG 2 ;
              UNPAIR ;
              UNPAIR ;
              DIG 2 ;
              UNPAIR ;
-             DIG 6 ;
-             CAR ;
-             CDR ;
-             CAR ;
+             PUSH nat 0 ;
+             PUSH nat 0 ;
+             SWAP ;
+             PAIR ;
              DUP 3 ;
              GET 5 ;
              DUP 5 ;
@@ -430,7 +350,7 @@
              UPDATE 5 } ;
          SWAP ;
          APPLY ;
-         DIG 12 ;
+         DIG 10 ;
          UNPAIR ;
          IF_LEFT
            { DIG 2 ;
@@ -442,8 +362,7 @@
              IF_LEFT
                { DIG 4 ;
                  DIG 5 ;
-                 DIG 8 ;
-                 DROP 3 ;
+                 DROP 2 ;
                  IF_LEFT
                    { DIG 2 ;
                      DROP ;
@@ -455,10 +374,13 @@
                      SWAP ;
                      EXEC ;
                      DROP ;
-                     DIG 3 ;
-                     CAR ;
-                     CAR ;
-                     CAR ;
+                     PUSH timestamp 0 ;
+                     PUSH nat 0 ;
+                     PUSH nat 0 ;
+                     SWAP ;
+                     PAIR ;
+                     SWAP ;
+                     PAIR ;
                      DUP 3 ;
                      GET 3 ;
                      DUP 3 ;
@@ -490,8 +412,7 @@
                      PAIR }
                    { DIG 3 ;
                      DIG 4 ;
-                     DIG 5 ;
-                     DROP 4 ;
+                     DROP 3 ;
                      PUSH mutez 1 ;
                      AMOUNT ;
                      EDIV ;
@@ -513,10 +434,13 @@
                      SWAP ;
                      EXEC ;
                      DROP ;
-                     DIG 4 ;
-                     CAR ;
-                     CAR ;
-                     CDR ;
+                     NONE key_hash ;
+                     PUSH nat 0 ;
+                     PUSH nat 0 ;
+                     SWAP ;
+                     PAIR ;
+                     SWAP ;
+                     PAIR ;
                      DUP 3 ;
                      CAR ;
                      DUP 3 ;
@@ -526,9 +450,7 @@
                      DIG 3 ;
                      SWAP ;
                      EXEC ;
-                     DIG 4 ;
-                     CDR ;
-                     CDR ;
+                     PUSH string "200" ;
                      SWAP ;
                      DUP ;
                      DUG 2 ;
@@ -581,8 +503,7 @@
                      CONS ;
                      PAIR }
                    { DIG 3 ;
-                     DIG 6 ;
-                     DROP 2 ;
+                     DROP ;
                      SWAP ;
                      DUP ;
                      DUG 2 ;
@@ -591,10 +512,13 @@
                      SWAP ;
                      EXEC ;
                      DROP ;
-                     DIG 3 ;
-                     CAR ;
-                     CAR ;
-                     CDR ;
+                     NONE key_hash ;
+                     PUSH nat 0 ;
+                     PUSH nat 0 ;
+                     SWAP ;
+                     PAIR ;
+                     SWAP ;
+                     PAIR ;
                      DUP 3 ;
                      CAR ;
                      DUP 3 ;
@@ -658,10 +582,13 @@
                  DIG 2 ;
                  SWAP ;
                  EXEC ;
-                 DUP 8 ;
-                 CAR ;
-                 CAR ;
-                 CDR ;
+                 NONE key_hash ;
+                 PUSH nat 0 ;
+                 PUSH nat 0 ;
+                 SWAP ;
+                 PAIR ;
+                 SWAP ;
+                 PAIR ;
                  SWAP ;
                  DUP ;
                  DUG 2 ;
@@ -677,10 +604,13 @@
                  CAR ;
                  IF_NONE
                    { SWAP ; DUP ; DUG 2 }
-                   { DUP 9 ;
-                     CAR ;
-                     CAR ;
-                     CAR ;
+                   { PUSH timestamp 0 ;
+                     PUSH nat 0 ;
+                     PUSH nat 0 ;
+                     SWAP ;
+                     PAIR ;
+                     SWAP ;
+                     PAIR ;
                      DUP 4 ;
                      GET 3 ;
                      DUP 3 ;
@@ -707,10 +637,13 @@
                      SWAP ;
                      UPDATE ;
                      UPDATE 3 } ;
-                 DUP 9 ;
-                 CAR ;
-                 CAR ;
-                 CAR ;
+                 PUSH timestamp 0 ;
+                 PUSH nat 0 ;
+                 PUSH nat 0 ;
+                 SWAP ;
+                 PAIR ;
+                 SWAP ;
+                 PAIR ;
                  SWAP ;
                  DUP ;
                  DUG 2 ;
@@ -759,10 +692,13 @@
                  SWAP ;
                  UPDATE ;
                  UPDATE 1 ;
-                 DUP 10 ;
-                 CAR ;
-                 CAR ;
-                 CAR ;
+                 PUSH timestamp 0 ;
+                 PUSH nat 0 ;
+                 PUSH nat 0 ;
+                 SWAP ;
+                 PAIR ;
+                 SWAP ;
+                 PAIR ;
                  SWAP ;
                  DUP ;
                  DUG 2 ;
@@ -774,10 +710,13 @@
                  DUP 10 ;
                  SWAP ;
                  EXEC ;
-                 DUP 11 ;
-                 CAR ;
-                 CAR ;
-                 CAR ;
+                 PUSH timestamp 0 ;
+                 PUSH nat 0 ;
+                 PUSH nat 0 ;
+                 SWAP ;
+                 PAIR ;
+                 SWAP ;
+                 PAIR ;
                  DUP 3 ;
                  GET 3 ;
                  DUP 4 ;
@@ -836,7 +775,8 @@
                       DUP 7 ;
                       SWAP ;
                       EXEC ;
-                      IF { SWAP ; DUP 8 ; CDR ; UPDATE 9 } { SWAP } ;
+                      IF { SWAP ; PUSH key_hash "tz1ZZZZZZZZZZZZZZZZZZZZZZZZZZZZNkiRg" ; UPDATE 9 }
+                         { SWAP } ;
                       DIG 2 ;
                       DIG 5 ;
                       SWAP ;
@@ -849,14 +789,11 @@
                            SET_DELEGATE ;
                            CONS ;
                            SWAP ;
-                           DIG 4 ;
-                           CDR ;
+                           PUSH key_hash "tz1ZZZZZZZZZZZZZZZZZZZZZZZZZZZZNkiRg" ;
                            UPDATE 7 ;
                            SWAP ;
                            PAIR }
-                         { DIG 5 ;
-                           DROP ;
-                           DIG 2 ;
+                         { DIG 2 ;
                            GET 7 ;
                            SWAP ;
                            DUP ;
@@ -874,10 +811,7 @@
                                 SOME ;
                                 SET_DELEGATE ;
                                 CONS ;
-                                DUP 5 ;
-                                CAR ;
-                                CAR ;
-                                CAR ;
+                                PUSH string "201" ;
                                 DUP 3 ;
                                 GET 11 ;
                                 CONTRACT %validate key_hash ;
@@ -892,9 +826,7 @@
                       DUP ;
                       CDR ;
                       DUP ;
-                      DIG 5 ;
-                      CDR ;
-                      CAR ;
+                      PUSH string "203" ;
                       DUP 3 ;
                       GET 13 ;
                       UNIT ;
@@ -915,23 +847,13 @@
                       SWAP ;
                       CAR ;
                       PAIR }
-                    { DIG 2 ;
-                      DIG 3 ;
-                      DIG 4 ;
-                      DIG 5 ;
-                      DIG 6 ;
-                      DIG 7 ;
-                      DIG 8 ;
-                      DIG 9 ;
-                      DROP 8 ;
-                      PAIR } }
+                    { DIG 2 ; DIG 3 ; DIG 4 ; DIG 5 ; DIG 6 ; DIG 7 ; DROP 6 ; PAIR } }
                { DIG 4 ;
                  DIG 5 ;
                  DIG 6 ;
                  DIG 7 ;
                  DIG 8 ;
-                 DIG 13 ;
-                 DROP 6 ;
+                 DROP 5 ;
                  SWAP ;
                  DUP ;
                  DUG 2 ;
@@ -962,10 +884,10 @@
                  DIG 2 ;
                  SWAP ;
                  EXEC ;
-                 DUP 5 ;
-                 CAR ;
-                 CDR ;
-                 CAR ;
+                 PUSH nat 0 ;
+                 PUSH nat 0 ;
+                 SWAP ;
+                 PAIR ;
                  SWAP ;
                  DUP ;
                  DUG 2 ;
@@ -980,14 +902,8 @@
                  DUP ;
                  CAR ;
                  SWAP ;
-                 DUP 6 ;
-                 CAR ;
-                 CDR ;
-                 CDR ;
-                 DUP 7 ;
-                 CAR ;
-                 CDR ;
-                 CDR ;
+                 PUSH nat 1000000000000000000 ;
+                 PUSH nat 1000000000000000000 ;
                  DUP 4 ;
                  EDIV ;
                  IF_NONE { PUSH string "DIV by 0" ; FAILWITH } {} ;
@@ -1011,10 +927,7 @@
                  UPDATE ;
                  UPDATE 5 ;
                  DUP ;
-                 DUP 5 ;
-                 CAR ;
-                 CDR ;
-                 CDR ;
+                 PUSH nat 1000000000000000000 ;
                  DUP 4 ;
                  EDIV ;
                  IF_NONE { PUSH string "DIV by 0" ; FAILWITH } {} ;
@@ -1024,20 +937,14 @@
                  ADD ;
                  UPDATE 21 ;
                  NIL operation ;
-                 DUP 5 ;
-                 CAR ;
-                 CDR ;
-                 CDR ;
+                 PUSH nat 1000000000000000000 ;
                  DUP 4 ;
                  COMPARE ;
                  GE ;
                  IF { DIG 3 ;
                       CAR ;
                       PUSH mutez 1 ;
-                      DIG 5 ;
-                      CAR ;
-                      CDR ;
-                      CDR ;
+                      PUSH nat 1000000000000000000 ;
                       DIG 5 ;
                       EDIV ;
                       IF_NONE { PUSH string "DIV by 0" ; FAILWITH } {} ;
@@ -1046,7 +953,7 @@
                       UNIT ;
                       TRANSFER_TOKENS ;
                       CONS }
-                    { DIG 2 ; DIG 3 ; DIG 4 ; DROP 3 } ;
+                    { DIG 2 ; DIG 3 ; DROP 2 } ;
                  PAIR } } } ;
   view "is_banned_baker"
        key_hash

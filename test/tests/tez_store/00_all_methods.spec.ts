@@ -282,37 +282,4 @@ describe("TezStore tests", async () => {
       Date.parse(tezStore.storage.bakers[alice.pkh].ban_start_time)
     ).to.be.lte(await utils.getLastBlockTimestamp());
   });
-
-  // it("should return false if baker is not banned", async () => {
-  //   const isBannedAlice: Promise<any> = await tezStore.contract.views
-  //     .is_banned_baker(alice.pkh)
-  //     .read(lambdaContract.address);
-
-  //   expect(isBannedAlice).to.be.false;
-  // });
-
-  // it("should return true if baker is banned", async () => {
-  //   const banBaker: BanBaker = {
-  //     baker: alice.pkh,
-  //     ban_period: new BigNumber(5),
-  //   };
-
-  //   await tezStore.banBaker(banBaker);
-
-  //   const isBannedAlice: Promise<any> = await tezStore.contract.views
-  //     .is_banned_baker(alice.pkh)
-  //     .read(lambdaContract.address);
-
-  //   expect(isBannedAlice).to.be.true;
-  // });
-
-  // it("should return false if baker's banning period is finished", async () => {
-  //   await utils.bakeBlocks(4);
-
-  //   const isBannedAlice: Promise<any> = await tezStore.contract.views
-  //     .is_banned_baker(alice.pkh)
-  //     .read(lambdaContract.address);
-
-  //   expect(isBannedAlice).to.be.false;
-  // });
 });
