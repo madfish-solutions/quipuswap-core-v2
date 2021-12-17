@@ -15,6 +15,8 @@ import { BigNumber } from "bignumber.js";
 
 import accounts from "../../../scripts/sandbox/accounts";
 
+import { confirmOperation } from "../../../scripts/confirmation";
+
 import { flashSwapsProxyStorage } from "../../../storage/FlashSwapsProxy";
 import { auctionStorage } from "../../../storage/Auction";
 import { dexCoreStorage } from "../../../storage/DexCore";
@@ -62,6 +64,14 @@ describe("DexCore (admin methods)", async () => {
       utils.tezos,
       flashSwapsProxyStorage
     );
+
+    const transferOperation = await utils.tezos.contract.transfer({
+      to: dev.pkh,
+      amount: 50_000_000,
+      mutez: true,
+    });
+
+    await confirmOperation(utils.tezos, transferOperation.hash);
 
     firstToken = await FA12.originate(utils.tezos, fa12Storage);
     secondToken = await FA2.originate(utils.tezos, fa2Storage);
