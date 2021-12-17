@@ -101,4 +101,10 @@ export class FA12 {
 
     return operation;
   }
+
+  getBalance(user: string): BigNumber {
+    return this.storage.ledger[user] !== undefined
+      ? this.storage.ledger[user].balance
+      : new BigNumber(0);
+  }
 }

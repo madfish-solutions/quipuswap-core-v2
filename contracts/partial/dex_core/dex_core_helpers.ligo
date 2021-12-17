@@ -97,25 +97,18 @@ function get_tez_store_initial_storage(
   const share_receiver  : address;
   const baker_registry  : address;
   const tez_bal         : nat;
-  const init_shares     : nat;
   const pair_id         : nat;
   const collect_period  : nat)
                         : tez_store_t is
   record [
-    users              = big_map [
+    users                  = big_map [
       share_receiver -> record [
-        candidate = Some(candidate);
+        candidate = (None : option(key_hash));
         tez_bal   = tez_bal;
-        votes     = init_shares;
+        votes     = 0n;
       ]
     ];
-    bakers             = big_map [
-      candidate -> record [
-        ban_start_time = Tezos.now;
-        ban_period     = 0n;
-        votes          = init_shares;
-      ]
-    ];
+    bakers                 = (Big_map.empty : big_map(key_hash, baker_t));
     users_rewards          = (Big_map.empty : big_map(address, user_reward_info_t));
     current_delegated      = candidate;
     next_candidate         = Constants.zero_key_hash;
@@ -134,14 +127,13 @@ function get_tez_store_initial_storage(
 
 function calc_cumulative_prices(
   var pair              : pair_t;
-  const last_block_time : timestamp;
   const new_tok_a_pool  : nat;
   const new_tok_b_pool  : nat)
-                        : (pair_t * timestamp) is
+                        : pair_t is
   block {
-    const time_elasped : nat = get_nat_or_fail(Tezos.now - last_block_time);
+    const time_elasped : nat = get_nat_or_fail(Tezos.now - pair.last_block_timestamp);
 
-    if (time_elasped > 0n and pair.token_a_pool =/= 0n and pair.token_b_pool =/= 0n)
+    if (time_elasped > 0n and pair.token_a_pool > 0n and pair.token_b_pool > 0n)
     then {
       (* price_cumulative = price_cumulative + (price_a * time_elasped) *)
       pair.token_a_price_cum := pair.token_a_price_cum + ((pair.token_b_pool / pair.token_a_pool) * time_elasped);
@@ -152,7 +144,8 @@ function calc_cumulative_prices(
 
     pair.token_a_pool := new_tok_a_pool;
     pair.token_b_pool := new_tok_b_pool;
-  } with (pair, Tezos.now)
+    pair.last_block_timestamp := Tezos.now;
+  } with pair
 
 function form_swap_data(
   const pair            : pair_t;
@@ -185,25 +178,28 @@ function form_pools(
   const tok_a_price_cum : nat;
   const tok_b_price_cum : nat;
   const supply          : nat;
+  const last_timestamp  : timestamp;
   const tez_store_opt   : option(address);
   const direction       : swap_direction_t)
                         : pair_t is
   case direction of
   | B_to_a -> record [
-      token_a_pool      = to_pool;
-      token_b_pool      = from_pool;
-      token_a_price_cum = tok_a_price_cum;
-      token_b_price_cum = tok_b_price_cum;
-      total_supply      = supply;
-      tez_store         = tez_store_opt;
+      token_a_pool         = to_pool;
+      token_b_pool         = from_pool;
+      token_a_price_cum    = tok_a_price_cum;
+      token_b_price_cum    = tok_b_price_cum;
+      total_supply         = supply;
+      last_block_timestamp = last_timestamp;
+      tez_store            = tez_store_opt;
     ]
   | A_to_b -> record [
-      token_a_pool      = from_pool;
-      token_b_pool      = to_pool;
-      token_a_price_cum = tok_b_price_cum;
-      token_b_price_cum = tok_a_price_cum;
-      total_supply      = supply;
-      tez_store         = tez_store_opt;
+      token_a_pool         = from_pool;
+      token_b_pool         = to_pool;
+      token_a_price_cum    = tok_b_price_cum;
+      token_b_price_cum    = tok_a_price_cum;
+      total_supply         = supply;
+      last_block_timestamp = last_timestamp;
+      tez_store            = tez_store_opt;
     ]
   end
 
@@ -266,18 +262,17 @@ function swap_internal(
       pair.token_a_price_cum,
       pair.token_b_price_cum,
       pair.total_supply,
+      pair.last_block_timestamp,
       pair.tez_store,
       params.direction
     );
 
-    var (updated_pair_2, last_block_timestamp) := calc_cumulative_prices(
+    var updated_pair_2 : pair_t := calc_cumulative_prices(
       updated_pair_1,
-      tmp.s.last_block_timestamp,
       updated_pair_1.token_a_pool,
       updated_pair_1.token_b_pool
     );
 
-    tmp.s.last_block_timestamp := last_block_timestamp;
     tmp.s.pairs[params.pair_id] := updated_pair_2;
 
     if swap.to_.token = Tez

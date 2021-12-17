@@ -62,6 +62,7 @@ type pair_t             is [@layout:comb] record [
   token_a_price_cum       : nat;
   token_b_price_cum       : nat;
   total_supply            : nat;
+  last_block_timestamp    : timestamp;
   tez_store               : option(address);
 ]
 

@@ -37,7 +37,6 @@ type storage_t          is [@layout:comb] record [
   managers                : set(address);
   fees                    : fees_t;
   tmp                     : tmp_t;
-  last_block_timestamp    : timestamp;
   admin                   : address;
   pending_admin           : address;
   baker_registry          : address;

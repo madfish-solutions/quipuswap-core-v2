@@ -15,12 +15,12 @@ import { bakerRegistryStorage } from "../../../storage/BakerRegistry";
 import { tezStoreStorage } from "../../../storage/test/TezStore";
 import { dexCoreStorage } from "../../../storage/DexCore";
 
-import { BanBaker } from "../../types/TezStore";
-import { SBAccount } from "test/types/Common";
+import { BanBaker, DivestTez } from "../../types/TezStore";
+import { SBAccount } from "../../types/Common";
 
 chai.use(require("chai-bignumber")(BigNumber));
 
-describe("TezStore tests (view methods)", async () => {
+describe("TezStore (views)", async () => {
   var utils: Utils;
   var bakerRegistry: BakerRegistry;
   var tezStore: TezStore;
@@ -42,9 +42,6 @@ describe("TezStore tests (view methods)", async () => {
 
     dexCoreStorage.storage.admin = alice.pkh;
     dexCoreStorage.storage.baker_registry = bakerRegistry.contract.address;
-    dexCoreStorage.storage.last_block_timestamp = String(
-      (await utils.getLastBlockTimestamp()) / 1000
-    );
 
     dexCore = await DexCore.originate(utils.tezos, dexCoreStorage);
 
@@ -91,6 +88,11 @@ describe("TezStore tests (view methods)", async () => {
   });
 
   it("should return zero balance", async () => {
+    tezStore = await TezStore.updateContractInstance(
+      tezStore.contract.address,
+      utils.tezos
+    );
+
     const balance: Promise<any> = await tezStore.contract.contractViews
       .get_tez_balance()
       .executeView({ viewCaller: alice.pkh });
@@ -98,38 +100,44 @@ describe("TezStore tests (view methods)", async () => {
     expect(balance).to.be.bignumber.equal(0);
   });
 
-  // it("should return positive balance - 1", async () => {
-  //   const user: string = bob.pkh;
-  //   const mutezAmount: number = 500;
+  it("should return positive balance - 1", async () => {
+    const user: string = bob.pkh;
+    const mutezAmount: number = 500;
 
-  //   await tezStore.investTez(user, mutezAmount);
+    await tezStore.investTez(user, mutezAmount);
 
-  //   console.log(await utils.tezos.tz.getBalance(tezStore.contract.address));
+    tezStore = await TezStore.updateContractInstance(
+      tezStore.contract.address,
+      utils.tezos
+    );
 
-  //   const balance: Promise<any> = await tezStore.contract.contractViews
-  //     .get_tez_balance([])
-  //     .executeView({ viewCaller: alice.pkh });
+    const balance: Promise<any> = await tezStore.contract.contractViews
+      .get_tez_balance()
+      .executeView({ viewCaller: alice.pkh });
 
-  //   expect(balance).to.be.bignumber.equal(new BigNumber(mutezAmount));
-  // });
+    expect(balance).to.be.bignumber.equal(new BigNumber(mutezAmount));
+  });
 
-  // it("should return positive balance - 2", async () => {
-  //   const divestTez: DivestTez = {
-  //     receiver: bob.pkh,
-  //     user: bob.pkh,
-  //     amt: new BigNumber(100),
-  //   };
+  it("should return positive balance - 2", async () => {
+    const divestTez: DivestTez = {
+      receiver: bob.pkh,
+      user: bob.pkh,
+      amt: new BigNumber(100),
+    };
 
-  //   await tezStore.divestTez(divestTez);
+    await tezStore.divestTez(divestTez);
 
-  //   console.log(await utils.tezos.tz.getBalance(tezStore.contract.address));
+    tezStore = await TezStore.updateContractInstance(
+      tezStore.contract.address,
+      utils.tezos
+    );
 
-  //   const balance: Promise<any> = await tezStore.contract.contractViews
-  //     .get_tez_balance()
-  //     .executeView({ viewCaller: alice.pkh });
+    const balance: Promise<any> = await tezStore.contract.contractViews
+      .get_tez_balance()
+      .executeView({ viewCaller: alice.pkh });
 
-  //   expect(balance).to.be.bignumber.equal(new BigNumber(400));
-  // });
+    expect(balance).to.be.bignumber.equal(new BigNumber(400));
+  });
 
   it("should return zero_key_hash if contract does not have a delegate", async () => {
     const candidate: Promise<any> = await tezStore.contract.contractViews

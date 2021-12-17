@@ -101,16 +101,18 @@ function vote(
     }
     end;
 
-    const user_candidate : baker_t = unwrap_or(s.bakers[params.candidate], Constants.default_baker);
+    var user_candidate : baker_t := unwrap_or(s.bakers[params.candidate], Constants.default_baker);
     const user_candidate_votes : nat = user_candidate.votes + params.votes;
 
+    user_candidate.votes := user_candidate_votes;
+
     s.bakers[params.candidate] := user_candidate;
+
+    user.votes := params.votes;
 
     if user.votes =/= 0n
     then user.candidate := Some(params.candidate)
     else user.candidate := (None : option(key_hash));
-
-    user.votes := params.votes;
 
     s.users[params.voter] := user;
 

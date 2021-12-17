@@ -662,10 +662,13 @@
                  DUG 2 ;
                  GET 4 ;
                  ADD ;
+                 DUP ;
+                 DUG 2 ;
+                 UPDATE 4 ;
                  DIG 2 ;
                  DUP ;
                  GET 3 ;
-                 DUP 4 ;
+                 DUP 3 ;
                  DUP 8 ;
                  GET 3 ;
                  SWAP ;
@@ -673,18 +676,20 @@
                  SWAP ;
                  UPDATE ;
                  UPDATE 3 ;
+                 DIG 3 ;
+                 DUP 6 ;
+                 GET 7 ;
+                 UPDATE 4 ;
+                 SWAP ;
                  DUP ;
                  CAR ;
                  PUSH nat 0 ;
-                 DUP 6 ;
+                 DUP 4 ;
                  GET 4 ;
                  COMPARE ;
                  NEQ ;
-                 IF { DIG 4 ; DUP 7 ; GET 3 ; SOME ; UPDATE 1 }
-                    { DIG 4 ; NONE key_hash ; UPDATE 1 } ;
-                 DUP 7 ;
-                 GET 7 ;
-                 UPDATE 4 ;
+                 IF { DIG 2 ; DUP 7 ; GET 3 ; SOME ; UPDATE 1 }
+                    { DIG 2 ; NONE key_hash ; UPDATE 1 } ;
                  DUP 7 ;
                  CAR ;
                  SWAP ;
@@ -730,7 +735,7 @@
                  DUP ;
                  DUG 2 ;
                  GET 4 ;
-                 DIG 4 ;
+                 DIG 5 ;
                  COMPARE ;
                  GT ;
                  IF { DIG 3 ; DROP ; DIG 2 ; DUP ; GET 7 ; UPDATE 9 ; DUP 5 ; GET 3 ; UPDATE 7 }

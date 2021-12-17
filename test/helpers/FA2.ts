@@ -7,6 +7,8 @@ import {
 
 import fs from "fs";
 
+import { BigNumber } from "bignumber.js";
+
 import { confirmOperation } from "../../scripts/confirmation";
 
 import { UpdateOperator, FA2Storage, Transfer } from "../types/FA2";
@@ -93,5 +95,17 @@ export class FA2 {
     await confirmOperation(this.tezos, operation.hash);
 
     return operation;
+  }
+
+  async getBalance(user: string, tokenId: BigNumber): Promise<BigNumber> {
+    if (this.storage.account_info[user] !== undefined) {
+      const balance: BigNumber = await this.storage.account_info[
+        user
+      ].balances.get(tokenId);
+
+      return balance !== undefined ? balance : new BigNumber(0);
+    }
+
+    return new BigNumber(0);
   }
 }

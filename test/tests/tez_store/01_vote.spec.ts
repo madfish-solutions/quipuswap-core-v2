@@ -19,7 +19,7 @@ import { SBAccount } from "test/types/Common";
 
 chai.use(require("chai-bignumber")(BigNumber));
 
-describe("TezStore tests (vote methods)", async () => {
+describe("TezStore (vote)", async () => {
   var utils: Utils;
   var bakerRegistry: BakerRegistry;
   var tezStore: TezStore;

@@ -38,6 +38,13 @@ export class TezStore {
     return new TezStore(await tezos.contract.at(tezStoreAddress), tezos);
   }
 
+  static async updateContractInstance(
+    tezStoreAddress: string,
+    tezos: TezosToolkit
+  ) {
+    return await TezStore.init(tezStoreAddress, tezos);
+  }
+
   static async originate(
     tezos: TezosToolkit,
     storage: TezStoreStorage

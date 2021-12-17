@@ -59,8 +59,8 @@
 8. `get_tez_balance` [VIEW]:
 
    - ✅ should return zero balance;
-   - should return positive balance - 1;
-   - should return positive balance - 2.
+   - ✅ should return positive balance - 1;
+   - ✅ should return positive balance - 2.
 
 9. `get_user_candidate` [VIEW]:
 
@@ -79,7 +79,30 @@
 
 1. `launch_exchange`:
 
-   -
+   - ✅ should fail if wrong pair order was passed with TEZ token and TEZ token;
+   - ✅ should fail if wrong pair order was passed with FA1.2 token and TEZ token;
+   - ✅ should fail if wrong pair order was passed with FA2 token and TEZ token;
+   - ✅ should fail if wrong pair order was passed with FA1.2 token and FA1.2 token;
+   - ✅ should fail if wrong pair order was passed with FA2 token and FA2 token;
+   - ✅ should fail if wrong pair order was passed with FA1.2 token and FA2 token;
+   - ✅ should fail if token A zero amount in was passed;
+   - ✅ should fail if TEZ token B zero amount in was passed;
+   - ✅ should fail if token B zero amount in was passed;
+   - ✅ should launch FA1.2/TEZ exchange;
+   - ✅ should fail if pair already listed;
+   - ✅ should launch FA2/TEZ exchange;
+   - ✅ should launch FA1.2/FA1.2 exchange;
+   - ✅ should launch FA2/FA2 exchange;
+   - ✅ should launch FA1.2/FA2 exchange;
+   - ✅ should setup correct default metadata in time of exchange launch;
+   - ✅ should transfer FA1.2 tokens and TEZ tokens in time of FA1.2/TEZ exchange launch;
+   - ✅ should transfer FA2 tokens and TEZ tokens in time of FA2/TEZ exchange launch;
+   - ✅ should transfer FA1.2 tokens in time of FA1.2/FA1.2 exchange launch;
+   - ✅ should transfer FA2 tokens in time of FA2/FA2 exchange launch;
+   - ✅ should transfer FA1.2 tokens and FA2 tokens in time of FA1.2/FA2 exchange launch;
+   - ✅ should not calculate cumulative prices and should update last block timestamp in time of any exchange launch.
+   - ✅ should deploy TEZ store contract with correct initial storage in time of exchange launch with TEZ token;
+   - ✅ should vote on TEZ store contract in time of exchange launch with TEZ token;
 
 2. `invest_liquidity`:
 
@@ -220,7 +243,7 @@
 
 31. `launch_callback`:
 
-    -
+    - ✅ should fail if not dex core is trying to call launch exchange callback.
 
 32. `check_is_banned_baker` [VIEW]:
 
@@ -256,6 +279,11 @@
 
 40. `get_cycle_duration` [VIEW]:
 
+    -
+
+41. `integration_tests`:
+
+    - should launch exchange, invest liquidity, swap, divest all liquidity and call launch exchange one more time successfully;
     -
 
 ## Auction

@@ -21,7 +21,7 @@ import { SBAccount } from "test/types/Common";
 
 chai.use(require("chai-bignumber")(BigNumber));
 
-describe("Auction tests (main methods)", async () => {
+describe("Auction (main methods)", async () => {
   var utils: Utils;
   var auction: Auction;
   var fa12: FA12;

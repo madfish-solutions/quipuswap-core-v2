@@ -9,7 +9,7 @@ import { bakerRegistryStorage } from "../../../storage/BakerRegistry";
 
 import { SBAccount } from "test/types/Common";
 
-describe("BakerRegistry tests", async () => {
+describe("BakerRegistry", async () => {
   var utils: Utils;
   var bakerRegistry: BakerRegistry;
 

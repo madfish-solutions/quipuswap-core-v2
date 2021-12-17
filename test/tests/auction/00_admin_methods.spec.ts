@@ -19,7 +19,7 @@ import { SBAccount } from "test/types/Common";
 
 chai.use(require("chai-bignumber")(BigNumber));
 
-describe("Auction tests (admin's methods)", async () => {
+describe("Auction (admin methods)", async () => {
   var utils: Utils;
   var auction: Auction;
   var quipuToken: FA2;

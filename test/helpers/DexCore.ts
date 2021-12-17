@@ -21,10 +21,11 @@ import dexCoreLambdas from "../../build/lambdas/dex_core_lambdas.json";
 
 import { Utils } from "./Utils";
 
-import { Token } from "test/types/Common";
+import { FA12Token, FA2Token, Token } from "test/types/Common";
 import { BalanceResponse, Transfer, UpdateOperator } from "test/types/FA2";
 import {
   UpdateTokenMetadata,
+  CumulativePrices,
   InvestLiquidity,
   DivestLiquidity,
   LaunchExchange,
@@ -37,6 +38,7 @@ import {
   FlashSwap,
   SetExpiry,
   Swap,
+  Pair,
   Fees,
   Ban,
 } from "../types/DexCore";
@@ -476,5 +478,112 @@ export class DexCore {
     await confirmOperation(this.tezos, operation.hash);
 
     return operation;
+  }
+
+  static changeTokensOrderInPair(
+    params: LaunchExchange,
+    wrongOrder: boolean
+  ): LaunchExchange {
+    let result: LaunchExchange = params;
+
+    if (
+      params.pair.token_a.hasOwnProperty("fa12") &&
+      params.pair.token_b.hasOwnProperty("fa12")
+    ) {
+      if (wrongOrder) {
+        const tokenA: FA12Token = Utils.getMaxFA12Token(
+          params.pair.token_a["fa12"],
+          params.pair.token_b["fa12"]
+        );
+        const tokenB: FA12Token = Utils.getMinFA12Token(
+          params.pair.token_a["fa12"],
+          params.pair.token_b["fa12"]
+        );
+
+        result.pair.token_a["fa12"] = tokenA;
+        result.pair.token_b["fa12"] = tokenB;
+      } else {
+        const tokenA: FA12Token = Utils.getMinFA12Token(
+          params.pair.token_a["fa12"],
+          params.pair.token_b["fa12"]
+        );
+        const tokenB: FA12Token = Utils.getMaxFA12Token(
+          params.pair.token_a["fa12"],
+          params.pair.token_b["fa12"]
+        );
+
+        result.pair.token_a["fa12"] = tokenA;
+        result.pair.token_b["fa12"] = tokenB;
+      }
+    } else if (
+      params.pair.token_a.hasOwnProperty("fa2") &&
+      params.pair.token_b.hasOwnProperty("fa2")
+    ) {
+      if (wrongOrder) {
+        const tokenA: FA2Token = Utils.getMaxFA2Token(
+          params.pair.token_a["fa2"],
+          params.pair.token_b["fa2"]
+        );
+        const tokenB: FA2Token = Utils.getMinFA2Token(
+          params.pair.token_a["fa2"],
+          params.pair.token_b["fa2"]
+        );
+
+        result.pair.token_a["fa2"] = tokenA;
+        result.pair.token_b["fa2"] = tokenB;
+      } else {
+        const tokenA: FA2Token = Utils.getMinFA2Token(
+          params.pair.token_a["fa2"],
+          params.pair.token_b["fa2"]
+        );
+        const tokenB: FA2Token = Utils.getMaxFA2Token(
+          params.pair.token_a["fa2"],
+          params.pair.token_b["fa2"]
+        );
+
+        result.pair.token_a["fa2"] = tokenA;
+        result.pair.token_b["fa2"] = tokenB;
+      }
+    }
+
+    return result;
+  }
+
+  static async calculateCumulativePrices(
+    pair: Pair,
+    utils: Utils
+  ): Promise<CumulativePrices> {
+    const timeElasped: BigNumber = new BigNumber(
+      (await utils.getLastBlockTimestamp()) -
+        Date.parse(pair.last_block_timestamp)
+    );
+
+    if (
+      timeElasped.gt(0) &&
+      pair.token_a_pool.isGreaterThan(0) &&
+      pair.token_b_pool.isGreaterThan(0)
+    ) {
+      return {
+        tokenACumulativePrice: pair.token_a_price_cum
+          .plus(
+            pair.token_b_pool
+              .dividedBy(pair.token_a_pool)
+              .integerValue(BigNumber.ROUND_DOWN)
+          )
+          .multipliedBy(timeElasped),
+        tokenBCumulativePrice: pair.token_b_price_cum
+          .plus(
+            pair.token_a_pool
+              .dividedBy(pair.token_b_pool)
+              .integerValue(BigNumber.ROUND_DOWN)
+          )
+          .multipliedBy(timeElasped),
+      };
+    }
+
+    return {
+      tokenACumulativePrice: pair.token_a_price_cum,
+      tokenBCumulativePrice: pair.token_b_price_cum,
+    };
   }
 }

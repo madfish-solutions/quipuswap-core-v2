@@ -33,23 +33,20 @@ function launch_exchange(
         const pair : pair_t = pair_info.0;
         const token_id : nat = pair_info.1;
 
-        assert_with_error(params.token_a_in >= 1n, DexCore.err_zero_a_in);
+        assert_with_error(params.token_a_in > 0n, DexCore.err_zero_a_in);
         assert_with_error(
-          (params.pair.token_b =/= Tez and Tezos.amount >= 1mutez) or params.token_b_in >= 1n,
+          (params.pair.token_b = Tez and Tezos.amount > 0mutez) or params.token_b_in > 0n,
           DexCore.err_zero_b_in
         );
         assert_with_error(pair.total_supply = 0n, DexCore.err_pair_listed);
 
         const init_shares : nat = Math.min_nat(params.token_a_in, params.token_b_in);
 
-        var (updated_pair, last_block_timestamp) := calc_cumulative_prices(
+        var updated_pair : pair_t := calc_cumulative_prices(
           pair,
-          s.last_block_timestamp,
           params.token_a_in,
           params.token_b_in
         );
-
-        s.last_block_timestamp := last_block_timestamp;
 
         updated_pair.total_supply := init_shares;
 
@@ -66,13 +63,12 @@ function launch_exchange(
           then {
             const deploy_res : (operation * address) = deploy_tez_store(
               (None : option(key_hash)),
-              0mutez,
+              Tezos.amount,
               get_tez_store_initial_storage(
                 params.candidate,
                 params.shares_receiver,
                 s.baker_registry,
                 Tezos.amount / 1mutez,
-                init_shares,
                 token_id,
                 s.collecting_period
               )
@@ -142,14 +138,11 @@ function invest_liquidity(
 
         s.ledger[(params.shares_receiver, params.pair_id)] := sender_balance + params.shares;
 
-        var (updated_pair, last_block_timestamp) := calc_cumulative_prices(
+        var updated_pair : pair_t := calc_cumulative_prices(
           pair,
-          s.last_block_timestamp,
           pair.token_a_pool + tokens_a_required,
           pair.token_b_pool + tokens_b_required
         );
-
-        s.last_block_timestamp := last_block_timestamp;
 
         updated_pair.total_supply := updated_pair.total_supply + params.shares;
 
@@ -211,14 +204,11 @@ function divest_liquidity(
           DexCore.err_high_min_out
         );
 
-        var (updated_pair, last_block_timestamp) := calc_cumulative_prices(
+        var updated_pair : pair_t := calc_cumulative_prices(
           pair,
-          s.last_block_timestamp,
           get_nat_or_fail(pair.token_a_pool - token_a_divested),
           get_nat_or_fail(pair.token_b_pool - token_b_divested)
         );
-
-        s.last_block_timestamp := last_block_timestamp;
 
         updated_pair.total_supply := get_nat_or_fail(updated_pair.total_supply - params.shares);
 

@@ -1,5 +1,4 @@
 import { Common, DexCore as DexCoreErrors } from "../../helpers/Errors";
-import { BakerRegistry } from "../../helpers/BakerRegistry";
 import { FlashSwapsProxy } from "../../helpers/FlashSwapsProxy";
 import { TezStore } from "../../helpers/TezStore";
 import { Auction } from "../../helpers/Auction";
@@ -16,9 +15,6 @@ import { BigNumber } from "bignumber.js";
 
 import accounts from "../../../scripts/sandbox/accounts";
 
-import { confirmOperation } from "../../../scripts/confirmation";
-
-import { bakerRegistryStorage } from "../../../storage/BakerRegistry";
 import { flashSwapsProxyStorage } from "../../../storage/FlashSwapsProxy";
 import { auctionStorage } from "../../../storage/Auction";
 import { dexCoreStorage } from "../../../storage/DexCore";
@@ -36,15 +32,13 @@ import { SBAccount } from "test/types/Common";
 
 chai.use(require("chai-bignumber")(BigNumber));
 
-describe("DexCore tests (admin's methods)", async () => {
+describe("DexCore (admin methods)", async () => {
   var utils: Utils;
-  var bakerRegistry: BakerRegistry;
   var flashSwapsProxy: FlashSwapsProxy;
   var auction: Auction;
   var dexCore: DexCore;
   var firstToken: FA12;
   var secondToken: FA2;
-  var quipuToken: FA2;
 
   var alice: SBAccount = accounts.alice;
   var bob: SBAccount = accounts.bob;
@@ -55,16 +49,8 @@ describe("DexCore tests (admin's methods)", async () => {
 
     await utils.init(alice.sk);
 
-    bakerRegistry = await BakerRegistry.originate(
-      utils.tezos,
-      bakerRegistryStorage
-    );
-
     dexCoreStorage.storage.admin = alice.pkh;
-    dexCoreStorage.storage.baker_registry = bakerRegistry.contract.address;
-    dexCoreStorage.storage.last_block_timestamp = String(
-      (await utils.getLastBlockTimestamp()) / 1000
-    );
+    dexCoreStorage.storage.baker_registry = alice.pkh;
 
     dexCore = await DexCore.originate(utils.tezos, dexCoreStorage);
 
@@ -77,21 +63,12 @@ describe("DexCore tests (admin's methods)", async () => {
       flashSwapsProxyStorage
     );
 
-    const transferOperation = await utils.tezos.contract.transfer({
-      to: dev.pkh,
-      amount: 50_000_000,
-      mutez: true,
-    });
-
-    await confirmOperation(utils.tezos, transferOperation.hash);
-
     firstToken = await FA12.originate(utils.tezos, fa12Storage);
     secondToken = await FA2.originate(utils.tezos, fa2Storage);
-    quipuToken = await FA2.originate(utils.tezos, fa2Storage);
 
     auctionStorage.storage.admin = alice.pkh;
     auctionStorage.storage.dex_core = dexCore.contract.address;
-    auctionStorage.storage.quipu_token = quipuToken.contract.address;
+    auctionStorage.storage.quipu_token = alice.pkh;
 
     auction = await Auction.originate(utils.tezos, auctionStorage);
 

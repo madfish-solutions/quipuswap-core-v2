@@ -24,7 +24,7 @@ import { getLigo } from "../../../scripts/helpers";
 
 chai.use(require("chai-bignumber")(BigNumber));
 
-describe("FlashSwapsProxy tests", async () => {
+describe("FlashSwapsProxy", async () => {
   var utils: Utils;
   var flashSwapsProxy: FlashSwapsProxy;
   var flashSwapAgent: FlashSwapAgent;

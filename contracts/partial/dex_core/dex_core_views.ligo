@@ -123,7 +123,7 @@
         const response : cum_prices_res_t = record [
           request           = pair_id;
           cumulative_prices = record [
-            last_block_timestamp = s.storage.last_block_timestamp;
+            last_block_timestamp = pair.last_block_timestamp;
             token_a_price_cum    = pair.token_a_price_cum;
             token_b_price_cum    = pair.token_b_price_cum;
           ];

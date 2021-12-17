@@ -140,7 +140,6 @@ export type DexCoreStorage = {
     managers: string[];
     fees: Fees;
     tmp: Tmp;
-    last_block_timestamp: string;
     admin: string;
     pending_admin: string;
     baker_registry: string;
@@ -155,4 +154,19 @@ export type DexCoreStorage = {
   };
   dex_core_lambdas: MichelsonMap<MichelsonMapKey, unknown>;
   metadata: MichelsonMap<MichelsonMapKey, unknown>;
+};
+
+export type CumulativePrices = {
+  tokenACumulativePrice: BigNumber;
+  tokenBCumulativePrice: BigNumber;
+};
+
+export type Pair = {
+  token_a_pool: BigNumber;
+  token_b_pool: BigNumber;
+  token_a_price_cum: BigNumber;
+  token_b_price_cum: BigNumber;
+  total_supply: BigNumber;
+  last_block_timestamp: string;
+  tez_store: string | undefined | null;
 };
