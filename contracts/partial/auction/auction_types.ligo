@@ -18,8 +18,8 @@ type fees_t             is [@layout:comb] record [
 
 type storage_t          is [@layout:comb] record [
   auctions                : big_map(nat, auction_t);
-  dev_fee_balance         : big_map(token_t, nat);
-  public_fee_balance      : big_map(token_t, nat);
+  dev_fee_balances_f      : big_map(token_t, nat);
+  public_fee_balances_f   : big_map(token_t, nat);
   whitelist               : set(token_t);
   fees                    : fees_t;
   baker                   : key_hash;
@@ -28,7 +28,7 @@ type storage_t          is [@layout:comb] record [
   dex_core                : address;
   quipu_token             : address;
   quipu_token_id          : nat;
-  bid_fee_balance         : nat;
+  bid_fee_balance_f       : nat;
   auctions_count          : nat;
   auction_duration        : int;
   min_bid                 : nat;
@@ -42,7 +42,7 @@ type launch_auction_t   is [@layout:comb] record [
 
 type place_bid_t        is [@layout:comb] record [
   auction_id              : nat;
-  amt                     : nat;
+  bid                     : nat;
 ]
 
 type claim_t            is nat

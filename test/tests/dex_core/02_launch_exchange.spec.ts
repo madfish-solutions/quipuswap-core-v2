@@ -706,7 +706,7 @@ describe("DexCore (launch exchange)", async () => {
 
     const prevDexCoreBalance: BigNumber = await fa2Token2.getBalance(
       dexCore.contract.address,
-      params.pair.token_a["fa2"].id.toFixed()
+      params.pair.token_a["fa2"].id
     );
 
     await dexCore.launchExchange(params, params.token_b_in.toNumber());
@@ -719,7 +719,7 @@ describe("DexCore (launch exchange)", async () => {
 
     const currDexCoreBalance: BigNumber = await fa2Token2.getBalance(
       dexCore.contract.address,
-      params.pair.token_a["fa2"].id.toFixed()
+      params.pair.token_a["fa2"].id
     );
 
     expect(
@@ -815,11 +815,11 @@ describe("DexCore (launch exchange)", async () => {
 
     const prevDexCoreTok1Balance: BigNumber = await fa2Token1.getBalance(
       dexCore.contract.address,
-      params.pair.token_a["fa2"].id.toFixed()
+      params.pair.token_a["fa2"].id
     );
     const prevDexCoreTok2Balance: BigNumber = await fa2Token3.getBalance(
       dexCore.contract.address,
-      params.pair.token_b["fa2"].id.toFixed()
+      params.pair.token_b["fa2"].id
     );
 
     await fa2Token3.updateOperators([
@@ -841,11 +841,11 @@ describe("DexCore (launch exchange)", async () => {
 
     const currDexCoreTok1Balance: BigNumber = await fa2Token1.getBalance(
       dexCore.contract.address,
-      params.pair.token_a["fa2"].id.toFixed()
+      params.pair.token_a["fa2"].id
     );
     const currDexCoreTok2Balance: BigNumber = await fa2Token3.getBalance(
       dexCore.contract.address,
-      params.pair.token_b["fa2"].id.toFixed()
+      params.pair.token_b["fa2"].id
     );
 
     expect(currDexCoreTok1Balance).to.be.bignumber.equal(
@@ -882,7 +882,7 @@ describe("DexCore (launch exchange)", async () => {
     );
     const prevDexCoreTok2Balance: BigNumber = await fa2Token3.getBalance(
       dexCore.contract.address,
-      params.pair.token_b["fa2"].id.toFixed()
+      params.pair.token_b["fa2"].id
     );
 
     await fa12Token3.approve(dexCore.contract.address, params.token_a_in);
@@ -899,7 +899,7 @@ describe("DexCore (launch exchange)", async () => {
     );
     const currDexCoreTok2Balance: BigNumber = await fa2Token3.getBalance(
       dexCore.contract.address,
-      params.pair.token_b["fa2"].id.toFixed()
+      params.pair.token_b["fa2"].id
     );
 
     expect(currDexCoreTok1Balance).to.be.bignumber.equal(

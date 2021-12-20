@@ -22,7 +22,7 @@ export type LaunchAuction = {
 
 export type PlaceBid = {
   auction_id: BigNumber;
-  amt: BigNumber;
+  bid: BigNumber;
 };
 
 export type UpdateWhitelist = {
@@ -43,9 +43,9 @@ export type Fees = {
 export type AuctionStorage = {
   storage: {
     auctions: MichelsonMap<MichelsonMapKey, unknown>;
-    dev_fee_balance: MichelsonMap<MichelsonMapKey, unknown>;
-    public_fee_balance: MichelsonMap<MichelsonMapKey, unknown>;
-    whitelist: string[];
+    dev_fee_balances_f: MichelsonMap<MichelsonMapKey, unknown>;
+    public_fee_balances_f: MichelsonMap<MichelsonMapKey, unknown>;
+    whitelist: Token[];
     fees: Fees;
     baker: string;
     admin: string;
@@ -53,7 +53,7 @@ export type AuctionStorage = {
     dex_core: string;
     quipu_token: string;
     quipu_token_id: BigNumber;
-    bid_fee_balance: BigNumber;
+    bid_fee_balance_f: BigNumber;
     auctions_count: BigNumber;
     auction_duration: BigNumber;
     min_bid: BigNumber;

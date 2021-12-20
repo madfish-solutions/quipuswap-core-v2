@@ -292,16 +292,28 @@
 
    - ✅ should fail if not dex core is trying to send fees;
    - ✅ should receive TEZ tokens as fee and correctly update dev and public fee balances;
-   - should receive FA1.2 tokens as fee and correctly update dev and public fee balances;
-   - should receive FA2 tokens as fee and correctly update dev and public fee balances.
+   - ✅ should receive FA1.2 tokens as fee and correctly update dev and public fee balances;
+   - ✅ should receive FA2 tokens as fee and correctly update dev and public fee balances.
 
 2. `launch_auction`:
 
-   -
+   - ✅ should fail if token for auction is whitelisted;
+   - ✅ should fail if token public fee balance is less than the number of tokens that are put up for auction;
+   - ✅ should fail if the first bid is less than min bid;
+   - ✅ should start TEZ auction and transfer QUIPU tokens as the first bid;
+   - ✅ should start FA1.2 auction and transfer QUIPU tokens as the first bid;
+   - ✅ should start FA2 auction and transfer QUIPU tokens as the first bid.
 
 3. `place_bid`:
 
-   -
+   - ✅ should fail if auction not found;
+   - ✅ should fail if auction is finished;
+   - ✅ should fail if a new bid is less than or equal to current bid;
+   - ✅ should make a new bid for TEZ tokens auction;
+   - ✅ should make a new bid for FA1.2 tokens auction;
+   - ✅ should make a new bid for FA2 tokens auction;
+   - should charge a bid fee from a previous bidder and refund QUIPU tokens without bid fee to him;
+   - should charge a new bid from a new bidder.
 
 4. `claim`:
 
