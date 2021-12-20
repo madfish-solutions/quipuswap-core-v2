@@ -170,3 +170,8 @@ export type Pair = {
   last_block_timestamp: string;
   tez_store: string | undefined | null;
 };
+
+export type RequiredTokens = {
+  tokens_a_required: BigNumber;
+  tokens_b_required: BigNumber;
+};

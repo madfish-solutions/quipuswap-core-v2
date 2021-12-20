@@ -32,6 +32,7 @@ import {
   DexCoreStorage,
   WithdrawProfit,
   LaunchCallback,
+  RequiredTokens,
   ClaimTokFee,
   ClaimTezFee,
   AddManager,
@@ -547,6 +548,19 @@ export class DexCore {
     }
 
     return result;
+  }
+
+  static getRequiredTokens(shares: BigNumber, pair: Pair): RequiredTokens {
+    return {
+      tokens_a_required: shares
+        .multipliedBy(pair.token_a_pool)
+        .dividedBy(pair.total_supply)
+        .integerValue(BigNumber.ROUND_CEIL),
+      tokens_b_required: shares
+        .multipliedBy(pair.token_b_pool)
+        .dividedBy(pair.total_supply)
+        .integerValue(BigNumber.ROUND_CEIL),
+    };
   }
 
   static async calculateCumulativePrices(

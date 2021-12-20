@@ -33,7 +33,7 @@
 
 3. `withdraw_rewards`:
 
-   -
+   - ❌
 
 4. `ban_baker`:
 
@@ -44,11 +44,11 @@
 5. `vote`:
 
    - ✅ should fail if not dex core is trying to vote;
-   -
+   - ❌
 
 6. `default`:
 
-   -
+   - ❌
 
 7. `is_banned_baker` [VIEW]:
 
@@ -72,8 +72,8 @@
 
 1.  `call`:
 
-    - should fail if not dex core is trying to call;
-    -
+    - ❌ should fail if not dex core is trying to call;
+    - ❌
 
 ## DexCore
 
@@ -106,35 +106,41 @@
 
 2. `invest_liquidity`:
 
-   -
+   - ✅ should fail if pair not listed;
+   - ❌ should fail if pair does not have liquidity;
+   - ✅ should fail if investor expects zero shares amount in result of investment;
+   - ✅ should fail if low token A in;
+   - ✅ should fail if token B is TEZ and low token B in;
+   - ✅ should fail if low token B in;
+   - ❌
 
 3. `divest_liquidity`:
 
-   -
+   - ❌
 
 4. `flash_swap`:
 
-   -
+   - ❌
 
 5. `swap`:
 
-   -
+   - ❌
 
 6. `withdraw_profit`:
 
-   -
+   - ❌
 
 7. `claim_tok_interface_fee`:
 
-   -
+   - ❌
 
 8. `claim_tez_interface_fee`:
 
-   -
+   - ❌
 
 9. `withdraw_auction_fee`:
 
-   -
+   - ❌
 
 10. `set_admin`:
 
@@ -203,43 +209,43 @@
 
 21. `permit`:
 
-    -
+    - ❌
 
 22. `ser_expiry`:
 
-    -
+    - ❌
 
 23. `transfer`:
 
-    -
+    - ❌
 
 24. `update_operators`:
 
-    -
+    - ❌
 
 25. `balance_of`:
 
-    -
+    - ❌
 
 26. `fa12_balance_callback_1`:
 
-    -
+    - ❌
 
 27. `fa2_balance_callback_1`:
 
-    -
+    - ❌
 
 28. `fa12_balance_callback_2`:
 
-    -
+    - ❌
 
 29. `fa2_balance_callback_2`:
 
-    -
+    - ❌
 
 30. `flash_swap_callback`:
 
-    -
+    - ❌
 
 31. `launch_callback`:
 
@@ -247,44 +253,44 @@
 
 32. `check_is_banned_baker` [VIEW]:
 
-    -
+    - ❌
 
 33. `get_reserves` [VIEW]:
 
-    -
+    - ❌
 
 34. `get_total_supply` [VIEW]:
 
-    -
+    - ❌
 
 35. `get_swap_min_res` [VIEW]:
 
-    -
+    - ❌
 
 36. `get_toks_per_share` [VIEW]:
 
-    -
+    - ❌
 
 37. `get_cumulative_prices` [VIEW]:
 
-    -
+    - ❌
 
 38. `get_voting_period` [VIEW]:
 
-    -
+    - ❌
 
 39. `get_collecting_period` [VIEW]:
 
-    -
+    - ❌
 
 40. `get_cycle_duration` [VIEW]:
 
-    -
+    - ❌
 
 41. `integration_tests`:
 
-    - should launch exchange, invest liquidity, swap, divest all liquidity and call launch exchange one more time successfully;
-    -
+    - ❌ should launch exchange, invest liquidity, swap, divest all liquidity and call launch exchange one more time successfully;
+    - ❌
 
 ## Auction
 
@@ -312,12 +318,12 @@
    - ✅ should make a new bid for TEZ tokens auction;
    - ✅ should make a new bid for FA1.2 tokens auction;
    - ✅ should make a new bid for FA2 tokens auction;
-   - should charge a bid fee from a previous bidder and refund QUIPU tokens without bid fee to him;
-   - should charge a new bid from a new bidder.
+   - ❌ should charge a bid fee from a previous bidder and refund QUIPU tokens without bid fee to him;
+   - ❌ should charge a new bid from a new bidder.
 
 4. `claim`:
 
-   -
+   - ❌
 
 5. `set_admin`:
 
@@ -363,12 +369,12 @@
 
 12. `withdraw_dev_fee`:
 
-    -
+    - ❌
 
 13. `withdraw_public_fee`:
 
-    -
+    - ❌
 
 14. `burn_bid_fee`:
 
-    -
+    - ❌

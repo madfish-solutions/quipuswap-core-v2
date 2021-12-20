@@ -123,13 +123,13 @@ function invest_liquidity(
         assert_with_error(pair.token_a_pool * pair.token_b_pool =/= 0n, DexCore.err_no_liquidity);
         assert_with_error(params.shares =/= 0n, DexCore.err_no_shares_expected);
 
-        const tokens : tokens_t = unwrap(s.tokens[params.pair_id],DexCore.err_pair_not_listed );
+        const tokens : tokens_t = unwrap(s.tokens[params.pair_id], DexCore.err_pair_not_listed);
         const tokens_a_required : nat = div_ceil(params.shares * pair.token_a_pool, pair.total_supply);
         const tokens_b_required : nat = div_ceil(params.shares * pair.token_b_pool, pair.total_supply);
 
         assert_with_error(tokens_a_required <= params.token_a_in, DexCore.err_low_token_a_in);
         assert_with_error(
-          (tokens.token_b =/= Tez and tokens_b_required <= Tezos.amount / 1mutez)
+          (tokens.token_b = Tez and tokens_b_required <= Tezos.amount / 1mutez)
             or tokens_b_required <= params.token_b_in,
           DexCore.err_low_token_b_in
         );
@@ -165,7 +165,7 @@ function invest_liquidity(
         else skip;
 
         ops := transfer_token(Tezos.sender, Tezos.self_address, tokens_a_required, tokens.token_a) # ops;
-        ops := check_tez_or_token_and_transfer(
+        ops := invest_tez_or_transfer_tokens(
           params,
           tokens_b_required,
           tokens.token_b,

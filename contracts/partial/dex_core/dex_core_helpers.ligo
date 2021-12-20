@@ -66,8 +66,8 @@ function get_vote_op(
                         : operation is
   Tezos.transaction(vote_params, 0mutez, get_tez_store_vote_entrypoint(tez_store))
 
-function check_tez_or_token_and_transfer(
-  const inv_liq_params : invest_liquidity_t;
+function invest_tez_or_transfer_tokens(
+  const inv_liq_params  : invest_liquidity_t;
   const tokens_required : nat;
   const token_type      : token_t;
   const tez_store_opt   : option(address))
