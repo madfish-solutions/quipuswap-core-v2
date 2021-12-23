@@ -287,46 +287,46 @@ describe("DexCore (launch exchange)", async () => {
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
     };
-    const expectedTokenId: BigNumber = new BigNumber(0);
+    const expectedPairId: BigNumber = new BigNumber(0);
 
     await fa12Token1.approve(dexCore.contract.address, params.token_a_in);
     await dexCore.launchExchange(params, params.token_b_in.toNumber());
     await dexCore.updateStorage({
-      ledger: [[params.shares_receiver, expectedTokenId.toFixed()]],
-      tokens: [expectedTokenId.toFixed()],
-      pairs: [expectedTokenId.toFixed()],
+      ledger: [[params.shares_receiver, expectedPairId.toFixed()]],
+      tokens: [expectedPairId.toFixed()],
+      pairs: [expectedPairId.toFixed()],
     });
 
     expect(dexCore.storage.storage.tokens_count).to.be.bignumber.equal(
-      expectedTokenId.plus(1)
+      expectedPairId.plus(1)
     );
     expect(
       dexCore.storage.storage.ledger[
-        `${params.shares_receiver},${expectedTokenId.toFixed()}`
+        `${params.shares_receiver},${expectedPairId.toFixed()}`
       ]
     ).to.be.bignumber.equal(
       BigNumber.min(params.token_a_in, params.token_b_in)
     );
     expect(
-      dexCore.storage.storage.tokens[expectedTokenId.toFixed()].token_a
+      dexCore.storage.storage.tokens[expectedPairId.toFixed()].token_a
     ).to.be.deep.equal(params.pair.token_a);
     expect(
-      typeof dexCore.storage.storage.tokens[expectedTokenId.toFixed()].token_b
+      typeof dexCore.storage.storage.tokens[expectedPairId.toFixed()].token_b
         .tez
     ).to.be.equal("symbol");
     expect(
-      dexCore.storage.storage.pairs[expectedTokenId.toFixed()].token_a_pool
+      dexCore.storage.storage.pairs[expectedPairId.toFixed()].token_a_pool
     ).to.be.bignumber.equal(params.token_a_in);
     expect(
-      dexCore.storage.storage.pairs[expectedTokenId.toFixed()].token_b_pool
+      dexCore.storage.storage.pairs[expectedPairId.toFixed()].token_b_pool
     ).to.be.bignumber.equal(params.token_b_in);
     expect(
-      dexCore.storage.storage.pairs[expectedTokenId.toFixed()].total_supply
+      dexCore.storage.storage.pairs[expectedPairId.toFixed()].total_supply
     ).to.be.bignumber.equal(
       BigNumber.min(params.token_a_in, params.token_b_in)
     );
-    expect(dexCore.storage.storage.pairs[expectedTokenId.toFixed()].tez_store)
-      .to.not.be.null;
+    expect(dexCore.storage.storage.pairs[expectedPairId.toFixed()].tez_store).to
+      .not.be.null;
   });
 
   it("should fail if pair already listed", async () => {
@@ -361,7 +361,7 @@ describe("DexCore (launch exchange)", async () => {
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
     };
-    const expectedTokenId: BigNumber = new BigNumber(1);
+    const expectedPairId: BigNumber = new BigNumber(1);
 
     await fa2Token1.updateOperators([
       {
@@ -374,41 +374,41 @@ describe("DexCore (launch exchange)", async () => {
     ]);
     await dexCore.launchExchange(params, params.token_b_in.toNumber());
     await dexCore.updateStorage({
-      ledger: [[params.shares_receiver, expectedTokenId.toFixed()]],
-      tokens: [expectedTokenId.toFixed()],
-      pairs: [expectedTokenId.toFixed()],
+      ledger: [[params.shares_receiver, expectedPairId.toFixed()]],
+      tokens: [expectedPairId.toFixed()],
+      pairs: [expectedPairId.toFixed()],
     });
 
     expect(dexCore.storage.storage.tokens_count).to.be.bignumber.equal(
-      expectedTokenId.plus(1)
+      expectedPairId.plus(1)
     );
     expect(
       dexCore.storage.storage.ledger[
-        `${params.shares_receiver},${expectedTokenId.toFixed()}`
+        `${params.shares_receiver},${expectedPairId.toFixed()}`
       ]
     ).to.be.bignumber.equal(
       BigNumber.min(params.token_a_in, params.token_b_in)
     );
     expect(
-      dexCore.storage.storage.tokens[expectedTokenId.toFixed()].token_a
+      dexCore.storage.storage.tokens[expectedPairId.toFixed()].token_a
     ).to.be.deep.equal(params.pair.token_a);
     expect(
-      typeof dexCore.storage.storage.tokens[expectedTokenId.toFixed()].token_b
+      typeof dexCore.storage.storage.tokens[expectedPairId.toFixed()].token_b
         .tez
     ).to.be.equal("symbol");
     expect(
-      dexCore.storage.storage.pairs[expectedTokenId.toFixed()].token_a_pool
+      dexCore.storage.storage.pairs[expectedPairId.toFixed()].token_a_pool
     ).to.be.bignumber.equal(params.token_a_in);
     expect(
-      dexCore.storage.storage.pairs[expectedTokenId.toFixed()].token_b_pool
+      dexCore.storage.storage.pairs[expectedPairId.toFixed()].token_b_pool
     ).to.be.bignumber.equal(params.token_b_in);
     expect(
-      dexCore.storage.storage.pairs[expectedTokenId.toFixed()].total_supply
+      dexCore.storage.storage.pairs[expectedPairId.toFixed()].total_supply
     ).to.be.bignumber.equal(
       BigNumber.min(params.token_a_in, params.token_b_in)
     );
-    expect(dexCore.storage.storage.pairs[expectedTokenId.toFixed()].tez_store)
-      .to.not.be.null;
+    expect(dexCore.storage.storage.pairs[expectedPairId.toFixed()].tez_store).to
+      .not.be.null;
   });
 
   it("should launch FA1.2/FA1.2 exchange", async () => {
@@ -422,7 +422,7 @@ describe("DexCore (launch exchange)", async () => {
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
     };
-    const expectedTokenId: BigNumber = new BigNumber(2);
+    const expectedPairId: BigNumber = new BigNumber(2);
 
     params = DexCore.changeTokensOrderInPair(params, false);
 
@@ -430,37 +430,37 @@ describe("DexCore (launch exchange)", async () => {
     await fa12Token2.approve(dexCore.contract.address, params.token_b_in);
     await dexCore.launchExchange(params);
     await dexCore.updateStorage({
-      ledger: [[params.shares_receiver, expectedTokenId.toFixed()]],
-      tokens: [expectedTokenId.toFixed()],
-      pairs: [expectedTokenId.toFixed()],
+      ledger: [[params.shares_receiver, expectedPairId.toFixed()]],
+      tokens: [expectedPairId.toFixed()],
+      pairs: [expectedPairId.toFixed()],
     });
 
     expect(dexCore.storage.storage.tokens_count).to.be.bignumber.equal(
-      expectedTokenId.plus(1)
+      expectedPairId.plus(1)
     );
     expect(
       dexCore.storage.storage.ledger[
-        `${params.shares_receiver},${expectedTokenId.toFixed()}`
+        `${params.shares_receiver},${expectedPairId.toFixed()}`
       ]
     ).to.be.bignumber.equal(
       BigNumber.min(params.token_a_in, params.token_b_in)
     );
     expect(
-      dexCore.storage.storage.tokens[expectedTokenId.toFixed()]
+      dexCore.storage.storage.tokens[expectedPairId.toFixed()]
     ).to.be.deep.equal(params.pair);
     expect(
-      dexCore.storage.storage.pairs[expectedTokenId.toFixed()].token_a_pool
+      dexCore.storage.storage.pairs[expectedPairId.toFixed()].token_a_pool
     ).to.be.bignumber.equal(params.token_a_in);
     expect(
-      dexCore.storage.storage.pairs[expectedTokenId.toFixed()].token_b_pool
+      dexCore.storage.storage.pairs[expectedPairId.toFixed()].token_b_pool
     ).to.be.bignumber.equal(params.token_b_in);
     expect(
-      dexCore.storage.storage.pairs[expectedTokenId.toFixed()].total_supply
+      dexCore.storage.storage.pairs[expectedPairId.toFixed()].total_supply
     ).to.be.bignumber.equal(
       BigNumber.min(params.token_a_in, params.token_b_in)
     );
-    expect(dexCore.storage.storage.pairs[expectedTokenId.toFixed()].tez_store)
-      .to.be.null;
+    expect(dexCore.storage.storage.pairs[expectedPairId.toFixed()].tez_store).to
+      .be.null;
   });
 
   it("should launch FA2/FA2 exchange", async () => {
@@ -478,7 +478,7 @@ describe("DexCore (launch exchange)", async () => {
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
     };
-    const expectedTokenId: BigNumber = new BigNumber(3);
+    const expectedPairId: BigNumber = new BigNumber(3);
 
     params = DexCore.changeTokensOrderInPair(params, false);
 
@@ -493,37 +493,37 @@ describe("DexCore (launch exchange)", async () => {
     ]);
     await dexCore.launchExchange(params);
     await dexCore.updateStorage({
-      ledger: [[params.shares_receiver, expectedTokenId.toFixed()]],
-      tokens: [expectedTokenId.toFixed()],
-      pairs: [expectedTokenId.toFixed()],
+      ledger: [[params.shares_receiver, expectedPairId.toFixed()]],
+      tokens: [expectedPairId.toFixed()],
+      pairs: [expectedPairId.toFixed()],
     });
 
     expect(dexCore.storage.storage.tokens_count).to.be.bignumber.equal(
-      expectedTokenId.plus(1)
+      expectedPairId.plus(1)
     );
     expect(
       dexCore.storage.storage.ledger[
-        `${params.shares_receiver},${expectedTokenId.toFixed()}`
+        `${params.shares_receiver},${expectedPairId.toFixed()}`
       ]
     ).to.be.bignumber.equal(
       BigNumber.min(params.token_a_in, params.token_b_in)
     );
     expect(
-      dexCore.storage.storage.tokens[expectedTokenId.toFixed()]
+      dexCore.storage.storage.tokens[expectedPairId.toFixed()]
     ).to.be.deep.equal(params.pair);
     expect(
-      dexCore.storage.storage.pairs[expectedTokenId.toFixed()].token_a_pool
+      dexCore.storage.storage.pairs[expectedPairId.toFixed()].token_a_pool
     ).to.be.bignumber.equal(params.token_a_in);
     expect(
-      dexCore.storage.storage.pairs[expectedTokenId.toFixed()].token_b_pool
+      dexCore.storage.storage.pairs[expectedPairId.toFixed()].token_b_pool
     ).to.be.bignumber.equal(params.token_b_in);
     expect(
-      dexCore.storage.storage.pairs[expectedTokenId.toFixed()].total_supply
+      dexCore.storage.storage.pairs[expectedPairId.toFixed()].total_supply
     ).to.be.bignumber.equal(
       BigNumber.min(params.token_a_in, params.token_b_in)
     );
-    expect(dexCore.storage.storage.pairs[expectedTokenId.toFixed()].tez_store)
-      .to.be.null;
+    expect(dexCore.storage.storage.pairs[expectedPairId.toFixed()].tez_store).to
+      .be.null;
   });
 
   it("should launch FA1.2/FA2 exchange", async () => {
@@ -539,42 +539,42 @@ describe("DexCore (launch exchange)", async () => {
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
     };
-    const expectedTokenId: BigNumber = new BigNumber(4);
+    const expectedPairId: BigNumber = new BigNumber(4);
 
     await fa12Token1.approve(dexCore.contract.address, params.token_a_in);
     await dexCore.launchExchange(params);
     await dexCore.updateStorage({
-      ledger: [[params.shares_receiver, expectedTokenId.toFixed()]],
-      tokens: [expectedTokenId.toFixed()],
-      pairs: [expectedTokenId.toFixed()],
+      ledger: [[params.shares_receiver, expectedPairId.toFixed()]],
+      tokens: [expectedPairId.toFixed()],
+      pairs: [expectedPairId.toFixed()],
     });
 
     expect(dexCore.storage.storage.tokens_count).to.be.bignumber.equal(
-      expectedTokenId.plus(1)
+      expectedPairId.plus(1)
     );
     expect(
       dexCore.storage.storage.ledger[
-        `${params.shares_receiver},${expectedTokenId.toFixed()}`
+        `${params.shares_receiver},${expectedPairId.toFixed()}`
       ]
     ).to.be.bignumber.equal(
       BigNumber.min(params.token_a_in, params.token_b_in)
     );
     expect(
-      dexCore.storage.storage.tokens[expectedTokenId.toFixed()]
+      dexCore.storage.storage.tokens[expectedPairId.toFixed()]
     ).to.be.deep.equal(params.pair);
     expect(
-      dexCore.storage.storage.pairs[expectedTokenId.toFixed()].token_a_pool
+      dexCore.storage.storage.pairs[expectedPairId.toFixed()].token_a_pool
     ).to.be.bignumber.equal(params.token_a_in);
     expect(
-      dexCore.storage.storage.pairs[expectedTokenId.toFixed()].token_b_pool
+      dexCore.storage.storage.pairs[expectedPairId.toFixed()].token_b_pool
     ).to.be.bignumber.equal(params.token_b_in);
     expect(
-      dexCore.storage.storage.pairs[expectedTokenId.toFixed()].total_supply
+      dexCore.storage.storage.pairs[expectedPairId.toFixed()].total_supply
     ).to.be.bignumber.equal(
       BigNumber.min(params.token_a_in, params.token_b_in)
     );
-    expect(dexCore.storage.storage.pairs[expectedTokenId.toFixed()].tez_store)
-      .to.be.null;
+    expect(dexCore.storage.storage.pairs[expectedPairId.toFixed()].tez_store).to
+      .be.null;
   });
 
   it("should setup correct default metadata in time of exchange launch", async () => {
@@ -590,47 +590,47 @@ describe("DexCore (launch exchange)", async () => {
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
     };
-    const expectedTokenId: BigNumber = new BigNumber(5);
+    const expectedPairId: BigNumber = new BigNumber(5);
 
     await fa12Token2.approve(dexCore.contract.address, params.token_a_in);
     await dexCore.launchExchange(params);
     await dexCore.updateStorage({
-      token_metadata: [expectedTokenId.toFixed()],
+      token_metadata: [expectedPairId.toFixed()],
     });
 
     expect(
-      dexCore.storage.storage.token_metadata[expectedTokenId.toFixed()].token_id
-    ).to.be.bignumber.equal(expectedTokenId);
+      dexCore.storage.storage.token_metadata[expectedPairId.toFixed()].token_id
+    ).to.be.bignumber.equal(expectedPairId);
     expect(
       await dexCore.storage.storage.token_metadata[
-        expectedTokenId.toFixed()
+        expectedPairId.toFixed()
       ].token_info.get("name")
     ).to.be.equal("517569707573776170204c5020546f6b656e");
     expect(
       await dexCore.storage.storage.token_metadata[
-        expectedTokenId.toFixed()
+        expectedPairId.toFixed()
       ].token_info.get("symbol")
     ).to.be.equal("515054");
     expect(
       await dexCore.storage.storage.token_metadata[
-        expectedTokenId.toFixed()
+        expectedPairId.toFixed()
       ].token_info.get("decimals")
     ).to.be.equal("36");
     expect(
       await dexCore.storage.storage.token_metadata[
-        expectedTokenId.toFixed()
+        expectedPairId.toFixed()
       ].token_info.get("description")
     ).to.be.equal(
       "517569707573776170204c5020746f6b656e20726570726573656e7473207573657220736861726520696e20746865206c697175696469747920706f6f6c"
     );
     expect(
       await dexCore.storage.storage.token_metadata[
-        expectedTokenId.toFixed()
+        expectedPairId.toFixed()
       ].token_info.get("shouldPreferSymbol")
     ).to.be.equal("74727565");
     expect(
       await dexCore.storage.storage.token_metadata[
-        expectedTokenId.toFixed()
+        expectedPairId.toFixed()
       ].token_info.get("thumbnailUri")
     ).to.be.equal(
       "68747470733a2f2f7175697075737761702e636f6d2f51504c502e706e67"
@@ -649,7 +649,7 @@ describe("DexCore (launch exchange)", async () => {
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
     };
-    const expectedTokenId: BigNumber = new BigNumber(6);
+    const expectedPairId: BigNumber = new BigNumber(6);
 
     await fa12Token2.updateStorage({
       ledger: [dexCore.contract.address],
@@ -662,7 +662,7 @@ describe("DexCore (launch exchange)", async () => {
     await fa12Token2.approve(dexCore.contract.address, params.token_a_in);
     await dexCore.launchExchange(params, params.token_b_in.toNumber());
     await dexCore.updateStorage({
-      pairs: [expectedTokenId.toFixed()],
+      pairs: [expectedPairId.toFixed()],
     });
     await fa12Token2.updateStorage({
       ledger: [dexCore.contract.address],
@@ -677,7 +677,7 @@ describe("DexCore (launch exchange)", async () => {
     ).to.be.bignumber.equal(new BigNumber(0));
     expect(
       await utils.tezos.tz.getBalance(
-        dexCore.storage.storage.pairs[expectedTokenId.toFixed()].tez_store
+        dexCore.storage.storage.pairs[expectedPairId.toFixed()].tez_store
       )
     ).to.be.bignumber.equal(params.token_b_in);
     expect(currDexCoreBalance).to.be.bignumber.equal(
@@ -698,7 +698,7 @@ describe("DexCore (launch exchange)", async () => {
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
     };
-    const expectedTokenId: BigNumber = new BigNumber(7);
+    const expectedPairId: BigNumber = new BigNumber(7);
 
     await fa2Token2.updateStorage({
       account_info: [dexCore.contract.address],
@@ -711,7 +711,7 @@ describe("DexCore (launch exchange)", async () => {
 
     await dexCore.launchExchange(params, params.token_b_in.toNumber());
     await dexCore.updateStorage({
-      pairs: [expectedTokenId.toFixed()],
+      pairs: [expectedPairId.toFixed()],
     });
     await fa2Token2.updateStorage({
       account_info: [dexCore.contract.address],
@@ -727,7 +727,7 @@ describe("DexCore (launch exchange)", async () => {
     ).to.be.bignumber.equal(new BigNumber(0));
     expect(
       await utils.tezos.tz.getBalance(
-        dexCore.storage.storage.pairs[expectedTokenId.toFixed()].tez_store
+        dexCore.storage.storage.pairs[expectedPairId.toFixed()].tez_store
       )
     ).to.be.bignumber.equal(params.token_b_in);
     expect(currDexCoreBalance).to.be.bignumber.equal(
@@ -923,23 +923,23 @@ describe("DexCore (launch exchange)", async () => {
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
     };
-    const expectedTokenId: BigNumber = new BigNumber(11);
+    const expectedPairId: BigNumber = new BigNumber(11);
 
     await fa12Token3.approve(dexCore.contract.address, params.token_a_in);
     await dexCore.launchExchange(params);
     await dexCore.updateStorage({
-      pairs: [expectedTokenId.toFixed()],
+      pairs: [expectedPairId.toFixed()],
     });
 
     expect(
-      dexCore.storage.storage.pairs[expectedTokenId.toFixed()].token_a_price_cum
+      dexCore.storage.storage.pairs[expectedPairId.toFixed()].token_a_price_cum
     ).to.be.bignumber.equal(new BigNumber(0));
     expect(
-      dexCore.storage.storage.pairs[expectedTokenId.toFixed()].token_b_price_cum
+      dexCore.storage.storage.pairs[expectedPairId.toFixed()].token_b_price_cum
     ).to.be.bignumber.equal(new BigNumber(0));
     expect(
       Date.parse(
-        dexCore.storage.storage.pairs[expectedTokenId.toFixed()]
+        dexCore.storage.storage.pairs[expectedPairId.toFixed()]
           .last_block_timestamp
       )
     ).to.be.lte(await utils.getLastBlockTimestamp());
@@ -956,24 +956,24 @@ describe("DexCore (launch exchange)", async () => {
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
     };
-    const expectedTokenId: BigNumber = new BigNumber(12);
+    const expectedPairId: BigNumber = new BigNumber(12);
 
     await fa12Token3.approve(dexCore.contract.address, params.token_a_in);
     await dexCore.launchExchange(params, params.token_b_in.toNumber());
     await dexCore.updateStorage({
-      pairs: [expectedTokenId.toFixed()],
+      pairs: [expectedPairId.toFixed()],
     });
 
-    expect(dexCore.storage.storage.pairs[expectedTokenId.toFixed()].tez_store)
-      .to.not.be.null;
+    expect(dexCore.storage.storage.pairs[expectedPairId.toFixed()].tez_store).to
+      .not.be.null;
     expect(
       await utils.tezos.tz.getBalance(
-        dexCore.storage.storage.pairs[expectedTokenId.toFixed()].tez_store
+        dexCore.storage.storage.pairs[expectedPairId.toFixed()].tez_store
       )
     ).to.be.bignumber.equal(params.token_b_in);
 
     const tezStore: TezStore = await TezStore.init(
-      dexCore.storage.storage.pairs[expectedTokenId.toFixed()].tez_store,
+      dexCore.storage.storage.pairs[expectedPairId.toFixed()].tez_store,
       dexCore.tezos
     );
 
@@ -1010,7 +1010,7 @@ describe("DexCore (launch exchange)", async () => {
       dexCore.storage.storage.baker_registry
     );
     expect(tezStore.storage.dex_core).to.be.equal(dexCore.contract.address);
-    expect(tezStore.storage.pair_id).to.be.bignumber.equal(expectedTokenId);
+    expect(tezStore.storage.pair_id).to.be.bignumber.equal(expectedPairId);
     expect(tezStore.storage.next_reward).to.be.bignumber.equal(
       new BigNumber(0)
     );
@@ -1052,15 +1052,15 @@ describe("DexCore (launch exchange)", async () => {
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
     };
-    const expectedTokenId: BigNumber = new BigNumber(13);
+    const expectedPairId: BigNumber = new BigNumber(13);
 
     await dexCore.launchExchange(params, params.token_b_in.toNumber());
     await dexCore.updateStorage({
-      pairs: [expectedTokenId.toFixed()],
+      pairs: [expectedPairId.toFixed()],
     });
 
     const tezStore: TezStore = await TezStore.init(
-      dexCore.storage.storage.pairs[expectedTokenId.toFixed()].tez_store,
+      dexCore.storage.storage.pairs[expectedPairId.toFixed()].tez_store,
       dexCore.tezos
     );
 

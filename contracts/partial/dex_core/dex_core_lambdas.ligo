@@ -165,12 +165,7 @@ function invest_liquidity(
         else skip;
 
         ops := transfer_token(Tezos.sender, Tezos.self_address, tokens_a_required, tokens.token_a) # ops;
-        ops := invest_tez_or_transfer_tokens(
-          params,
-          tokens_b_required,
-          tokens.token_b,
-          updated_pair.tez_store
-        ) # ops;
+        ops := invest_tez_or_transfer_tokens(params, tokens_b_required, tokens.token_b, updated_pair.tez_store) # ops;
       }
     | _ -> skip
     end;

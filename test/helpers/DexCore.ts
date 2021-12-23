@@ -570,7 +570,9 @@ export class DexCore {
     const timeElasped: BigNumber = new BigNumber(
       (await utils.getLastBlockTimestamp()) -
         Date.parse(pair.last_block_timestamp)
-    );
+    )
+      .dividedBy(1000)
+      .integerValue(BigNumber.ROUND_DOWN);
 
     if (
       timeElasped.gt(0) &&
@@ -578,20 +580,18 @@ export class DexCore {
       pair.token_b_pool.isGreaterThan(0)
     ) {
       return {
-        tokenACumulativePrice: pair.token_a_price_cum
-          .plus(
-            pair.token_b_pool
-              .dividedBy(pair.token_a_pool)
-              .integerValue(BigNumber.ROUND_DOWN)
-          )
-          .multipliedBy(timeElasped),
-        tokenBCumulativePrice: pair.token_b_price_cum
-          .plus(
-            pair.token_a_pool
-              .dividedBy(pair.token_b_pool)
-              .integerValue(BigNumber.ROUND_DOWN)
-          )
-          .multipliedBy(timeElasped),
+        tokenACumulativePrice: pair.token_a_price_cum.plus(
+          pair.token_b_pool
+            .dividedBy(pair.token_a_pool)
+            .integerValue(BigNumber.ROUND_DOWN)
+            .multipliedBy(timeElasped)
+        ),
+        tokenBCumulativePrice: pair.token_b_price_cum.plus(
+          pair.token_a_pool
+            .dividedBy(pair.token_b_pool)
+            .integerValue(BigNumber.ROUND_DOWN)
+            .multipliedBy(timeElasped)
+        ),
       };
     }
 

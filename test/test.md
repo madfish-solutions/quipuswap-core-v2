@@ -107,12 +107,24 @@
 2. `invest_liquidity`:
 
    - ✅ should fail if pair not listed;
-   - ❌ should fail if pair does not have liquidity;
+   - ❌ should fail if pair does not have liquidity (divest all -> invest something);
    - ✅ should fail if investor expects zero shares amount in result of investment;
    - ✅ should fail if low token A in;
    - ✅ should fail if token B is TEZ and low token B in;
    - ✅ should fail if low token B in;
-   - ❌
+   - ✅ should invest FA1.2/TEZ liquidity;
+   - ✅ should invest FA2/TEZ liquidity;
+   - ✅ should invest FA1.2/FA1.2 liquidity;
+   - ✅ should invest FA2/FA2 liquidity;
+   - ✅ should invest FA1.2/FA2 liquidity;
+   - ✅ should transfer FA1.2 tokens and invest TEZ tokens to TEZ store contract in time of FA1.2/TEZ liquidity investment;
+   - ✅ should transfer FA2 tokens and invest TEZ tokens to TEZ store contract in time of FA2/TEZ liquidity investment;
+   - ✅ should transfer FA1.2 tokens in time of FA1.2/FA1.2 liquidity investment;
+   - ✅ should transfer FA2 tokens in time of FA2/FA2 liquidity investment;
+   - ✅ should transfer FA1.2 tokens and FA2 tokens in time of FA1.2/FA2 liquidity investment;
+   - ❌ should calculate cumulative prices and update last block timestamp;
+   - ❌ should vote for the baker on TEZ store contract in time of FA1.2/TEZ liquidity investment;
+   - ❌ should vote for the baker on TEZ store contract in time of FA2/TEZ liquidity investment.
 
 3. `divest_liquidity`:
 
@@ -290,6 +302,8 @@
 41. `integration_tests`:
 
     - ❌ should launch exchange, invest liquidity, swap, divest all liquidity and call launch exchange one more time successfully;
+    - ❌ should not deploy a new TEZ store in time of a second launch of an TOK/TEZ exchange;
+    - ❌ should launch exchange, swap and invest in correct proportion;
     - ❌
 
 ## Auction
