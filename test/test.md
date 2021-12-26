@@ -107,7 +107,7 @@
 2. `invest_liquidity`:
 
    - ✅ should fail if pair not listed;
-   - ❌ should fail if pair does not have liquidity (divest all -> invest something);
+   - ✅ should fail if pair does not have liquidity;
    - ✅ should fail if investor expects zero shares amount in result of investment;
    - ✅ should fail if low token A in;
    - ✅ should fail if token B is TEZ and low token B in;
@@ -128,7 +128,26 @@
 
 3. `divest_liquidity`:
 
-   - ❌
+   - ✅ should fail if pair not listed;
+   - ✅ should fail if pair does not have liquidity;
+   - ✅ should fail if a divestor have an insufficient liquidity balance;
+   - ✅ should fail if a divestor expects zero A token amount in result of divestment;
+   - ✅ should fail if a divestor expects zero B token amount in result of divestment;
+   - ✅ should fail if divested A tokens will be less than min A tokens out;
+   - ✅ should fail if divested B tokens will be less than min B tokens out;
+   - ✅ should divest FA1.2/TEZ liquidity;
+   - ✅ should divest FA2/TEZ liquidity;
+   - ✅ should divest FA1.2/FA1.2 liquidity;
+   - ✅ should divest FA2/FA2 liquidity;
+   - ✅ should divest FA1.2/FA2 liquidity;
+   - ✅ should transfer FA1.2 tokens and divest TEZ tokens from TEZ store contract in time of FA1.2/TEZ liquidity divestment;
+   - ✅ should transfer FA2 tokens and divest TEZ tokens from TEZ store contract in time of FA2/TEZ liquidity divestment;
+   - ✅ should transfer FA1.2 tokens in time of FA1.2/FA1.2 liquidity divestment;
+   - ✅ should transfer FA2 tokens in time of FA2/FA2 liquidity divestment;
+   - ✅ should transfer FA1.2 tokens and FA2 tokens in time of FA1.2/FA2 liquidity divestment;
+   - ❌ should calculate cumulative prices and update last block timestamp;
+   - ❌ should vote for the baker on TEZ store contract in time of FA1.2/TEZ liquidity divestment;
+   - ❌ should vote for the baker on TEZ store contract in time of FA2/TEZ liquidity divestment.
 
 4. `flash_swap`:
 

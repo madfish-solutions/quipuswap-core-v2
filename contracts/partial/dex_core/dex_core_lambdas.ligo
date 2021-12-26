@@ -193,9 +193,9 @@ function divest_liquidity(
         const token_a_divested : nat = pair.token_a_pool * params.shares / pair.total_supply;
         const token_b_divested : nat = pair.token_b_pool * params.shares / pair.total_supply;
 
-        assert_with_error(params.min_token_a_out =/= 0n or params.min_token_b_out =/= 0n, DexCore.err_dust_out);
+        assert_with_error(params.min_token_a_out =/= 0n and params.min_token_b_out =/= 0n, DexCore.err_dust_out);
         assert_with_error(
-          token_a_divested >= params.min_token_a_out or token_b_divested >= params.min_token_b_out,
+          token_a_divested >= params.min_token_a_out and token_b_divested >= params.min_token_b_out,
           DexCore.err_high_min_out
         );
 

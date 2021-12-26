@@ -97,7 +97,10 @@ export class FA2 {
     return operation;
   }
 
-  async getBalance(user: string, tokenId: BigNumber): Promise<BigNumber> {
+  async getBalance(
+    user: string,
+    tokenId: BigNumber = new BigNumber(0)
+  ): Promise<BigNumber> {
     if (this.storage.account_info[user] !== undefined) {
       const balance: BigNumber = await this.storage.account_info[
         user

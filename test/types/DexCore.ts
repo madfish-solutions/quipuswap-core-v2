@@ -175,3 +175,8 @@ export type RequiredTokens = {
   tokens_a_required: BigNumber;
   tokens_b_required: BigNumber;
 };
+
+export type DivestedTokens = {
+  token_a_divested: BigNumber;
+  token_b_divested: BigNumber;
+};
