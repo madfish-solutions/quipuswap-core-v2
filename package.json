@@ -24,6 +24,7 @@
     "url": "git+https://github.com/madfish-solutions/quipuswap-core-v2.git"
   },
   "dependencies": {
+    "@taquito/http-utils": "^11.1.0",
     "@taquito/local-forging": "^11.1.0-beta-RC.0",
     "@taquito/michel-codec": "^11.1.0-beta-RC.0",
     "@taquito/michelson-encoder": "^11.1.0-beta-RC.0",

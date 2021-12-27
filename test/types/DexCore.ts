@@ -114,6 +114,11 @@ export type LaunchCallback = {
   tez_store: string;
 };
 
+export type CheckIsBannedBaker = {
+  pair_id: BigNumber;
+  baker: string;
+};
+
 export type Tmp = {
   pair_id: BigNumber;
   amount_a_out: BigNumber;

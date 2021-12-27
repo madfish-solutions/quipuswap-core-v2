@@ -284,7 +284,11 @@
 
 32. `check_is_banned_baker` [VIEW]:
 
-    - ❌
+    - ❌ should fail if pair not listed;
+    - ❌ should fail if pair does not have TEZ store contract (not TOK/TEZ pair);
+    - ❌ should return true if baker is banned;
+    - ❌ should return false if baker is not banned;
+    - ❌ should return false if baker's banning period is finished.
 
 33. `get_reserves` [VIEW]:
 
