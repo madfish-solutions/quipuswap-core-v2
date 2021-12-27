@@ -65,7 +65,7 @@ function iterate_transfer(
         var ops : list(operation) := result.0;
         var s : storage_t := result.1;
 
-        assert_with_error(dst.token_id <= s.tokens_count, "FA2_TOKEN_UNDEFINED");
+        assert_with_error(dst.token_id < s.tokens_count, "FA2_TOKEN_UNDEFINED");
 
         const sender_account : account_t = unwrap_or(
           s.accounts[(transfer_param.from_, dst.token_id)],
@@ -140,10 +140,10 @@ function update_operator(
   block {
     const (param, should_add) = case params of
     | Add_operator(param)    -> (param, True)
-    | Remove_operator(param) ->  (param, False)
+    | Remove_operator(param) -> (param, False)
     end;
 
-    assert_with_error(param.token_id <= s.tokens_count, "FA2_TOKEN_UNDEFINED");
+    assert_with_error(param.token_id < s.tokens_count, "FA2_TOKEN_UNDEFINED");
     assert_with_error(Tezos.sender = param.owner, "FA2_NOT_OWNER");
 
     var account : account_t := unwrap_or(s.accounts[(param.owner, param.token_id)], Constants.default_account);
@@ -162,9 +162,9 @@ function transfer(
 
     case action of
     | Transfer(params) -> {
-      result.1 := transfer_sender_check(params, action, s);
-      result := List.fold(iterate_transfer, params, result);
-    }
+        result.1 := transfer_sender_check(params, action, s);
+        result := List.fold(iterate_transfer, params, result);
+      }
     | _ -> skip
     end
   } with result
@@ -176,8 +176,8 @@ function update_operators(
   block {
     case action of
     | Update_operators(params) -> {
-      s := List.fold(update_operator, params, s);
-    }
+        s := List.fold(update_operator, params, s);
+      }
     | _ -> skip
     end
   } with ((nil : list(operation)), s)
@@ -191,28 +191,28 @@ function balance_of(
 
     case action of
     | Balance_of(params) -> {
-      function look_up_balance(
-        const l         : list(balance_response_t);
-        const request   : balance_request_t)
-                        : list(balance_response_t) is
-        block {
-          assert_with_error(request.token_id <= s.tokens_count, "FA2_TOKEN_UNDEFINED");
+        function look_up_balance(
+          const l         : list(balance_response_t);
+          const request   : balance_request_t)
+                          : list(balance_response_t) is
+          block {
+            assert_with_error(request.token_id < s.tokens_count, "FA2_TOKEN_UNDEFINED");
 
-          const bal : nat = unwrap_or(s.ledger[(request.owner, request.token_id)], 0n);
-          const response : balance_response_t = record [
-            request = request;
-            balance = bal;
-          ];
-        } with response # l;
+            const bal : nat = unwrap_or(s.ledger[(request.owner, request.token_id)], 0n);
+            const response : balance_response_t = record [
+              request = request;
+              balance = bal;
+            ];
+          } with response # l;
 
-      const accumulated_response : list(balance_response_t) = List.fold(
-        look_up_balance,
-        params.requests,
-        (nil : list(balance_response_t))
-      );
+        const accumulated_response : list(balance_response_t) = List.fold(
+          look_up_balance,
+          params.requests,
+          (nil : list(balance_response_t))
+        );
 
-      ops := Tezos.transaction(accumulated_response, 0mutez, params.callback) # ops;
-    }
+        ops := Tezos.transaction(accumulated_response, 0mutez, params.callback) # ops;
+      }
     | _ -> skip
     end
   } with (ops, s)

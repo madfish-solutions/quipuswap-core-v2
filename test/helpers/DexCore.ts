@@ -614,4 +614,10 @@ export class DexCore {
       tokenBCumulativePrice: pair.token_b_price_cum,
     };
   }
+
+  getBalance(user: string, tokenId: BigNumber = new BigNumber(0)): BigNumber {
+    return this.storage.storage.ledger[`${user},${tokenId}`] !== undefined
+      ? new BigNumber(this.storage.storage.ledger[`${user},${tokenId}`])
+      : new BigNumber(0);
+  }
 }

@@ -103,8 +103,9 @@ export class FA12 {
   }
 
   getBalance(user: string): BigNumber {
-    return this.storage.ledger[user] !== undefined
-      ? this.storage.ledger[user].balance
+    return this.storage.ledger[user] !== undefined &&
+      this.storage.ledger[user].balance !== undefined
+      ? new BigNumber(this.storage.ledger[user].balance)
       : new BigNumber(0);
   }
 }

@@ -248,15 +248,40 @@
 
 23. `transfer`:
 
+    - ✅ should fail if token ID from request not found;
+    - ✅ should fail if one token ID from list of requests not found;
+    - ✅ should fail if not operator is trying to transfer tokens;
+    - ✅ should fail if one from list of parameters is not an operator and is trying to transfer tokens;
+    - ✅ should fail if a sender has an insufficient balance of tokens;
+    - ✅ should fail if a sender has an insufficient balance of tokens in one parameter from the list of parameters;
+    - ✅ should make one transfer from one account;
+    - ✅ should make a group of transfers from one account;
+    - ✅ should make self to self transfer;
+    - ✅ should make transfer using allowance;
+    - ✅ should make a group of transfers using allowances;
+    - ✅ should make a group of transfers from one account and using allowances;
     - ❌
 
 24. `update_operators`:
 
-    - ❌
+    - ✅ should fail if token ID from request not found;
+    - ✅ should fail if one token ID from list of requests not found;
+    - ✅ should fail if not owner of tokens is trying to update operator;
+    - ✅ should fail if one from list of parameters is not an owner of tokens and is trying to update operator;
+    - ✅ should add one operator;
+    - ✅ should remove one operator;
+    - ✅ should add a group of operators;
+    - ✅ should remove a group of operators;
+    - ✅ should add/remove operators per one request.
 
 25. `balance_of`:
 
-    - ❌
+    - ✅ should fail if token ID from request not found;
+    - ✅ should fail if one token ID from list of requests not found;
+    - ✅ should return positive balance for one account;
+    - ✅ should return positive balance for group of accounts;
+    - ✅ should return the same balance for the same account 2 times in one request;
+    - ✅ should return 0 if an account does not have tokens.
 
 26. `fa12_balance_callback_1`:
 

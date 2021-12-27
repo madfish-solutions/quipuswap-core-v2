@@ -101,12 +101,15 @@ export class FA2 {
     user: string,
     tokenId: BigNumber = new BigNumber(0)
   ): Promise<BigNumber> {
-    if (this.storage.account_info[user] !== undefined) {
+    if (
+      this.storage.account_info[user] !== undefined &&
+      this.storage.account_info[user].balances !== undefined
+    ) {
       const balance: BigNumber = await this.storage.account_info[
         user
       ].balances.get(tokenId);
 
-      return balance !== undefined ? balance : new BigNumber(0);
+      return balance !== undefined ? new BigNumber(balance) : new BigNumber(0);
     }
 
     return new BigNumber(0);
