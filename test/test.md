@@ -309,19 +309,25 @@
 
 32. `check_is_banned_baker` [VIEW]:
 
-    - ❌ should fail if pair not listed;
-    - ❌ should fail if pair does not have TEZ store contract (not TOK/TEZ pair);
-    - ❌ should return true if baker is banned;
-    - ❌ should return false if baker is not banned;
-    - ❌ should return false if baker's banning period is finished.
+    - ✅ should fail if pair not listed;
+    - ✅ should fail if pair does not have TEZ store contract (not TOK/TEZ pair);
+    - ✅ should return true if baker is banned;
+    - ✅ should return false if baker is not banned;
+    - ✅ should return false if baker's banning period is finished.
 
 33. `get_reserves` [VIEW]:
 
-    - ❌
+    - ✅ should fail if pair not listed;
+    - ✅ should fail if one pair from list not listed;
+    - ✅ should return proper reserves for pair;
+    - ✅ should return proper reserves for all pairs in a list.
 
 34. `get_total_supply` [VIEW]:
 
-    - ❌
+    - ✅ should fail if pair not listed;
+    - ✅ should fail if one pair from list not listed;
+    - ✅ should return proper total supply for pair;
+    - ✅ should return proper total supply for all pairs in a list.
 
 35. `get_swap_min_res` [VIEW]:
 
@@ -329,7 +335,10 @@
 
 36. `get_toks_per_share` [VIEW]:
 
-    - ❌
+    - ✅ should fail if pair not listed;
+    - ✅ should fail if one pair from list not listed;
+    - ✅ should return proper tokens per shares amount for pair;
+    - ✅ should return proper tokens per shares anount for all pairs in a list.
 
 37. `get_cumulative_prices` [VIEW]:
 
@@ -337,15 +346,15 @@
 
 38. `get_voting_period` [VIEW]:
 
-    - ❌
+    - ✅ should return proper voting period.
 
 39. `get_collecting_period` [VIEW]:
 
-    - ❌
+    - ✅ should return proper collecting period.
 
 40. `get_cycle_duration` [VIEW]:
 
-    - ❌
+    - ✅ should return proper cycle duration.
 
 41. `integration_tests`:
 

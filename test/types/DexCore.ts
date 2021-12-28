@@ -181,7 +181,12 @@ export type RequiredTokens = {
   tokens_b_required: BigNumber;
 };
 
-export type DivestedTokens = {
-  token_a_divested: BigNumber;
-  token_b_divested: BigNumber;
+export type TokensPerShare = {
+  token_a_amt: BigNumber;
+  token_b_amt: BigNumber;
+};
+
+export type TokensPerShareRequest = {
+  pair_id: BigNumber;
+  shares_amt: BigNumber;
 };

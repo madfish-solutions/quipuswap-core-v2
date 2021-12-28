@@ -108,6 +108,18 @@ export class Utils {
       return tokenA.id > tokenB.id ? tokenA : tokenB;
     }
   }
+
+  static parseOnChainViewError(json: any[]): string {
+    for (let i: number = 0; i < json.length; ++i) {
+      for (var key in json[i]) {
+        if (key === "with") {
+          return json[i][key]["string"];
+        }
+      }
+    }
+
+    return "";
+  }
 }
 
 export const zeroAddress: string = "tz1ZZZZZZZZZZZZZZZZZZZZZZZZZZZZNkiRg";
@@ -116,3 +128,7 @@ export const defaultCycleDuration: BigNumber = new BigNumber(4096);
 
 export const defaultCollectingPeriod: BigNumber =
   defaultCycleDuration.multipliedBy(new BigNumber(12));
+
+export const defaultVotingPeriod: BigNumber = defaultCycleDuration.multipliedBy(
+  new BigNumber(2)
+);

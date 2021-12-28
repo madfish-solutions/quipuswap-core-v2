@@ -33,7 +33,7 @@ import {
   WithdrawProfit,
   LaunchCallback,
   RequiredTokens,
-  DivestedTokens,
+  TokensPerShare,
   ClaimTokFee,
   ClaimTezFee,
   AddManager,
@@ -564,14 +564,14 @@ export class DexCore {
     };
   }
 
-  static getDivestedTokens(shares: BigNumber, pair: Pair): DivestedTokens {
+  static getTokensPerShare(shares: BigNumber, pair: Pair): TokensPerShare {
     return {
-      token_a_divested: pair.token_a_pool
-        .multipliedBy(shares)
+      token_a_amt: shares
+        .multipliedBy(pair.token_a_pool)
         .dividedBy(pair.total_supply)
         .integerValue(BigNumber.ROUND_CEIL),
-      token_b_divested: pair.token_b_pool
-        .multipliedBy(shares)
+      token_b_amt: shares
+        .multipliedBy(pair.token_b_pool)
         .dividedBy(pair.total_supply)
         .integerValue(BigNumber.ROUND_CEIL),
     };

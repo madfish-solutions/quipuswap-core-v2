@@ -26,7 +26,7 @@ import {
   DivestLiquidity,
   LaunchExchange,
   RequiredTokens,
-  DivestedTokens,
+  TokensPerShare,
   Pair,
 } from "test/types/DexCore";
 import { SBAccount } from "test/types/Common";
@@ -942,14 +942,14 @@ describe("DexCore (invest liquidity)", async () => {
       dexCore.storage.storage.ledger[
         `${liquidityReceiver},${pairId.toFixed()}`
       ];
-    const divestedTokens: DivestedTokens = DexCore.getDivestedTokens(
+    const divestedTokens: TokensPerShare = DexCore.getTokensPerShare(
       shares,
       dexCore.storage.storage.pairs[pairId.toFixed()]
     );
     const divestParams: DivestLiquidity = {
       pair_id: pairId,
-      min_token_a_out: divestedTokens.token_a_divested,
-      min_token_b_out: divestedTokens.token_b_divested,
+      min_token_a_out: divestedTokens.token_a_amt,
+      min_token_b_out: divestedTokens.token_b_amt,
       shares: shares,
       liquidity_receiver: liquidityReceiver,
       candidate: alice.pkh,

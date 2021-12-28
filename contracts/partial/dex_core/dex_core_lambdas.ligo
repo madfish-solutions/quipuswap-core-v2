@@ -190,8 +190,8 @@ function divest_liquidity(
 
         s.ledger[(Tezos.sender, params.pair_id)] := get_nat_or_fail(sender_balance - params.shares);
 
-        const token_a_divested : nat = pair.token_a_pool * params.shares / pair.total_supply;
-        const token_b_divested : nat = pair.token_b_pool * params.shares / pair.total_supply;
+        const token_a_divested : nat = params.shares * pair.token_a_pool / pair.total_supply;
+        const token_b_divested : nat = params.shares * pair.token_b_pool / pair.total_supply;
 
         assert_with_error(params.min_token_a_out =/= 0n and params.min_token_b_out =/= 0n, DexCore.err_dust_out);
         assert_with_error(

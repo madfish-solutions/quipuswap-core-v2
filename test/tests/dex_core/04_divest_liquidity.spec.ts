@@ -23,7 +23,7 @@ import { fa2Storage } from "../../../storage/test/FA2";
 
 import {
   DivestLiquidity,
-  DivestedTokens,
+  TokensPerShare,
   LaunchExchange,
   Pair,
 } from "test/types/DexCore";
@@ -254,14 +254,14 @@ describe("DexCore (divest liquidity)", async () => {
       pairs: [pairId.toFixed()],
     });
 
-    const divestedTokens: DivestedTokens = DexCore.getDivestedTokens(
+    const divestedTokens: TokensPerShare = DexCore.getTokensPerShare(
       shares,
       dexCore.storage.storage.pairs[pairId.toFixed()]
     );
     const divestParams: DivestLiquidity = {
       pair_id: pairId,
-      min_token_a_out: divestedTokens.token_a_divested.plus(1),
-      min_token_b_out: divestedTokens.token_b_divested,
+      min_token_a_out: divestedTokens.token_a_amt.plus(1),
+      min_token_b_out: divestedTokens.token_b_amt,
       shares: shares,
       liquidity_receiver: alice.pkh,
       candidate: alice.pkh,
@@ -282,14 +282,14 @@ describe("DexCore (divest liquidity)", async () => {
       pairs: [pairId.toFixed()],
     });
 
-    const divestedTokens: DivestedTokens = DexCore.getDivestedTokens(
+    const divestedTokens: TokensPerShare = DexCore.getTokensPerShare(
       shares,
       dexCore.storage.storage.pairs[pairId.toFixed()]
     );
     const divestParams: DivestLiquidity = {
       pair_id: pairId,
-      min_token_a_out: divestedTokens.token_a_divested,
-      min_token_b_out: divestedTokens.token_b_divested.plus(1),
+      min_token_a_out: divestedTokens.token_a_amt,
+      min_token_b_out: divestedTokens.token_b_amt.plus(1),
       shares: shares,
       liquidity_receiver: alice.pkh,
       candidate: alice.pkh,
@@ -317,14 +317,14 @@ describe("DexCore (divest liquidity)", async () => {
         `${liquidityReceiver},${pairId.toFixed()}`
       ];
     const prevPair: Pair = dexCore.storage.storage.pairs[pairId.toFixed()];
-    const divestedTokens: DivestedTokens = DexCore.getDivestedTokens(
+    const divestedTokens: TokensPerShare = DexCore.getTokensPerShare(
       shares,
       dexCore.storage.storage.pairs[pairId.toFixed()]
     );
     const divestParams: DivestLiquidity = {
       pair_id: pairId,
-      min_token_a_out: divestedTokens.token_a_divested,
-      min_token_b_out: divestedTokens.token_b_divested,
+      min_token_a_out: divestedTokens.token_a_amt,
+      min_token_b_out: divestedTokens.token_b_amt,
       shares: shares,
       liquidity_receiver: alice.pkh,
       candidate: alice.pkh,
@@ -349,10 +349,10 @@ describe("DexCore (divest liquidity)", async () => {
       prevPair.total_supply.minus(shares)
     );
     expect(currPair.token_a_pool).to.be.bignumber.equal(
-      prevPair.token_a_pool.minus(divestedTokens.token_a_divested)
+      prevPair.token_a_pool.minus(divestedTokens.token_a_amt)
     );
     expect(currPair.token_b_pool).to.be.bignumber.equal(
-      prevPair.token_b_pool.minus(divestedTokens.token_b_divested)
+      prevPair.token_b_pool.minus(divestedTokens.token_b_amt)
     );
   });
 
@@ -371,14 +371,14 @@ describe("DexCore (divest liquidity)", async () => {
         `${liquidityReceiver},${pairId.toFixed()}`
       ];
     const prevPair: Pair = dexCore.storage.storage.pairs[pairId.toFixed()];
-    const divestedTokens: DivestedTokens = DexCore.getDivestedTokens(
+    const divestedTokens: TokensPerShare = DexCore.getTokensPerShare(
       shares,
       dexCore.storage.storage.pairs[pairId.toFixed()]
     );
     const divestParams: DivestLiquidity = {
       pair_id: pairId,
-      min_token_a_out: divestedTokens.token_a_divested,
-      min_token_b_out: divestedTokens.token_b_divested,
+      min_token_a_out: divestedTokens.token_a_amt,
+      min_token_b_out: divestedTokens.token_b_amt,
       shares: shares,
       liquidity_receiver: alice.pkh,
       candidate: alice.pkh,
@@ -403,10 +403,10 @@ describe("DexCore (divest liquidity)", async () => {
       prevPair.total_supply.minus(shares)
     );
     expect(currPair.token_a_pool).to.be.bignumber.equal(
-      prevPair.token_a_pool.minus(divestedTokens.token_a_divested)
+      prevPair.token_a_pool.minus(divestedTokens.token_a_amt)
     );
     expect(currPair.token_b_pool).to.be.bignumber.equal(
-      prevPair.token_b_pool.minus(divestedTokens.token_b_divested)
+      prevPair.token_b_pool.minus(divestedTokens.token_b_amt)
     );
   });
 
@@ -425,14 +425,14 @@ describe("DexCore (divest liquidity)", async () => {
         `${liquidityReceiver},${pairId.toFixed()}`
       ];
     const prevPair: Pair = dexCore.storage.storage.pairs[pairId.toFixed()];
-    const divestedTokens: DivestedTokens = DexCore.getDivestedTokens(
+    const divestedTokens: TokensPerShare = DexCore.getTokensPerShare(
       shares,
       dexCore.storage.storage.pairs[pairId.toFixed()]
     );
     const divestParams: DivestLiquidity = {
       pair_id: pairId,
-      min_token_a_out: divestedTokens.token_a_divested,
-      min_token_b_out: divestedTokens.token_b_divested,
+      min_token_a_out: divestedTokens.token_a_amt,
+      min_token_b_out: divestedTokens.token_b_amt,
       shares: shares,
       liquidity_receiver: alice.pkh,
       candidate: alice.pkh,
@@ -457,10 +457,10 @@ describe("DexCore (divest liquidity)", async () => {
       prevPair.total_supply.minus(shares)
     );
     expect(currPair.token_a_pool).to.be.bignumber.equal(
-      prevPair.token_a_pool.minus(divestedTokens.token_a_divested)
+      prevPair.token_a_pool.minus(divestedTokens.token_a_amt)
     );
     expect(currPair.token_b_pool).to.be.bignumber.equal(
-      prevPair.token_b_pool.minus(divestedTokens.token_b_divested)
+      prevPair.token_b_pool.minus(divestedTokens.token_b_amt)
     );
   });
 
@@ -479,14 +479,14 @@ describe("DexCore (divest liquidity)", async () => {
         `${liquidityReceiver},${pairId.toFixed()}`
       ];
     const prevPair: Pair = dexCore.storage.storage.pairs[pairId.toFixed()];
-    const divestedTokens: DivestedTokens = DexCore.getDivestedTokens(
+    const divestedTokens: TokensPerShare = DexCore.getTokensPerShare(
       shares,
       dexCore.storage.storage.pairs[pairId.toFixed()]
     );
     const divestParams: DivestLiquidity = {
       pair_id: pairId,
-      min_token_a_out: divestedTokens.token_a_divested,
-      min_token_b_out: divestedTokens.token_b_divested,
+      min_token_a_out: divestedTokens.token_a_amt,
+      min_token_b_out: divestedTokens.token_b_amt,
       shares: shares,
       liquidity_receiver: alice.pkh,
       candidate: alice.pkh,
@@ -511,10 +511,10 @@ describe("DexCore (divest liquidity)", async () => {
       prevPair.total_supply.minus(shares)
     );
     expect(currPair.token_a_pool).to.be.bignumber.equal(
-      prevPair.token_a_pool.minus(divestedTokens.token_a_divested)
+      prevPair.token_a_pool.minus(divestedTokens.token_a_amt)
     );
     expect(currPair.token_b_pool).to.be.bignumber.equal(
-      prevPair.token_b_pool.minus(divestedTokens.token_b_divested)
+      prevPair.token_b_pool.minus(divestedTokens.token_b_amt)
     );
   });
 
@@ -533,14 +533,14 @@ describe("DexCore (divest liquidity)", async () => {
         `${liquidityReceiver},${pairId.toFixed()}`
       ];
     const prevPair: Pair = dexCore.storage.storage.pairs[pairId.toFixed()];
-    const divestedTokens: DivestedTokens = DexCore.getDivestedTokens(
+    const divestedTokens: TokensPerShare = DexCore.getTokensPerShare(
       shares,
       dexCore.storage.storage.pairs[pairId.toFixed()]
     );
     const divestParams: DivestLiquidity = {
       pair_id: pairId,
-      min_token_a_out: divestedTokens.token_a_divested,
-      min_token_b_out: divestedTokens.token_b_divested,
+      min_token_a_out: divestedTokens.token_a_amt,
+      min_token_b_out: divestedTokens.token_b_amt,
       shares: shares,
       liquidity_receiver: alice.pkh,
       candidate: alice.pkh,
@@ -565,10 +565,10 @@ describe("DexCore (divest liquidity)", async () => {
       prevPair.total_supply.minus(shares)
     );
     expect(currPair.token_a_pool).to.be.bignumber.equal(
-      prevPair.token_a_pool.minus(divestedTokens.token_a_divested)
+      prevPair.token_a_pool.minus(divestedTokens.token_a_amt)
     );
     expect(currPair.token_b_pool).to.be.bignumber.equal(
-      prevPair.token_b_pool.minus(divestedTokens.token_b_divested)
+      prevPair.token_b_pool.minus(divestedTokens.token_b_amt)
     );
   });
 
@@ -600,14 +600,14 @@ describe("DexCore (divest liquidity)", async () => {
     const prevAliceTezBalance: BigNumber =
       tezStore.storage.users[liquidityReceiver].tez_bal;
     const shares: BigNumber = new BigNumber(100);
-    const divestedTokens: DivestedTokens = DexCore.getDivestedTokens(
+    const divestedTokens: TokensPerShare = DexCore.getTokensPerShare(
       shares,
       dexCore.storage.storage.pairs[pairId.toFixed()]
     );
     const divestParams: DivestLiquidity = {
       pair_id: pairId,
-      min_token_a_out: divestedTokens.token_a_divested,
-      min_token_b_out: divestedTokens.token_b_divested,
+      min_token_a_out: divestedTokens.token_a_amt,
+      min_token_b_out: divestedTokens.token_b_amt,
       shares: shares,
       liquidity_receiver: alice.pkh,
       candidate: alice.pkh,
@@ -669,14 +669,14 @@ describe("DexCore (divest liquidity)", async () => {
     const prevAliceTezBalance: BigNumber =
       tezStore.storage.users[liquidityReceiver].tez_bal;
     const shares: BigNumber = new BigNumber(100);
-    const divestedTokens: DivestedTokens = DexCore.getDivestedTokens(
+    const divestedTokens: TokensPerShare = DexCore.getTokensPerShare(
       shares,
       dexCore.storage.storage.pairs[pairId.toFixed()]
     );
     const divestParams: DivestLiquidity = {
       pair_id: pairId,
-      min_token_a_out: divestedTokens.token_a_divested,
-      min_token_b_out: divestedTokens.token_b_divested,
+      min_token_a_out: divestedTokens.token_a_amt,
+      min_token_b_out: divestedTokens.token_b_amt,
       shares: shares,
       liquidity_receiver: alice.pkh,
       candidate: alice.pkh,
@@ -735,14 +735,14 @@ describe("DexCore (divest liquidity)", async () => {
     const prevAliceTok2Balance: BigNumber =
       fa12Token2.getBalance(liquidityReceiver);
     const shares: BigNumber = new BigNumber(100);
-    const divestedTokens: DivestedTokens = DexCore.getDivestedTokens(
+    const divestedTokens: TokensPerShare = DexCore.getTokensPerShare(
       shares,
       dexCore.storage.storage.pairs[pairId.toFixed()]
     );
     const divestParams: DivestLiquidity = {
       pair_id: pairId,
-      min_token_a_out: divestedTokens.token_a_divested,
-      min_token_b_out: divestedTokens.token_b_divested,
+      min_token_a_out: divestedTokens.token_a_amt,
+      min_token_b_out: divestedTokens.token_b_amt,
       shares: shares,
       liquidity_receiver: alice.pkh,
       candidate: alice.pkh,
@@ -808,14 +808,14 @@ describe("DexCore (divest liquidity)", async () => {
       liquidityReceiver
     );
     const shares: BigNumber = new BigNumber(100);
-    const divestedTokens: DivestedTokens = DexCore.getDivestedTokens(
+    const divestedTokens: TokensPerShare = DexCore.getTokensPerShare(
       shares,
       dexCore.storage.storage.pairs[pairId.toFixed()]
     );
     const divestParams: DivestLiquidity = {
       pair_id: pairId,
-      min_token_a_out: divestedTokens.token_a_divested,
-      min_token_b_out: divestedTokens.token_b_divested,
+      min_token_a_out: divestedTokens.token_a_amt,
+      min_token_b_out: divestedTokens.token_b_amt,
       shares: shares,
       liquidity_receiver: alice.pkh,
       candidate: alice.pkh,
@@ -882,14 +882,14 @@ describe("DexCore (divest liquidity)", async () => {
       liquidityReceiver
     );
     const shares: BigNumber = new BigNumber(100);
-    const divestedTokens: DivestedTokens = DexCore.getDivestedTokens(
+    const divestedTokens: TokensPerShare = DexCore.getTokensPerShare(
       shares,
       dexCore.storage.storage.pairs[pairId.toFixed()]
     );
     const divestParams: DivestLiquidity = {
       pair_id: pairId,
-      min_token_a_out: divestedTokens.token_a_divested,
-      min_token_b_out: divestedTokens.token_b_divested,
+      min_token_a_out: divestedTokens.token_a_amt,
+      min_token_b_out: divestedTokens.token_b_amt,
       shares: shares,
       liquidity_receiver: alice.pkh,
       candidate: alice.pkh,
@@ -942,14 +942,14 @@ describe("DexCore (divest liquidity)", async () => {
       dexCore.storage.storage.ledger[
         `${liquidityReceiver},${pairId.toFixed()}`
       ];
-    const divestedTokens: DivestedTokens = DexCore.getDivestedTokens(
+    const divestedTokens: TokensPerShare = DexCore.getTokensPerShare(
       shares,
       dexCore.storage.storage.pairs[pairId.toFixed()]
     );
     const divestParams: DivestLiquidity = {
       pair_id: pairId,
-      min_token_a_out: divestedTokens.token_a_divested,
-      min_token_b_out: divestedTokens.token_b_divested,
+      min_token_a_out: divestedTokens.token_a_amt,
+      min_token_b_out: divestedTokens.token_b_amt,
       shares: shares,
       liquidity_receiver: liquidityReceiver,
       candidate: alice.pkh,
