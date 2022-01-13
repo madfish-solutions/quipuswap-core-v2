@@ -1,6 +1,6 @@
-import { Common } from "../../helpers/Errors";
-import { DexCore } from "../../helpers/DexCore";
 import { defaultCollectingPeriod, Utils } from "../../helpers/Utils";
+import { DexCore } from "../../helpers/DexCore";
+import { Common } from "../../helpers/Errors";
 
 import { rejects } from "assert";
 

@@ -1,14 +1,14 @@
+import { ListValidationError } from "@taquito/michelson-encoder";
 import {
   OriginationOperation,
   ContractAbstraction,
   ContractProvider,
   VIEW_LAMBDA,
 } from "@taquito/taquito";
-import { ListValidationError } from "@taquito/michelson-encoder";
 
 import { defaultCollectingPeriod, Utils } from "../../helpers/Utils";
-import { FA2 as FA2Errors } from "../../helpers/Errors";
 import { BakerRegistry } from "../../helpers/BakerRegistry";
+import { FA2 as FA2Errors } from "../../helpers/Errors";
 import { Auction } from "../../helpers/Auction";
 import { DexCore } from "../../helpers/DexCore";
 import { FA12 } from "../../helpers/FA12";

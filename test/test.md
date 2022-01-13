@@ -285,18 +285,22 @@
 
 26. `fa12_balance_callback_1`:
 
+    - ❌ should fail if pair not listed;
     - ❌
 
 27. `fa2_balance_callback_1`:
 
+    - ❌ should fail if pair not listed;
     - ❌
 
 28. `fa12_balance_callback_2`:
 
+    - ❌ should fail if pair not listed;
     - ❌
 
 29. `fa2_balance_callback_2`:
 
+    - ❌ should fail if pair not listed;
     - ❌
 
 30. `flash_swap_callback`:

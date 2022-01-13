@@ -1,3 +1,5 @@
+#include "../main/dex_core.ligo"
+
 #include "parameters.ligo"
 
 const value : tez = 1tz;
@@ -13,21 +15,6 @@ function lambda1(const _ : unit) : list(operation) is
   ]
 
 (*****************************************************************************)
-
-type tez_t              is unit
-
-type fa12_token_t       is address
-
-type fa2_token_t        is [@layout:comb] record [
-  token                   : address;
-  id                      : nat;
-]
-
-type token_t            is
-| Tez                     of tez_t
-| Fa12                    of fa12_token_t
-| Fa2                     of fa2_token_t
-
 type test_t             is [@layout:comb] record [
   token1                  : token_t;
   token2                  : token_t;
@@ -41,15 +28,6 @@ const params : test_t = record [
   token1_amt = 5n;
   token2_amt = 5n;
 ];
-
-function unwrap(
-  const param           : option(_a);
-  const error           : string)
-                        : _a is
-  case param of
-  | Some(instance) -> instance
-  | None           -> (failwith(error) : _a)
-  end
 
 function get_flash_swap_agent_test_entrypoint(
   const agent           : address)

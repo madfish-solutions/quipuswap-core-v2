@@ -1,6 +1,6 @@
-import { Common } from "../../helpers/Errors";
 import { BakerRegistry } from "../../helpers/BakerRegistry";
 import { TezStore } from "../../helpers/TezStore";
+import { Common } from "../../helpers/Errors";
 import { Utils } from "../../helpers/Utils";
 
 import { rejects } from "assert";
@@ -14,8 +14,8 @@ import accounts from "../../../scripts/sandbox/accounts";
 import { bakerRegistryStorage } from "../../../storage/BakerRegistry";
 import { tezStoreStorage } from "../../../storage/test/TezStore";
 
-import { Vote } from "test/types/TezStore";
 import { SBAccount } from "test/types/Common";
+import { Vote } from "test/types/TezStore";
 
 chai.use(require("chai-bignumber")(BigNumber));
 

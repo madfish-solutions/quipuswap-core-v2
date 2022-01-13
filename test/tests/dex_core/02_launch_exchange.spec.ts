@@ -3,13 +3,13 @@ import { BakerRegistry } from "../../helpers/BakerRegistry";
 import { TezStore } from "../../helpers/TezStore";
 import { Auction } from "../../helpers/Auction";
 import { DexCore } from "../../helpers/DexCore";
+import { FA12 } from "../../helpers/FA12";
+import { FA2 } from "../../helpers/FA2";
 import {
   defaultCollectingPeriod,
   zeroAddress,
   Utils,
 } from "../../helpers/Utils";
-import { FA12 } from "../../helpers/FA12";
-import { FA2 } from "../../helpers/FA2";
 
 import { rejects } from "assert";
 

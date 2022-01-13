@@ -5,7 +5,7 @@ type status_auction_t   is
 type auction_t          is [@layout:comb] record [
   status                  : status_auction_t;
   token                   : token_t;
-  start_time              : timestamp;
+  end_time                : timestamp;
   current_bidder          : address;
   current_bid             : nat;
   amt                     : nat;

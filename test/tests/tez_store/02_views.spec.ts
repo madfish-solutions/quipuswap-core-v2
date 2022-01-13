@@ -1,8 +1,8 @@
 import { MichelsonMap } from "@taquito/michelson-encoder";
 
 import { BakerRegistry } from "../../helpers/BakerRegistry";
-import { TezStore } from "../../helpers/TezStore";
 import { Utils, zeroAddress } from "../../helpers/Utils";
+import { TezStore } from "../../helpers/TezStore";
 import { DexCore } from "../../helpers/DexCore";
 
 import chai, { expect } from "chai";

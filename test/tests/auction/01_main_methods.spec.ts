@@ -303,9 +303,12 @@ describe("Auction (main methods)", async () => {
     ).to.have.keys("active");
     expect(
       Date.parse(
-        auction.storage.storage.auctions[expectedAuctionId.toFixed()].start_time
-      )
-    ).to.be.lte(await utils.getLastBlockTimestamp());
+        auction.storage.storage.auctions[expectedAuctionId.toFixed()].end_time
+      ) / 1000
+    ).to.be.lte(
+      (await utils.getLastBlockTimestamp()) / 1000 +
+        auction.storage.storage.auction_duration.toNumber()
+    );
     expect(
       auction.storage.storage.auctions[expectedAuctionId.toFixed()]
         .current_bidder
@@ -386,9 +389,12 @@ describe("Auction (main methods)", async () => {
     ).to.be.deep.equal(params.token);
     expect(
       Date.parse(
-        auction.storage.storage.auctions[expectedAuctionId.toFixed()].start_time
-      )
-    ).to.be.lte(await utils.getLastBlockTimestamp());
+        auction.storage.storage.auctions[expectedAuctionId.toFixed()].end_time
+      ) / 1000
+    ).to.be.lte(
+      (await utils.getLastBlockTimestamp()) / 1000 +
+        auction.storage.storage.auction_duration.toNumber()
+    );
     expect(
       auction.storage.storage.auctions[expectedAuctionId.toFixed()]
         .current_bidder
@@ -469,9 +475,12 @@ describe("Auction (main methods)", async () => {
     ).to.be.deep.equal(params.token);
     expect(
       Date.parse(
-        auction.storage.storage.auctions[expectedAuctionId.toFixed()].start_time
-      )
-    ).to.be.lte(await utils.getLastBlockTimestamp());
+        auction.storage.storage.auctions[expectedAuctionId.toFixed()].end_time
+      ) / 1000
+    ).to.be.lte(
+      (await utils.getLastBlockTimestamp()) / 1000 +
+        auction.storage.storage.auction_duration.toNumber()
+    );
     expect(
       auction.storage.storage.auctions[expectedAuctionId.toFixed()]
         .current_bidder

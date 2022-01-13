@@ -305,7 +305,6 @@
              UNPAIR ;
              PUSH nat 0 ;
              PUSH nat 0 ;
-             SWAP ;
              PAIR ;
              DUP 3 ;
              GET 5 ;
@@ -374,13 +373,10 @@
                      SWAP ;
                      EXEC ;
                      DROP ;
+                     PUSH nat 0 ;
+                     PUSH nat 0 ;
                      PUSH timestamp 0 ;
-                     PUSH nat 0 ;
-                     PUSH nat 0 ;
-                     SWAP ;
-                     PAIR ;
-                     SWAP ;
-                     PAIR ;
+                     PAIR 3 ;
                      DUP 3 ;
                      GET 3 ;
                      DUP 3 ;
@@ -434,13 +430,10 @@
                      SWAP ;
                      EXEC ;
                      DROP ;
+                     PUSH nat 0 ;
+                     PUSH nat 0 ;
                      NONE key_hash ;
-                     PUSH nat 0 ;
-                     PUSH nat 0 ;
-                     SWAP ;
-                     PAIR ;
-                     SWAP ;
-                     PAIR ;
+                     PAIR 3 ;
                      DUP 3 ;
                      CAR ;
                      DUP 3 ;
@@ -512,13 +505,10 @@
                      SWAP ;
                      EXEC ;
                      DROP ;
+                     PUSH nat 0 ;
+                     PUSH nat 0 ;
                      NONE key_hash ;
-                     PUSH nat 0 ;
-                     PUSH nat 0 ;
-                     SWAP ;
-                     PAIR ;
-                     SWAP ;
-                     PAIR ;
+                     PAIR 3 ;
                      DUP 3 ;
                      CAR ;
                      DUP 3 ;
@@ -582,13 +572,10 @@
                  DIG 2 ;
                  SWAP ;
                  EXEC ;
+                 PUSH nat 0 ;
+                 PUSH nat 0 ;
                  NONE key_hash ;
-                 PUSH nat 0 ;
-                 PUSH nat 0 ;
-                 SWAP ;
-                 PAIR ;
-                 SWAP ;
-                 PAIR ;
+                 PAIR 3 ;
                  SWAP ;
                  DUP ;
                  DUG 2 ;
@@ -604,13 +591,10 @@
                  CAR ;
                  IF_NONE
                    { SWAP ; DUP ; DUG 2 }
-                   { PUSH timestamp 0 ;
+                   { PUSH nat 0 ;
                      PUSH nat 0 ;
-                     PUSH nat 0 ;
-                     SWAP ;
-                     PAIR ;
-                     SWAP ;
-                     PAIR ;
+                     PUSH timestamp 0 ;
+                     PAIR 3 ;
                      DUP 4 ;
                      GET 3 ;
                      DUP 3 ;
@@ -637,13 +621,10 @@
                      SWAP ;
                      UPDATE ;
                      UPDATE 3 } ;
+                 PUSH nat 0 ;
+                 PUSH nat 0 ;
                  PUSH timestamp 0 ;
-                 PUSH nat 0 ;
-                 PUSH nat 0 ;
-                 SWAP ;
-                 PAIR ;
-                 SWAP ;
-                 PAIR ;
+                 PAIR 3 ;
                  SWAP ;
                  DUP ;
                  DUG 2 ;
@@ -697,13 +678,10 @@
                  SWAP ;
                  UPDATE ;
                  UPDATE 1 ;
+                 PUSH nat 0 ;
+                 PUSH nat 0 ;
                  PUSH timestamp 0 ;
-                 PUSH nat 0 ;
-                 PUSH nat 0 ;
-                 SWAP ;
-                 PAIR ;
-                 SWAP ;
-                 PAIR ;
+                 PAIR 3 ;
                  SWAP ;
                  DUP ;
                  DUG 2 ;
@@ -715,13 +693,10 @@
                  DUP 10 ;
                  SWAP ;
                  EXEC ;
+                 PUSH nat 0 ;
+                 PUSH nat 0 ;
                  PUSH timestamp 0 ;
-                 PUSH nat 0 ;
-                 PUSH nat 0 ;
-                 SWAP ;
-                 PAIR ;
-                 SWAP ;
-                 PAIR ;
+                 PAIR 3 ;
                  DUP 3 ;
                  GET 3 ;
                  DUP 4 ;
@@ -891,7 +866,6 @@
                  EXEC ;
                  PUSH nat 0 ;
                  PUSH nat 0 ;
-                 SWAP ;
                  PAIR ;
                  SWAP ;
                  DUP ;
@@ -960,17 +934,42 @@
                       CONS }
                     { DIG 2 ; DIG 3 ; DROP 2 } ;
                  PAIR } } } ;
+  view "get_user_candidate"
+       address
+       key_hash
+       { UNPAIR ;
+         SWAP ;
+         DUP ;
+         DUG 2 ;
+         GET 7 ;
+         PUSH nat 0 ;
+         PUSH nat 0 ;
+         NONE key_hash ;
+         PAIR 3 ;
+         DIG 3 ;
+         CAR ;
+         DIG 3 ;
+         GET ;
+         IF_NONE {} { SWAP ; DROP } ;
+         CAR ;
+         IF_NONE {} { SWAP ; DROP } } ;
+  view "get_tez_balance"
+       unit
+       nat
+       { DROP ;
+         PUSH mutez 1 ;
+         BALANCE ;
+         EDIV ;
+         IF_NONE { PUSH string "DIV by 0" ; FAILWITH } {} ;
+         CAR } ;
   view "is_banned_baker"
        key_hash
        bool
        { UNPAIR ;
+         PUSH nat 0 ;
+         PUSH nat 0 ;
          PUSH timestamp 0 ;
-         PUSH nat 0 ;
-         PUSH nat 0 ;
-         SWAP ;
-         PAIR ;
-         SWAP ;
-         PAIR ;
+         PAIR 3 ;
          DIG 2 ;
          GET 3 ;
          DIG 2 ;
@@ -986,36 +985,5 @@
          CAR ;
          ADD ;
          COMPARE ;
-         GT } ;
-  view "get_tez_balance"
-       unit
-       nat
-       { DROP ;
-         PUSH mutez 1 ;
-         BALANCE ;
-         EDIV ;
-         IF_NONE { PUSH string "DIV by 0" ; FAILWITH } {} ;
-         CAR } ;
-  view "get_user_candidate"
-       address
-       key_hash
-       { UNPAIR ;
-         SWAP ;
-         DUP ;
-         DUG 2 ;
-         GET 7 ;
-         NONE key_hash ;
-         PUSH nat 0 ;
-         PUSH nat 0 ;
-         SWAP ;
-         PAIR ;
-         SWAP ;
-         PAIR ;
-         DIG 3 ;
-         CAR ;
-         DIG 3 ;
-         GET ;
-         IF_NONE {} { SWAP ; DROP } ;
-         CAR ;
-         IF_NONE {} { SWAP ; DROP } } }
+         GT } }
 

@@ -1,8 +1,8 @@
 import { Common, DexCore as DexCoreErrors } from "../../helpers/Errors";
 import { FlashSwapsProxy } from "../../helpers/FlashSwapsProxy";
+import { Utils, zeroAddress } from "../../helpers/Utils";
 import { TezStore } from "../../helpers/TezStore";
 import { Auction } from "../../helpers/Auction";
-import { Utils, zeroAddress } from "../../helpers/Utils";
 import { DexCore } from "../../helpers/DexCore";
 import { FA12 } from "../../helpers/FA12";
 import { FA2 } from "../../helpers/FA2";

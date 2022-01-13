@@ -40,7 +40,7 @@ function launch_auction(
         s.auctions[s.auctions_count] := record[
           status         = Active;
           token          = params.token;
-          start_time     = Tezos.now;
+          end_time       = Tezos.now + s.auction_duration;
           current_bidder = Tezos.sender;
           current_bid    = params.bid;
           amt            = params.amt;
@@ -67,7 +67,7 @@ function place_bid(
     | Place_bid(params) -> {
         var auction : auction_t := unwrap(s.auctions[params.auction_id], Auction.err_auction_not_found);
 
-        assert_with_error(Tezos.now < auction.start_time + s.auction_duration, Auction.err_auction_finished);
+        assert_with_error(Tezos.now < auction.end_time, Auction.err_auction_finished);
         assert_with_error(params.bid > auction.current_bid, Auction.err_low_bid);
 
         const bid_fee_f : nat = auction.current_bid * s.fees.bid_fee_f;
@@ -99,7 +99,7 @@ function claim(
     | Claim(auction_id) -> {
         var auction : auction_t := unwrap(s.auctions[auction_id], Auction.err_auction_not_found);
 
-        assert_with_error(Tezos.now >= auction.start_time + s.auction_duration, Auction.err_auction_not_finished);
+        assert_with_error(Tezos.now >= auction.end_time, Auction.err_auction_not_finished);
         assert_with_error(auction.status =/= Finished, Auction.err_auction_finished);
 
         ops := transfer_fa2(

@@ -1,6 +1,6 @@
-import { Common } from "../../helpers/Errors";
-import { Auction } from "../../helpers/Auction";
 import { Utils, zeroAddress } from "../../helpers/Utils";
+import { Auction } from "../../helpers/Auction";
+import { Common } from "../../helpers/Errors";
 import { FA2 } from "../../helpers/FA2";
 
 import { rejects } from "assert";
