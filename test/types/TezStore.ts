@@ -4,7 +4,6 @@ import { BigNumber } from "bignumber.js";
 
 export type DivestTez = {
   receiver: string;
-  user: string;
   amt: BigNumber;
 };
 

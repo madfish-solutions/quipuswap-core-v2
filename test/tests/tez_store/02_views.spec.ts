@@ -121,7 +121,6 @@ describe("TezStore (views)", async () => {
   it("should return positive balance - 2", async () => {
     const divestTez: DivestTez = {
       receiver: bob.pkh,
-      user: bob.pkh,
       amt: new BigNumber(100),
     };
 
@@ -163,7 +162,6 @@ describe("TezStore (views)", async () => {
     tezStoreStorage.users = MichelsonMap.fromLiteral({
       [alice.pkh]: {
         candidate: carol.pkh,
-        tez_bal: new BigNumber(1),
         votes: new BigNumber(1),
       },
     });

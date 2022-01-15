@@ -986,9 +986,6 @@ describe("DexCore (launch exchange)", async () => {
       tezStore.storage.users[params.shares_receiver].candidate
     ).to.be.equal(params.candidate);
     expect(
-      tezStore.storage.users[params.shares_receiver].tez_bal
-    ).to.be.bignumber.equal(params.token_b_in);
-    expect(
       tezStore.storage.users[params.shares_receiver].votes
     ).to.be.bignumber.equal(
       BigNumber.min(params.token_a_in, params.token_b_in)

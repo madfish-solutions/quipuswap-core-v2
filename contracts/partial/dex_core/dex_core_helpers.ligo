@@ -43,10 +43,9 @@ function get_tez_store_vote_entrypoint(
   )
 
 function get_invest_tez_op(
-  const invest_params   : invest_tez_t;
   const tez_store       : address)
                         : operation is
-  Tezos.transaction(invest_params, Tezos.amount, get_tez_store_invest_tez_entrypoint(tez_store))
+  Tezos.transaction(Unit, Tezos.amount, get_tez_store_invest_tez_entrypoint(tez_store))
 
 function get_divest_tez_op(
   const divest_params   : divest_tez_t;
@@ -67,13 +66,12 @@ function get_vote_op(
   Tezos.transaction(vote_params, 0mutez, get_tez_store_vote_entrypoint(tez_store))
 
 function invest_tez_or_transfer_tokens(
-  const inv_liq_params  : invest_liquidity_t;
   const tokens_required : nat;
   const token_type      : token_t;
   const tez_store_opt   : option(address))
                         : operation is
   if token_type = Tez
-  then get_invest_tez_op(inv_liq_params.shares_receiver, unwrap(tez_store_opt, DexCore.err_tez_store_404))
+  then get_invest_tez_op(unwrap(tez_store_opt, DexCore.err_tez_store_404))
   else transfer_token(Tezos.sender, Tezos.self_address, tokens_required, token_type)
 
 function divest_tez_or_transfer_tokens(
@@ -86,7 +84,6 @@ function divest_tez_or_transfer_tokens(
   then block {
     const divest_params : divest_tez_t = record [
       receiver     = (get_contract(receiver) : contract(unit));
-      user         = Tezos.sender;
       amt          = tokens_divested;
     ];
   } with get_divest_tez_op(divest_params, unwrap(tez_store_opt, DexCore.err_tez_store_404))
@@ -96,7 +93,6 @@ function get_tez_store_initial_storage(
   const candidate       : key_hash;
   const share_receiver  : address;
   const baker_registry  : address;
-  const tez_bal         : nat;
   const pair_id         : nat;
   const collect_period  : nat)
                         : tez_store_t is
@@ -104,7 +100,6 @@ function get_tez_store_initial_storage(
     users                  = big_map [
       share_receiver -> record [
         candidate = (None : option(key_hash));
-        tez_bal   = tez_bal;
         votes     = 0n;
       ]
     ];
@@ -312,18 +307,31 @@ function get_token_id_or_fail(
   | Tez             -> (failwith(Common.err_wrong_token_type) : token_id_t)
   end
 
-function get_flash_swap_callback(
+function get_flash_swap_callback_1(
   const self            : address)
                         : contract(flash_swap_2_t) is
   unwrap(
-    (Tezos.get_entrypoint_opt("%flash_swap_callback", self) : option(contract(flash_swap_2_t))),
-    DexCore.err_flash_swap_callback_404
+    (Tezos.get_entrypoint_opt("%flash_swap_callback_1", self) : option(contract(flash_swap_2_t))),
+    DexCore.err_flash_swap_callback_1_404
   )
 
-function call_flash_swap_callback(
+function call_flash_swap_callback_1(
   const _               : unit)
                         : operation is
-  Tezos.transaction(Unit, 0mutez, get_flash_swap_callback(Tezos.self_address))
+  Tezos.transaction(Unit, 0mutez, get_flash_swap_callback_1(Tezos.self_address))
+
+function get_flash_swap_callback_2(
+  const self            : address)
+                        : contract(flash_swap_3_t) is
+  unwrap(
+    (Tezos.get_entrypoint_opt("%flash_swap_callback_2", self) : option(contract(flash_swap_3_t))),
+    DexCore.err_flash_swap_callback_2_404
+  )
+
+function call_flash_swap_callback_2(
+  const _               : unit)
+                        : operation is
+  Tezos.transaction(Unit, 0mutez, get_flash_swap_callback_2(Tezos.self_address))
 
 function get_fa12_balance_callback_1(
   const this            : address)
@@ -409,3 +417,30 @@ function get_auction_receive_fee_op(
   const auction         : address)
                         : operation is
   Tezos.transaction(params, 0mutez, get_auction_receive_fee_entrypoint(auction))
+
+function only_entered(
+  const entered         : bool)
+                        : unit is
+  block {
+    assert_with_error(entered, DexCore.err_not_entered);
+  } with unit
+
+function check_reentrancy(
+  const entered         : bool)
+                        : bool is
+  if not entered
+  then True
+  else failwith(DexCore.err_reentrancy)
+
+function get_close_entrypoint(
+  const this            : address)
+                        : contract(unit) is
+  unwrap(
+    (Tezos.get_entrypoint_opt("%close", this) : option(contract(unit))),
+    DexCore.err_close_entrypoint_404
+  )
+
+function get_close_op(
+  const _               : unit)
+                        : operation is
+  Tezos.transaction(Unit, 0mutez, get_close_entrypoint(Tezos.self_address))

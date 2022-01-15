@@ -23,6 +23,8 @@ type flash_swap_t       is [@layout:comb] record [
 
 type flash_swap_2_t     is unit
 
+type flash_swap_3_t     is unit
+
 type storage_t          is [@layout:comb] record [
   token_metadata          : big_map(token_id_t, token_metadata_t);
   ledger                  : big_map((address * token_id_t), nat);
@@ -44,6 +46,7 @@ type storage_t          is [@layout:comb] record [
   auction                 : address;
   permits_counter         : counter_t;
   default_expiry          : seconds_t;
+  entered                 : bool;
   tokens_count            : nat;
   cycle_duration          : nat;
   collecting_period       : nat;
@@ -178,6 +181,8 @@ type fa12_balance_res_t is nat
 
 type fa2_balance_res_t  is list(balance_response_t)
 
+type close_t            is unit
+
 type reserves_t         is [@layout:comb] record [
   token_a_pool            : nat;
   token_b_pool            : nat;
@@ -263,8 +268,10 @@ type action_t           is
 | Fa2_balance_callback_1  of fa2_balance_res_t
 | Fa12_balance_callback_2 of fa12_balance_res_t
 | Fa2_balance_callback_2  of fa2_balance_res_t
-| Flash_swap_callback     of flash_swap_2_t
+| Flash_swap_callback_1   of flash_swap_2_t
+| Flash_swap_callback_2   of flash_swap_3_t
 | Launch_callback         of launch_callback_t
+| Close                   of close_t
 
 type return_t           is list(operation) * storage_t
 
@@ -284,4 +291,4 @@ type full_action_t      is
 
 type deploy_tez_store_t is (option(key_hash) * tez * tez_store_t) -> (operation * address)
 
-const dex_core_methods_max_index : nat = 30n;
+const dex_core_methods_max_index : nat = 32n;

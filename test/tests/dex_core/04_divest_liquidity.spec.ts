@@ -1,7 +1,6 @@
 import { defaultCollectingPeriod, Utils } from "../../helpers/Utils";
 import { DexCore as DexCoreErrors } from "../../helpers/Errors";
 import { BakerRegistry } from "../../helpers/BakerRegistry";
-import { TezStore } from "../../helpers/TezStore";
 import { Auction } from "../../helpers/Auction";
 import { DexCore } from "../../helpers/DexCore";
 import { FA12 } from "../../helpers/FA12";
@@ -579,17 +578,8 @@ describe("DexCore (divest liquidity)", async () => {
     await dexCore.updateStorage({
       pairs: [pairId.toFixed()],
     });
-
-    const tezStore: TezStore = await TezStore.init(
-      dexCore.storage.storage.pairs[pairId.toFixed()].tez_store,
-      utils.tezos
-    );
-
     await fa12Token1.updateStorage({
       ledger: [dexCore.contract.address, liquidityReceiver],
-    });
-    await tezStore.updateStorage({
-      users: [liquidityReceiver],
     });
 
     const prevDexCoreTok1Balance: BigNumber = fa12Token1.getBalance(
@@ -597,8 +587,6 @@ describe("DexCore (divest liquidity)", async () => {
     );
     const prevAliceTok1Balance: BigNumber =
       fa12Token1.getBalance(liquidityReceiver);
-    const prevAliceTezBalance: BigNumber =
-      tezStore.storage.users[liquidityReceiver].tez_bal;
     const shares: BigNumber = new BigNumber(100);
     const divestedTokens: TokensPerShare = DexCore.getTokensPerShare(
       shares,
@@ -617,26 +605,18 @@ describe("DexCore (divest liquidity)", async () => {
     await fa12Token1.updateStorage({
       ledger: [dexCore.contract.address, liquidityReceiver],
     });
-    await tezStore.updateStorage({
-      users: [liquidityReceiver],
-    });
 
     const currDexCoreTok1Balance: BigNumber = fa12Token1.getBalance(
       dexCore.contract.address
     );
     const currAliceTok1Balance: BigNumber =
       fa12Token1.getBalance(liquidityReceiver);
-    const currAliceTezBalance: BigNumber =
-      tezStore.storage.users[liquidityReceiver].tez_bal;
 
     expect(currDexCoreTok1Balance).to.be.bignumber.equal(
       prevDexCoreTok1Balance.minus(divestParams.min_token_a_out)
     );
     expect(currAliceTok1Balance).to.be.bignumber.equal(
       prevAliceTok1Balance.plus(divestParams.min_token_a_out)
-    );
-    expect(currAliceTezBalance).to.be.bignumber.equal(
-      prevAliceTezBalance.minus(divestParams.min_token_b_out)
     );
   });
 
@@ -648,16 +628,8 @@ describe("DexCore (divest liquidity)", async () => {
       pairs: [pairId.toFixed()],
     });
 
-    const tezStore: TezStore = await TezStore.init(
-      dexCore.storage.storage.pairs[pairId.toFixed()].tez_store,
-      utils.tezos
-    );
-
     await fa2Token1.updateStorage({
       account_info: [dexCore.contract.address, liquidityReceiver],
-    });
-    await tezStore.updateStorage({
-      users: [liquidityReceiver],
     });
 
     const prevDexCoreTok1Balance: BigNumber = await fa2Token1.getBalance(
@@ -666,8 +638,6 @@ describe("DexCore (divest liquidity)", async () => {
     const prevAliceTok1Balance: BigNumber = await fa2Token1.getBalance(
       liquidityReceiver
     );
-    const prevAliceTezBalance: BigNumber =
-      tezStore.storage.users[liquidityReceiver].tez_bal;
     const shares: BigNumber = new BigNumber(100);
     const divestedTokens: TokensPerShare = DexCore.getTokensPerShare(
       shares,
@@ -686,9 +656,6 @@ describe("DexCore (divest liquidity)", async () => {
     await fa2Token1.updateStorage({
       account_info: [dexCore.contract.address, liquidityReceiver],
     });
-    await tezStore.updateStorage({
-      users: [liquidityReceiver],
-    });
 
     const currDexCoreTok1Balance: BigNumber = await fa2Token1.getBalance(
       dexCore.contract.address
@@ -696,17 +663,12 @@ describe("DexCore (divest liquidity)", async () => {
     const currAliceTok1Balance: BigNumber = await fa2Token1.getBalance(
       liquidityReceiver
     );
-    const currAliceTezBalance: BigNumber =
-      tezStore.storage.users[liquidityReceiver].tez_bal;
 
     expect(currDexCoreTok1Balance).to.be.bignumber.equal(
       prevDexCoreTok1Balance.minus(divestParams.min_token_a_out)
     );
     expect(currAliceTok1Balance).to.be.bignumber.equal(
       prevAliceTok1Balance.plus(divestParams.min_token_a_out)
-    );
-    expect(currAliceTezBalance).to.be.bignumber.equal(
-      prevAliceTezBalance.minus(divestParams.min_token_b_out)
     );
   });
 

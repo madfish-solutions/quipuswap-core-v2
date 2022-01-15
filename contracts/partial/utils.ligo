@@ -5,6 +5,8 @@ module Constants is {
 
   const precision : nat = 1_000_000_000_000_000_000n; (* 10 ^ 18 *)
 
+  const fee_precision : nat = 100n;
+
   const default_token_metadata : map(string, bytes) = map [
     "name" -> 0x517569707573776170204c5020546f6b656e;
     "symbol" -> 0x515054;
@@ -22,7 +24,6 @@ module Constants is {
 
   const default_user : user_t = record [
     candidate = (None : option(key_hash));
-    tez_bal   = 0n;
     votes     = 0n;
   ];
 

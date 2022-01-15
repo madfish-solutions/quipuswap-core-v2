@@ -158,7 +158,14 @@ function transfer(
   var s                 : storage_t)
                         : return_t is
   block {
-    var result : return_t := ((nil : list(operation)), s);
+    s.entered := check_reentrancy(s.entered);
+
+    var result : return_t := (
+      list [
+        get_close_op(Unit);
+      ],
+      s
+    );
 
     case action of
     | Transfer(params) -> {

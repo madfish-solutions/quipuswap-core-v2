@@ -17,11 +17,10 @@ type storage_t          is [@layout:comb] record [
   voting_period_ends      : nat;
 ]
 
-type invest_tez_t       is address
+type invest_tez_t       is unit
 
 type divest_tez_t       is [@layout:comb] record [
   receiver                : contract(unit);
-  user                    : address;
   amt                     : nat;
 ]
 

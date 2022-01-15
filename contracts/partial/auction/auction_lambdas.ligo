@@ -15,7 +15,7 @@ function receive_fee(
 
         s.dev_fee_balances_f[params.token] := unwrap_or(s.dev_fee_balances_f[params.token], 0n) + dev_fee;
         s.public_fee_balances_f[params.token] := unwrap_or(s.public_fee_balances_f[params.token], 0n) +
-          get_nat_or_fail(params.fee * 100n * Constants.precision - dev_fee);
+          get_nat_or_fail(params.fee * Constants.fee_precision * Constants.precision - dev_fee);
       }
     | _ -> skip
     end
@@ -34,7 +34,10 @@ function launch_auction(
 
         const token_balance_f : nat = unwrap_or(s.public_fee_balances_f[params.token], 0n);
 
-        assert_with_error(params.amt <= token_balance_f / 100n / Constants.precision, Auction.err_insufficient_balance);
+        assert_with_error(
+          params.amt <= token_balance_f / Constants.fee_precision / Constants.precision,
+          Auction.err_insufficient_balance
+        );
         assert_with_error(params.bid >= s.min_bid, Auction.err_low_bid);
 
         s.auctions[s.auctions_count] := record[
@@ -47,7 +50,7 @@ function launch_auction(
         ];
         s.auctions_count := s.auctions_count + 1n;
         s.public_fee_balances_f[params.token] := get_nat_or_fail(
-          token_balance_f - (params.amt * 100n * Constants.precision)
+          token_balance_f - (params.amt * Constants.fee_precision * Constants.precision)
         );
 
         ops := transfer_fa2(Tezos.sender, Tezos.self_address, params.bid, s.quipu_token, s.quipu_token_id) # ops;
@@ -74,7 +77,7 @@ function place_bid(
 
         s.bid_fee_balance_f := s.bid_fee_balance_f + bid_fee_f;
 
-        const refund : nat = abs(auction.current_bid - (bid_fee_f / 100n / Constants.precision));
+        const refund : nat = abs(auction.current_bid - (bid_fee_f / Constants.fee_precision / Constants.precision));
 
         ops := transfer_fa2(Tezos.sender, Tezos.self_address, params.bid, s.quipu_token, s.quipu_token_id) # ops;
         ops := transfer_fa2(Tezos.self_address, auction.current_bidder, refund, s.quipu_token, s.quipu_token_id) # ops;

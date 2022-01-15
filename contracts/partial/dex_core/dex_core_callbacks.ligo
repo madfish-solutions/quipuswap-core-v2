@@ -5,6 +5,8 @@ function fa12_balance_callback_1(
   block {
     case action of
     | Fa12_balance_callback_1(bal) -> {
+        only_entered(s.entered);
+
         const tokens : tokens_t = unwrap(s.tokens[s.tmp.pair_id], DexCore.err_pair_not_listed);
 
         if Tezos.sender = get_token_address_or_fail(tokens.token_a)
@@ -24,6 +26,8 @@ function fa2_balance_callback_1(
   block {
     case action of
     | Fa2_balance_callback_1(params) -> {
+        only_entered(s.entered);
+
         const tokens : tokens_t = unwrap(s.tokens[s.tmp.pair_id], DexCore.err_pair_not_listed);
         const owner : address = Tezos.self_address;
 
@@ -44,6 +48,8 @@ function fa12_balance_callback_2(
   block {
     case action of
     | Fa12_balance_callback_2(bal) -> {
+        only_entered(s.entered);
+
         const tokens : tokens_t = unwrap(s.tokens[s.tmp.pair_id], DexCore.err_pair_not_listed);
 
         if Tezos.sender = get_token_address_or_fail(tokens.token_a)
@@ -63,6 +69,8 @@ function fa2_balance_callback_2(
   block {
     case action of
     | Fa2_balance_callback_2(params) -> {
+        only_entered(s.entered);
+
         const tokens : tokens_t = unwrap(s.tokens[s.tmp.pair_id], DexCore.err_pair_not_listed);
         const owner : address = Tezos.self_address;
 
@@ -76,7 +84,7 @@ function fa2_balance_callback_2(
     end
   } with ((nil : list(operation)), s)
 
-function flash_swap_callback(
+function flash_swap_callback_1(
   const action          : action_t;
   var s                 : storage_t)
                         : return_t is
@@ -84,11 +92,14 @@ function flash_swap_callback(
     var ops : list(operation) := nil;
 
     case action of
-    | Flash_swap_callback(_) -> {
+    | Flash_swap_callback_1(_) -> {
         only_dex_core(Tezos.self_address);
+        only_entered(s.entered);
 
         const tokens : tokens_t = unwrap(s.tokens[s.tmp.pair_id], DexCore.err_pair_not_listed);
         const pair : pair_t = unwrap(s.pairs[s.tmp.pair_id], DexCore.err_pair_not_listed);
+
+        ops := call_flash_swap_callback_2(Unit) # ops;
 
         if tokens.token_b = Tez
         then {
@@ -118,6 +129,22 @@ function flash_swap_callback(
             get_fa2_balance_callback_2(Tezos.self_address)
           )
         ) # ops;
+      }
+    | _ -> skip
+    end
+  } with (ops, s)
+
+function flash_swap_callback_2(
+  const action          : action_t;
+  var s                 : storage_t)
+                        : return_t is
+  block {
+    case action of
+    | Flash_swap_callback_2(_) -> {
+        only_dex_core(Tezos.self_address);
+        only_entered(s.entered);
+
+        const pair : pair_t = unwrap(s.pairs[s.tmp.pair_id], DexCore.err_pair_not_listed);
 
         const tok_a_bal_delta : int = s.tmp.token_a_balance_2 - s.tmp.token_a_balance_1;
         const tok_b_bal_delta : int = s.tmp.token_b_balance_2 - s.tmp.token_b_balance_1;
@@ -134,11 +161,11 @@ function flash_swap_callback(
       }
     | _ -> skip
     end
-  } with (ops, s)
+  } with ((nil : list(operation)), s)
 
 function launch_callback(
   const action          : action_t;
-  var s                 : storage_t)
+  const s               : storage_t)
                         : return_t is
   block {
     var ops : list(operation) := nil;
@@ -146,8 +173,27 @@ function launch_callback(
     case action of
     | Launch_callback(params) -> {
         only_dex_core(Tezos.self_address);
+        only_entered(s.entered);
 
         ops := get_vote_op(params.vote_params, params.tez_store) # ops;
+      }
+    | _ -> skip
+    end
+  } with (ops, s)
+
+function close(
+  const action          : action_t;
+  var s                 : storage_t)
+                        : return_t is
+  block {
+    var ops : list(operation) := nil;
+
+    case action of
+    | Close(_) -> {
+        only_dex_core(Tezos.self_address);
+        only_entered(s.entered);
+
+        s.entered := False;
       }
     | _ -> skip
     end

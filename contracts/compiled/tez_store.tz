@@ -1,7 +1,6 @@
 { parameter
     (or (or (or (pair %ban_baker (key_hash %baker) (nat %ban_period)) (unit %default))
-            (or (pair %divest_tez (contract %receiver unit) (pair (address %user) (nat %amt)))
-                (address %invest_tez)))
+            (or (pair %divest_tez (contract %receiver unit) (nat %amt)) (unit %invest_tez)))
         (or (pair %vote
                (address %voter)
                (pair (key_hash %candidate)
@@ -11,9 +10,7 @@
                (contract %receiver unit)
                (pair (address %user) (pair (nat %current_balance) (nat %new_balance)))))) ;
   storage
-    (pair (big_map %users
-             address
-             (pair (option %candidate key_hash) (pair (nat %tez_bal) (nat %votes))))
+    (pair (big_map %users address (pair (option %candidate key_hash) (nat %votes)))
           (pair (big_map %bakers
                    key_hash
                    (pair (timestamp %ban_start_time) (pair (nat %ban_period) (nat %votes))))
@@ -44,10 +41,6 @@
          LAMBDA
            (pair (option (pair nat nat)) (pair nat nat))
            (pair nat nat)
-           { UNPAIR ; IF_NONE {} { SWAP ; DROP } } ;
-         LAMBDA
-           (pair (option (pair (option key_hash) (pair nat nat))) (pair (option key_hash) (pair nat nat)))
-           (pair (option key_hash) (pair nat nat))
            { UNPAIR ; IF_NONE {} { SWAP ; DROP } } ;
          LAMBDA
            (pair (option (pair timestamp (pair nat nat))) (pair timestamp (pair nat nat)))
@@ -87,14 +80,14 @@
              EXEC } ;
          SWAP ;
          APPLY ;
-         DUP 7 ;
+         DUP 6 ;
          DUP 4 ;
          DUP 3 ;
          PAIR 3 ;
          LAMBDA
            (pair (pair (lambda address nat) (pair (lambda (pair (option nat) string) nat) (lambda int nat)))
                  (pair nat
-                       (pair (big_map address (pair (option key_hash) (pair nat nat)))
+                       (pair (big_map address (pair (option key_hash) nat))
                              (pair (big_map key_hash (pair timestamp (pair nat nat)))
                                    (pair (big_map address (pair nat nat))
                                          (pair key_hash
@@ -102,7 +95,7 @@
                                                      (pair address
                                                            (pair address
                                                                  (pair nat (pair nat (pair nat (pair nat (pair nat (pair nat (pair nat (pair nat nat)))))))))))))))))
-           (pair (big_map address (pair (option key_hash) (pair nat nat)))
+           (pair (big_map address (pair (option key_hash) nat))
                  (pair (big_map key_hash (pair timestamp (pair nat nat)))
                        (pair (big_map address (pair nat nat))
                              (pair key_hash
@@ -273,14 +266,14 @@
                 { SWAP ; DIG 2 ; DIG 3 ; DIG 4 ; DROP 4 } } ;
          SWAP ;
          APPLY ;
-         DUP 8 ;
-         DUP 8 ;
+         DUP 7 ;
+         DUP 7 ;
          PAIR ;
          LAMBDA
            (pair (pair (lambda (pair (option (pair nat nat)) (pair nat nat)) (pair nat nat)) (lambda int nat))
                  (pair (pair address nat)
                        (pair nat
-                             (pair (big_map address (pair (option key_hash) (pair nat nat)))
+                             (pair (big_map address (pair (option key_hash) nat))
                                    (pair (big_map key_hash (pair timestamp (pair nat nat)))
                                          (pair (big_map address (pair nat nat))
                                                (pair key_hash
@@ -288,7 +281,7 @@
                                                            (pair address
                                                                  (pair address
                                                                        (pair nat (pair nat (pair nat (pair nat (pair nat (pair nat (pair nat (pair nat nat))))))))))))))))))
-           (pair (big_map address (pair (option key_hash) (pair nat nat)))
+           (pair (big_map address (pair (option key_hash) nat))
                  (pair (big_map key_hash (pair timestamp (pair nat nat)))
                        (pair (big_map address (pair nat nat))
                              (pair key_hash
@@ -349,20 +342,18 @@
              UPDATE 5 } ;
          SWAP ;
          APPLY ;
-         DIG 10 ;
+         DIG 9 ;
          UNPAIR ;
          IF_LEFT
            { DIG 2 ;
              DIG 4 ;
              DIG 5 ;
              DIG 6 ;
+             DIG 8 ;
              DIG 9 ;
-             DROP 5 ;
+             DROP 6 ;
              IF_LEFT
-               { DIG 4 ;
-                 DIG 5 ;
-                 DROP 2 ;
-                 IF_LEFT
+               { IF_LEFT
                    { DIG 2 ;
                      DROP ;
                      SWAP ;
@@ -426,66 +417,25 @@
                      DUP ;
                      DUG 2 ;
                      GET 13 ;
-                     DIG 5 ;
-                     SWAP ;
-                     EXEC ;
-                     DROP ;
-                     PUSH nat 0 ;
-                     PUSH nat 0 ;
-                     NONE key_hash ;
-                     PAIR 3 ;
-                     DUP 3 ;
-                     CAR ;
-                     DUP 3 ;
-                     GET 3 ;
-                     GET ;
-                     PAIR ;
                      DIG 3 ;
                      SWAP ;
                      EXEC ;
+                     DROP ;
                      PUSH string "200" ;
-                     SWAP ;
-                     DUP ;
-                     DUG 2 ;
-                     GET 3 ;
-                     DUP 4 ;
-                     GET 4 ;
-                     COMPARE ;
-                     LE ;
                      PUSH mutez 1 ;
                      BALANCE ;
                      EDIV ;
                      IF_NONE { PUSH string "DIV by 0" ; FAILWITH } {} ;
                      CAR ;
-                     DUP 5 ;
-                     GET 4 ;
+                     DUP 3 ;
+                     CDR ;
                      COMPARE ;
                      LE ;
-                     AND ;
                      IF { DROP } { FAILWITH } ;
-                     DIG 2 ;
-                     DUP ;
-                     CAR ;
-                     DUP 3 ;
-                     DUP 5 ;
-                     GET 4 ;
-                     DIG 4 ;
-                     GET 3 ;
-                     SUB ;
-                     DIG 5 ;
                      SWAP ;
-                     EXEC ;
-                     UPDATE 3 ;
-                     DUP 4 ;
-                     GET 3 ;
-                     SWAP ;
-                     SOME ;
-                     SWAP ;
-                     UPDATE ;
-                     UPDATE 1 ;
                      NIL operation ;
                      DUP 3 ;
-                     GET 4 ;
+                     CDR ;
                      DIG 3 ;
                      CAR ;
                      PUSH mutez 1 ;
@@ -495,53 +445,10 @@
                      TRANSFER_TOKENS ;
                      CONS ;
                      PAIR }
-                   { DIG 3 ;
-                     DROP ;
-                     SWAP ;
-                     DUP ;
-                     DUG 2 ;
-                     GET 13 ;
-                     DIG 4 ;
-                     SWAP ;
-                     EXEC ;
-                     DROP ;
-                     PUSH nat 0 ;
-                     PUSH nat 0 ;
-                     NONE key_hash ;
-                     PAIR 3 ;
-                     DUP 3 ;
-                     CAR ;
-                     DUP 3 ;
-                     GET ;
-                     PAIR ;
-                     DIG 3 ;
-                     SWAP ;
-                     EXEC ;
-                     DIG 2 ;
-                     DUP ;
-                     CAR ;
-                     DUP 3 ;
-                     PUSH mutez 1 ;
-                     AMOUNT ;
-                     EDIV ;
-                     IF_NONE { PUSH string "DIV by 0" ; FAILWITH } {} ;
-                     CAR ;
-                     DIG 4 ;
-                     GET 3 ;
-                     ADD ;
-                     UPDATE 3 ;
-                     DIG 3 ;
-                     SWAP ;
-                     SOME ;
-                     SWAP ;
-                     UPDATE ;
-                     UPDATE 1 ;
-                     NIL operation ;
-                     PAIR } } }
+                   { DROP ; DUP ; GET 13 ; DIG 2 ; SWAP ; EXEC ; DROP ; NIL operation ; PAIR } } }
            { IF_LEFT
-               { DIG 9 ;
-                 DIG 10 ;
-                 DROP 2 ;
+               { DIG 8 ;
+                 DROP ;
                  SWAP ;
                  DUP ;
                  DUG 2 ;
@@ -573,9 +480,8 @@
                  SWAP ;
                  EXEC ;
                  PUSH nat 0 ;
-                 PUSH nat 0 ;
                  NONE key_hash ;
-                 PAIR 3 ;
+                 PAIR ;
                  SWAP ;
                  DUP ;
                  DUG 2 ;
@@ -583,14 +489,11 @@
                  DUP 4 ;
                  CAR ;
                  GET ;
-                 PAIR ;
-                 DIG 7 ;
-                 SWAP ;
-                 EXEC ;
+                 IF_NONE {} { SWAP ; DROP } ;
                  DUP ;
                  CAR ;
                  IF_NONE
-                   { SWAP ; DUP ; DUG 2 }
+                   { DIG 7 ; DROP ; SWAP ; DUP ; DUG 2 }
                    { PUSH nat 0 ;
                      PUSH nat 0 ;
                      PUSH timestamp 0 ;
@@ -603,18 +506,24 @@
                      DUP 9 ;
                      SWAP ;
                      EXEC ;
-                     DIG 3 ;
+                     DUP 3 ;
+                     CDR ;
+                     SWAP ;
                      DUP ;
-                     DUP ;
-                     DUG 5 ;
-                     GET 3 ;
-                     DUP 5 ;
-                     GET 4 ;
-                     DUP 4 ;
+                     DUG 2 ;
                      GET 4 ;
                      SUB ;
-                     ISNAT ;
-                     IF_NONE { DIG 2 } { DIG 3 ; SWAP ; UPDATE 4 } ;
+                     DIG 10 ;
+                     SWAP ;
+                     EXEC ;
+                     DIG 4 ;
+                     DUP ;
+                     DUP ;
+                     DUG 6 ;
+                     GET 3 ;
+                     DIG 3 ;
+                     DIG 3 ;
+                     UPDATE 4 ;
                      DIG 3 ;
                      SWAP ;
                      SOME ;
@@ -660,13 +569,13 @@
                  DIG 3 ;
                  DUP 6 ;
                  GET 7 ;
-                 UPDATE 4 ;
+                 UPDATE 2 ;
                  SWAP ;
                  DUP ;
                  CAR ;
                  PUSH nat 0 ;
                  DUP 4 ;
-                 GET 4 ;
+                 CDR ;
                  COMPARE ;
                  NEQ ;
                  IF { DIG 2 ; DUP 7 ; GET 3 ; SOME ; UPDATE 1 }
@@ -832,8 +741,7 @@
                  DIG 5 ;
                  DIG 6 ;
                  DIG 7 ;
-                 DIG 8 ;
-                 DROP 5 ;
+                 DROP 4 ;
                  SWAP ;
                  DUP ;
                  DUG 2 ;
@@ -943,9 +851,8 @@
          DUG 2 ;
          GET 7 ;
          PUSH nat 0 ;
-         PUSH nat 0 ;
          NONE key_hash ;
-         PAIR 3 ;
+         PAIR ;
          DIG 3 ;
          CAR ;
          DIG 3 ;

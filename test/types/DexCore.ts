@@ -152,6 +152,7 @@ export type DexCoreStorage = {
     auction: string;
     permits_counter: BigNumber;
     default_expiry: BigNumber;
+    entered: boolean;
     tokens_count: BigNumber;
     cycle_duration: BigNumber;
     collecting_period: BigNumber;

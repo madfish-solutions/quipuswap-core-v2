@@ -18,18 +18,15 @@
 1. `invest_tez`:
 
    - ✅ should fail if not dex core is trying to invest tez;
-   - ✅ should invest tez for alice;
-   - ✅ should invest tez for carol - 1;
-   - ✅ should invest tez for carol - 2.
+   - ✅ should invest tez - 1;
+   - ✅ should invest tez - 2.
 
 2. `divest_tez`:
 
    - ✅ should fail if not dex core is trying to divest tez;
    - ✅ should fail if tez store have not enough TEZ on contract's balance;
-   - ✅ should fail if user have not enough TEZ on his contract's balance;
-   - ✅ should divest tez for alice;
-   - ✅ should divest tez for carol - 1;
-   - ✅ should divest tez for carol - 2.
+   - ✅ should divest tez - 1;
+   - ✅ should divest tez - 2.
 
 3. `withdraw_rewards`:
 
@@ -103,6 +100,7 @@
    - ✅ should not calculate cumulative prices and should update last block timestamp in time of any exchange launch.
    - ✅ should deploy TEZ store contract with correct initial storage in time of exchange launch with TEZ token;
    - ✅ should vote on TEZ store contract in time of exchange launch with TEZ token;
+   - ❌ should vote on TEZ store contract if exchange already launched and have 0 liquidity.
 
 2. `invest_liquidity`:
 
@@ -124,7 +122,8 @@
    - ✅ should transfer FA1.2 tokens and FA2 tokens in time of FA1.2/FA2 liquidity investment;
    - ❌ should calculate cumulative prices and update last block timestamp;
    - ❌ should vote for the baker on TEZ store contract in time of FA1.2/TEZ liquidity investment;
-   - ❌ should vote for the baker on TEZ store contract in time of FA2/TEZ liquidity investment.
+   - ❌ should vote for the baker on TEZ store contract in time of FA2/TEZ liquidity investment;
+   - ❌ should return the TEZ change to the sender if too many TEZ was send.
 
 3. `divest_liquidity`:
 

@@ -18,7 +18,11 @@ function launch_exchange(
   var s                 : storage_t)
                         : return_t is
   block {
-    var ops : list(operation) := nil;
+    s.entered := check_reentrancy(s.entered);
+
+    var ops : list(operation) := list [
+      get_close_op(Unit);
+    ];
 
     case action of
     | Launch_exchange(params) -> {
@@ -35,7 +39,8 @@ function launch_exchange(
 
         assert_with_error(params.token_a_in > 0n, DexCore.err_zero_a_in);
         assert_with_error(
-          (params.pair.token_b = Tez and Tezos.amount > 0mutez) or params.token_b_in > 0n,
+          (params.pair.token_b = Tez and Tezos.amount =/= 0mutez and Tezos.amount / 1mutez = params.token_b_in)
+            or params.token_b_in > 0n,
           DexCore.err_zero_b_in
         );
         assert_with_error(pair.total_supply = 0n, DexCore.err_pair_listed);
@@ -68,7 +73,6 @@ function launch_exchange(
                 params.candidate,
                 params.shares_receiver,
                 s.baker_registry,
-                Tezos.amount / 1mutez,
                 token_id,
                 s.collecting_period
               )
@@ -93,7 +97,23 @@ function launch_exchange(
           }
           else skip;
         }
-        else skip;
+        else {
+          if params.pair.token_b = Tez
+          then {
+            ops := get_vote_op(
+              record [
+                voter           = params.shares_receiver;
+                candidate       = params.candidate;
+                execute_voting  = True;
+                votes           = init_shares;
+                current_balance = 0n;
+                new_balance     = init_shares;
+              ],
+              unwrap(updated_pair.tez_store, DexCore.err_tez_store_404)
+            ) # ops;
+          }
+          else skip;
+        };
 
         s.ledger[(params.shares_receiver, token_id)] := init_shares;
         s.tokens[token_id] := params.pair;
@@ -114,7 +134,11 @@ function invest_liquidity(
   var s                 : storage_t)
                         : return_t is
   block {
-    var ops : list(operation) := nil;
+    s.entered := check_reentrancy(s.entered);
+
+    var ops : list(operation) := list [
+      get_close_op(Unit);
+    ];
 
     case action of
     | Invest_liquidity(params) -> {
@@ -165,7 +189,16 @@ function invest_liquidity(
         else skip;
 
         ops := transfer_token(Tezos.sender, Tezos.self_address, tokens_a_required, tokens.token_a) # ops;
-        ops := invest_tez_or_transfer_tokens(params, tokens_b_required, tokens.token_b, updated_pair.tez_store) # ops;
+        ops := invest_tez_or_transfer_tokens(tokens_b_required, tokens.token_b, updated_pair.tez_store) # ops;
+
+        if Tezos.amount / 1mutez > tokens_b_required
+        then {
+          ops := transfer_tez(
+            (get_contract(Tezos.sender) : contract(unit)),
+            get_nat_or_fail(Tezos.amount / 1mutez - tokens_b_required)
+          ) # ops;
+        }
+        else skip;
       }
     | _ -> skip
     end;
@@ -176,7 +209,11 @@ function divest_liquidity(
   var s                 : storage_t)
                         : return_t is
   block {
-    var ops : list(operation) := nil;
+    s.entered := check_reentrancy(s.entered);
+
+    var ops : list(operation) := list [
+      get_close_op(Unit);
+    ];
 
     case action of
     | Divest_liquidity(params) -> {
@@ -259,7 +296,11 @@ function flash_swap(
   var s                 : storage_t)
                         : return_t is
   block {
-    var ops : list(operation) := nil;
+    s.entered := check_reentrancy(s.entered);
+
+    var ops : list(operation) := list [
+      get_close_op(Unit);
+    ];
 
     case action of
     | Flash_swap(params) -> {
@@ -283,7 +324,7 @@ function flash_swap(
           token_b_balance_2 = 0n;
         ];
 
-        ops := call_flash_swap_callback(Unit) # ops;
+        ops := call_flash_swap_callback_1(Unit) # ops;
         ops := call_flash_swaps_proxy(params.lambda, s.flash_swaps_proxy) # ops;
 
         if params.amount_b_out > 0n
@@ -339,7 +380,11 @@ function swap(
   var s                 : storage_t)
                         : return_t is
   block {
-    var ops : list(operation) := nil;
+    s.entered := check_reentrancy(s.entered);
+
+    var ops : list(operation) := list [
+      get_close_op(Unit);
+    ];
 
     case action of
     | Swap(params) -> {
@@ -381,10 +426,14 @@ function swap(
 
 function withdraw_profit(
   const action          : action_t;
-  const s               : storage_t)
+  var s                 : storage_t)
                         : return_t is
   block {
-    var ops : list(operation) := nil;
+    s.entered := check_reentrancy(s.entered);
+
+    var ops : list(operation) := list [
+      get_close_op(Unit);
+    ];
 
     case action of
     | Withdraw_profit(params) -> {
@@ -408,7 +457,11 @@ function claim_tok_interface_fee(
   var s                 : storage_t)
                         : return_t is
   block {
-    var ops : list(operation) := nil;
+    s.entered := check_reentrancy(s.entered);
+
+    var ops : list(operation) := list [
+      get_close_op(Unit);
+    ];
 
     case action of
     | Claim_tok_interface_fee(params) -> {
@@ -438,7 +491,11 @@ function claim_tez_interface_fee(
   var s                 : storage_t)
                         : return_t is
   block {
-    var ops : list(operation) := nil;
+    s.entered := check_reentrancy(s.entered);
+
+    var ops : list(operation) := list [
+      get_close_op(Unit);
+    ];
 
     case action of
     | Claim_tez_interface_fee(params) -> {
@@ -454,7 +511,6 @@ function claim_tez_interface_fee(
           const pair : pair_t = unwrap(s.pairs[params.pair_id], DexCore.err_pair_not_listed);
           const divest_params : divest_tez_t = record [
             receiver     = (get_contract(params.receiver) : contract(unit));
-            user         = Tezos.sender;
             amt          = params.amount;
           ];
 
@@ -471,7 +527,11 @@ function withdraw_auction_fee(
   var s                 : storage_t)
                         : return_t is
   block {
-    var ops : list(operation) := nil;
+    s.entered := check_reentrancy(s.entered);
+
+    var ops : list(operation) := list [
+      get_close_op(Unit);
+    ];
 
     case action of
     | Withdraw_auction_fee(token) -> {

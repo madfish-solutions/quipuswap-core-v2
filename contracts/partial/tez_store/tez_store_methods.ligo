@@ -1,30 +1,19 @@
 function invest_tez(
-  const user_address    : invest_tez_t;
-  var s                 : storage_t)
+  const _               : invest_tez_t;
+  const s               : storage_t)
                         : return_t is
   block {
     only_dex_core(s.dex_core);
-
-    const user : user_t = unwrap_or(s.users[user_address], Constants.default_user);
-
-    s.users[user_address] := user with record [ tez_bal = user.tez_bal + Tezos.amount / 1mutez ];
   } with ((nil : list(operation)), s)
 
 function divest_tez(
   const params          : divest_tez_t;
-  var s                 : storage_t)
+  const s               : storage_t)
                         : return_t is
   block {
     only_dex_core(s.dex_core);
 
-    const user : user_t = unwrap_or(s.users[params.user], Constants.default_user);
-
-    assert_with_error(
-      params.amt <= Tezos.balance / 1mutez and params.amt <= user.tez_bal,
-      TezStore.err_insufficient_tez_balance
-    );
-
-    s.users[params.user] := user with record [ tez_bal = get_nat_or_fail(user.tez_bal - params.amt)];
+    assert_with_error(params.amt <= Tezos.balance / 1mutez, TezStore.err_insufficient_tez_balance);
   } with (list [transfer_tez(params.receiver, params.amt)], s)
 
 function withdraw_rewards(
@@ -93,11 +82,9 @@ function vote(
       None                 -> skip
     | Some(user_candidate) -> {
       var candidate : baker_t := unwrap_or(s.bakers[user_candidate], Constants.default_baker);
+      const candidate_new_votes : nat = get_nat_or_fail(candidate.votes - user.votes);
 
-      s.bakers[user_candidate] := case is_nat(candidate.votes - user.votes) of
-      | None        -> candidate
-      | Some(value) -> candidate with record [ votes = value ]
-      end;
+      s.bakers[user_candidate] := candidate with record [ votes = candidate_new_votes ];
     }
     end;
 

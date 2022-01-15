@@ -32,7 +32,6 @@ type baker_t            is [@layout:comb] record [
 
 type user_t             is [@layout:comb] record [
   candidate               : option(key_hash);
-  tez_bal                 : nat;
   votes                   : nat;
 ]
 

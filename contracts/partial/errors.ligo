@@ -27,19 +27,24 @@ module DexCore is {
   const err_tez_store_is_banned_baker_view_404        : string = "125";
   const err_flash_swaps_proxy_call_entrypoint_404     : string = "126";
   const err_tez_store_get_tez_balance_view_404        : string = "127";
-  const err_flash_swap_callback_404                   : string = "128";
-  const err_fa12_balance_callback_1_404               : string = "129";
-  const err_fa2_balance_callback_1_404                : string = "130";
-  const err_fa12_balance_callback_2_404               : string = "131";
-  const err_fa2_balance_callback_2_404                : string = "132";
-  const err_wrong_flash_swap_returns                  : string = "133";
-  const err_can_not_refer_yourself                    : string = "134";
-  const err_tez_store_withdraw_rewards_entrypoint_404 : string = "135";
-  const err_high_out                                  : string = "136";
-  const err_insufficient_interface_fee_balance        : string = "137";
-  const err_tez_store_get_user_candidate_view_404     : string = "138";
-  const err_launch_callback_404                       : string = "139";
-  const err_auction_receive_fee_entrypoint_404        : string = "140";
+  const err_flash_swap_callback_1_404                 : string = "128";
+  const err_flash_swap_callback_2_404                 : string = "129";
+  const err_fa12_balance_callback_1_404               : string = "130";
+  const err_fa2_balance_callback_1_404                : string = "131";
+  const err_fa12_balance_callback_2_404               : string = "132";
+  const err_fa2_balance_callback_2_404                : string = "133";
+  const err_wrong_flash_swap_returns                  : string = "134";
+  const err_can_not_refer_yourself                    : string = "135";
+  const err_tez_store_withdraw_rewards_entrypoint_404 : string = "136";
+  const err_high_out                                  : string = "137";
+  const err_insufficient_interface_fee_balance        : string = "138";
+  const err_tez_store_get_user_candidate_view_404     : string = "139";
+  const err_launch_callback_404                       : string = "140";
+  const err_auction_receive_fee_entrypoint_404        : string = "141";
+  const err_reentrancy                                : string = "142";
+  const err_close_entrypoint_404                      : string = "143";
+  const err_not_entered                               : string = "144";
+  const err_not_entered                               : string = "144";
 }
 
 module TezStore is {

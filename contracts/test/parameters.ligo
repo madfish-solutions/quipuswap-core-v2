@@ -1,1 +1,1 @@
-const agent : address = ("KT1J7Cw5sh9cw5DcvCZ2QW26C67bmsV4sFAT" : address);
+const agent : address = ("KT1AR6BijVhU8s7PAfJBd9fURMy9kkJHNMRg" : address);
