@@ -11,6 +11,12 @@ function get_baker_registry_validate_entrypoint(
     TezStore.err_baker_registry_validate_entrypoint_404
   )
 
+function get_baker_registry_validate_op(
+  const baker           : key_hash;
+  const baker_registry  : address)
+                        : operation is
+  Tezos.transaction(baker, 0mutez, get_baker_registry_validate_entrypoint(baker_registry))
+
 function get_pair_total_supply(
   const dex_core        : address;
   const pair_id         : token_id_t)

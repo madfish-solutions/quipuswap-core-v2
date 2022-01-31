@@ -126,11 +126,11 @@ function vote(
 
     if Tezos.level >= s.voting_period_ends and params.execute_voting
     then {
-      if check_is_banned_baker(next_candidate)
+      if check_is_banned_baker(unwrap_or(s.bakers[s.next_candidate], Constants.default_baker))
       then s.next_candidate := Constants.zero_key_hash
       else skip;
 
-      if check_is_banned_baker(current_delegated)
+      if check_is_banned_baker(unwrap_or(s.bakers[s.current_delegated], Constants.default_baker))
       then {
         ops := list [
           Tezos.set_delegate((None : option(key_hash)))
@@ -142,13 +142,10 @@ function vote(
         if s.current_delegated =/= prev_current_delegated
         then {
           ops := list [
-            Tezos.transaction(
-              s.current_delegated,
-              0mutez,
-              get_baker_registry_validate_entrypoint(s.baker_registry)
-            );
+            get_baker_registry_validate_op(s.current_delegated, s.baker_registry);
             Tezos.set_delegate(Some(s.current_delegated))
           ];
+          skip;
         }
         else skip;
       };

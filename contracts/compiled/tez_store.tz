@@ -612,7 +612,7 @@
                  GET 9 ;
                  GET ;
                  PAIR ;
-                 DIG 10 ;
+                 DUP 11 ;
                  SWAP ;
                  EXEC ;
                  SWAP ;
@@ -622,7 +622,15 @@
                  DIG 5 ;
                  COMPARE ;
                  GT ;
-                 IF { DIG 3 ; DROP ; DIG 2 ; DUP ; GET 7 ; UPDATE 9 ; DUP 5 ; GET 3 ; UPDATE 7 }
+                 IF { SWAP ;
+                      DIG 3 ;
+                      DROP 3 ;
+                      DUP ;
+                      GET 7 ;
+                      UPDATE 9 ;
+                      DUP 3 ;
+                      GET 3 ;
+                      UPDATE 7 }
                     { DUP 3 ;
                       GET 7 ;
                       DUP 7 ;
@@ -638,21 +646,16 @@
                       COMPARE ;
                       GT ;
                       AND ;
-                      IF { DIG 2 ; DUP 5 ; GET 3 ; UPDATE 9 }
+                      IF { DROP 2 ; DUP 3 ; GET 3 ; UPDATE 9 }
                          { SWAP ;
-                           DUP ;
-                           DUG 2 ;
                            GET 4 ;
                            SWAP ;
-                           DUP ;
-                           DUG 2 ;
                            GET 4 ;
                            COMPARE ;
                            GT ;
-                           IF { DIG 2 ; DUP ; DUP ; DUG 4 ; GET 9 ; UPDATE 7 ; DIG 3 ; GET 7 ; UPDATE 9 }
-                              { DIG 2 } } } ;
+                           IF { DUP ; DUP ; DUG 2 ; GET 9 ; UPDATE 7 ; SWAP ; GET 7 ; UPDATE 9 } {} } } ;
                  NIL operation ;
-                 DIG 5 ;
+                 DIG 3 ;
                  GET 5 ;
                  DUP 3 ;
                  GET 30 ;
@@ -660,13 +663,39 @@
                  COMPARE ;
                  GE ;
                  AND ;
-                 IF { DIG 2 ;
-                      DUP 7 ;
+                 IF { PUSH nat 0 ;
+                      PUSH nat 0 ;
+                      PUSH timestamp 0 ;
+                      PAIR 3 ;
+                      DUP 3 ;
+                      GET 3 ;
+                      DUP 4 ;
+                      GET 9 ;
+                      GET ;
+                      PAIR ;
+                      DUP 8 ;
+                      SWAP ;
+                      EXEC ;
+                      DUP 6 ;
                       SWAP ;
                       EXEC ;
                       IF { SWAP ; PUSH key_hash "tz1ZZZZZZZZZZZZZZZZZZZZZZZZZZZZNkiRg" ; UPDATE 9 }
                          { SWAP } ;
-                      DIG 2 ;
+                      PUSH nat 0 ;
+                      PUSH nat 0 ;
+                      PUSH timestamp 0 ;
+                      PAIR 3 ;
+                      SWAP ;
+                      DUP ;
+                      DUG 2 ;
+                      GET 3 ;
+                      DUP 3 ;
+                      GET 7 ;
+                      GET ;
+                      PAIR ;
+                      DIG 7 ;
+                      SWAP ;
+                      EXEC ;
                       DIG 5 ;
                       SWAP ;
                       EXEC ;
@@ -699,16 +728,6 @@
                                 GET 7 ;
                                 SOME ;
                                 SET_DELEGATE ;
-                                CONS ;
-                                PUSH string "201" ;
-                                DUP 3 ;
-                                GET 11 ;
-                                CONTRACT %validate key_hash ;
-                                IF_NONE { FAILWITH } { SWAP ; DROP } ;
-                                PUSH mutez 0 ;
-                                DUP 4 ;
-                                GET 7 ;
-                                TRANSFER_TOKENS ;
                                 CONS }
                               { SWAP } ;
                            PAIR } ;
@@ -736,7 +755,7 @@
                       SWAP ;
                       CAR ;
                       PAIR }
-                    { DIG 2 ; DIG 3 ; DIG 4 ; DIG 5 ; DIG 6 ; DIG 7 ; DROP 6 ; PAIR } }
+                    { DIG 2 ; DIG 3 ; DIG 4 ; DIG 5 ; DIG 6 ; DROP 5 ; PAIR } }
                { DIG 4 ;
                  DIG 5 ;
                  DIG 6 ;

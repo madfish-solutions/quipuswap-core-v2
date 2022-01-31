@@ -90,22 +90,17 @@ function divest_tez_or_transfer_tokens(
   else transfer_token(Tezos.self_address, receiver, tokens_divested, token_type)
 
 function get_tez_store_initial_storage(
-  const candidate       : key_hash;
-  const share_receiver  : address;
   const baker_registry  : address;
   const pair_id         : nat;
-  const collect_period  : nat)
+  const collect_period  : nat;
+  const cycle_duration  : nat;
+  const voting_period   : nat)
                         : tez_store_t is
   record [
-    users                  = big_map [
-      share_receiver -> record [
-        candidate = (None : option(key_hash));
-        votes     = 0n;
-      ]
-    ];
+    users                  = (Big_map.empty : big_map(address, user_t));
     bakers                 = (Big_map.empty : big_map(key_hash, baker_t));
     users_rewards          = (Big_map.empty : big_map(address, user_reward_info_t));
-    current_delegated      = candidate;
+    current_delegated      = Constants.zero_key_hash;
     next_candidate         = Constants.zero_key_hash;
     baker_registry         = baker_registry;
     dex_core               = Tezos.self_address;
@@ -117,7 +112,7 @@ function get_tez_store_initial_storage(
     reward_per_block       = 0n;
     last_update_level      = Tezos.level;
     collecting_period_ends = Tezos.level + collect_period;
-    voting_period_ends     = Tezos.level;
+    voting_period_ends     = Tezos.level + (cycle_duration * voting_period);
   ]
 
 function calc_cumulative_prices(

@@ -2,6 +2,17 @@ import { MichelsonMap, MichelsonMapKey } from "@taquito/michelson-encoder";
 
 import { BigNumber } from "bignumber.js";
 
+export type User = {
+  candidate: string | null | undefined;
+  votes: BigNumber;
+};
+
+export type Baker = {
+  ban_start_time: string;
+  ban_period: BigNumber;
+  votes: BigNumber;
+};
+
 export type DivestTez = {
   receiver: string;
   amt: BigNumber;

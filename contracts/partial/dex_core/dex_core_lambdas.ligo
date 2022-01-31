@@ -70,11 +70,11 @@ function launch_exchange(
               (None : option(key_hash)),
               Tezos.amount,
               get_tez_store_initial_storage(
-                params.candidate,
-                params.shares_receiver,
                 s.baker_registry,
                 token_id,
-                s.collecting_period
+                s.collecting_period,
+                s.cycle_duration,
+                s.voting_period
               )
             );
 

@@ -40,8 +40,26 @@
 
 5. `vote`:
 
+   - ✅ should vote for bob, bob must become first current delegated;
    - ✅ should fail if not dex core is trying to vote;
-   - ❌
+   - ✅ should vote for alice, alice must become next candidate;
+   - ✅ should vote for alice, alice must not become current delegated;
+   - ✅ should vote for alice, alice must become current delegated;
+   - ✅ should vote for bob, bob must become current delegated after alice;
+   - ✅ should vote for bob, alice must become current delegated;
+   - ✅ should vote for alice, bob must become current delegated;
+   - ✅ should vote for bob, bob must remain current delegated;
+   - ✅ should transfer tokens from alice to bob, vote, alice must become current delegated;
+   - ✅ should transfer tokens from alice to bob, vote, alice must remain current delegated;
+   - ✅ should transfer tokens from bob to alice, vote, bob must become current delegated;
+   - ✅ should transfer tokens from bob to carol, vote, bob must remain current delegated;
+   - ❌ should validate and set a new delegate if voting can be done and current delegated was changed - 1;
+   - ❌ should validate and set a new delegate if voting can be done and current delegated was changed - 2;
+   - ❌ should change next candidate to the `zero_address` if voting can be done and next candidate is banned;
+   - ❌ should remove delegate and set current delegated to the `zero_address` if voting can be done and current delegated is banned;
+   - ❌ should update end of voting period if voting can be done;
+   - ❌ should update global rewards;
+   - ❌ should update user rewards.
 
 6. `default`:
 
@@ -364,6 +382,7 @@
     - ❌ should launch exchange, invest liquidity, swap, divest all liquidity and call launch exchange one more time successfully;
     - ❌ should not deploy a new TEZ store in time of a second launch of an TOK/TEZ exchange;
     - ❌ should launch exchange, swap and invest in correct proportion;
+    - ❌ should divest all liquidity, invest one more time and vote;
     - ❌
 
 ## Auction
