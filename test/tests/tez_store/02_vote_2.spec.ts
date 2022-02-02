@@ -14,6 +14,7 @@ import { bakerRegistryStorage } from "../../../storage/BakerRegistry";
 import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa2Storage } from "../../../storage/test/FA2";
 
+import { Baker, User } from "test/types/TezStore";
 import { SBAccount } from "test/types/Common";
 import {
   InvestLiquidity,
@@ -24,7 +25,7 @@ import {
 
 chai.use(require("chai-bignumber")(BigNumber));
 
-xdescribe("TezStore (vote - 2)", async () => {
+describe("TezStore (vote - 2)", async () => {
   var utils: Utils;
   var bakerRegistry: BakerRegistry;
   var tezStore: TezStore;
@@ -106,14 +107,11 @@ xdescribe("TezStore (vote - 2)", async () => {
       candidate: bob.pkh,
     };
 
-    console.log(1);
-
+    await utils.bakeBlocks(1);
     await dexCore.investLiquidity(
       investParams,
       requiredTokens.tokens_b_required.toNumber()
     );
-
-    console.log(2);
 
     tezStore = await TezStore.init(
       dexCore.storage.storage.pairs[pairId.toFixed()].tez_store,
@@ -134,14 +132,251 @@ xdescribe("TezStore (vote - 2)", async () => {
     expect(
       tezStore.storage.bakers[launchParams.candidate].votes
     ).to.be.bignumber.equal(new BigNumber(100));
+    expect(tezStore.storage.previous_delegated).to.be.equal(
+      launchParams.candidate
+    );
     expect(tezStore.storage.current_delegated).to.be.equal(
       launchParams.candidate
     );
     expect(tezStore.storage.next_candidate).to.be.equal(zeroAddress);
-    console.log(tezStore.storage.voting_period_ends.toFixed());
-    console.log((await utils.tezos.rpc.getBlock()).header.level);
     expect(
       await utils.tezos.rpc.getDelegate(tezStore.contract.address)
     ).to.equal(launchParams.candidate);
+  });
+
+  it("should validate and set a new delegate if voting can be done and current delegated was changed - 2", async () => {
+    const sharesReceiver: string = bob.pkh;
+    const prevPair: Pair = dexCore.storage.storage.pairs[pairId.toFixed()];
+    const shares: BigNumber = new BigNumber(200);
+    const requiredTokens: RequiredTokens = DexCore.getRequiredTokens(
+      shares,
+      prevPair
+    );
+    const investParams: InvestLiquidity = {
+      pair_id: pairId,
+      token_a_in: requiredTokens.tokens_a_required,
+      token_b_in: requiredTokens.tokens_b_required,
+      shares: shares,
+      shares_receiver: sharesReceiver,
+      candidate: alice.pkh,
+    };
+
+    await utils.setProvider(bob.sk);
+    await fa2Token1.updateOperators([
+      {
+        add_operator: {
+          owner: bob.pkh,
+          operator: dexCore.contract.address,
+          token_id: new BigNumber(0),
+        },
+      },
+    ]);
+    await dexCore.investLiquidity(
+      investParams,
+      requiredTokens.tokens_b_required.toNumber()
+    );
+    await tezStore.updateStorage({
+      users: [sharesReceiver],
+      bakers: [investParams.candidate],
+    });
+
+    expect(tezStore.storage.users[sharesReceiver].candidate).to.be.equal(
+      investParams.candidate
+    );
+    expect(tezStore.storage.users[sharesReceiver].votes).to.be.bignumber.equal(
+      shares
+    );
+    expect(
+      tezStore.storage.bakers[investParams.candidate].votes
+    ).to.be.bignumber.equal(shares);
+    expect(tezStore.storage.previous_delegated).to.be.equal(
+      investParams.candidate
+    );
+    expect(tezStore.storage.current_delegated).to.be.equal(
+      investParams.candidate
+    );
+    expect(tezStore.storage.next_candidate).to.be.equal(bob.pkh);
+    expect(
+      await utils.tezos.rpc.getDelegate(tezStore.contract.address)
+    ).to.equal(investParams.candidate);
+  });
+
+  it("should change next candidate to the `zero_address` if voting can be done and next candidate is banned", async () => {
+    await utils.setProvider(alice.sk);
+    await dexCore.ban({
+      pair_id: pairId,
+      ban_params: { baker: bob.pkh, ban_period: new BigNumber(10) },
+    });
+
+    const sharesReceiver: string = bob.pkh;
+    const prevPair: Pair = dexCore.storage.storage.pairs[pairId.toFixed()];
+    const shares: BigNumber = new BigNumber(10);
+    const requiredTokens: RequiredTokens = DexCore.getRequiredTokens(
+      shares,
+      prevPair
+    );
+    const investParams: InvestLiquidity = {
+      pair_id: pairId,
+      token_a_in: requiredTokens.tokens_a_required,
+      token_b_in: requiredTokens.tokens_b_required,
+      shares: shares,
+      shares_receiver: sharesReceiver,
+      candidate: alice.pkh,
+    };
+
+    await tezStore.updateStorage({
+      users: [sharesReceiver],
+      bakers: [investParams.candidate],
+    });
+
+    const initialVoterBobInfo: User = tezStore.storage.users[bob.pkh];
+    const initialBakerAliceInfo: Baker = tezStore.storage.bakers[alice.pkh];
+
+    await utils.setProvider(bob.sk);
+    await dexCore.investLiquidity(
+      investParams,
+      requiredTokens.tokens_b_required.toNumber()
+    );
+    await tezStore.updateStorage({
+      users: [sharesReceiver],
+      bakers: [investParams.candidate],
+    });
+
+    expect(tezStore.storage.users[sharesReceiver].candidate).to.be.equal(
+      investParams.candidate
+    );
+    expect(tezStore.storage.users[sharesReceiver].votes).to.be.bignumber.equal(
+      initialVoterBobInfo.votes.plus(shares)
+    );
+    expect(
+      tezStore.storage.bakers[investParams.candidate].votes
+    ).to.be.bignumber.equal(initialBakerAliceInfo.votes.plus(shares));
+    expect(tezStore.storage.previous_delegated).to.be.equal(
+      investParams.candidate
+    );
+    expect(tezStore.storage.current_delegated).to.be.equal(
+      investParams.candidate
+    );
+    expect(tezStore.storage.next_candidate).to.be.equal(zeroAddress);
+    expect(
+      await utils.tezos.rpc.getDelegate(tezStore.contract.address)
+    ).to.equal(investParams.candidate);
+  });
+
+  it("should update end of voting period if voting can be done", async () => {
+    const sharesReceiver: string = bob.pkh;
+    const prevPair: Pair = dexCore.storage.storage.pairs[pairId.toFixed()];
+    const shares: BigNumber = new BigNumber(10);
+    const requiredTokens: RequiredTokens = DexCore.getRequiredTokens(
+      shares,
+      prevPair
+    );
+    const investParams: InvestLiquidity = {
+      pair_id: pairId,
+      token_a_in: requiredTokens.tokens_a_required,
+      token_b_in: requiredTokens.tokens_b_required,
+      shares: shares,
+      shares_receiver: sharesReceiver,
+      candidate: alice.pkh,
+    };
+
+    await tezStore.updateStorage({
+      users: [sharesReceiver],
+      bakers: [investParams.candidate],
+    });
+
+    const initialVoterBobInfo: User = tezStore.storage.users[bob.pkh];
+    const initialBakerAliceInfo: Baker = tezStore.storage.bakers[alice.pkh];
+
+    await dexCore.investLiquidity(
+      investParams,
+      requiredTokens.tokens_b_required.toNumber()
+    );
+    await tezStore.updateStorage({
+      users: [sharesReceiver],
+      bakers: [investParams.candidate],
+    });
+
+    expect(tezStore.storage.users[sharesReceiver].candidate).to.be.equal(
+      investParams.candidate
+    );
+    expect(tezStore.storage.users[sharesReceiver].votes).to.be.bignumber.equal(
+      initialVoterBobInfo.votes.plus(shares)
+    );
+    expect(
+      tezStore.storage.bakers[investParams.candidate].votes
+    ).to.be.bignumber.equal(initialBakerAliceInfo.votes.plus(shares));
+    expect(tezStore.storage.previous_delegated).to.be.equal(
+      investParams.candidate
+    );
+    expect(tezStore.storage.current_delegated).to.be.equal(
+      investParams.candidate
+    );
+    expect(tezStore.storage.next_candidate).to.be.equal(zeroAddress);
+    expect(
+      await utils.tezos.rpc.getDelegate(tezStore.contract.address)
+    ).to.equal(investParams.candidate);
+    expect(tezStore.storage.voting_period_ends).to.be.bignumber.equal(
+      (await utils.tezos.rpc.getBlock()).header.level +
+        dexCoreStorage.storage.cycle_duration.toNumber() *
+          dexCoreStorage.storage.voting_period.toNumber()
+    );
+  });
+
+  it("should remove delegate and set current delegated to the `zero_address` if voting can be done and current delegated is banned", async () => {
+    await utils.setProvider(alice.sk);
+    await dexCore.ban({
+      pair_id: pairId,
+      ban_params: { baker: alice.pkh, ban_period: new BigNumber(10) },
+    });
+
+    const sharesReceiver: string = alice.pkh;
+    const prevPair: Pair = dexCore.storage.storage.pairs[pairId.toFixed()];
+    const shares: BigNumber = new BigNumber(10);
+    const requiredTokens: RequiredTokens = DexCore.getRequiredTokens(
+      shares,
+      prevPair
+    );
+    const investParams: InvestLiquidity = {
+      pair_id: pairId,
+      token_a_in: requiredTokens.tokens_a_required,
+      token_b_in: requiredTokens.tokens_b_required,
+      shares: shares,
+      shares_receiver: sharesReceiver,
+      candidate: bob.pkh,
+    };
+
+    await tezStore.updateStorage({
+      users: [sharesReceiver],
+      bakers: [investParams.candidate],
+    });
+
+    const initialVoterAliceInfo: User = tezStore.storage.users[alice.pkh];
+    const initialBakerBobInfo: Baker = tezStore.storage.bakers[bob.pkh];
+
+    await dexCore.investLiquidity(
+      investParams,
+      requiredTokens.tokens_b_required.toNumber()
+    );
+    await tezStore.updateStorage({
+      users: [sharesReceiver],
+      bakers: [investParams.candidate],
+    });
+
+    expect(tezStore.storage.users[sharesReceiver].candidate).to.be.equal(
+      investParams.candidate
+    );
+    expect(tezStore.storage.users[sharesReceiver].votes).to.be.bignumber.equal(
+      initialVoterAliceInfo.votes.plus(shares)
+    );
+    expect(
+      tezStore.storage.bakers[investParams.candidate].votes
+    ).to.be.bignumber.equal(initialBakerBobInfo.votes.plus(shares));
+    expect(tezStore.storage.previous_delegated).to.be.equal(zeroAddress);
+    expect(tezStore.storage.current_delegated).to.be.equal(zeroAddress);
+    expect(tezStore.storage.next_candidate).to.be.equal(zeroAddress);
+    expect(
+      await utils.tezos.rpc.getDelegate(tezStore.contract.address)
+    ).to.equal(null);
   });
 });

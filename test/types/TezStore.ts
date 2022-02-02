@@ -43,6 +43,7 @@ export type TezStoreStorage = {
   users: MichelsonMap<MichelsonMapKey, unknown>;
   bakers: MichelsonMap<MichelsonMapKey, unknown>;
   users_rewards: MichelsonMap<MichelsonMapKey, unknown>;
+  previous_delegated: string;
   current_delegated: string;
   next_candidate: string;
   baker_registry: string;

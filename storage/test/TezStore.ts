@@ -10,6 +10,7 @@ export const tezStoreStorage: TezStoreStorage = {
   users: MichelsonMap.fromLiteral({}),
   bakers: MichelsonMap.fromLiteral({}),
   users_rewards: MichelsonMap.fromLiteral({}),
+  previous_delegated: zeroAddress,
   current_delegated: zeroAddress,
   next_candidate: zeroAddress,
   baker_registry: zeroAddress,

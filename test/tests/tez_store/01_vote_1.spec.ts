@@ -121,6 +121,7 @@ describe("TezStore (vote - 1)", async () => {
     ).to.be.bignumber.equal(
       BigNumber.min(launchParams.token_a_in, launchParams.token_b_in)
     );
+    expect(tezStore.storage.previous_delegated).to.be.equal(zeroAddress);
     expect(tezStore.storage.current_delegated).to.be.equal(
       launchParams.candidate
     );
@@ -192,6 +193,7 @@ describe("TezStore (vote - 1)", async () => {
     expect(
       tezStore.storage.bakers[investParams.candidate].votes
     ).to.be.bignumber.equal(shares);
+    expect(tezStore.storage.previous_delegated).to.be.equal(zeroAddress);
     expect(tezStore.storage.current_delegated).to.be.equal(bob.pkh);
     expect(tezStore.storage.next_candidate).to.be.equal(investParams.candidate);
     expect(
@@ -243,6 +245,7 @@ describe("TezStore (vote - 1)", async () => {
     expect(
       tezStore.storage.bakers[investParams.candidate].votes
     ).to.be.bignumber.equal(initialBakerInfo.votes.plus(shares));
+    expect(tezStore.storage.previous_delegated).to.be.equal(zeroAddress);
     expect(tezStore.storage.current_delegated).to.be.equal(bob.pkh);
     expect(tezStore.storage.next_candidate).to.be.equal(investParams.candidate);
     expect(
@@ -294,6 +297,7 @@ describe("TezStore (vote - 1)", async () => {
     expect(
       tezStore.storage.bakers[investParams.candidate].votes
     ).to.be.bignumber.equal(initialBakerInfo.votes.plus(shares));
+    expect(tezStore.storage.previous_delegated).to.be.equal(zeroAddress);
     expect(tezStore.storage.current_delegated).to.be.equal(
       investParams.candidate
     );
@@ -351,6 +355,7 @@ describe("TezStore (vote - 1)", async () => {
     expect(tezStore.storage.current_delegated).to.be.equal(
       investParams.candidate
     );
+    expect(tezStore.storage.previous_delegated).to.be.equal(zeroAddress);
     expect(tezStore.storage.next_candidate).to.be.equal(alice.pkh);
     expect(
       await utils.tezos.rpc.getDelegate(tezStore.contract.address)
@@ -397,6 +402,7 @@ describe("TezStore (vote - 1)", async () => {
     expect(
       tezStore.storage.bakers[divestParams.candidate].votes
     ).to.be.bignumber.equal(initialBakerInfo.votes.minus(shares));
+    expect(tezStore.storage.previous_delegated).to.be.equal(zeroAddress);
     expect(tezStore.storage.current_delegated).to.be.equal(alice.pkh);
     expect(tezStore.storage.next_candidate).to.be.equal(divestParams.candidate);
     expect(
@@ -445,6 +451,7 @@ describe("TezStore (vote - 1)", async () => {
     expect(
       tezStore.storage.bakers[divestParams.candidate].votes
     ).to.be.bignumber.equal(initialBakerInfo.votes.minus(shares));
+    expect(tezStore.storage.previous_delegated).to.be.equal(zeroAddress);
     expect(tezStore.storage.current_delegated).to.be.equal(bob.pkh);
     expect(tezStore.storage.next_candidate).to.be.equal(divestParams.candidate);
     expect(
@@ -493,6 +500,7 @@ describe("TezStore (vote - 1)", async () => {
     expect(
       tezStore.storage.bakers[divestParams.candidate].votes
     ).to.be.bignumber.equal(initialBakerInfo.votes.minus(shares));
+    expect(tezStore.storage.previous_delegated).to.be.equal(zeroAddress);
     expect(tezStore.storage.current_delegated).to.be.equal(
       divestParams.candidate
     );
@@ -546,6 +554,7 @@ describe("TezStore (vote - 1)", async () => {
     expect(tezStore.storage.bakers[bob.pkh].votes).to.be.bignumber.equal(
       initialBakerBobInfo.votes.minus(transferParams[0].txs[0].amount)
     );
+    expect(tezStore.storage.previous_delegated).to.be.equal(zeroAddress);
     expect(tezStore.storage.current_delegated).to.be.equal(alice.pkh);
     expect(tezStore.storage.next_candidate).to.be.equal(bob.pkh);
     expect(
@@ -597,6 +606,7 @@ describe("TezStore (vote - 1)", async () => {
     expect(tezStore.storage.bakers[bob.pkh].votes).to.be.bignumber.equal(
       initialBakerBobInfo.votes.minus(transferParams[0].txs[0].amount)
     );
+    expect(tezStore.storage.previous_delegated).to.be.equal(zeroAddress);
     expect(tezStore.storage.current_delegated).to.be.equal(alice.pkh);
     expect(tezStore.storage.next_candidate).to.be.equal(bob.pkh);
     expect(
@@ -649,6 +659,7 @@ describe("TezStore (vote - 1)", async () => {
     expect(tezStore.storage.bakers[bob.pkh].votes).to.be.bignumber.equal(
       initialBakerBobInfo.votes.plus(transferParams[0].txs[0].amount)
     );
+    expect(tezStore.storage.previous_delegated).to.be.equal(zeroAddress);
     expect(tezStore.storage.current_delegated).to.be.equal(bob.pkh);
     expect(tezStore.storage.next_candidate).to.be.equal(alice.pkh);
     expect(
@@ -704,6 +715,7 @@ describe("TezStore (vote - 1)", async () => {
     expect(tezStore.storage.bakers[bob.pkh].votes).to.be.bignumber.equal(
       initialBakerBobInfo.votes.plus(transferParams[0].txs[0].amount)
     );
+    expect(tezStore.storage.previous_delegated).to.be.equal(zeroAddress);
     expect(tezStore.storage.current_delegated).to.be.equal(bob.pkh);
     expect(tezStore.storage.next_candidate).to.be.equal(alice.pkh);
     expect(

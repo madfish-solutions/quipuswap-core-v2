@@ -1,17 +1,17 @@
 import { ViewSimulationError } from "@taquito/taquito";
 
-import {
-  defaultCollectingPeriod,
-  defaultCycleDuration,
-  defaultVotingPeriod,
-  Utils,
-} from "../../helpers/Utils";
 import { DexCore as DexCoreErrors } from "../../helpers/Errors";
 import { BakerRegistry } from "../../helpers/BakerRegistry";
 import { Auction } from "../../helpers/Auction";
 import { DexCore } from "../../helpers/DexCore";
 import { FA12 } from "../../helpers/FA12";
 import { FA2 } from "../../helpers/FA2";
+import {
+  defaultCollectingPeriod,
+  defaultCycleDuration,
+  defaultVotingPeriod,
+  Utils,
+} from "../../helpers/Utils";
 
 import chai, { expect } from "chai";
 
@@ -25,6 +25,7 @@ import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa12Storage } from "../../../storage/test/FA12";
 import { fa2Storage } from "../../../storage/test/FA2";
 
+import { SBAccount } from "test/types/Common";
 import {
   TokensPerShareRequest,
   CheckIsBannedBaker,
@@ -33,7 +34,6 @@ import {
   Pair,
   Ban,
 } from "test/types/DexCore";
-import { SBAccount } from "test/types/Common";
 
 chai.use(require("chai-bignumber")(BigNumber));
 

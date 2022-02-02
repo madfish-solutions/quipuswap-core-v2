@@ -1,10 +1,16 @@
-import { defaultCollectingPeriod, Utils } from "../../helpers/Utils";
 import { DexCore as DexCoreErrors } from "../../helpers/Errors";
 import { BakerRegistry } from "../../helpers/BakerRegistry";
 import { Auction } from "../../helpers/Auction";
 import { DexCore } from "../../helpers/DexCore";
 import { FA12 } from "../../helpers/FA12";
 import { FA2 } from "../../helpers/FA2";
+import {
+  defaultCollectingPeriod,
+  defaultCycleDuration,
+  defaultVotingPeriod,
+  zeroAddress,
+  Utils,
+} from "../../helpers/Utils";
 
 import { rejects } from "assert";
 
@@ -20,13 +26,15 @@ import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa12Storage } from "../../../storage/test/FA12";
 import { fa2Storage } from "../../../storage/test/FA2";
 
+import { TezStore } from "test/helpers/TezStore";
+import { SBAccount } from "test/types/Common";
+import { User } from "test/types/TezStore";
 import {
   DivestLiquidity,
   TokensPerShare,
   LaunchExchange,
   Pair,
 } from "test/types/DexCore";
-import { SBAccount } from "test/types/Common";
 
 chai.use(require("chai-bignumber")(BigNumber));
 
@@ -41,6 +49,7 @@ describe("DexCore (divest liquidity)", async () => {
   var fa2Token2: FA2;
 
   var alice: SBAccount = accounts.alice;
+  var bob: SBAccount = accounts.bob;
 
   before("setup", async () => {
     utils = new Utils();
@@ -53,6 +62,8 @@ describe("DexCore (divest liquidity)", async () => {
     );
 
     dexCoreStorage.storage.admin = alice.pkh;
+    dexCoreStorage.storage.cycle_duration = defaultCycleDuration;
+    dexCoreStorage.storage.voting_period = defaultVotingPeriod;
     dexCoreStorage.storage.collecting_period = defaultCollectingPeriod;
     dexCoreStorage.storage.baker_registry = bakerRegistry.contract.address;
 
@@ -923,5 +934,119 @@ describe("DexCore (divest liquidity)", async () => {
 
       return true;
     });
+  });
+
+  it("should vote for the baker on TEZ store contract in time of FA1.2/TEZ liquidity divestment", async () => {
+    const pairId: BigNumber = new BigNumber(0);
+    const liquidityReceiver: string = alice.pkh;
+
+    await dexCore.updateStorage({
+      pairs: [pairId.toFixed()],
+    });
+
+    const shares: BigNumber = new BigNumber(10);
+    const divestedTokens: TokensPerShare = DexCore.getTokensPerShare(
+      shares,
+      dexCore.storage.storage.pairs[pairId.toFixed()]
+    );
+    const divestParams: DivestLiquidity = {
+      pair_id: pairId,
+      min_token_a_out: divestedTokens.token_a_amt,
+      min_token_b_out: divestedTokens.token_b_amt,
+      shares: shares,
+      liquidity_receiver: liquidityReceiver,
+      candidate: bob.pkh,
+    };
+    const tezStore: TezStore = await TezStore.init(
+      dexCore.storage.storage.pairs[pairId.toFixed()].tez_store,
+      dexCore.tezos
+    );
+
+    await tezStore.updateStorage({
+      users: [liquidityReceiver],
+      bakers: [alice.pkh],
+    });
+
+    const initialVoterAliceInfo: User = tezStore.storage.users[alice.pkh];
+    const initialBakerAliceInfo: User = tezStore.storage.bakers[alice.pkh];
+
+    await dexCore.divestLiquidity(divestParams);
+    await tezStore.updateStorage({
+      users: [liquidityReceiver],
+      bakers: [divestParams.candidate],
+    });
+
+    expect(tezStore.storage.users[liquidityReceiver].candidate).to.be.equal(
+      divestParams.candidate
+    );
+    expect(
+      tezStore.storage.users[liquidityReceiver].votes
+    ).to.be.bignumber.equal(initialVoterAliceInfo.votes.minus(shares));
+    expect(
+      tezStore.storage.bakers[divestParams.candidate].votes
+    ).to.be.bignumber.equal(initialBakerAliceInfo.votes.minus(shares));
+    expect(tezStore.storage.previous_delegated).to.be.equal(zeroAddress);
+    expect(tezStore.storage.current_delegated).to.be.equal(bob.pkh);
+    expect(tezStore.storage.next_candidate).to.be.equal(alice.pkh);
+    expect(
+      await utils.tezos.rpc.getDelegate(tezStore.contract.address)
+    ).to.equal(null);
+  });
+
+  it("should vote for the baker on TEZ store contract in time of FA2/TEZ liquidity divestment", async () => {
+    const pairId: BigNumber = new BigNumber(1);
+    const liquidityReceiver: string = alice.pkh;
+
+    await dexCore.updateStorage({
+      pairs: [pairId.toFixed()],
+    });
+
+    const shares: BigNumber = new BigNumber(10);
+    const divestedTokens: TokensPerShare = DexCore.getTokensPerShare(
+      shares,
+      dexCore.storage.storage.pairs[pairId.toFixed()]
+    );
+    const divestParams: DivestLiquidity = {
+      pair_id: pairId,
+      min_token_a_out: divestedTokens.token_a_amt,
+      min_token_b_out: divestedTokens.token_b_amt,
+      shares: shares,
+      liquidity_receiver: liquidityReceiver,
+      candidate: bob.pkh,
+    };
+    const tezStore: TezStore = await TezStore.init(
+      dexCore.storage.storage.pairs[pairId.toFixed()].tez_store,
+      dexCore.tezos
+    );
+
+    await tezStore.updateStorage({
+      users: [liquidityReceiver],
+      bakers: [alice.pkh],
+    });
+
+    const initialVoterAliceInfo: User = tezStore.storage.users[alice.pkh];
+    const initialBakerAliceInfo: User = tezStore.storage.bakers[alice.pkh];
+
+    await dexCore.divestLiquidity(divestParams);
+    await tezStore.updateStorage({
+      users: [liquidityReceiver],
+      bakers: [divestParams.candidate],
+    });
+
+    expect(tezStore.storage.users[liquidityReceiver].candidate).to.be.equal(
+      divestParams.candidate
+    );
+    expect(
+      tezStore.storage.users[liquidityReceiver].votes
+    ).to.be.bignumber.equal(initialVoterAliceInfo.votes.minus(shares));
+    expect(
+      tezStore.storage.bakers[divestParams.candidate].votes
+    ).to.be.bignumber.equal(initialBakerAliceInfo.votes.minus(shares));
+    expect(tezStore.storage.previous_delegated).to.be.equal(zeroAddress);
+    expect(tezStore.storage.current_delegated).to.be.equal(bob.pkh);
+    expect(tezStore.storage.next_candidate).to.be.equal(alice.pkh);
+    expect(
+      await utils.tezos.rpc.getDelegate(tezStore.contract.address)
+    ).to.equal(null);
   });
 });

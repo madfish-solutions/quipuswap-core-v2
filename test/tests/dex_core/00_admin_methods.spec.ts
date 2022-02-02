@@ -23,6 +23,7 @@ import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa12Storage } from "../../../storage/test/FA12";
 import { fa2Storage } from "../../../storage/test/FA2";
 
+import { SBAccount } from "test/types/Common";
 import {
   UpdateTokenMetadata,
   LaunchExchange,
@@ -30,7 +31,6 @@ import {
   Fees,
   Ban,
 } from "../../types/DexCore";
-import { SBAccount } from "test/types/Common";
 
 chai.use(require("chai-bignumber")(BigNumber));
 

@@ -100,6 +100,7 @@ function get_tez_store_initial_storage(
     users                  = (Big_map.empty : big_map(address, user_t));
     bakers                 = (Big_map.empty : big_map(key_hash, baker_t));
     users_rewards          = (Big_map.empty : big_map(address, user_reward_info_t));
+    previous_delegated     = Constants.zero_key_hash;
     current_delegated      = Constants.zero_key_hash;
     next_candidate         = Constants.zero_key_hash;
     baker_registry         = baker_registry;

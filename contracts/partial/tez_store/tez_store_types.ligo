@@ -2,6 +2,7 @@ type storage_t          is [@layout:comb] record [
   users                   : big_map(address, user_t);
   bakers                  : big_map(key_hash, baker_t);
   users_rewards           : big_map(address, user_reward_info_t);
+  previous_delegated      : key_hash;
   current_delegated       : key_hash;
   next_candidate          : key_hash;
   baker_registry          : address;

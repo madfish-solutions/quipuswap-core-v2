@@ -129,6 +129,4 @@ export const defaultCycleDuration: BigNumber = new BigNumber(4096);
 export const defaultCollectingPeriod: BigNumber =
   defaultCycleDuration.multipliedBy(new BigNumber(12));
 
-export const defaultVotingPeriod: BigNumber = defaultCycleDuration.multipliedBy(
-  new BigNumber(2)
-);
+export const defaultVotingPeriod: BigNumber = new BigNumber(2);

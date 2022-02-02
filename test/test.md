@@ -53,11 +53,11 @@
    - ✅ should transfer tokens from alice to bob, vote, alice must remain current delegated;
    - ✅ should transfer tokens from bob to alice, vote, bob must become current delegated;
    - ✅ should transfer tokens from bob to carol, vote, bob must remain current delegated;
-   - ❌ should validate and set a new delegate if voting can be done and current delegated was changed - 1;
-   - ❌ should validate and set a new delegate if voting can be done and current delegated was changed - 2;
-   - ❌ should change next candidate to the `zero_address` if voting can be done and next candidate is banned;
-   - ❌ should remove delegate and set current delegated to the `zero_address` if voting can be done and current delegated is banned;
-   - ❌ should update end of voting period if voting can be done;
+   - ✅ should validate and set a new delegate if voting can be done and current delegated was changed - 1;
+   - ✅ should validate and set a new delegate if voting can be done and current delegated was changed - 2;
+   - ✅ should change next candidate to the `zero_address` if voting can be done and next candidate is banned;
+   - ✅ should update end of voting period if voting can be done;
+   - ✅ should remove delegate and set current delegated to the `zero_address` if voting can be done and current delegated is banned;
    - ❌ should update global rewards;
    - ❌ should update user rewards.
 
@@ -138,10 +138,10 @@
    - ✅ should transfer FA1.2 tokens in time of FA1.2/FA1.2 liquidity investment;
    - ✅ should transfer FA2 tokens in time of FA2/FA2 liquidity investment;
    - ✅ should transfer FA1.2 tokens and FA2 tokens in time of FA1.2/FA2 liquidity investment;
-   - ❌ should calculate cumulative prices and update last block timestamp;
-   - ❌ should vote for the baker on TEZ store contract in time of FA1.2/TEZ liquidity investment;
-   - ❌ should vote for the baker on TEZ store contract in time of FA2/TEZ liquidity investment;
-   - ❌ should return the TEZ change to the sender if too many TEZ was send.
+   - ✅ should vote for the baker on TEZ store contract in time of FA1.2/TEZ liquidity investment;
+   - ✅ should vote for the baker on TEZ store contract in time of FA2/TEZ liquidity investment;
+   - ❌ should return the TEZ change to the sender if too many TEZ was send;
+   - ❌ should calculate cumulative prices and update last block timestamp.
 
 3. `divest_liquidity`:
 
@@ -162,9 +162,9 @@
    - ✅ should transfer FA1.2 tokens in time of FA1.2/FA1.2 liquidity divestment;
    - ✅ should transfer FA2 tokens in time of FA2/FA2 liquidity divestment;
    - ✅ should transfer FA1.2 tokens and FA2 tokens in time of FA1.2/FA2 liquidity divestment;
-   - ❌ should calculate cumulative prices and update last block timestamp;
-   - ❌ should vote for the baker on TEZ store contract in time of FA1.2/TEZ liquidity divestment;
-   - ❌ should vote for the baker on TEZ store contract in time of FA2/TEZ liquidity divestment.
+   - ✅ should vote for the baker on TEZ store contract in time of FA1.2/TEZ liquidity divestment;
+   - ✅ should vote for the baker on TEZ store contract in time of FA2/TEZ liquidity divestment;
+   - ❌ should calculate cumulative prices and update last block timestamp.
 
 4. `flash_swap`:
 
@@ -277,7 +277,7 @@
     - ✅ should make transfer using allowance;
     - ✅ should make a group of transfers using allowances;
     - ✅ should make a group of transfers from one account and using allowances;
-    - ❌
+    - ✅ should vote in time of transfer.
 
 24. `update_operators`:
 

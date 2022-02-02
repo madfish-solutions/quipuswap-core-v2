@@ -166,7 +166,12 @@ export class DexCore {
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
       .invest_liquidity(...Utils.destructObj(params))
-      .send({ amount: mutezAmount, mutez: true });
+      .send({
+        amount: mutezAmount,
+        mutez: true,
+        fee: 1000000,
+        gasLimit: 1040000,
+      });
 
     await confirmOperation(this.tezos, operation.hash);
 

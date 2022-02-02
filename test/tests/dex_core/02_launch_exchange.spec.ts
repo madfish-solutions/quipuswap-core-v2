@@ -7,6 +7,8 @@ import { FA12 } from "../../helpers/FA12";
 import { FA2 } from "../../helpers/FA2";
 import {
   defaultCollectingPeriod,
+  defaultCycleDuration,
+  defaultVotingPeriod,
   zeroAddress,
   Utils,
 } from "../../helpers/Utils";
@@ -56,6 +58,8 @@ describe("DexCore (launch exchange)", async () => {
 
     dexCoreStorage.storage.admin = alice.pkh;
     dexCoreStorage.storage.collecting_period = defaultCollectingPeriod;
+    dexCoreStorage.storage.cycle_duration = defaultCycleDuration;
+    dexCoreStorage.storage.voting_period = defaultVotingPeriod;
     dexCoreStorage.storage.baker_registry = bakerRegistry.contract.address;
 
     dexCore = await DexCore.originate(utils.tezos, dexCoreStorage);
@@ -1001,6 +1005,7 @@ describe("DexCore (launch exchange)", async () => {
     ).to.be.bignumber.equal(
       BigNumber.min(params.token_a_in, params.token_b_in)
     );
+    expect(tezStore.storage.previous_delegated).to.be.equal(zeroAddress);
     expect(tezStore.storage.current_delegated).to.be.equal(params.candidate);
     expect(tezStore.storage.next_candidate).to.be.equal(zeroAddress);
     expect(tezStore.storage.baker_registry).to.be.equal(
@@ -1032,7 +1037,11 @@ describe("DexCore (launch exchange)", async () => {
       )
     );
     expect(tezStore.storage.voting_period_ends).to.be.bignumber.equal(
-      new BigNumber((await utils.tezos.rpc.getBlock()).header.level)
+      new BigNumber(
+        (await utils.tezos.rpc.getBlock()).header.level +
+          dexCore.storage.storage.cycle_duration.toNumber() *
+            dexCore.storage.storage.voting_period.toNumber()
+      )
     );
   });
 
@@ -1079,8 +1088,12 @@ describe("DexCore (launch exchange)", async () => {
     ).to.be.bignumber.equal(
       BigNumber.min(params.token_a_in, params.token_b_in)
     );
+    expect(tezStore.storage.previous_delegated).to.be.equal(zeroAddress);
     expect(tezStore.storage.current_delegated).to.be.equal(params.candidate);
     expect(tezStore.storage.next_candidate).to.be.equal(zeroAddress);
+    expect(
+      await utils.tezos.rpc.getDelegate(tezStore.contract.address)
+    ).to.equal(null);
     expect(tezStore.storage.baker_registry).to.be.equal(
       dexCore.storage.storage.baker_registry
     );
@@ -1093,7 +1106,11 @@ describe("DexCore (launch exchange)", async () => {
       )
     );
     expect(tezStore.storage.voting_period_ends).to.be.bignumber.equal(
-      new BigNumber((await utils.tezos.rpc.getBlock()).header.level)
+      new BigNumber(
+        (await utils.tezos.rpc.getBlock()).header.level +
+          dexCore.storage.storage.cycle_duration.toNumber() *
+            dexCore.storage.storage.voting_period.toNumber()
+      )
     );
   });
 });

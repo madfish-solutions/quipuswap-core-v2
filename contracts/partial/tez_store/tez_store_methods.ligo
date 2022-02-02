@@ -75,7 +75,6 @@ function vote(
     s := update_rewards(0n, s);
     s := update_user_reward(params.voter, params.current_balance, params.new_balance, s);
 
-    const prev_current_delegated : key_hash = s.current_delegated;
     var user : user_t := unwrap_or(s.users[params.voter], Constants.default_user);
 
     case user.candidate of
@@ -137,15 +136,17 @@ function vote(
         ];
 
         s.current_delegated := Constants.zero_key_hash;
+        s.previous_delegated := Constants.zero_key_hash;
       }
       else {
-        if s.current_delegated =/= prev_current_delegated
+        if s.current_delegated =/= s.previous_delegated
         then {
           ops := list [
             get_baker_registry_validate_op(s.current_delegated, s.baker_registry);
             Tezos.set_delegate(Some(s.current_delegated))
           ];
-          skip;
+
+          s.previous_delegated := s.current_delegated;
         }
         else skip;
       };
