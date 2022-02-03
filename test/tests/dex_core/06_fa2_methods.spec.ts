@@ -1,11 +1,13 @@
 import { ListValidationError } from "@taquito/michelson-encoder";
 import {
   OriginationOperation,
+  TransactionOperation,
   ContractAbstraction,
   ContractProvider,
   VIEW_LAMBDA,
 } from "@taquito/taquito";
 
+import { DexCore as DexCoreErrors } from "../../helpers/Errors";
 import { BakerRegistry } from "../../helpers/BakerRegistry";
 import { FA2 as FA2Errors } from "../../helpers/Errors";
 import { Auction } from "../../helpers/Auction";
@@ -37,7 +39,7 @@ import { fa12Storage } from "../../../storage/test/FA12";
 import { fa2Storage } from "../../../storage/test/FA2";
 
 import { BalanceRequest, Transfer, UpdateOperator } from "test/types/FA2";
-import { LaunchExchange } from "test/types/DexCore";
+import { LaunchExchange, Swap } from "test/types/DexCore";
 import { Baker, User } from "test/types/TezStore";
 import { TezStore } from "test/helpers/TezStore";
 import { SBAccount } from "test/types/Common";
@@ -45,15 +47,16 @@ import { SBAccount } from "test/types/Common";
 chai.use(require("chai-bignumber")(BigNumber));
 
 describe("DexCore (FA2 methods)", async () => {
-  var utils: Utils;
   var lambdaContract: ContractAbstraction<ContractProvider>;
   var bakerRegistry: BakerRegistry;
+  var dexCore2: DexCore;
   var auction: Auction;
   var dexCore: DexCore;
   var fa12Token1: FA12;
   var fa12Token2: FA12;
   var fa2Token1: FA2;
   var fa2Token2: FA2;
+  var utils: Utils;
 
   var alice: SBAccount = accounts.alice;
   var bob: SBAccount = accounts.bob;
@@ -78,6 +81,7 @@ describe("DexCore (FA2 methods)", async () => {
       bakerRegistryStorage
     );
 
+    dexCoreStorage.storage.entered = false;
     dexCoreStorage.storage.admin = alice.pkh;
     dexCoreStorage.storage.cycle_duration = defaultCycleDuration;
     dexCoreStorage.storage.voting_period = defaultVotingPeriod;
@@ -86,7 +90,12 @@ describe("DexCore (FA2 methods)", async () => {
 
     dexCore = await DexCore.originate(utils.tezos, dexCoreStorage);
 
+    dexCoreStorage.storage.entered = true;
+
+    dexCore2 = await DexCore.originate(utils.tezos, dexCoreStorage);
+
     await dexCore.setLambdas();
+    await dexCore2.setLambdas();
 
     fa12Token1 = await FA12.originate(utils.tezos, fa12Storage);
     fa12Token2 = await FA12.originate(utils.tezos, fa12Storage);
@@ -171,13 +180,30 @@ describe("DexCore (FA2 methods)", async () => {
     ]);
     await dexCore.launchExchange(launchParams);
 
-    const transferOperation = await utils.tezos.contract.transfer({
-      to: carol.pkh,
-      amount: 50_000_000,
-      mutez: true,
-    });
+    const transferOperation: TransactionOperation =
+      await utils.tezos.contract.transfer({
+        to: carol.pkh,
+        amount: 50_000_000,
+        mutez: true,
+      });
 
     await confirmOperation(utils.tezos, transferOperation.hash);
+  });
+
+  it("should fail if reentrancy", async () => {
+    const swapParams: Swap = {
+      swaps: [{ direction: { a_to_b: undefined }, pair_id: new BigNumber(0) }],
+      receiver: alice.pkh,
+      referrer: bob.pkh,
+      amount_in: new BigNumber(1),
+      min_amount_out: new BigNumber(1),
+    };
+
+    await rejects(dexCore2.swap(swapParams), (err: Error) => {
+      expect(err.message).to.equal(DexCoreErrors.ERR_REENTRANCY);
+
+      return true;
+    });
   });
 
   it("should fail if token ID from request not found", async () => {

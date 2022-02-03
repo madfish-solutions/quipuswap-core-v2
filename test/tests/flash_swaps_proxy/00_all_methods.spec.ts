@@ -48,6 +48,7 @@ describe("FlashSwapsProxy", async () => {
     fa12Token1 = await FA12.originate(utils.tezos, fa12Storage);
     fa12Token2 = await FA12.originate(utils.tezos, fa12Storage);
 
+    dexCoreStorage.storage.entered = false;
     dexCoreStorage.storage.admin = alice.pkh;
     dexCoreStorage.storage.baker_registry = alice.pkh;
 

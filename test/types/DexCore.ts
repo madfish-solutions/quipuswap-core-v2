@@ -138,7 +138,7 @@ export type DexCoreStorage = {
     tokens: MichelsonMap<MichelsonMapKey, unknown>;
     token_to_id: MichelsonMap<MichelsonMapKey, unknown>;
     pairs: MichelsonMap<MichelsonMapKey, unknown>;
-    permits: MichelsonMap<MichelsonMapKey, unknown>;
+    permits: MichelsonMap<string, UserPermits>;
     tok_interface_fee: MichelsonMap<MichelsonMapKey, unknown>;
     tez_interface_fee: MichelsonMap<MichelsonMapKey, unknown>;
     auction_fee: MichelsonMap<MichelsonMapKey, unknown>;
@@ -190,4 +190,14 @@ export type TokensPerShare = {
 export type TokensPerShareRequest = {
   pair_id: BigNumber;
   shares_amt: BigNumber;
+};
+
+export type Permit = {
+  created_at: string;
+  expiry: BigNumber | null | undefined;
+};
+
+export type UserPermits = {
+  permits: MichelsonMap<MichelsonMapKey, Permit>;
+  expiry: BigNumber | null | undefined;
 };

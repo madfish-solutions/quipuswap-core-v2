@@ -67,16 +67,6 @@ function iterate_transfer(
 
         assert_with_error(dst.token_id < s.tokens_count, "FA2_TOKEN_UNDEFINED");
 
-        const sender_account : account_t = unwrap_or(
-          s.accounts[(transfer_param.from_, dst.token_id)],
-          Constants.default_account
-        );
-
-        assert_with_error(
-          transfer_param.from_ = Tezos.sender or Set.mem(Tezos.sender, sender_account.allowances),
-          "FA2_NOT_OPERATOR"
-        );
-
         const sender_balance : nat = unwrap_or(s.ledger[(transfer_param.from_, dst.token_id)], 0n);
 
         assert_with_error(sender_balance >= dst.amount, "FA2_INSUFFICIENT_BALANCE");

@@ -27,14 +27,14 @@ import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa12Storage } from "../../../storage/test/FA12";
 import { fa2Storage } from "../../../storage/test/FA2";
 
-import { LaunchExchange } from "test/types/DexCore";
+import { LaunchExchange, Swap } from "test/types/DexCore";
 import { SBAccount } from "test/types/Common";
 
 chai.use(require("chai-bignumber")(BigNumber));
 
 describe("DexCore (launch exchange)", async () => {
-  var utils: Utils;
   var bakerRegistry: BakerRegistry;
+  var dexCore2: DexCore;
   var auction: Auction;
   var dexCore: DexCore;
   var fa12Token1: FA12;
@@ -43,8 +43,10 @@ describe("DexCore (launch exchange)", async () => {
   var fa2Token1: FA2;
   var fa2Token2: FA2;
   var fa2Token3: FA2;
+  var utils: Utils;
 
   var alice: SBAccount = accounts.alice;
+  var bob: SBAccount = accounts.bob;
 
   before("setup", async () => {
     utils = new Utils();
@@ -56,6 +58,7 @@ describe("DexCore (launch exchange)", async () => {
       bakerRegistryStorage
     );
 
+    dexCoreStorage.storage.entered = false;
     dexCoreStorage.storage.admin = alice.pkh;
     dexCoreStorage.storage.collecting_period = defaultCollectingPeriod;
     dexCoreStorage.storage.cycle_duration = defaultCycleDuration;
@@ -64,7 +67,12 @@ describe("DexCore (launch exchange)", async () => {
 
     dexCore = await DexCore.originate(utils.tezos, dexCoreStorage);
 
+    dexCoreStorage.storage.entered = true;
+
+    dexCore2 = await DexCore.originate(utils.tezos, dexCoreStorage);
+
     await dexCore.setLambdas();
+    await dexCore2.setLambdas();
 
     fa12Token1 = await FA12.originate(utils.tezos, fa12Storage);
     fa12Token2 = await FA12.originate(utils.tezos, fa12Storage);
@@ -80,6 +88,22 @@ describe("DexCore (launch exchange)", async () => {
     auction = await Auction.originate(utils.tezos, auctionStorage);
 
     await auction.setLambdas();
+  });
+
+  it("should fail if reentrancy", async () => {
+    const swapParams: Swap = {
+      swaps: [{ direction: { a_to_b: undefined }, pair_id: new BigNumber(0) }],
+      receiver: alice.pkh,
+      referrer: bob.pkh,
+      amount_in: new BigNumber(1),
+      min_amount_out: new BigNumber(1),
+    };
+
+    await rejects(dexCore2.swap(swapParams), (err: Error) => {
+      expect(err.message).to.equal(DexCoreErrors.ERR_REENTRANCY);
+
+      return true;
+    });
   });
 
   it("should fail if wrong pair order was passed with TEZ token and TEZ token", async () => {

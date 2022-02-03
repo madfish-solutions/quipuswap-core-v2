@@ -1,3 +1,6 @@
+import { MichelsonV1Expression } from "@taquito/rpc";
+import { Schema } from "@taquito/michelson-encoder";
+import { hex2buf } from "@taquito/utils";
 import {
   OriginationOperation,
   TransactionOperation,
@@ -8,6 +11,8 @@ import {
   Contract,
   OpKind,
 } from "@taquito/taquito";
+
+import blake from "blakejs";
 
 import fs from "fs";
 
@@ -21,8 +26,8 @@ import dexCoreLambdas from "../../build/lambdas/dex_core_lambdas.json";
 
 import { Utils } from "./Utils";
 
-import { FA12Token, FA2Token, Token } from "test/types/Common";
 import { BalanceResponse, Transfer, UpdateOperator } from "test/types/FA2";
+import { FA12Token, FA2Token, Token } from "test/types/Common";
 import {
   UpdateTokenMetadata,
   CumulativePrices,
@@ -44,6 +49,22 @@ import {
   Fees,
   Ban,
 } from "../types/DexCore";
+
+const permitSchemaType: MichelsonV1Expression = {
+  prim: "pair",
+  args: [
+    {
+      prim: "pair",
+      args: [{ prim: "address" }, { prim: "chain_id" }],
+    },
+    {
+      prim: "pair",
+      args: [{ prim: "nat" }, { prim: "bytes" }],
+    },
+  ],
+};
+
+const permitSchema: Schema = new Schema(permitSchemaType);
 
 export class DexCore {
   contract: Contract;
@@ -151,8 +172,8 @@ export class DexCore {
     params: LaunchExchange,
     mutezAmount: number = 0
   ): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methods
-      .launch_exchange(...Utils.destructObj(params))
+    const operation: TransactionOperation = await this.contract.methodsObject
+      .launch_exchange(params)
       .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
@@ -164,8 +185,8 @@ export class DexCore {
     params: InvestLiquidity,
     mutezAmount: number = 0
   ): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methods
-      .invest_liquidity(...Utils.destructObj(params))
+    const operation: TransactionOperation = await this.contract.methodsObject
+      .invest_liquidity(params)
       .send({
         amount: mutezAmount,
         mutez: true,
@@ -181,8 +202,8 @@ export class DexCore {
   async divestLiquidity(
     params: DivestLiquidity
   ): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methods
-      .divest_liquidity(...Utils.destructObj(params))
+    const operation: TransactionOperation = await this.contract.methodsObject
+      .divest_liquidity(params)
       .send();
 
     await confirmOperation(this.tezos, operation.hash);
@@ -191,8 +212,8 @@ export class DexCore {
   }
 
   async flashSwap(params: FlashSwap): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methods
-      .flash_swap(...Utils.destructObj(params))
+    const operation: TransactionOperation = await this.contract.methodsObject
+      .flash_swap(params)
       .send();
 
     await confirmOperation(this.tezos, operation.hash);
@@ -201,8 +222,8 @@ export class DexCore {
   }
 
   async swap(params: Swap): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methods
-      .swap(...Utils.destructObj(params))
+    const operation: TransactionOperation = await this.contract.methodsObject
+      .swap(params)
       .send();
 
     await confirmOperation(this.tezos, operation.hash);
@@ -211,8 +232,8 @@ export class DexCore {
   }
 
   async withdrawProfit(params: WithdrawProfit): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methods
-      .withdraw_profit(...Utils.destructObj(params))
+    const operation: TransactionOperation = await this.contract.methodsObject
+      .withdraw_profit(params)
       .send();
 
     await confirmOperation(this.tezos, operation.hash);
@@ -223,8 +244,8 @@ export class DexCore {
   async claimTokInterfaceFee(
     params: ClaimTokFee
   ): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methods
-      .claim_tok_interface_fee(...Utils.destructObj(params))
+    const operation: TransactionOperation = await this.contract.methodsObject
+      .claim_tok_interface_fee(params)
       .send();
 
     await confirmOperation(this.tezos, operation.hash);
@@ -235,8 +256,8 @@ export class DexCore {
   async claimTezInterfaceFee(
     params: ClaimTezFee
   ): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methods
-      .claim_tez_interface_fee(...Utils.destructObj(params))
+    const operation: TransactionOperation = await this.contract.methodsObject
+      .claim_tez_interface_fee(params)
       .send();
 
     await confirmOperation(this.tezos, operation.hash);
@@ -245,8 +266,8 @@ export class DexCore {
   }
 
   async withdrawAuctionFee(token: Token): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methods
-      .withdraw_auction_fee(...Utils.destructObj(token))
+    const operation: TransactionOperation = await this.contract.methodsObject
+      .withdraw_auction_fee(token)
       .send();
 
     await confirmOperation(this.tezos, operation.hash);
@@ -307,8 +328,8 @@ export class DexCore {
   }
 
   async setFees(params: Fees): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methods
-      .set_fees(...Utils.destructObj(params))
+    const operation: TransactionOperation = await this.contract.methodsObject
+      .set_fees(params)
       .send();
 
     await confirmOperation(this.tezos, operation.hash);
@@ -355,8 +376,8 @@ export class DexCore {
   async updateTokenMetadata(
     params: UpdateTokenMetadata
   ): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methods
-      .update_token_metadata(...Utils.destructObj(params))
+    const operation: TransactionOperation = await this.contract.methodsObject
+      .update_token_metadata(params)
       .send();
 
     await confirmOperation(this.tezos, operation.hash);
@@ -365,8 +386,8 @@ export class DexCore {
   }
 
   async ban(params: Ban): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methods
-      .ban(...Utils.destructObj(params))
+    const operation: TransactionOperation = await this.contract.methodsObject
+      .ban(params)
       .send();
 
     await confirmOperation(this.tezos, operation.hash);
@@ -376,10 +397,11 @@ export class DexCore {
 
   async permit(
     key: string,
-    permitSignature: string[]
+    signature: string,
+    permitHash: string
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
-      .permit([key, permitSignature])
+      .permit(key, signature, permitHash)
       .send();
 
     await confirmOperation(this.tezos, operation.hash);
@@ -388,8 +410,8 @@ export class DexCore {
   }
 
   async setExpiry(params: SetExpiry): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methods
-      .set_expiry(...Utils.destructObj(params))
+    const operation: TransactionOperation = await this.contract.methodsObject
+      .set_expiry(params)
       .send();
 
     await confirmOperation(this.tezos, operation.hash);
@@ -467,9 +489,19 @@ export class DexCore {
     return operation;
   }
 
-  async flashSwapCallback(): Promise<TransactionOperation> {
+  async flashSwapCallback1(): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
-      .flash_swap_callback([])
+      .flash_swap_callback_1([])
+      .send();
+
+    await confirmOperation(this.tezos, operation.hash);
+
+    return operation;
+  }
+
+  async flashSwapCallback2(): Promise<TransactionOperation> {
+    const operation: TransactionOperation = await this.contract.methods
+      .flash_swap_callback_2([])
       .send();
 
     await confirmOperation(this.tezos, operation.hash);
@@ -478,8 +510,18 @@ export class DexCore {
   }
 
   async launchCallback(params: LaunchCallback): Promise<TransactionOperation> {
+    const operation: TransactionOperation = await this.contract.methodsObject
+      .launch_callback(params)
+      .send();
+
+    await confirmOperation(this.tezos, operation.hash);
+
+    return operation;
+  }
+
+  async close(): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
-      .launch_callback(...Utils.destructObj(params))
+      .close([])
       .send();
 
     await confirmOperation(this.tezos, operation.hash);
@@ -624,5 +666,54 @@ export class DexCore {
     return this.storage.storage.ledger[`${user},${tokenId}`] !== undefined
       ? new BigNumber(this.storage.storage.ledger[`${user},${tokenId}`])
       : new BigNumber(0);
+  }
+
+  private async getPermitParamsHash(
+    tezos: TezosToolkit,
+    contract: any,
+    entrypoint: string,
+    parameter: any
+  ): Promise<string> {
+    const raw_packed: { packed: string; gas: BigNumber | "unaccounted" } =
+      await tezos.rpc.packData({
+        data: contract.parameterSchema.Encode(entrypoint, parameter),
+        type: contract.parameterSchema.root.typeWithoutAnnotations(),
+      });
+
+    return blake.blake2bHex(hex2buf(raw_packed.packed), null, 32);
+  }
+
+  async createPermitPayload(
+    tezos: TezosToolkit,
+    contract: Contract,
+    entrypoint: string,
+    params: any
+  ): Promise<[string, string, string]> {
+    const signerKey: string = await tezos.signer.publicKey();
+    const permitCounter: BigNumber = await contract
+      .storage()
+      .then((storage: DexCoreStorage) => storage.storage.permits_counter);
+    const paramHash: string = await this.getPermitParamsHash(
+      tezos,
+      contract,
+      entrypoint,
+      params
+    );
+    const chainId: string = await tezos.rpc.getChainId();
+    const bytesToSign: { packed: string; gas: BigNumber | "unaccounted" } =
+      await tezos.rpc.packData({
+        data: permitSchema.Encode({
+          0: contract.address,
+          1: chainId,
+          2: permitCounter,
+          3: paramHash,
+        }),
+        type: permitSchemaType,
+      });
+    const signature: string = await tezos.signer
+      .sign(bytesToSign.packed)
+      .then((s) => s.prefixSig);
+
+    return [signerKey, signature, paramHash];
   }
 }

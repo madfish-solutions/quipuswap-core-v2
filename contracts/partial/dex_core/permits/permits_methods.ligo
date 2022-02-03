@@ -87,7 +87,7 @@ function sender_check(
   if Tezos.sender = expected_user
   then s
   else block {
-    const action_hash : blake2b_hash_t = Crypto.blake2b(Bytes.pack(action));
+    const action_hash : blake2b_hash_t = Crypto.blake2b(Bytes.pack(Use(action)));
     const user_permits : user_permits_t = case Big_map.find_opt(expected_user, s.permits) of
     | Some(user_permits) -> user_permits
     | None               -> (failwith(err_message) : user_permits_t)

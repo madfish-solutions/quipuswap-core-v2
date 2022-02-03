@@ -1,292 +1,259 @@
-// import { TezosToolkit } from "@taquito/taquito";
-// import { hex2buf } from "@taquito/utils";
+import { TransactionOperation } from "@taquito/taquito";
 
-// import { DexCore as DexCoreErrors } from "../../helpers/Errors";
-// import { BakerRegistry } from "../../helpers/BakerRegistry";
-// import { Auction } from "../../helpers/Auction";
-// import { DexCore } from "../../helpers/DexCore";
-// import { FA12 } from "../../helpers/FA12";
-// import { FA2 } from "../../helpers/FA2";
-// import { defaultCollectingPeriod, Utils } from "../../helpers/Utils";
+import { defaultCollectingPeriod, Utils } from "../../helpers/Utils";
+import { BakerRegistry } from "../../helpers/BakerRegistry";
+import { DexCore } from "../../helpers/DexCore";
+import { FA12 } from "../../helpers/FA12";
+import {
+  FA2 as FA2Errors,
+  Permits as PermitsErrors,
+} from "../../helpers/Errors";
 
-// import { rejects } from "assert";
+import { rejects } from "assert";
 
-// import chai, { expect } from "chai";
+import chai, { expect } from "chai";
 
-// import { BigNumber } from "bignumber.js";
+import { BigNumber } from "bignumber.js";
 
-// import accounts from "../../../scripts/sandbox/accounts";
+import accounts from "../../../scripts/sandbox/accounts";
 
-// import { bakerRegistryStorage } from "../../../storage/BakerRegistry";
-// import { auctionStorage } from "../../../storage/Auction";
-// import { dexCoreStorage } from "../../../storage/DexCore";
-// import { fa12Storage } from "../../../storage/test/FA12";
-// import { fa2Storage } from "../../../storage/test/FA2";
+import { confirmOperation } from "../../../scripts/confirmation";
 
-// import { DexCoreStorage, LaunchExchange } from "test/types/DexCore";
-// import { SBAccount } from "test/types/Common";
+import { bakerRegistryStorage } from "../../../storage/BakerRegistry";
+import { dexCoreStorage } from "../../../storage/DexCore";
+import { fa12Storage } from "../../../storage/test/FA12";
 
-// import blake from "blakejs";
+import { SBAccount } from "test/types/Common";
+import { Transfer } from "test/types/FA2";
+import {
+  DexCoreStorage,
+  LaunchExchange,
+  UserPermits,
+  Permit,
+} from "test/types/DexCore";
 
-// chai.use(require("chai-bignumber")(BigNumber));
+chai.use(require("chai-bignumber")(BigNumber));
 
-// describe.only("DexCore (permits)", async () => {
-//   var utils: Utils;
-//   var bakerRegistry: BakerRegistry;
-//   var auction: Auction;
-//   var dexCore: DexCore;
-//   var fa12Token1: FA12;
-//   var fa12Token2: FA12;
-//   var fa12Token3: FA12;
-//   var fa2Token1: FA2;
-//   var fa2Token2: FA2;
-//   var fa2Token3: FA2;
+describe("DexCore (permits)", async () => {
+  var bakerRegistry: BakerRegistry;
+  var dexCore: DexCore;
+  var fa12Token1: FA12;
+  var utils: Utils;
 
-//   var alice: SBAccount = accounts.alice;
-//   var bob: SBAccount = accounts.bob;
+  var hash: string;
 
-//   before("setup", async () => {
-//     utils = new Utils();
+  var alice: SBAccount = accounts.alice;
+  var bob: SBAccount = accounts.bob;
+  var carol: SBAccount = accounts.carol;
 
-//     await utils.init(alice.sk);
+  before("setup", async () => {
+    utils = new Utils();
 
-//     bakerRegistry = await BakerRegistry.originate(
-//       utils.tezos,
-//       bakerRegistryStorage
-//     );
+    await utils.init(alice.sk);
 
-//     dexCoreStorage.storage.admin = alice.pkh;
-//     dexCoreStorage.storage.collecting_period = defaultCollectingPeriod;
-//     dexCoreStorage.storage.baker_registry = bakerRegistry.contract.address;
+    bakerRegistry = await BakerRegistry.originate(
+      utils.tezos,
+      bakerRegistryStorage
+    );
 
-//     dexCore = await DexCore.originate(utils.tezos, dexCoreStorage);
+    dexCoreStorage.storage.entered = false;
+    dexCoreStorage.storage.admin = alice.pkh;
+    dexCoreStorage.storage.collecting_period = defaultCollectingPeriod;
+    dexCoreStorage.storage.baker_registry = bakerRegistry.contract.address;
+    dexCoreStorage.storage.default_expiry = new BigNumber(10000);
 
-//     await dexCore.setLambdas();
+    dexCore = await DexCore.originate(utils.tezos, dexCoreStorage);
 
-//     fa12Token1 = await FA12.originate(utils.tezos, fa12Storage);
-//     fa12Token2 = await FA12.originate(utils.tezos, fa12Storage);
-//     fa12Token3 = await FA12.originate(utils.tezos, fa12Storage);
-//     fa2Token1 = await FA2.originate(utils.tezos, fa2Storage);
-//     fa2Token2 = await FA2.originate(utils.tezos, fa2Storage);
-//     fa2Token3 = await FA2.originate(utils.tezos, fa2Storage);
+    await dexCore.setLambdas();
 
-//     auctionStorage.storage.admin = alice.pkh;
-//     auctionStorage.storage.dex_core = dexCore.contract.address;
-//     auctionStorage.storage.quipu_token = fa2Token1.contract.address;
+    fa12Token1 = await FA12.originate(utils.tezos, fa12Storage);
 
-//     auction = await Auction.originate(utils.tezos, auctionStorage);
+    const params: LaunchExchange = {
+      pair: {
+        token_a: { fa12: fa12Token1.contract.address },
+        token_b: { tez: undefined },
+      },
+      token_a_in: new BigNumber(1000),
+      token_b_in: new BigNumber(1000),
+      shares_receiver: alice.pkh,
+      candidate: alice.pkh,
+    };
 
-//     await auction.setLambdas();
-//   });
+    await fa12Token1.approve(dexCore.contract.address, params.token_a_in);
+    await dexCore.launchExchange(params, params.token_b_in.toNumber());
 
-//   function getBytesToSignFromErrors(errors): string {
-//     const errors_with: string[] = errors
-//       .filter((x) => x.with !== undefined)
-//       .map((x) => x.with);
+    const transferOperation: TransactionOperation =
+      await utils.tezos.contract.transfer({
+        to: carol.pkh,
+        amount: 50_000_000,
+        mutez: true,
+      });
 
-//     if (errors_with.length != 1) {
-//       throw [
-//         'errors_to_missigned_bytes: expected one error to fail "with" michelson, but found:',
-//         errors_with,
-//       ];
-//     }
+    await confirmOperation(utils.tezos, transferOperation.hash);
+  });
 
-//     const error_with = errors_with[0];
+  it(`alice generates permit payload, bob submits it to the contract`, async () => {
+    const transferParams: Transfer[] = [
+      {
+        from_: alice.pkh,
+        txs: [
+          {
+            to_: bob.pkh,
+            token_id: new BigNumber(0),
+            amount: new BigNumber(10),
+          },
+        ],
+      },
+    ];
+    const [signerKey, signature, permitHash]: [string, string, string] =
+      await dexCore.createPermitPayload(
+        await utils.init(alice.sk),
+        dexCore.contract,
+        "transfer",
+        transferParams
+      );
 
-//     if (error_with.prim !== "Pair") {
-//       throw [
-//         'errors_to_missigned_bytes: expected a "Pair", but found:',
-//         error_with.prim,
-//       ];
-//     }
+    hash = permitHash;
 
-//     const error_with_args = error_with.args;
+    await dexCore.permit(signerKey, signature, permitHash);
 
-//     if (error_with_args.length !== 2) {
-//       throw [
-//         'errors_to_missigned_bytes: expected two arguments to "Pair", but found:',
-//         error_with_args,
-//       ];
-//     }
+    const storage: DexCoreStorage = await dexCore.contract.storage();
+    const userPermits: UserPermits = await storage.storage.permits.get(
+      alice.pkh
+    );
 
-//     if (error_with_args[0].string.toLowerCase() !== "missigned") {
-//       throw [
-//         'errors_to_missigned_bytes: expected a "missigned" annotation, but found:',
-//         error_with_args[0],
-//       ];
-//     }
+    expect(userPermits.permits.has(hash)).to.be.true;
+  });
 
-//     if (typeof error_with_args[1].bytes !== "string") {
-//       throw [
-//         "errors_to_missigned_bytes: expected bytes, but found:",
-//         error_with_args[1],
-//       ];
-//     }
+  it(`carol calls transfer on alice's behalf`, async () => {
+    dexCore = await DexCore.init(
+      dexCore.contract.address,
+      await utils.init(carol.sk)
+    );
 
-//     return error_with_args[1].bytes;
-//   }
+    let storage: DexCoreStorage = await dexCore.contract.storage();
+    let userPermits: UserPermits = await storage.storage.permits.get(alice.pkh);
 
-//   async function permitParamHash(tz, contract, entrypoint, parameter) {
-//     const raw_packed = await tz.rpc.packData({
-//       data: contract.parameterSchema.Encode(entrypoint, parameter),
-//       type: contract.parameterSchema.root.typeWithoutAnnotations(),
-//     });
-//     console.log(`PACKED PARAM: ${raw_packed.packed}`);
-//     return blake.blake2bHex(hex2buf(raw_packed.packed), null, 32);
-//   }
+    expect(userPermits.permits.has(hash)).to.be.true;
 
-//   async function createPermitPayload(
-//     tezos: TezosToolkit,
-//     contract,
-//     entrypoint,
-//     params
-//   ) {
-//     const signer_key: string = await tezos.signer.publicKey();
-//     const dummy_sig: string = await tezos.signer
-//       .sign("abcd")
-//       .then((s) => s.prefixSig);
-//     const param_hash: string = await permitParamHash(
-//       tezos,
-//       contract,
-//       entrypoint,
-//       params
-//     );
-//     const transfer_params = contract.methods
-//       .permit(signer_key, dummy_sig, param_hash)
-//       .toTransferParams();
-//     const bytesToSign = await tezos.estimate
-//       .transfer(transfer_params)
-//       .catch((e) => getBytesToSignFromErrors(e.errors));
+    const transferParams: Transfer[] = [
+      {
+        from_: alice.pkh,
+        txs: [
+          {
+            to_: bob.pkh,
+            token_id: new BigNumber(0),
+            amount: new BigNumber(10),
+          },
+        ],
+      },
+    ];
 
-//     console.log(`param hash ${param_hash}`);
-//     console.log(`bytes to sign ${bytesToSign}`);
+    await dexCore.transfer(transferParams);
 
-//     const sig = await tezos.signer.sign(bytesToSign).then((s) => s.prefixSig);
+    storage = await dexCore.contract.storage();
+    userPermits = await storage.storage.permits.get(alice.pkh);
 
-//     return [signer_key, sig, param_hash];
-//   }
+    expect(userPermits.permits.has(hash)).to.be.false;
+  });
 
-//   it("bob generates permit payload, alice submits it to contract", async () => {
-//     const transferParams = [
-//       {
-//         from_: bob.pkh,
-//         txs: [{ to_: alice.pkh, token_id: 0, amount: 10 }],
-//       },
-//     ];
+  it(`carol can't use bob's transfer anymore`, async () => {
+    const transferParams: Transfer[] = [
+      {
+        from_: alice.pkh,
+        txs: [
+          {
+            to_: bob.pkh,
+            token_id: new BigNumber(0),
+            amount: new BigNumber(10),
+          },
+        ],
+      },
+    ];
 
-//     utils.setProvider(alice.sk);
+    await rejects(
+      dexCore.contract.methods.transfer(transferParams).send(),
+      (err: Error) => {
+        expect(err.message).to.equal(FA2Errors.FA2_NOT_OPERATOR);
 
-//     let permitContractAlice = await utils.tezos.contract.at(
-//       dexCore.contract.address
-//     );
+        return true;
+      }
+    );
+  });
 
-//     utils.setProvider(bob.sk);
+  it(`alice generates permit, bob submits it, alice sets expiry`, async () => {
+    const transferParams: Transfer[] = [
+      {
+        from_: alice.pkh,
+        txs: [
+          {
+            to_: bob.pkh,
+            token_id: new BigNumber(0),
+            amount: new BigNumber(15),
+          },
+        ],
+      },
+    ];
+    const [signerKey, signature, permitHash]: [string, string, string] =
+      await dexCore.createPermitPayload(
+        await utils.init(alice.sk),
+        dexCore.contract,
+        "transfer",
+        transferParams
+      );
 
-//     let [bobsKey, bobsSig, permitHash] = await createPermitPayload(
-//       utils.tezos,
-//       dexCore.contract,
-//       "transfer",
-//       transferParams
-//     );
-//     let op = await permitContractAlice.methods
-//       .permit(bobsKey, bobsSig, permitHash)
-//       .send();
-//     console.log(1);
+    await dexCore.permit(signerKey, signature, permitHash);
 
-//     await op.confirmation();
+    dexCore = await DexCore.init(
+      dexCore.contract.address,
+      await utils.init(alice.sk)
+    );
 
-//     let storage: DexCoreStorage = await permitContractAlice.storage();
-// let permitValue = storage.storage.permits
-//   .get(bob.pkh)
-//   .then((bobs_permits) => bobs_permits.permits);
+    await dexCore.setExpiry({
+      issuer: alice.pkh,
+      expiry: new BigNumber(5),
+      permit_hash: permitHash,
+    });
 
-// console.log(permitValue.has(permitHash));
-// });
+    const storage: DexCoreStorage = await dexCore.contract.storage();
+    const userPermits: UserPermits = await storage.storage.permits.get(
+      alice.pkh
+    );
 
-// it("carol calls contract entrypoint on bob's behalf", async () => {
-//   let transferParams2 = [
-//     {
-//       from_: bob.pkh,
-//       txs: [{ to_: alice.pkh, token_id: 0, amount: 10 }],
-//     },
-//   ];
+    expect(userPermits.permits.has(permitHash)).to.be.true;
 
-//   let permitContractCarol = await tzCarol.contract.at(contractAddress);
-//   let op = await permitContractCarol.methods.transfer(transferParams2).send();
-//   await op.confirmation();
-// });
+    const permit: Permit = await userPermits.permits.get(permitHash);
 
-// it("carol can't use bob's transfer anymore", async () => {
-//   let permitContractCarol = await tzCarol.contract.at(contractAddress);
-//   try {
-//     let transferParams2 = [
-//       {
-//         from_: bob.pkh,
-//         txs: [{ to_: alice.pkh, token_id: 0, amount: 10 }],
-//       },
-//     ];
+    expect(permit.expiry).to.be.bignumber.equal(new BigNumber(5));
+  });
 
-//     let op = await permitContractCarol.methods
-//       .transfer(transferParams2)
-//       .send();
-//     await op.confirmation();
-//   } catch (e) {
-//     console.log("Error message");
-//   }
-// });
+  it(`carol calls transfer on alice's behalf too late`, async () => {
+    const transferParams: Transfer[] = [
+      {
+        from_: alice.pkh,
+        txs: [
+          {
+            to_: bob.pkh,
+            token_id: new BigNumber(0),
+            amount: new BigNumber(15),
+          },
+        ],
+      },
+    ];
 
-// it("bob generates permit, alice submits it, bob sets expiry", async () => {
-//   let transferParams = [
-//     {
-//       from_: bob.pkh,
-//       txs: [{ to_: alice.pkh, token_id: 0, amount: 11 }],
-//     },
-//   ];
+    dexCore = await DexCore.init(
+      dexCore.contract.address,
+      await utils.init(carol.sk)
+    );
 
-//   let permitContractAlice = await tzAlice.contract.at(contractAddress);
-//   let [bobsKey, bobsSig, permitHash] = await createPermitPayload(
-//     tzBob,
-//     fa2.contract,
-//     "transfer",
-//     transferParams
-//   );
-//   let op = await permitContractAlice.methods
-//     .permit(bobsKey, bobsSig, permitHash)
-//     .send();
-//   await op.confirmation();
+    await utils.bakeBlocks(5);
+    await rejects(
+      dexCore.contract.methods.transfer(transferParams).send(),
+      (err: Error) => {
+        expect(err.message).to.equal(PermitsErrors.EXPIRED_PERMIT);
 
-//   const permitContractBob = await tzBob.contract.at(contractAddress);
-//   op = await permitContractBob.methods
-//     .set_expiry(bob.pkh, 60, permitHash)
-//     .send();
-//   await op.confirmation();
-
-//   let storage = await permitContractAlice.storage();
-//   let permitValue = await storage.permits
-//     .get(bob.pkh)
-//     .then((bobs_permits) => bobs_permits.permits);
-//   console.log(permitValue.has(permitHash));
-
-//   console.log("permit value", permitValue);
-
-//   let permitExpiry = await storage.permits
-//     .get(bob.pkh)
-//     .then((bobs_permits) => bobs_permits.expiry);
-
-//   let permit = await permitValue.get(permitHash);
-//   strictEqual(permit.expiry.toNumber(), 60);
-// });
-
-// it("carol calls entrypoint on bob's behalf, but its too late", async () => {
-//   let transferParams2 = [
-//     {
-//       from_: bob.pkh,
-//       txs: [{ to_: alice.pkh, token_id: 0, amount: 11 }],
-//     },
-//   ];
-
-//   let permitContractCarol = await tzCarol.contract.at(contractAddress);
-
-//   rejects(await permitContractCarol.methods.transfer(transferParams2).send());
-// });
-// });
+        return true;
+      }
+    );
+  });
+});

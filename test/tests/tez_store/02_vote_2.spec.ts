@@ -49,6 +49,7 @@ describe("TezStore (vote - 2)", async () => {
 
     fa2Token1 = await FA2.originate(utils.tezos, fa2Storage);
 
+    dexCoreStorage.storage.entered = false;
     dexCoreStorage.storage.admin = alice.pkh;
     dexCoreStorage.storage.collecting_period = new BigNumber(100);
     dexCoreStorage.storage.cycle_duration = new BigNumber(1);

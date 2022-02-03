@@ -1,6 +1,6 @@
-import { defaultCollectingPeriod, Utils } from "../../helpers/Utils";
 import { DexCore } from "../../helpers/DexCore";
 import { Common } from "../../helpers/Errors";
+import { Utils } from "../../helpers/Utils";
 
 import { rejects } from "assert";
 
@@ -10,16 +10,22 @@ import { BigNumber } from "bignumber.js";
 
 import accounts from "../../../scripts/sandbox/accounts";
 
+import { bakerRegistryStorage } from "../../../storage/BakerRegistry";
 import { dexCoreStorage } from "../../../storage/DexCore";
+import { fa12Storage } from "../../../storage/test/FA12";
 
-import { LaunchCallback } from "test/types/DexCore";
+import { LaunchCallback, LaunchExchange } from "test/types/DexCore";
+import { BakerRegistry } from "test/helpers/BakerRegistry";
 import { SBAccount } from "test/types/Common";
+import { FA12 } from "test/helpers/FA12";
 
 chai.use(require("chai-bignumber")(BigNumber));
 
 describe("DexCore (callbacks)", async () => {
-  var utils: Utils;
+  var bakerRegistry: BakerRegistry;
   var dexCore: DexCore;
+  var fa12Token1: FA12;
+  var utils: Utils;
 
   var alice: SBAccount = accounts.alice;
 
@@ -28,13 +34,19 @@ describe("DexCore (callbacks)", async () => {
 
     await utils.init(alice.sk);
 
+    bakerRegistry = await BakerRegistry.originate(
+      utils.tezos,
+      bakerRegistryStorage
+    );
+
     dexCoreStorage.storage.admin = alice.pkh;
-    dexCoreStorage.storage.collecting_period = defaultCollectingPeriod;
-    dexCoreStorage.storage.baker_registry = alice.pkh;
+    dexCoreStorage.storage.baker_registry = bakerRegistry.contract.address;
 
     dexCore = await DexCore.originate(utils.tezos, dexCoreStorage);
 
     await dexCore.setLambdas();
+
+    fa12Token1 = await FA12.originate(utils.tezos, fa12Storage);
   });
 
   it("should fail if not dex core is trying to call launch exchange callback", async () => {
@@ -55,5 +67,36 @@ describe("DexCore (callbacks)", async () => {
 
       return true;
     });
+  });
+
+  it("should fail if not dex core is trying to call it", async () => {
+    await rejects(dexCore.close(), (err: Error) => {
+      expect(err.message).to.equal(Common.ERR_NOT_DEX_CORE);
+
+      return true;
+    });
+  });
+
+  it("should close (reentrancy protection)", async () => {
+    await dexCore.updateStorage();
+
+    expect(dexCore.storage.storage.entered).to.be.false;
+
+    const params: LaunchExchange = {
+      pair: {
+        token_a: { fa12: fa12Token1.contract.address },
+        token_b: { tez: undefined },
+      },
+      token_a_in: new BigNumber(100),
+      token_b_in: new BigNumber(100),
+      shares_receiver: alice.pkh,
+      candidate: alice.pkh,
+    };
+
+    await fa12Token1.approve(dexCore.contract.address, params.token_a_in);
+    await dexCore.launchExchange(params, params.token_b_in.toNumber());
+    await dexCore.updateStorage();
+
+    expect(dexCore.storage.storage.entered).to.be.false;
   });
 });

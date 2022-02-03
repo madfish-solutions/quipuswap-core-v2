@@ -34,19 +34,21 @@ import {
   TokensPerShare,
   LaunchExchange,
   Pair,
+  Swap,
 } from "test/types/DexCore";
 
 chai.use(require("chai-bignumber")(BigNumber));
 
 describe("DexCore (divest liquidity)", async () => {
-  var utils: Utils;
   var bakerRegistry: BakerRegistry;
+  var dexCore2: DexCore;
   var auction: Auction;
   var dexCore: DexCore;
   var fa12Token1: FA12;
   var fa12Token2: FA12;
   var fa2Token1: FA2;
   var fa2Token2: FA2;
+  var utils: Utils;
 
   var alice: SBAccount = accounts.alice;
   var bob: SBAccount = accounts.bob;
@@ -61,6 +63,7 @@ describe("DexCore (divest liquidity)", async () => {
       bakerRegistryStorage
     );
 
+    dexCoreStorage.storage.entered = false;
     dexCoreStorage.storage.admin = alice.pkh;
     dexCoreStorage.storage.cycle_duration = defaultCycleDuration;
     dexCoreStorage.storage.voting_period = defaultVotingPeriod;
@@ -69,7 +72,12 @@ describe("DexCore (divest liquidity)", async () => {
 
     dexCore = await DexCore.originate(utils.tezos, dexCoreStorage);
 
+    dexCoreStorage.storage.entered = true;
+
+    dexCore2 = await DexCore.originate(utils.tezos, dexCoreStorage);
+
     await dexCore.setLambdas();
+    await dexCore2.setLambdas();
 
     fa12Token1 = await FA12.originate(utils.tezos, fa12Storage);
     fa12Token2 = await FA12.originate(utils.tezos, fa12Storage);
@@ -186,6 +194,22 @@ describe("DexCore (divest liquidity)", async () => {
 
     await fa12Token1.approve(dexCore.contract.address, launchParams.token_a_in);
     await dexCore.launchExchange(launchParams);
+  });
+
+  it("should fail if reentrancy", async () => {
+    const swapParams: Swap = {
+      swaps: [{ direction: { a_to_b: undefined }, pair_id: new BigNumber(0) }],
+      receiver: alice.pkh,
+      referrer: bob.pkh,
+      amount_in: new BigNumber(1),
+      min_amount_out: new BigNumber(1),
+    };
+
+    await rejects(dexCore2.swap(swapParams), (err: Error) => {
+      expect(err.message).to.equal(DexCoreErrors.ERR_REENTRANCY);
+
+      return true;
+    });
   });
 
   it("should fail if pair not listed", async () => {

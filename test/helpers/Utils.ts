@@ -1,8 +1,4 @@
-import {
-  TransactionOperation,
-  TezosToolkit,
-  MichelsonMap,
-} from "@taquito/taquito";
+import { TransactionOperation, TezosToolkit } from "@taquito/taquito";
 import { InMemorySigner } from "@taquito/signer";
 
 import { BigNumber } from "bignumber.js";
@@ -19,7 +15,7 @@ const network = env.network || defaultNetwork;
 export class Utils {
   tezos: TezosToolkit;
 
-  async init(providerSK: string): Promise<void> {
+  async init(providerSK: string): Promise<TezosToolkit> {
     const networkConfig = env.networks[network];
 
     this.tezos = new TezosToolkit(networkConfig.rpc);
@@ -29,6 +25,8 @@ export class Utils {
       },
       signer: await InMemorySigner.fromSecretKey(providerSK),
     });
+
+    return this.tezos;
   }
 
   async setProvider(newProviderSK: string): Promise<void> {
@@ -51,34 +49,6 @@ export class Utils {
 
   async getLastBlockTimestamp(): Promise<number> {
     return Date.parse((await this.tezos.rpc.getBlockHeader()).timestamp);
-  }
-
-  static destructObj(obj: any) {
-    const strs: string[] = ["tez", "fa12", "fa2", "tokan_a", "tokan_b"];
-    let arr: any[] = [];
-
-    Object.keys(obj).map(function (k) {
-      if (strs.includes(k)) {
-        arr.push(k);
-      }
-
-      if (obj[k] instanceof BigNumber) {
-        arr.push(obj[k].toFixed());
-      } else if (obj[k] instanceof MichelsonMap || Array.isArray(obj[k])) {
-        arr.push(obj[k]);
-      } else if (
-        typeof obj[k] === "object" &&
-        (!(obj[k] instanceof Date) ||
-          !(obj[k] instanceof null) ||
-          !(obj[k] instanceof undefined))
-      ) {
-        arr = arr.concat(Utils.destructObj(obj[k]));
-      } else {
-        arr.push(obj[k]);
-      }
-    });
-
-    return arr;
   }
 
   static getMinFA12Token(tokenA: FA12Token, tokenB: FA12Token): string {

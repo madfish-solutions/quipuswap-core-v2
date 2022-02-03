@@ -40,6 +40,7 @@ describe("TezStore (views)", async () => {
       bakerRegistryStorage
     );
 
+    dexCoreStorage.storage.entered = false;
     dexCoreStorage.storage.admin = alice.pkh;
     dexCoreStorage.storage.baker_registry = bakerRegistry.contract.address;
 

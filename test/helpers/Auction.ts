@@ -19,8 +19,6 @@ import { confirmOperation } from "../../scripts/confirmation";
 
 import auctionLambdas from "../../build/lambdas/auction_lambdas.json";
 
-import { Utils } from "./Utils";
-
 import { PRECISION } from "./Constants";
 
 import {
@@ -155,8 +153,8 @@ export class Auction {
     params: ReceiveFee,
     mutezAmount: number = 0
   ): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methods
-      .receive_fee(...Utils.destructObj(params))
+    const operation: TransactionOperation = await this.contract.methodsObject
+      .receive_fee(params)
       .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
@@ -165,8 +163,8 @@ export class Auction {
   }
 
   async launchAuction(params: LaunchAuction): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methods
-      .launch_auction(...Utils.destructObj(params))
+    const operation: TransactionOperation = await this.contract.methodsObject
+      .launch_auction(params)
       .send();
 
     await confirmOperation(this.tezos, operation.hash);
@@ -175,8 +173,8 @@ export class Auction {
   }
 
   async placeBid(params: PlaceBid): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methods
-      .place_bid(...Utils.destructObj(params))
+    const operation: TransactionOperation = await this.contract.methodsObject
+      .place_bid(params)
       .send();
 
     await confirmOperation(this.tezos, operation.hash);
@@ -225,8 +223,8 @@ export class Auction {
   }
 
   async setFees(params: Fees): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methods
-      .set_fees(...Utils.destructObj(params))
+    const operation: TransactionOperation = await this.contract.methodsObject
+      .set_fees(params)
       .send();
 
     await confirmOperation(this.tezos, operation.hash);
@@ -259,8 +257,8 @@ export class Auction {
   async updateWhitelist(
     params: UpdateWhitelist
   ): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methods
-      .update_whitelist(...Utils.destructObj(params))
+    const operation: TransactionOperation = await this.contract.methodsObject
+      .update_whitelist(params)
       .send();
 
     await confirmOperation(this.tezos, operation.hash);
@@ -269,8 +267,8 @@ export class Auction {
   }
 
   async withdrawDevFee(params: WithdrawFee): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methods
-      .withdraw_dev_fee(...Utils.destructObj(params))
+    const operation: TransactionOperation = await this.contract.methodsObject
+      .withdraw_dev_fee(params)
       .send();
 
     await confirmOperation(this.tezos, operation.hash);
@@ -279,8 +277,8 @@ export class Auction {
   }
 
   async withdrawPulicFee(params: WithdrawFee): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methods
-      .withdraw_public_fee(...Utils.destructObj(params))
+    const operation: TransactionOperation = await this.contract.methodsObject
+      .withdraw_public_fee(params)
       .send();
 
     await confirmOperation(this.tezos, operation.hash);

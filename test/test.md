@@ -94,6 +94,7 @@
 
 1. `launch_exchange`:
 
+   - ✅ should fail if reentrancy;
    - ✅ should fail if wrong pair order was passed with TEZ token and TEZ token;
    - ✅ should fail if wrong pair order was passed with FA1.2 token and TEZ token;
    - ✅ should fail if wrong pair order was passed with FA2 token and TEZ token;
@@ -122,6 +123,7 @@
 
 2. `invest_liquidity`:
 
+   - ✅ should fail if reentrancy;
    - ✅ should fail if pair not listed;
    - ✅ should fail if pair does not have liquidity;
    - ✅ should fail if investor expects zero shares amount in result of investment;
@@ -145,6 +147,7 @@
 
 3. `divest_liquidity`:
 
+   - ✅ should fail if reentrancy;
    - ✅ should fail if pair not listed;
    - ✅ should fail if pair does not have liquidity;
    - ✅ should fail if a divestor have an insufficient liquidity balance;
@@ -168,26 +171,35 @@
 
 4. `flash_swap`:
 
+   - ❌ should fail if reentrancy;
    - ❌
 
 5. `swap`:
 
+   - ✅ should fail if reentrancy;
+   - ✅ should fail if user is trying to refer himself;
+   - ✅ should fail if empty route;
+   - ✅ should fail if pair not listed;
    - ❌
 
 6. `withdraw_profit`:
 
+   - ❌ should fail if reentrancy;
    - ❌
 
 7. `claim_tok_interface_fee`:
 
+   - ❌ should fail if reentrancy;
    - ❌
 
 8. `claim_tez_interface_fee`:
 
+   - ❌ should fail if reentrancy;
    - ❌
 
 9. `withdraw_auction_fee`:
 
+   - ❌ should fail if reentrancy;
    - ❌
 
 10. `set_admin`:
@@ -257,6 +269,11 @@
 
 21. `permit`:
 
+    - ✅ alice generates permit payload, bob submits it to the contract;
+    - ✅ carol calls transfer on alice's behalf;
+    - ✅ carol can't use bob's transfer anymore;
+    - ✅ alice generates permit, bob submits it, alice sets expiry;
+    - ✅ carol calls transfer on alice's behalf too late;
     - ❌
 
 22. `ser_expiry`:
@@ -265,6 +282,7 @@
 
 23. `transfer`:
 
+    - ✅ should fail if reentrancy;
     - ✅ should fail if token ID from request not found;
     - ✅ should fail if one token ID from list of requests not found;
     - ✅ should fail if not operator is trying to transfer tokens;
@@ -320,15 +338,26 @@
     - ❌ should fail if pair not listed;
     - ❌
 
-30. `flash_swap_callback`:
+30. `flash_swap_callback_1`:
 
+    - ❌ should fail if not dex core is trying to call it;
     - ❌
 
-31. `launch_callback`:
+31. `flash_swap_callback_2`:
+
+    - ❌ should fail if not dex core is trying to call it;
+    - ❌
+
+32. `launch_callback`:
 
     - ✅ should fail if not dex core is trying to call launch exchange callback.
 
-32. `check_is_banned_baker` [VIEW]:
+33. `close`:
+
+    - ✅ should fail if not dex core is trying to call it;
+    - ✅ should close (reentrancy protection).
+
+34. `check_is_banned_baker` [VIEW]:
 
     - ✅ should fail if pair not listed;
     - ✅ should fail if pair does not have TEZ store contract (not TOK/TEZ pair);
@@ -336,48 +365,48 @@
     - ✅ should return false if baker is not banned;
     - ✅ should return false if baker's banning period is finished.
 
-33. `get_reserves` [VIEW]:
+35. `get_reserves` [VIEW]:
 
     - ✅ should fail if pair not listed;
     - ✅ should fail if one pair from list not listed;
     - ✅ should return proper reserves for pair;
     - ✅ should return proper reserves for all pairs in a list.
 
-34. `get_total_supply` [VIEW]:
+36. `get_total_supply` [VIEW]:
 
     - ✅ should fail if pair not listed;
     - ✅ should fail if one pair from list not listed;
     - ✅ should return proper total supply for pair;
     - ✅ should return proper total supply for all pairs in a list.
 
-35. `get_swap_min_res` [VIEW]:
+37. `get_swap_min_res` [VIEW]:
 
     - ❌
 
-36. `get_toks_per_share` [VIEW]:
+38. `get_toks_per_share` [VIEW]:
 
     - ✅ should fail if pair not listed;
     - ✅ should fail if one pair from list not listed;
     - ✅ should return proper tokens per shares amount for pair;
     - ✅ should return proper tokens per shares anount for all pairs in a list.
 
-37. `get_cumulative_prices` [VIEW]:
+39. `get_cumulative_prices` [VIEW]:
 
     - ❌
 
-38. `get_voting_period` [VIEW]:
+40. `get_voting_period` [VIEW]:
 
     - ✅ should return proper voting period.
 
-39. `get_collecting_period` [VIEW]:
+41. `get_collecting_period` [VIEW]:
 
     - ✅ should return proper collecting period.
 
-40. `get_cycle_duration` [VIEW]:
+42. `get_cycle_duration` [VIEW]:
 
     - ✅ should return proper cycle duration.
 
-41. `integration_tests`:
+43. `integration_tests`:
 
     - ❌ should launch exchange, invest liquidity, swap, divest all liquidity and call launch exchange one more time successfully;
     - ❌ should not deploy a new TEZ store in time of a second launch of an TOK/TEZ exchange;

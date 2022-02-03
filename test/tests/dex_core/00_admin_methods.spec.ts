@@ -35,12 +35,12 @@ import {
 chai.use(require("chai-bignumber")(BigNumber));
 
 describe("DexCore (admin methods)", async () => {
-  var utils: Utils;
   var flashSwapsProxy: FlashSwapsProxy;
   var auction: Auction;
   var dexCore: DexCore;
   var firstToken: FA12;
   var secondToken: FA2;
+  var utils: Utils;
 
   var alice: SBAccount = accounts.alice;
   var bob: SBAccount = accounts.bob;
@@ -51,6 +51,7 @@ describe("DexCore (admin methods)", async () => {
 
     await utils.init(alice.sk);
 
+    dexCoreStorage.storage.entered = false;
     dexCoreStorage.storage.admin = alice.pkh;
     dexCoreStorage.storage.baker_registry = alice.pkh;
 

@@ -19,8 +19,6 @@ import {
   Vote,
 } from "../types/TezStore";
 
-import { Utils } from "./Utils";
-
 export class TezStore {
   contract: Contract;
   storage: TezStoreStorage;
@@ -110,8 +108,8 @@ export class TezStore {
   }
 
   async divestTez(params: DivestTez): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methods
-      .divest_tez(...Utils.destructObj(params))
+    const operation: TransactionOperation = await this.contract.methodsObject
+      .divest_tez(params)
       .send();
 
     await confirmOperation(this.tezos, operation.hash);
@@ -122,8 +120,8 @@ export class TezStore {
   async withdrawRewards(
     params: WithdrawRewards
   ): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methods
-      .withdraw_rewards(...Utils.destructObj(params))
+    const operation: TransactionOperation = await this.contract.methodsObject
+      .withdraw_rewards(params)
       .send();
 
     await confirmOperation(this.tezos, operation.hash);
@@ -132,8 +130,8 @@ export class TezStore {
   }
 
   async banBaker(params: BanBaker): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methods
-      .ban_baker(...Utils.destructObj(params))
+    const operation: TransactionOperation = await this.contract.methodsObject
+      .ban_baker(params)
       .send();
 
     await confirmOperation(this.tezos, operation.hash);
@@ -142,8 +140,8 @@ export class TezStore {
   }
 
   async vote(params: Vote): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methods
-      .vote(...Utils.destructObj(params))
+    const operation: TransactionOperation = await this.contract.methodsObject
+      .vote(params)
       .send();
 
     await confirmOperation(this.tezos, operation.hash);

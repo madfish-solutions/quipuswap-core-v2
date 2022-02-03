@@ -38,7 +38,6 @@ import {
 chai.use(require("chai-bignumber")(BigNumber));
 
 describe("DexCore (views)", async () => {
-  var utils: Utils;
   var bakerRegistry: BakerRegistry;
   var auction: Auction;
   var dexCore: DexCore;
@@ -46,6 +45,7 @@ describe("DexCore (views)", async () => {
   var fa12Token2: FA12;
   var fa2Token1: FA2;
   var fa2Token2: FA2;
+  var utils: Utils;
 
   var alice: SBAccount = accounts.alice;
 
@@ -59,6 +59,7 @@ describe("DexCore (views)", async () => {
       bakerRegistryStorage
     );
 
+    dexCoreStorage.storage.entered = false;
     dexCoreStorage.storage.admin = alice.pkh;
     dexCoreStorage.storage.cycle_duration = defaultCycleDuration;
     dexCoreStorage.storage.voting_period = defaultVotingPeriod;
