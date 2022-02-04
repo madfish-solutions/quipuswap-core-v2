@@ -47,7 +47,7 @@ export const getContractsList = () => {
 export const getMigrationsList = () => {
   return fs
     .readdirSync(env.migrationsDir)
-    .filter((file) => file.endsWith(".js"))
+    .filter((file) => file.endsWith(".ts"))
     .map((file) => file.slice(0, file.length - 3));
 };
 
@@ -206,7 +206,7 @@ export const runMigrations = async (
     const tezos: TezosToolkit = new TezosToolkit(networkConfig.rpc);
 
     for (let i: number = from; i < to; ++i) {
-      const execMigration: any = require(`../${env.migrationsDir}/${migrations[i]}.js`);
+      const execMigration: any = require(`../${env.migrationsDir}/${migrations[i]}.ts`);
 
       await execMigration(tezos);
     }

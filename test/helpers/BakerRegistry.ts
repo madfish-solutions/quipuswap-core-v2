@@ -37,8 +37,9 @@ export class BakerRegistry {
     tezos: TezosToolkit,
     storage: BakerRegistryStorage
   ): Promise<BakerRegistry> {
-    const artifacts: any = JSON.parse(
-      fs.readFileSync(`${env.buildDir}/baker_registry.json`).toString()
+    const contract: string = "baker_registry";
+    let artifacts: any = JSON.parse(
+      fs.readFileSync(`${env.buildDir}/${contract}.json`).toString()
     );
     const operation: OriginationOperation = await tezos.contract
       .originate({
@@ -52,6 +53,17 @@ export class BakerRegistry {
       });
 
     await confirmOperation(tezos, operation.hash);
+
+    artifacts.networks[env.network] = { [contract]: operation.contractAddress };
+
+    if (!fs.existsSync(env.buildDir)) {
+      fs.mkdirSync(env.buildDir);
+    }
+
+    fs.writeFileSync(
+      `${env.buildDir}/${contract}.json`,
+      JSON.stringify(artifacts, null, 2)
+    );
 
     return new BakerRegistry(
       await tezos.contract.at(operation.contractAddress),

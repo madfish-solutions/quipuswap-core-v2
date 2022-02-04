@@ -53,8 +53,9 @@ export class Auction {
     tezos: TezosToolkit,
     storage: AuctionStorage
   ): Promise<Auction> {
-    const artifacts: any = JSON.parse(
-      fs.readFileSync(`${env.buildDir}/auction.json`).toString()
+    const contract: string = "auction";
+    let artifacts: any = JSON.parse(
+      fs.readFileSync(`${env.buildDir}/${contract}.json`).toString()
     );
     const operation: OriginationOperation = await tezos.contract
       .originate({
@@ -68,6 +69,17 @@ export class Auction {
       });
 
     await confirmOperation(tezos, operation.hash);
+
+    artifacts.networks[env.network] = { [contract]: operation.contractAddress };
+
+    if (!fs.existsSync(env.buildDir)) {
+      fs.mkdirSync(env.buildDir);
+    }
+
+    fs.writeFileSync(
+      `${env.buildDir}/${contract}.json`,
+      JSON.stringify(artifacts, null, 2)
+    );
 
     return new Auction(
       await tezos.contract.at(operation.contractAddress),

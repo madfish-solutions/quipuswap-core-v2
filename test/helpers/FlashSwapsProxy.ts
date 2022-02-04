@@ -37,8 +37,9 @@ export class FlashSwapsProxy {
     tezos: TezosToolkit,
     storage: FlashSwapsProxyStorage
   ): Promise<FlashSwapsProxy> {
-    const artifacts: any = JSON.parse(
-      fs.readFileSync(`${env.buildDir}/flash_swaps_proxy.json`).toString()
+    const contract: string = "flash_swaps_proxy";
+    let artifacts: any = JSON.parse(
+      fs.readFileSync(`${env.buildDir}/${contract}.json`).toString()
     );
     const operation: OriginationOperation = await tezos.contract
       .originate({
@@ -50,6 +51,17 @@ export class FlashSwapsProxy {
 
         return null;
       });
+
+    artifacts.networks[env.network] = { [contract]: operation.contractAddress };
+
+    if (!fs.existsSync(env.buildDir)) {
+      fs.mkdirSync(env.buildDir);
+    }
+
+    fs.writeFileSync(
+      `${env.buildDir}/${contract}.json`,
+      JSON.stringify(artifacts, null, 2)
+    );
 
     await confirmOperation(tezos, operation.hash);
 

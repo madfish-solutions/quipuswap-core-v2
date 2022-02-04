@@ -15,8 +15,8 @@ export default {
     pk: "edpku9qEgcyfNNDK6EpMvu5SqXDqWRLuxdMxdyH12ivTUuB1KXfGP4",
   },
   dev: {
-    pkh: "tz1cnoQrSzqqzpfVyKBesRikg2cyNhHWfAQQ",
-    sk: "edskRsRcJz77uZZwKHCud3uBktpzcDEwzzbdbU9e7t78kG51nPh1ZZZJ7TFLwmWXkDBdFAeevmZbH2WRdMErt9zubgxLkXwnYa",
+    pkh: "tz1Kyv3N8eG9JmEVUQh1AuaoxpqS39Zx92bE",
+    sk: "edskRjfbs8cMbqBpJBqAMS1SGbNsDytawj6xfxBC5PZZ4pUXfEYfJQEn6GVu1HWsLC5BgN8Qc3HReqkyAq5oM1jRcPQgyh2rvL",
     pk: "",
   },
 };
