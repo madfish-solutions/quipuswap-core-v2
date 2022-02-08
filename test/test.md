@@ -269,16 +269,29 @@
 
 21. `permit`:
 
-    - ✅ alice generates permit payload, bob submits it to the contract;
-    - ✅ carol calls transfer on alice's behalf;
-    - ✅ carol can't use bob's transfer anymore;
-    - ✅ alice generates permit, bob submits it, alice sets expiry;
-    - ✅ carol calls transfer on alice's behalf too late;
-    - ❌
+    - ✅ should generate permit payload and submit it to the contract by alice - 1;
+    - ✅ should generate permit payload and submit it to the contract by alice - 2;
+    - ✅ should generate permit payload and submit it to the contract by bob;
+    - ✅ should fail if bob is trying to submit duplicate permit;
+    - ✅ should generate permit payload by alice and submit it to the contract by bob;
+    - ✅ should fail if permit was missigned;
+    - ✅ should fail if permit was expired;
+    - ✅ should delete expired permits in time of submitting a new permit;
+    - ✅ should call permit by carol on bob's behalf;
+    - ✅ should fail if anyone is trying to use already used permit.
 
 22. `ser_expiry`:
 
-    - ❌
+    - ✅ should fail if not issuer is trying to set expiry - 1;
+    - ✅ should fail if not issuer is trying to set expiry - 2;
+    - ✅ should fail if not issuer is trying to set expiry - 3;
+    - ✅ should set default expiry for a user with permits;
+    - ✅ should set default expiry for a user without permits;
+    - ✅ should fail if user is trying to set default expiry that is bigger than max expiry;
+    - ✅ should fail if user is trying to set expiry that is bigger than max expiry for a specified permit;
+    - ✅ should not set an expiry for a specified permit if permit is already expired;
+    - ✅ should set an expiry for a specified permit;
+    - ✅ should set a 0 expiry for a specified permit.
 
 23. `transfer`:
 

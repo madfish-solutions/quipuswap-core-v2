@@ -29,6 +29,20 @@ export class Utils {
     return this.tezos;
   }
 
+  static async createTezos(providerSK: string): Promise<TezosToolkit> {
+    const networkConfig = env.networks[network];
+    const tezos: TezosToolkit = new TezosToolkit(networkConfig.rpc);
+
+    tezos.setProvider({
+      config: {
+        confirmationPollingTimeoutSecond: env.confirmationPollingTimeoutSecond,
+      },
+      signer: await InMemorySigner.fromSecretKey(providerSK),
+    });
+
+    return tezos;
+  }
+
   async setProvider(newProviderSK: string): Promise<void> {
     this.tezos.setProvider({
       signer: await InMemorySigner.fromSecretKey(newProviderSK),
@@ -100,3 +114,5 @@ export const defaultCollectingPeriod: BigNumber =
   defaultCycleDuration.multipliedBy(new BigNumber(12));
 
 export const defaultVotingPeriod: BigNumber = new BigNumber(2);
+
+export const defaulPermitExpiryLimit: BigNumber = new BigNumber(31_556_995_200);

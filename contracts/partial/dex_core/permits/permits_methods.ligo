@@ -128,9 +128,8 @@ function set_permit_expiry_with_check(
   const new_expiry      : seconds_t)
                         : option(permit_info_t) is
   block {
-    const permit_age: int = Tezos.now - permit_info.created_at;
-  } with
-    if permit_age >= int(new_expiry)
+    const permit_age: nat = get_nat_or_fail(Tezos.now - permit_info.created_at);
+  } with if permit_age >= new_expiry
     then (None : option(permit_info_t))
     else Some(permit_info with record [expiry = Some(new_expiry)])
 
@@ -141,8 +140,7 @@ function set_permit_expiry(
   const permits         : permits_t;
   const default_expiry  : seconds_t)
                         : permits_t is
-  if new_expiry < permit_expiry_limit
-  then case Big_map.find_opt(user, permits) of
+  case Big_map.find_opt(user, permits) of
   | None               -> permits
   | Some(user_permits) -> case Map.find_opt(permit, user_permits.permits) of
     | None              -> permits
@@ -159,4 +157,3 @@ function set_permit_expiry(
     } with Big_map.update(user, Some(updated_user_permits), permits)
     end
   end
-  else (failwith("EXPIRY_TOO_BIG") : permits_t)

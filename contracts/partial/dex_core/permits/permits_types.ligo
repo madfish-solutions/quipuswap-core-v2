@@ -39,4 +39,4 @@ const new_user_permits : user_permits_t = record [
   expiry  = (None : option(seconds_t))
 ]
 
-const permit_expiry_limit : nat = 2592000n; (* 30 days *)
+const permit_expiry_limit : nat = 31_556_995_200n; (* 1000 years *)
