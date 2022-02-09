@@ -180,6 +180,12 @@
    - ✅ should fail if user is trying to refer himself;
    - ✅ should fail if empty route;
    - ✅ should fail if pair not listed;
+   - ✅ should fail if wrong TEZ amount was sent to swap;
+   - ✅ should fail if a user expects too high min out;
+   - ✅ should fail if user passed zero amount in;
+   - ✅ should fail if user put a wrong route;
+   - ✅ should fail if too high price impact;
+   - ❌ should fail if pair does not have a liquidity;
    - ❌
 
 6. `withdraw_profit`:

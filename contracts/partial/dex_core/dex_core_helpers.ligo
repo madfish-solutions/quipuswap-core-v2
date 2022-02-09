@@ -214,8 +214,8 @@ function swap_internal(
     const rate_without_fee : nat = get_nat_or_fail(Constants.precision - fee_rate);
 
     const from_in_with_fee : nat = tmp.amount_in * rate_without_fee;
-    const numerator : nat = from_in_with_fee * swap.to_.pool / Constants.precision;
-    const denominator : nat = swap.from_.pool + from_in_with_fee;
+    const numerator : nat = from_in_with_fee * swap.to_.pool;
+    const denominator : nat = swap.from_.pool * Constants.precision + from_in_with_fee;
     const out : nat = numerator / denominator;
 
     const interface_fee : nat = tmp.amount_in * fees.interface_fee;
@@ -237,11 +237,11 @@ function swap_internal(
 
     tmp.s.auction_fee[tmp.token_in] := unwrap_or(tmp.s.auction_fee[tmp.token_in], 0n) + auction_fee;
 
-    assert_with_error(out * Constants.precision <= swap.to_.pool / 3n, DexCore.err_high_out);
+    assert_with_error(out <= swap.to_.pool / 3n, DexCore.err_high_out);
 
     swap.to_.pool := get_nat_or_fail(swap.to_.pool - out);
     swap.from_.pool := get_nat_or_fail(
-      swap.from_.pool + tmp.amount_in * Constants.precision - interface_fee - auction_fee
+      swap.from_.pool + (tmp.amount_in * Constants.precision - interface_fee - auction_fee) / Constants.precision
     );
 
     tmp.amount_in := out;
@@ -267,7 +267,14 @@ function swap_internal(
     tmp.s.pairs[params.pair_id] := updated_pair_2;
 
     if swap.to_.token = Tez
-    then tmp.operation := Some(transfer_tez((get_contract(tmp.receiver) : contract(unit)), out))
+    then {
+      const divest_params : divest_tez_t = record [
+        receiver     = (get_contract(tmp.receiver) : contract(unit));
+        amt          = out;
+      ];
+
+      tmp.operation := Some(get_divest_tez_op(divest_params, unwrap(pair.tez_store, DexCore.err_tez_store_404)));
+    }
     else tmp.operation := Some(transfer_token(Tezos.self_address, tmp.receiver, out, swap.to_.token));
   } with tmp
 

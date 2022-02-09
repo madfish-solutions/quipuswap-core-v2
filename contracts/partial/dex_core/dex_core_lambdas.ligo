@@ -396,11 +396,6 @@ function swap(
         | A_to_b -> tokens.token_a
         | B_to_a -> tokens.token_b
         end;
-
-        if token =/= Tez
-        then ops := transfer_token(Tezos.sender, Tezos.self_address, params.amount_in, token) # ops
-        else assert_with_error(params.amount_in = Tezos.amount / 1mutez, DexCore.err_wrong_tez_amount);
-
         const tmp : tmp_swap_t = List.fold(
           swap_internal,
           params.swaps,
@@ -419,6 +414,10 @@ function swap(
         s := tmp.s;
 
         ops := unwrap(tmp.operation, DexCore.err_empty_route) # ops;
+
+        if token =/= Tez
+        then ops := transfer_token(Tezos.sender, Tezos.self_address, params.amount_in, token) # ops
+        else assert_with_error(params.amount_in = Tezos.amount / 1mutez, DexCore.err_wrong_tez_amount);
       }
     | _ -> skip
     end

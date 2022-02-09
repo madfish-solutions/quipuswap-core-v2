@@ -25,8 +25,9 @@ import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa12Storage } from "../../../storage/test/FA12";
 import { fa2Storage } from "../../../storage/test/FA2";
 
+import { LaunchExchange, Swap } from "test/types/DexCore";
+import { PRECISION } from "test/helpers/Constants";
 import { SBAccount } from "test/types/Common";
-import { Swap } from "test/types/DexCore";
 
 chai.use(require("chai-bignumber")(BigNumber));
 
@@ -36,11 +37,7 @@ describe("DexCore (swap)", async () => {
   var auction: Auction;
   var dexCore: DexCore;
   var fa12Token1: FA12;
-  var fa12Token2: FA12;
-  var fa12Token3: FA12;
   var fa2Token1: FA2;
-  var fa2Token2: FA2;
-  var fa2Token3: FA2;
   var utils: Utils;
 
   var alice: SBAccount = accounts.alice;
@@ -62,6 +59,12 @@ describe("DexCore (swap)", async () => {
     dexCoreStorage.storage.cycle_duration = defaultCycleDuration;
     dexCoreStorage.storage.voting_period = defaultVotingPeriod;
     dexCoreStorage.storage.baker_registry = bakerRegistry.contract.address;
+    dexCoreStorage.storage.fees = {
+      interface_fee: new BigNumber(0.0005).multipliedBy(PRECISION),
+      swap_fee: new BigNumber(0.0005).multipliedBy(PRECISION),
+      auction_fee: new BigNumber(0.0005).multipliedBy(PRECISION),
+      withdraw_fee_reward: new BigNumber(0.0005).multipliedBy(PRECISION),
+    };
 
     dexCore = await DexCore.originate(utils.tezos, dexCoreStorage);
 
@@ -73,11 +76,7 @@ describe("DexCore (swap)", async () => {
     await dexCore2.setLambdas();
 
     fa12Token1 = await FA12.originate(utils.tezos, fa12Storage);
-    fa12Token2 = await FA12.originate(utils.tezos, fa12Storage);
-    fa12Token3 = await FA12.originate(utils.tezos, fa12Storage);
     fa2Token1 = await FA2.originate(utils.tezos, fa2Storage);
-    fa2Token2 = await FA2.originate(utils.tezos, fa2Storage);
-    fa2Token3 = await FA2.originate(utils.tezos, fa2Storage);
 
     auctionStorage.storage.admin = alice.pkh;
     auctionStorage.storage.dex_core = dexCore.contract.address;
@@ -86,6 +85,23 @@ describe("DexCore (swap)", async () => {
     auction = await Auction.originate(utils.tezos, auctionStorage);
 
     await auction.setLambdas();
+
+    const launchParams: LaunchExchange = {
+      pair: {
+        token_a: { fa12: fa12Token1.contract.address },
+        token_b: { tez: undefined },
+      },
+      token_a_in: new BigNumber(5_000_000),
+      token_b_in: new BigNumber(5_000_000),
+      shares_receiver: alice.pkh,
+      candidate: bob.pkh,
+    };
+
+    await fa12Token1.approve(dexCore.contract.address, launchParams.token_a_in);
+    await dexCore.launchExchange(
+      launchParams,
+      launchParams.token_b_in.toNumber()
+    );
   });
 
   it("should fail if reentrancy", async () => {
@@ -149,6 +165,89 @@ describe("DexCore (swap)", async () => {
 
     await rejects(dexCore.swap(swapParams), (err: Error) => {
       expect(err.message).to.equal(DexCoreErrors.ERR_PAIR_NOT_LISTED);
+
+      return true;
+    });
+  });
+
+  it("should fail if wrong TEZ amount was sent to swap", async () => {
+    const swapParams: Swap = {
+      swaps: [{ direction: { b_to_a: undefined }, pair_id: new BigNumber(0) }],
+      receiver: alice.pkh,
+      referrer: bob.pkh,
+      amount_in: new BigNumber(1),
+      min_amount_out: new BigNumber(0),
+    };
+
+    await rejects(dexCore.swap(swapParams), (err: Error) => {
+      expect(err.message).to.equal(DexCoreErrors.ERR_WRONG_TEZ_AMOUNT);
+
+      return true;
+    });
+  });
+
+  it("should fail if a user expects too high min out", async () => {
+    const swapParams: Swap = {
+      swaps: [{ direction: { a_to_b: undefined }, pair_id: new BigNumber(0) }],
+      receiver: alice.pkh,
+      referrer: bob.pkh,
+      amount_in: new BigNumber(5),
+      min_amount_out: new BigNumber(5),
+    };
+
+    await rejects(dexCore.swap(swapParams), (err: Error) => {
+      expect(err.message).to.equal(DexCoreErrors.ERR_HIGH_MIN_OUT);
+
+      return true;
+    });
+  });
+
+  it("should fail if user passed zero amount in", async () => {
+    const swapParams: Swap = {
+      swaps: [{ direction: { a_to_b: undefined }, pair_id: new BigNumber(0) }],
+      receiver: alice.pkh,
+      referrer: bob.pkh,
+      amount_in: new BigNumber(0),
+      min_amount_out: new BigNumber(0),
+    };
+
+    await rejects(dexCore.swap(swapParams), (err: Error) => {
+      expect(err.message).to.equal(DexCoreErrors.ERR_ZERO_IN);
+
+      return true;
+    });
+  });
+
+  it("should fail if user put a wrong route", async () => {
+    const swapParams: Swap = {
+      swaps: [
+        { direction: { a_to_b: undefined }, pair_id: new BigNumber(0) },
+        { direction: { a_to_b: undefined }, pair_id: new BigNumber(0) },
+      ],
+      receiver: alice.pkh,
+      referrer: bob.pkh,
+      amount_in: new BigNumber(5),
+      min_amount_out: new BigNumber(0),
+    };
+
+    await rejects(dexCore.swap(swapParams), (err: Error) => {
+      expect(err.message).to.equal(DexCoreErrors.ERR_WRONG_ROUTE);
+
+      return true;
+    });
+  });
+
+  it("should fail if too high price impact", async () => {
+    const swapParams: Swap = {
+      swaps: [{ direction: { a_to_b: undefined }, pair_id: new BigNumber(0) }],
+      receiver: alice.pkh,
+      referrer: bob.pkh,
+      amount_in: new BigNumber(5_000_000),
+      min_amount_out: new BigNumber(0),
+    };
+
+    await rejects(dexCore.swap(swapParams), (err: Error) => {
+      expect(err.message).to.equal(DexCoreErrors.ERR_HIGH_OUT);
 
       return true;
     });

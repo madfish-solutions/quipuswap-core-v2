@@ -233,10 +233,13 @@ export class DexCore {
     return operation;
   }
 
-  async swap(params: Swap): Promise<TransactionOperation> {
+  async swap(
+    params: Swap,
+    mutezAmount: number = 0
+  ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .swap(params)
-      .send();
+      .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
 
