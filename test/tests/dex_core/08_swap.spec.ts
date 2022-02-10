@@ -1,5 +1,6 @@
 import { DexCore as DexCoreErrors } from "../../helpers/Errors";
 import { BakerRegistry } from "../../helpers/BakerRegistry";
+import { PRECISION } from "../../helpers/Constants";
 import { Auction } from "../../helpers/Auction";
 import { DexCore } from "../../helpers/DexCore";
 import { FA12 } from "../../helpers/FA12";
@@ -26,7 +27,6 @@ import { fa12Storage } from "../../../storage/test/FA12";
 import { fa2Storage } from "../../../storage/test/FA2";
 
 import { SBAccount, Token } from "test/types/Common";
-import { PRECISION } from "test/helpers/Constants";
 import {
   DivestLiquidity,
   TokensPerShare,
@@ -783,7 +783,7 @@ describe("DexCore (swap)", async () => {
       dexCore.contract.address,
       swapParams.amount_in
     );
-    await dexCore.swap(swapParams, swapParams.amount_in.toNumber());
+    await dexCore.swap(swapParams);
     await token1Contract.updateStorage({
       ledger: [alice.pkh, dexCore.contract.address],
     });
@@ -898,7 +898,7 @@ describe("DexCore (swap)", async () => {
       dexCore.storage.storage.pairs[pairId.toFixed()].token_b_pool;
 
     await fa12Token1.approve(dexCore.contract.address, swapParams.amount_in);
-    await dexCore.swap(swapParams, swapParams.amount_in.toNumber());
+    await dexCore.swap(swapParams);
     await fa12Token1.updateStorage({
       ledger: [alice.pkh, dexCore.contract.address],
     });
@@ -1012,7 +1012,7 @@ describe("DexCore (swap)", async () => {
     const prevToPool: BigNumber =
       dexCore.storage.storage.pairs[pairId.toFixed()].token_a_pool;
 
-    await dexCore.swap(swapParams, swapParams.amount_in.toNumber());
+    await dexCore.swap(swapParams);
     await fa12Token1.updateStorage({
       ledger: [alice.pkh, dexCore.contract.address],
     });
@@ -1140,7 +1140,7 @@ describe("DexCore (swap)", async () => {
     const prevToPool: BigNumber =
       dexCore.storage.storage.pairs[pairId.toFixed()].token_b_pool;
 
-    await dexCore.swap(swapParams, swapParams.amount_in.toNumber());
+    await dexCore.swap(swapParams);
     await token1Contract.updateStorage({
       account_info: [alice.pkh, dexCore.contract.address],
     });

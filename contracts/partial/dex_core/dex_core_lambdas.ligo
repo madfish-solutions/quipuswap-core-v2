@@ -469,20 +469,16 @@ function claim_tok_interface_fee(
 
     case action of
     | Claim_tok_interface_fee(params) -> {
-        const interface_fee : nat = unwrap_or(s.tok_interface_fee[(params.token, Tezos.sender)], 0n);
+        const interface_fee_f : nat = unwrap_or(s.tok_interface_fee[(params.token, Tezos.sender)], 0n);
+        const amount_f : nat = params.amount * Constants.precision;
 
-        assert_with_error(
-          params.amount * Constants.precision <= interface_fee,
-          DexCore.err_insufficient_interface_fee_balance
-        );
+        assert_with_error(amount_f <= interface_fee_f, DexCore.err_insufficient_interface_fee_balance);
 
-        if interface_fee > 0n
+        if interface_fee_f > Constants.precision
         then {
-          ops := transfer_token(Tezos.self_address, params.receiver, params.amount, params.token) # ops;
+          s.tok_interface_fee[(params.token, Tezos.sender)] := get_nat_or_fail(interface_fee_f - amount_f);
 
-          s.tok_interface_fee[(params.token, Tezos.sender)] := get_nat_or_fail(
-            interface_fee - params.amount * Constants.precision
-          );
+          ops := transfer_token(Tezos.self_address, params.receiver, params.amount, params.token) # ops;
         }
         else skip;
       }
