@@ -25,9 +25,15 @@ import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa12Storage } from "../../../storage/test/FA12";
 import { fa2Storage } from "../../../storage/test/FA2";
 
-import { CalculateSwap, LaunchExchange, Swap } from "test/types/DexCore";
 import { SBAccount, Token } from "test/types/Common";
 import { PRECISION } from "test/helpers/Constants";
+import {
+  DivestLiquidity,
+  TokensPerShare,
+  LaunchExchange,
+  CalculateSwap,
+  Swap,
+} from "test/types/DexCore";
 
 chai.use(require("chai-bignumber")(BigNumber));
 
@@ -1200,5 +1206,43 @@ describe("DexCore (swap)", async () => {
     );
     expect(currFromPool).to.be.bignumber.equal(swapResult.newFromPool);
     expect(currToPool).to.be.bignumber.equal(swapResult.newToPool);
+  });
+
+  it("should fail if pair does not have a liquidity", async () => {
+    const pairId: BigNumber = new BigNumber(2);
+    const shares: BigNumber = new BigNumber(5_000_000);
+
+    await dexCore.updateStorage({
+      pairs: [pairId.toFixed()],
+    });
+
+    const divestedTokens: TokensPerShare = DexCore.getTokensPerShare(
+      shares,
+      dexCore.storage.storage.pairs[pairId.toFixed()]
+    );
+    const divestParams: DivestLiquidity = {
+      pair_id: pairId,
+      min_token_a_out: divestedTokens.token_a_amt,
+      min_token_b_out: divestedTokens.token_b_amt,
+      shares: shares,
+      liquidity_receiver: alice.pkh,
+      candidate: bob.pkh,
+    };
+
+    await dexCore.divestLiquidity(divestParams);
+
+    const swapParams: Swap = {
+      swaps: [{ direction: { a_to_b: undefined }, pair_id: pairId }],
+      receiver: alice.pkh,
+      referrer: bob.pkh,
+      amount_in: new BigNumber(100),
+      min_amount_out: new BigNumber(0),
+    };
+
+    await rejects(dexCore.swap(swapParams), (err: Error) => {
+      expect(err.message).to.equal(DexCoreErrors.ERR_NO_LIQUIDITY);
+
+      return true;
+    });
   });
 });
