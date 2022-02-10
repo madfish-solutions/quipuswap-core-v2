@@ -201,3 +201,11 @@ export type UserPermits = {
   permits: MichelsonMap<MichelsonMapKey, Permit>;
   expiry: BigNumber | null | undefined;
 };
+
+export type CalculateSwap = {
+  out: BigNumber;
+  interfaceFee: BigNumber;
+  auctionFee: BigNumber;
+  newFromPool: BigNumber;
+  newToPool: BigNumber;
+};

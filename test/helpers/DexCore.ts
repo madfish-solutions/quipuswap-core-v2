@@ -24,6 +24,8 @@ import { confirmOperation } from "../../scripts/confirmation";
 
 import dexCoreLambdas from "../../build/lambdas/dex_core_lambdas.json";
 
+import { PRECISION } from "./Constants";
+
 import { Utils } from "./Utils";
 
 import { BalanceResponse, Transfer, UpdateOperator } from "test/types/FA2";
@@ -39,6 +41,7 @@ import {
   LaunchCallback,
   RequiredTokens,
   TokensPerShare,
+  CalculateSwap,
   ClaimTokFee,
   ClaimTezFee,
   AddManager,
@@ -730,5 +733,48 @@ export class DexCore {
       .then((s) => s.prefixSig);
 
     return [signerKey, signature, paramHash];
+  }
+
+  static calculateSwap(
+    swapParams: Swap,
+    fees: Fees,
+    fromPool: BigNumber,
+    toPool: BigNumber
+  ): CalculateSwap {
+    const feeRate: BigNumber = fees.interface_fee
+      .plus(fees.swap_fee)
+      .plus(fees.auction_fee);
+    const rateWithoutFee: BigNumber = PRECISION.minus(feeRate);
+    const fromInWithFee: BigNumber =
+      swapParams.amount_in.multipliedBy(rateWithoutFee);
+    const numerator: BigNumber = fromInWithFee.multipliedBy(toPool);
+    const denominator: BigNumber = fromPool
+      .multipliedBy(PRECISION)
+      .plus(fromInWithFee);
+    const out: BigNumber = numerator
+      .dividedBy(denominator)
+      .integerValue(BigNumber.ROUND_DOWN);
+    const interfaceFee: BigNumber = swapParams.amount_in.multipliedBy(
+      fees.interface_fee
+    );
+    const auctionFee: BigNumber = swapParams.amount_in.multipliedBy(
+      fees.auction_fee
+    );
+    const newFromPool: BigNumber = fromPool.plus(
+      swapParams.amount_in
+        .multipliedBy(PRECISION)
+        .minus(interfaceFee)
+        .minus(auctionFee)
+        .dividedToIntegerBy(PRECISION)
+    );
+    const newToPool: BigNumber = toPool.minus(out);
+
+    return {
+      out,
+      interfaceFee,
+      auctionFee,
+      newFromPool,
+      newToPool,
+    };
   }
 }

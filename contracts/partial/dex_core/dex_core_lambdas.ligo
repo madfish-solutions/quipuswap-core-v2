@@ -392,6 +392,7 @@ function swap(
 
         const first_swap : swap_slice_t = unwrap(List.head_opt(params.swaps), DexCore.err_empty_route);
         const tokens : tokens_t = unwrap(s.tokens[first_swap.pair_id], DexCore.err_pair_not_listed);
+        const pair : pair_t = unwrap(s.pairs[first_swap.pair_id], DexCore.err_pair_not_listed);
         const token : token_t = case first_swap.direction of
         | A_to_b -> tokens.token_a
         | B_to_a -> tokens.token_b
@@ -417,7 +418,11 @@ function swap(
 
         if token =/= Tez
         then ops := transfer_token(Tezos.sender, Tezos.self_address, params.amount_in, token) # ops
-        else assert_with_error(params.amount_in = Tezos.amount / 1mutez, DexCore.err_wrong_tez_amount);
+        else {
+          assert_with_error(params.amount_in = Tezos.amount / 1mutez, DexCore.err_wrong_tez_amount);
+
+          ops := get_invest_tez_op(unwrap(pair.tez_store, DexCore.err_tez_store_404)) # ops;
+        };
       }
     | _ -> skip
     end

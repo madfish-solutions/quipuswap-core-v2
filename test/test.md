@@ -185,8 +185,16 @@
    - ✅ should fail if user passed zero amount in;
    - ✅ should fail if user put a wrong route;
    - ✅ should fail if too high price impact;
+   - ✅ should swap FA1.2 token to TEZ;
+   - ✅ should swap FA2 token to TEZ;
+   - ✅ should swap TEZ to FA1.2 token;
+   - ✅ should swap TEZ to FA2 token;
+   - ✅ should swap FA1.2 token to FA1.2 token;
+   - ✅ should swap FA1.2 token to FA2 token;
+   - ✅ should swap FA2 token to FA1.2 token;
+   - ✅ should swap FA2 token to FA2 token;
    - ❌ should fail if pair does not have a liquidity;
-   - ❌
+   - ❌ should calculate cumulative prices and update last block timestamp.
 
 6. `withdraw_profit`:
 
