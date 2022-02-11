@@ -204,15 +204,18 @@
 7. `claim_tok_interface_fee`:
 
    - ✅ should fail if reentrancy;
-   - ✅ should fail if insufficient interface fee balance - 1;
-   - ✅ should fail if insufficient interface fee balance - 2;
-   - ✅ should claim interface fee and transfer it to a receiver - 1;
-   - ✅ should claim interface fee and transfer it to a receiver - 2.
+   - ✅ should fail if insufficient TOK interface fee balance - 1;
+   - ✅ should fail if insufficient TOK interface fee balance - 2;
+   - ✅ should claim TOK interface fee and transfer it to a receiver - 1;
+   - ✅ should claim TOK interface fee and transfer it to a receiver - 2.
 
 8. `claim_tez_interface_fee`:
 
-   - ❌ should fail if reentrancy;
-   - ❌
+   - ✅ should fail if reentrancy;
+   - ✅ should fail if insufficient TEZ interface fee balance - 1;
+   - ✅ should fail if insufficient TEZ interface fee balance - 2;
+   - ✅ should claim TEZ interface fee and transfer it to a receiver - 1;
+   - ✅ should claim TEZ interface fee and transfer it to a receiver - 2.
 
 9. `withdraw_auction_fee`:
 

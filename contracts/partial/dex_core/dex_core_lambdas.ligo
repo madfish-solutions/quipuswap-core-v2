@@ -499,20 +499,20 @@ function claim_tez_interface_fee(
 
     case action of
     | Claim_tez_interface_fee(params) -> {
-        const interface_fee : nat = unwrap_or(s.tez_interface_fee[(params.pair_id, Tezos.sender)], 0n);
+        const interface_fee_f : nat = unwrap_or(s.tez_interface_fee[(params.pair_id, Tezos.sender)], 0n);
+        const amount_f : nat = params.amount * Constants.precision;
 
-        assert_with_error(
-          params.amount * Constants.precision <= interface_fee,
-          DexCore.err_insufficient_interface_fee_balance
-        );
+        assert_with_error(amount_f <= interface_fee_f, DexCore.err_insufficient_interface_fee_balance);
 
-        if interface_fee > 0n
+        if interface_fee_f > Constants.precision
         then {
           const pair : pair_t = unwrap(s.pairs[params.pair_id], DexCore.err_pair_not_listed);
           const divest_params : divest_tez_t = record [
             receiver     = (get_contract(params.receiver) : contract(unit));
             amt          = params.amount;
           ];
+
+          s.tez_interface_fee[(params.pair_id, Tezos.sender)] := get_nat_or_fail(interface_fee_f - amount_f);
 
           ops := get_divest_tez_op(divest_params, unwrap(pair.tez_store, DexCore.err_tez_store_404)) # ops;
         }
