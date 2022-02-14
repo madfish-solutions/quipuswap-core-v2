@@ -535,18 +535,21 @@ function withdraw_auction_fee(
 
     case action of
     | Withdraw_auction_fee(token) -> {
-        const auction_fee : nat = unwrap_or(s.auction_fee[token], 0n);
-        const reward : nat = auction_fee * s.fees.withdraw_fee_reward / Constants.precision;
+        const auction_fee_f : nat = unwrap_or(s.auction_fee[token], 0n);
+        const user_reward : nat = auction_fee_f * s.fees.withdraw_fee_reward / Constants.precision / Constants.precision;
+        const actual_auction_fee : nat = get_nat_or_fail(auction_fee_f / Constants.precision - user_reward);
         const params : receive_fee_t = record [
           token = token;
-          fee   = auction_fee;
+          fee   = actual_auction_fee;
         ];
 
-        ops := get_auction_receive_fee_op(params, s.auction) # ops;
-        ops := transfer_token(Tezos.self_address, s.auction, get_nat_or_fail(auction_fee - reward), token) # ops;
-        ops := transfer_token(Tezos.self_address, Tezos.sender, reward, token) # ops;
+        s.auction_fee[token] := get_nat_or_fail(
+          auction_fee_f - ((user_reward + actual_auction_fee) * Constants.precision)
+        );
 
-        s.auction_fee[token] := 0n;
+        ops := get_auction_receive_fee_op(params, s.auction) # ops;
+        ops := transfer_token(Tezos.self_address, s.auction, actual_auction_fee, token) # ops;
+        ops := transfer_token(Tezos.self_address, Tezos.sender, user_reward, token) # ops;
       }
     | _ -> skip
     end

@@ -219,8 +219,10 @@
 
 9. `withdraw_auction_fee`:
 
-   - ❌ should fail if reentrancy;
-   - ❌
+   - ✅ should fail if reentrancy;
+   - ✅ should withdraw FA1.2 auction fee;
+   - ✅ should withdraw FA2 auction fee;
+   - ❌ should withdraw TEZ auction fee.
 
 10. `set_admin`:
 

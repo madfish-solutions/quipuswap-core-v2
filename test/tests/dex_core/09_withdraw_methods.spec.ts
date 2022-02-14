@@ -68,8 +68,8 @@ describe("DexCore (withdraw methods)", async () => {
     dexCoreStorage.storage.fees = {
       interface_fee: new BigNumber(0.25).multipliedBy(PRECISION),
       swap_fee: new BigNumber(0.0005).multipliedBy(PRECISION),
-      auction_fee: new BigNumber(0.0005).multipliedBy(PRECISION),
-      withdraw_fee_reward: new BigNumber(0.0005).multipliedBy(PRECISION),
+      auction_fee: new BigNumber(0.25).multipliedBy(PRECISION),
+      withdraw_fee_reward: new BigNumber(0.05).multipliedBy(PRECISION),
     };
 
     dexCore = await DexCore.originate(utils.tezos, dexCoreStorage);
@@ -91,6 +91,7 @@ describe("DexCore (withdraw methods)", async () => {
     auction = await Auction.originate(utils.tezos, auctionStorage);
 
     await auction.setLambdas();
+    await dexCore.setAuction(auction.contract.address);
 
     let launchParams: LaunchExchange = {
       pair: {
@@ -490,4 +491,218 @@ describe("DexCore (withdraw methods)", async () => {
       prevTezTezStoreBalance.minus(claimParams.amount)
     );
   });
+
+  it("should fail if reentrancy", async () => {
+    const token: Token = { fa12: fa12Token1.contract.address };
+
+    await rejects(dexCore2.withdrawAuctionFee(token), (err: Error) => {
+      expect(err.message).to.equal(DexCoreErrors.ERR_REENTRANCY);
+
+      return true;
+    });
+  });
+
+  it("should withdraw FA1.2 auction fee", async () => {
+    const token: Token = { fa12: fa12Token1.contract.address };
+
+    await dexCore.updateStorage({ auction_fee: [token] });
+    await fa12Token1.updateStorage({
+      ledger: [dexCore.contract.address, auction.contract.address, alice.pkh],
+    });
+
+    const prevAuctionFee: BigNumber =
+      dexCore.storage.storage.auction_fee[token.toString()];
+    const prevDexCoreTokBal: BigNumber = fa12Token1.getBalance(
+      dexCore.contract.address
+    );
+    const prevAuctionTokBal: BigNumber = fa12Token1.getBalance(
+      auction.contract.address
+    );
+    const prevAliceTokBal: BigNumber = fa12Token1.getBalance(alice.pkh);
+
+    await utils.setProvider(alice.sk);
+    await dexCore.withdrawAuctionFee(token);
+    await dexCore.updateStorage({ auction_fee: [token] });
+    await fa12Token1.updateStorage({
+      ledger: [dexCore.contract.address, auction.contract.address, alice.pkh],
+    });
+
+    const userReward: BigNumber = prevAuctionFee
+      .multipliedBy(dexCore.storage.storage.fees.withdraw_fee_reward)
+      .dividedBy(PRECISION)
+      .integerValue(BigNumber.ROUND_FLOOR)
+      .dividedBy(PRECISION)
+      .integerValue(BigNumber.ROUND_FLOOR);
+    const actualAuctionFee: BigNumber = prevAuctionFee
+      .dividedBy(PRECISION)
+      .integerValue(BigNumber.ROUND_FLOOR)
+      .minus(userReward);
+    const currAuctionFee: BigNumber =
+      dexCore.storage.storage.auction_fee[token.toString()];
+    const currDexCoreTokBal: BigNumber = fa12Token1.getBalance(
+      dexCore.contract.address
+    );
+    const currAuctionTokBal: BigNumber = fa12Token1.getBalance(
+      auction.contract.address
+    );
+    const currAliceTokBal: BigNumber = fa12Token1.getBalance(alice.pkh);
+
+    expect(currAuctionFee).to.be.bignumber.equal(
+      prevAuctionFee.minus(
+        userReward.plus(actualAuctionFee).multipliedBy(PRECISION)
+      )
+    );
+    expect(currDexCoreTokBal).to.be.bignumber.equal(
+      prevDexCoreTokBal.minus(userReward.plus(actualAuctionFee))
+    );
+    expect(currAuctionTokBal).to.be.bignumber.equal(
+      prevAuctionTokBal.plus(actualAuctionFee)
+    );
+    expect(currAliceTokBal).to.be.bignumber.equal(
+      prevAliceTokBal.plus(userReward)
+    );
+  });
+
+  it("should withdraw FA2 auction fee", async () => {
+    const swapParams: Swap = {
+      swaps: [{ direction: { b_to_a: undefined }, pair_id: new BigNumber(0) }],
+      receiver: alice.pkh,
+      referrer: bob.pkh,
+      amount_in: new BigNumber(333),
+      min_amount_out: new BigNumber(0),
+    };
+
+    await dexCore.swap(swapParams);
+
+    const token: Token = {
+      fa2: { token: fa2Token1.contract.address, id: new BigNumber(0) },
+    };
+
+    await dexCore.updateStorage({ auction_fee: [token] });
+    await fa2Token1.updateStorage({
+      account_info: [
+        dexCore.contract.address,
+        auction.contract.address,
+        alice.pkh,
+      ],
+    });
+
+    const prevAuctionFee: BigNumber =
+      dexCore.storage.storage.auction_fee[token.toString()];
+    const prevDexCoreTokBal: BigNumber = await fa2Token1.getBalance(
+      dexCore.contract.address
+    );
+    const prevAuctionTokBal: BigNumber = await fa2Token1.getBalance(
+      auction.contract.address
+    );
+    const prevAliceTokBal: BigNumber = await fa2Token1.getBalance(alice.pkh);
+
+    await utils.setProvider(alice.sk);
+    await dexCore.withdrawAuctionFee(token);
+    await dexCore.updateStorage({ auction_fee: [token] });
+    await fa2Token1.updateStorage({
+      account_info: [
+        dexCore.contract.address,
+        auction.contract.address,
+        alice.pkh,
+      ],
+    });
+
+    const userReward: BigNumber = prevAuctionFee
+      .multipliedBy(dexCore.storage.storage.fees.withdraw_fee_reward)
+      .dividedBy(PRECISION)
+      .integerValue(BigNumber.ROUND_FLOOR)
+      .dividedBy(PRECISION)
+      .integerValue(BigNumber.ROUND_FLOOR);
+    const actualAuctionFee: BigNumber = prevAuctionFee
+      .dividedBy(PRECISION)
+      .integerValue(BigNumber.ROUND_FLOOR)
+      .minus(userReward);
+    const currAuctionFee: BigNumber =
+      dexCore.storage.storage.auction_fee[token.toString()];
+    const currDexCoreTokBal: BigNumber = await fa2Token1.getBalance(
+      dexCore.contract.address
+    );
+    const currAuctionTokBal: BigNumber = await fa2Token1.getBalance(
+      auction.contract.address
+    );
+    const currAliceTokBal: BigNumber = await fa2Token1.getBalance(alice.pkh);
+
+    expect(currAuctionFee).to.be.bignumber.equal(
+      prevAuctionFee.minus(
+        userReward.plus(actualAuctionFee).multipliedBy(PRECISION)
+      )
+    );
+    expect(currDexCoreTokBal).to.be.bignumber.equal(
+      prevDexCoreTokBal.minus(userReward.plus(actualAuctionFee))
+    );
+    expect(currAuctionTokBal).to.be.bignumber.equal(
+      prevAuctionTokBal.plus(actualAuctionFee)
+    );
+    expect(currAliceTokBal).to.be.bignumber.equal(
+      prevAliceTokBal.plus(userReward)
+    );
+  });
+
+  // it("should withdraw TEZ auction fee", async () => {
+  //   const token: Token = { tez: undefined };
+
+  //   await dexCore.updateStorage({ auction_fee: [token] });
+
+  //   const prevAuctionFee: BigNumber =
+  //     dexCore.storage.storage.auction_fee[token.toString()];
+  //   const prevDexCoreTokBal: BigNumber = await utils.tezos.tz.getBalance(
+  //     dexCore.contract.address
+  //   );
+  //   const prevAuctionTokBal: BigNumber = await utils.tezos.tz.getBalance(
+  //     auction.contract.address
+  //   );
+  //   const prevAliceTokBal: BigNumber = await utils.tezos.tz.getBalance(
+  //     alice.pkh
+  //   );
+
+  //   console.log(prevAuctionFee.toFixed());
+  //   console.log(prevDexCoreTokBal.toFixed());
+
+  //   await utils.setProvider(alice.sk);
+  //   await dexCore.withdrawAuctionFee(token);
+  //   await dexCore.updateStorage({ auction_fee: [token] });
+
+  //   const userReward: BigNumber = prevAuctionFee
+  //     .multipliedBy(dexCore.storage.storage.fees.withdraw_fee_reward)
+  //     .dividedBy(PRECISION)
+  //     .integerValue(BigNumber.ROUND_FLOOR)
+  //     .dividedBy(PRECISION)
+  //     .integerValue(BigNumber.ROUND_FLOOR);
+  //   const actualAuctionFee: BigNumber = prevAuctionFee
+  //     .dividedBy(PRECISION)
+  //     .integerValue(BigNumber.ROUND_FLOOR)
+  //     .minus(userReward);
+  //   const currAuctionFee: BigNumber =
+  //     dexCore.storage.storage.auction_fee[token.toString()];
+  //   const currDexCoreTokBal: BigNumber = await utils.tezos.tz.getBalance(
+  //     dexCore.contract.address
+  //   );
+  //   const currAuctionTokBal: BigNumber = await utils.tezos.tz.getBalance(
+  //     auction.contract.address
+  //   );
+  //   const currAliceTokBal: BigNumber = await utils.tezos.tz.getBalance(
+  //     alice.pkh
+  //   );
+
+  //   expect(currAuctionFee).to.be.bignumber.equal(
+  //     prevAuctionFee.minus(
+  //       userReward.plus(actualAuctionFee).multipliedBy(PRECISION)
+  //     )
+  //   );
+  //   expect(currDexCoreTokBal).to.be.bignumber.equal(
+  //     prevDexCoreTokBal.minus(userReward.plus(actualAuctionFee))
+  //   );
+  //   expect(currAuctionTokBal).to.be.bignumber.equal(
+  //     prevAuctionTokBal.plus(actualAuctionFee)
+  //   );
+  //   expect(currAliceTokBal).to.be.bignumber.equal(
+  //     prevAliceTokBal.plus(userReward)
+  //   );
+  // });
 });
