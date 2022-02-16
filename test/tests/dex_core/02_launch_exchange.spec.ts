@@ -938,41 +938,6 @@ describe("DexCore (launch exchange)", async () => {
     );
   });
 
-  it("should not calculate cumulative prices and should update last block timestamp in time of any exchange launch", async () => {
-    const params: LaunchExchange = {
-      pair: {
-        token_a: { fa12: fa12Token3.contract.address },
-        token_b: {
-          fa2: { token: fa2Token2.contract.address, id: new BigNumber(0) },
-        },
-      },
-      token_a_in: new BigNumber(666),
-      token_b_in: new BigNumber(666),
-      shares_receiver: alice.pkh,
-      candidate: alice.pkh,
-    };
-    const expectedPairId: BigNumber = new BigNumber(11);
-
-    await fa12Token3.approve(dexCore.contract.address, params.token_a_in);
-    await dexCore.launchExchange(params);
-    await dexCore.updateStorage({
-      pairs: [expectedPairId.toFixed()],
-    });
-
-    expect(
-      dexCore.storage.storage.pairs[expectedPairId.toFixed()].token_a_price_cum
-    ).to.be.bignumber.equal(new BigNumber(0));
-    expect(
-      dexCore.storage.storage.pairs[expectedPairId.toFixed()].token_b_price_cum
-    ).to.be.bignumber.equal(new BigNumber(0));
-    expect(
-      Date.parse(
-        dexCore.storage.storage.pairs[expectedPairId.toFixed()]
-          .last_block_timestamp
-      )
-    ).to.be.lte(await utils.getLastBlockTimestamp());
-  });
-
   it("should deploy TEZ store contract with correct initial storage in time of exchange launch with TEZ token", async () => {
     const params: LaunchExchange = {
       pair: {

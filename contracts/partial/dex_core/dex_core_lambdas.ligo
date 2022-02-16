@@ -47,11 +47,7 @@ function launch_exchange(
 
         const init_shares : nat = Math.min_nat(params.token_a_in, params.token_b_in);
 
-        var updated_pair : pair_t := calc_cumulative_prices(
-          pair,
-          params.token_a_in,
-          params.token_b_in
-        );
+        var updated_pair : pair_t := calc_cumulative_prices(pair, params.token_a_in, params.token_b_in);
 
         updated_pair.total_supply := init_shares;
 

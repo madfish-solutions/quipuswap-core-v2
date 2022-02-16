@@ -116,7 +116,6 @@
    - ✅ should transfer FA1.2 tokens in time of FA1.2/FA1.2 exchange launch;
    - ✅ should transfer FA2 tokens in time of FA2/FA2 exchange launch;
    - ✅ should transfer FA1.2 tokens and FA2 tokens in time of FA1.2/FA2 exchange launch;
-   - ✅ should not calculate cumulative prices and should update last block timestamp in time of any exchange launch.
    - ✅ should deploy TEZ store contract with correct initial storage in time of exchange launch with TEZ token;
    - ✅ should vote on TEZ store contract in time of exchange launch with TEZ token;
    - ❌ should vote on TEZ store contract if exchange already launched and have 0 liquidity.
@@ -142,8 +141,7 @@
    - ✅ should transfer FA1.2 tokens and FA2 tokens in time of FA1.2/FA2 liquidity investment;
    - ✅ should vote for the baker on TEZ store contract in time of FA1.2/TEZ liquidity investment;
    - ✅ should vote for the baker on TEZ store contract in time of FA2/TEZ liquidity investment;
-   - ❌ should return the TEZ change to the sender if too many TEZ was send;
-   - ❌ should calculate cumulative prices and update last block timestamp.
+   - ❌ should return the TEZ change to the sender if too many TEZ was send.
 
 3. `divest_liquidity`:
 
@@ -166,8 +164,7 @@
    - ✅ should transfer FA2 tokens in time of FA2/FA2 liquidity divestment;
    - ✅ should transfer FA1.2 tokens and FA2 tokens in time of FA1.2/FA2 liquidity divestment;
    - ✅ should vote for the baker on TEZ store contract in time of FA1.2/TEZ liquidity divestment;
-   - ✅ should vote for the baker on TEZ store contract in time of FA2/TEZ liquidity divestment;
-   - ❌ should calculate cumulative prices and update last block timestamp.
+   - ✅ should vote for the baker on TEZ store contract in time of FA2/TEZ liquidity divestment.
 
 4. `flash_swap`:
 
@@ -193,8 +190,7 @@
    - ✅ should swap FA1.2 token to FA2 token;
    - ✅ should swap FA2 token to FA1.2 token;
    - ✅ should swap FA2 token to FA2 token;
-   - ✅ should fail if pair does not have a liquidity;
-   - ❌ should calculate cumulative prices and update last block timestamp.
+   - ✅ should fail if pair does not have a liquidity.
 
 6. `withdraw_profit`:
 
@@ -437,7 +433,15 @@
 
     - ✅ should return proper cycle duration.
 
-42. `integration_tests`:
+42. `oracle_part`:
+
+    - ✅ should not calculate cumulative prices and should update last block timestamp in time of any exchange launch;
+    - ✅ should calculate cumulative prices and update last block timestamp in time of liquidity investment;
+    - ✅ should calculate cumulative prices and update last block timestamp in time of swap - 1;
+    - ✅ should calculate cumulative prices and update last block timestamp in time of liquidity divestment;
+    - ✅ should calculate cumulative prices and update last block timestamp in time of swap - 2.
+
+43. `integration_tests`:
 
     - ❌ should launch exchange, invest liquidity, swap, divest all liquidity and call launch exchange one more time successfully;
     - ❌ should not deploy a new TEZ store in time of a second launch of an TOK/TEZ exchange;

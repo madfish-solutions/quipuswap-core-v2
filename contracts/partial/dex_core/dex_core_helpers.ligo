@@ -166,31 +166,27 @@ function form_swap_data(
 function form_pools(
   const from_pool       : nat;
   const to_pool         : nat;
-  const tok_a_price_cum : nat;
-  const tok_b_price_cum : nat;
-  const supply          : nat;
-  const last_timestamp  : timestamp;
-  const tez_store_opt   : option(address);
+  const pair            : pair_t;
   const direction       : swap_direction_t)
                         : pair_t is
   case direction of
   | B_to_a -> record [
       token_a_pool         = to_pool;
       token_b_pool         = from_pool;
-      token_a_price_cum    = tok_a_price_cum;
-      token_b_price_cum    = tok_b_price_cum;
-      total_supply         = supply;
-      last_block_timestamp = last_timestamp;
-      tez_store            = tez_store_opt;
+      token_a_price_cum    = pair.token_a_price_cum;
+      token_b_price_cum    = pair.token_b_price_cum;
+      total_supply         = pair.total_supply;
+      last_block_timestamp = pair.last_block_timestamp;
+      tez_store            = pair.tez_store;
     ]
   | A_to_b -> record [
       token_a_pool         = from_pool;
       token_b_pool         = to_pool;
-      token_a_price_cum    = tok_b_price_cum;
-      token_b_price_cum    = tok_a_price_cum;
-      total_supply         = supply;
-      last_block_timestamp = last_timestamp;
-      tez_store            = tez_store_opt;
+      token_a_price_cum    = pair.token_a_price_cum;
+      token_b_price_cum    = pair.token_b_price_cum;
+      total_supply         = pair.total_supply;
+      last_block_timestamp = pair.last_block_timestamp;
+      tez_store            = pair.tez_store;
     ]
   end
 
@@ -284,24 +280,9 @@ function swap_internal(
     tmp.amount_in := out;
     tmp.token_in := swap.to_.token;
 
-    const updated_pair_1 : pair_t = form_pools(
-      swap.from_.pool,
-      swap.to_.pool,
-      pair.token_a_price_cum,
-      pair.token_b_price_cum,
-      pair.total_supply,
-      pair.last_block_timestamp,
-      pair.tez_store,
-      params.direction
-    );
+    const updated_pair_1 : pair_t = calc_cumulative_prices(pair, pair.token_a_pool, pair.token_b_pool);
 
-    var updated_pair_2 : pair_t := calc_cumulative_prices(
-      updated_pair_1,
-      updated_pair_1.token_a_pool,
-      updated_pair_1.token_b_pool
-    );
-
-    tmp.s.pairs[params.pair_id] := updated_pair_2;
+    tmp.s.pairs[params.pair_id] := form_pools(swap.from_.pool, swap.to_.pool, updated_pair_1, params.direction);
 
     if swap.to_.token = Tez
     then {

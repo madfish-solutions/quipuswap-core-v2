@@ -606,11 +606,11 @@ export class DexCore {
       tokens_a_required: shares
         .multipliedBy(pair.token_a_pool)
         .dividedBy(pair.total_supply)
-        .integerValue(BigNumber.ROUND_CEIL),
+        .integerValue(BigNumber.ROUND_DOWN),
       tokens_b_required: shares
         .multipliedBy(pair.token_b_pool)
         .dividedBy(pair.total_supply)
-        .integerValue(BigNumber.ROUND_CEIL),
+        .integerValue(BigNumber.ROUND_DOWN),
     };
   }
 
@@ -619,11 +619,11 @@ export class DexCore {
       token_a_amt: shares
         .multipliedBy(pair.token_a_pool)
         .dividedBy(pair.total_supply)
-        .integerValue(BigNumber.ROUND_CEIL),
+        .integerValue(BigNumber.ROUND_DOWN),
       token_b_amt: shares
         .multipliedBy(pair.token_b_pool)
         .dividedBy(pair.total_supply)
-        .integerValue(BigNumber.ROUND_CEIL),
+        .integerValue(BigNumber.ROUND_DOWN),
     };
   }
 
