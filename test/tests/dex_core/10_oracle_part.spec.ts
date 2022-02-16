@@ -35,7 +35,7 @@ import {
 
 chai.use(require("chai-bignumber")(BigNumber));
 
-describe.only("DexCore (oracle part)", async () => {
+describe("DexCore (oracle part)", async () => {
   var bakerRegistry: BakerRegistry;
   var auction: Auction;
   var dexCore: DexCore;

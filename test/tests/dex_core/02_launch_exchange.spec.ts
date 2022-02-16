@@ -949,7 +949,7 @@ describe("DexCore (launch exchange)", async () => {
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
     };
-    const expectedPairId: BigNumber = new BigNumber(12);
+    const expectedPairId: BigNumber = new BigNumber(11);
 
     await fa12Token3.approve(dexCore.contract.address, params.token_a_in);
     await dexCore.launchExchange(params, params.token_b_in.toNumber());
@@ -1047,7 +1047,7 @@ describe("DexCore (launch exchange)", async () => {
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
     };
-    const expectedPairId: BigNumber = new BigNumber(13);
+    const expectedPairId: BigNumber = new BigNumber(12);
 
     await dexCore.launchExchange(params, params.token_b_in.toNumber());
     await dexCore.updateStorage({
