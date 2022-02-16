@@ -11,6 +11,7 @@
 #include "../partial/common_helpers.ligo"
 
 #include "../partial/tez_store/tez_store_types.ligo"
+#include "../partial/tez_store/tez_store_actions.ligo"
 #include "../partial/tez_store/tez_store_helpers.ligo"
 #include "../partial/tez_store/tez_store_views.ligo"
 #include "../partial/tez_store/tez_store_methods.ligo"

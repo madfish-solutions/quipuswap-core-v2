@@ -64,14 +64,8 @@ export type WithdrawProfit = {
   pair_id: BigNumber;
 };
 
-export type ClaimTokFee = {
+export type ClaimFee = {
   token: Token;
-  receiver: string;
-  amount: BigNumber;
-};
-
-export type ClaimTezFee = {
-  pair_id: BigNumber;
   receiver: string;
   amount: BigNumber;
 };
@@ -139,9 +133,10 @@ export type DexCoreStorage = {
     token_to_id: MichelsonMap<MichelsonMapKey, unknown>;
     pairs: MichelsonMap<MichelsonMapKey, unknown>;
     permits: MichelsonMap<string, UserPermits>;
-    tok_interface_fee: MichelsonMap<MichelsonMapKey, unknown>;
-    tez_interface_fee: MichelsonMap<MichelsonMapKey, unknown>;
+    interface_fee: MichelsonMap<MichelsonMapKey, unknown>;
+    interface_tez_fee: MichelsonMap<MichelsonMapKey, unknown>;
     auction_fee: MichelsonMap<MichelsonMapKey, unknown>;
+    auction_tez_fee: MichelsonMap<MichelsonMapKey, unknown>;
     managers: string[];
     fees: Fees;
     tmp: Tmp;

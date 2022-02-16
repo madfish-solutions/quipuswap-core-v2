@@ -46,3 +46,10 @@ function setup_func(
     | None    -> s.auction_lambdas[params.idx] := params.func_bytes
     end;
   } with ((nil : list(operation)), s)
+
+function default(
+  const s               : full_storage_t)
+                        : full_return_t is
+  block {
+    skip;
+  } with ((nil : list(operation)), s)

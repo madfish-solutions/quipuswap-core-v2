@@ -26,13 +26,8 @@ import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa12Storage } from "../../../storage/test/FA12";
 import { fa2Storage } from "../../../storage/test/FA2";
 
+import { LaunchExchange, ClaimFee, Swap } from "test/types/DexCore";
 import { SBAccount, Token } from "test/types/Common";
-import {
-  LaunchExchange,
-  ClaimTezFee,
-  ClaimTokFee,
-  Swap,
-} from "test/types/DexCore";
 
 chai.use(require("chai-bignumber")(BigNumber));
 
@@ -137,27 +132,27 @@ describe("DexCore (withdraw methods)", async () => {
   });
 
   it("should fail if reentrancy", async () => {
-    const claimParams: ClaimTokFee = {
+    const claimParams: ClaimFee = {
       token: { fa12: fa12Token1.contract.address },
       receiver: alice.pkh,
       amount: new BigNumber(0),
     };
 
-    await rejects(dexCore2.claimTokInterfaceFee(claimParams), (err: Error) => {
+    await rejects(dexCore2.claimInterfaceFee(claimParams), (err: Error) => {
       expect(err.message).to.equal(DexCoreErrors.ERR_REENTRANCY);
 
       return true;
     });
   });
 
-  it("should fail if insufficient TOK interface fee balance - 1", async () => {
-    const claimParams: ClaimTokFee = {
+  it("should fail if insufficient interface fee balance - 1", async () => {
+    const claimParams: ClaimFee = {
       token: { fa12: fa12Token1.contract.address },
       receiver: alice.pkh,
       amount: new BigNumber(1),
     };
 
-    await rejects(dexCore.claimTokInterfaceFee(claimParams), (err: Error) => {
+    await rejects(dexCore.claimInterfaceFee(claimParams), (err: Error) => {
       expect(err.message).to.equal(
         DexCoreErrors.ERR_INSUFFICIENT_INTERFACE_FEE_BALANCE
       );
@@ -166,7 +161,7 @@ describe("DexCore (withdraw methods)", async () => {
     });
   });
 
-  it("should fail if insufficient TOK interface fee balance - 2", async () => {
+  it("should fail if insufficient interface fee balance - 2", async () => {
     const token: Token = { fa12: fa12Token1.contract.address };
     const swapParams: Swap = {
       swaps: [{ direction: { a_to_b: undefined }, pair_id: new BigNumber(0) }],
@@ -179,23 +174,23 @@ describe("DexCore (withdraw methods)", async () => {
     await fa12Token1.approve(dexCore.contract.address, swapParams.amount_in);
     await dexCore.swap(swapParams);
     await dexCore.updateStorage({
-      tok_interface_fee: [[token, swapParams.referrer]],
+      interface_fee: [[token, swapParams.referrer]],
     });
 
-    const availableTokInterfaceFee: BigNumber =
-      dexCore.storage.storage.tok_interface_fee[
+    const availableInterfaceFee: BigNumber =
+      dexCore.storage.storage.interface_fee[
         `${token.toString()},${swapParams.referrer}`
       ]
         .dividedBy(PRECISION)
         .integerValue(BigNumber.ROUND_FLOOR);
-    const claimParams: ClaimTokFee = {
-      token: { fa12: fa12Token1.contract.address },
+    const claimParams: ClaimFee = {
+      token: token,
       receiver: alice.pkh,
-      amount: availableTokInterfaceFee.plus(1),
+      amount: availableInterfaceFee.plus(1),
     };
 
     await utils.setProvider(bob.sk);
-    await rejects(dexCore.claimTokInterfaceFee(claimParams), (err: Error) => {
+    await rejects(dexCore.claimInterfaceFee(claimParams), (err: Error) => {
       expect(err.message).to.equal(
         DexCoreErrors.ERR_INSUFFICIENT_INTERFACE_FEE_BALANCE
       );
@@ -204,291 +199,375 @@ describe("DexCore (withdraw methods)", async () => {
     });
   });
 
-  it("should claim TOK interface fee and transfer it to a receiver - 1", async () => {
+  it("should claim FA1.2 interface fee and transfer it to a receiver - 1", async () => {
     const token: Token = { fa12: fa12Token1.contract.address };
     const receiver: string = carol.pkh;
     const referrer: string = bob.pkh;
 
     await dexCore.updateStorage({
-      tok_interface_fee: [[token, referrer]],
+      interface_fee: [[token, referrer]],
     });
     await fa12Token1.updateStorage({
       ledger: [receiver, dexCore.contract.address],
     });
 
-    const prevTokInterfaceFee: BigNumber =
-      dexCore.storage.storage.tok_interface_fee[
-        `${token.toString()},${referrer}`
-      ];
-    const prevTokReceiverBalance: BigNumber = fa12Token1.getBalance(receiver);
-    const prevTokDexCoreBalance: BigNumber = fa12Token1.getBalance(
+    const prevInterfaceFee: BigNumber =
+      dexCore.storage.storage.interface_fee[`${token.toString()},${referrer}`];
+    const prevReceiverTokBalance: BigNumber = fa12Token1.getBalance(receiver);
+    const prevDexCoreTokBalance: BigNumber = fa12Token1.getBalance(
       dexCore.contract.address
     );
-    const claimParams: ClaimTokFee = {
-      token: { fa12: fa12Token1.contract.address },
+    const claimParams: ClaimFee = {
+      token: token,
       receiver: receiver,
       amount: new BigNumber(25),
     };
 
-    await dexCore.claimTokInterfaceFee(claimParams);
+    await dexCore.claimInterfaceFee(claimParams);
     await dexCore.updateStorage({
-      tok_interface_fee: [[token, referrer]],
+      interface_fee: [[token, referrer]],
     });
     await fa12Token1.updateStorage({
       ledger: [receiver, dexCore.contract.address],
     });
 
-    const currTokInterfaceFee: BigNumber =
-      dexCore.storage.storage.tok_interface_fee[
-        `${token.toString()},${referrer}`
-      ];
-    const currTokReceiverBalance: BigNumber = fa12Token1.getBalance(receiver);
-    const currTokDexCoreBalance: BigNumber = fa12Token1.getBalance(
+    const currInterfaceFee: BigNumber =
+      dexCore.storage.storage.interface_fee[`${token.toString()},${referrer}`];
+    const currReceiverTokBalance: BigNumber = fa12Token1.getBalance(receiver);
+    const currDexCoreTokBalance: BigNumber = fa12Token1.getBalance(
       dexCore.contract.address
     );
 
-    expect(currTokInterfaceFee).to.be.bignumber.equal(
-      prevTokInterfaceFee.minus(claimParams.amount.multipliedBy(PRECISION))
+    expect(currInterfaceFee).to.be.bignumber.equal(
+      prevInterfaceFee.minus(claimParams.amount.multipliedBy(PRECISION))
     );
-    expect(currTokReceiverBalance).to.be.bignumber.equal(
-      prevTokReceiverBalance.plus(claimParams.amount)
+    expect(currReceiverTokBalance).to.be.bignumber.equal(
+      prevReceiverTokBalance.plus(claimParams.amount)
     );
-    expect(currTokDexCoreBalance).to.be.bignumber.equal(
-      prevTokDexCoreBalance.minus(claimParams.amount)
+    expect(currDexCoreTokBalance).to.be.bignumber.equal(
+      prevDexCoreTokBalance.minus(claimParams.amount)
     );
   });
 
-  it("should claim TOK interface fee and transfer it to a receiver - 2", async () => {
+  it("should claim FA1.2 interface fee and transfer it to a receiver - 2", async () => {
     const token: Token = { fa12: fa12Token1.contract.address };
     const receiver: string = alice.pkh;
     const referrer: string = bob.pkh;
 
     await dexCore.updateStorage({
-      tok_interface_fee: [[token, referrer]],
+      interface_fee: [[token, referrer]],
     });
     await fa12Token1.updateStorage({
       ledger: [receiver, dexCore.contract.address],
     });
 
-    const prevTokInterfaceFee: BigNumber =
-      dexCore.storage.storage.tok_interface_fee[
-        `${token.toString()},${referrer}`
-      ];
-    const prevTokReceiverBalance: BigNumber = fa12Token1.getBalance(receiver);
-    const prevTokDexCoreBalance: BigNumber = fa12Token1.getBalance(
+    const prevInterfaceFee: BigNumber =
+      dexCore.storage.storage.interface_fee[`${token.toString()},${referrer}`];
+    const prevReceiverTokBalance: BigNumber = fa12Token1.getBalance(receiver);
+    const prevDexCoreTokBalance: BigNumber = fa12Token1.getBalance(
       dexCore.contract.address
     );
-    const claimParams: ClaimTokFee = {
-      token: { fa12: fa12Token1.contract.address },
+    const claimParams: ClaimFee = {
+      token: token,
       receiver: receiver,
-      amount: prevTokInterfaceFee
+      amount: prevInterfaceFee
         .dividedBy(PRECISION)
         .integerValue(BigNumber.ROUND_FLOOR),
     };
 
-    await dexCore.claimTokInterfaceFee(claimParams);
+    await dexCore.claimInterfaceFee(claimParams);
     await dexCore.updateStorage({
-      tok_interface_fee: [[token, referrer]],
+      interface_fee: [[token, referrer]],
     });
     await fa12Token1.updateStorage({
       ledger: [receiver, dexCore.contract.address],
     });
 
-    const currTokInterfaceFee: BigNumber =
-      dexCore.storage.storage.tok_interface_fee[
-        `${token.toString()},${referrer}`
-      ];
-    const currTokReceiverBalance: BigNumber = fa12Token1.getBalance(receiver);
-    const currTokDexCoreBalance: BigNumber = fa12Token1.getBalance(
+    const currInterfaceFee: BigNumber =
+      dexCore.storage.storage.interface_fee[`${token.toString()},${referrer}`];
+    const currReceiverTokBalance: BigNumber = fa12Token1.getBalance(receiver);
+    const currDexCoreTokBalance: BigNumber = fa12Token1.getBalance(
       dexCore.contract.address
     );
 
-    expect(currTokInterfaceFee).to.be.bignumber.equal(
-      prevTokInterfaceFee.minus(claimParams.amount.multipliedBy(PRECISION))
+    expect(currInterfaceFee).to.be.bignumber.equal(
+      prevInterfaceFee.minus(claimParams.amount.multipliedBy(PRECISION))
     );
-    expect(currTokReceiverBalance).to.be.bignumber.equal(
-      prevTokReceiverBalance.plus(claimParams.amount)
+    expect(currReceiverTokBalance).to.be.bignumber.equal(
+      prevReceiverTokBalance.plus(claimParams.amount)
     );
-    expect(currTokDexCoreBalance).to.be.bignumber.equal(
-      prevTokDexCoreBalance.minus(claimParams.amount)
+    expect(currDexCoreTokBalance).to.be.bignumber.equal(
+      prevDexCoreTokBalance.minus(claimParams.amount)
     );
   });
 
-  it("should fail if reentrancy", async () => {
-    const claimParams: ClaimTezFee = {
-      pair_id: new BigNumber(0),
-      receiver: alice.pkh,
-      amount: new BigNumber(0),
+  it("should claim FA2 interface fee and transfer it to a receiver - 1", async () => {
+    const token: Token = {
+      fa2: { token: fa2Token1.contract.address, id: new BigNumber(0) },
     };
-
-    await rejects(dexCore2.claimTezInterfaceFee(claimParams), (err: Error) => {
-      expect(err.message).to.equal(DexCoreErrors.ERR_REENTRANCY);
-
-      return true;
-    });
-  });
-
-  it("should fail if insufficient TEZ interface fee balance - 1", async () => {
-    const claimParams: ClaimTezFee = {
-      pair_id: new BigNumber(1),
-      receiver: alice.pkh,
-      amount: new BigNumber(1),
-    };
-
-    await rejects(dexCore.claimTezInterfaceFee(claimParams), (err: Error) => {
-      expect(err.message).to.equal(
-        DexCoreErrors.ERR_INSUFFICIENT_INTERFACE_FEE_BALANCE
-      );
-
-      return true;
-    });
-  });
-
-  it("should fail if insufficient TEZ interface fee balance - 2", async () => {
-    const pairId: BigNumber = new BigNumber(1);
+    const receiver: string = alice.pkh;
+    const referrer: string = bob.pkh;
     const swapParams: Swap = {
-      swaps: [{ direction: { b_to_a: undefined }, pair_id: pairId }],
-      receiver: alice.pkh,
-      referrer: bob.pkh,
-      amount_in: new BigNumber(666),
+      swaps: [{ direction: { b_to_a: undefined }, pair_id: new BigNumber(0) }],
+      receiver: receiver,
+      referrer: referrer,
+      amount_in: new BigNumber(333),
+      min_amount_out: new BigNumber(0),
+    };
+
+    await utils.setProvider(alice.sk);
+    await dexCore.swap(swapParams);
+    await dexCore.updateStorage({
+      interface_fee: [[token, referrer]],
+    });
+    await fa2Token1.updateStorage({
+      account_info: [receiver, dexCore.contract.address],
+    });
+
+    const prevInterfaceFee: BigNumber =
+      dexCore.storage.storage.interface_fee[`${token.toString()},${referrer}`];
+    const prevReceiverTokBalance: BigNumber = await fa2Token1.getBalance(
+      receiver
+    );
+    const prevDexCoreTokBalance: BigNumber = await fa2Token1.getBalance(
+      dexCore.contract.address
+    );
+    const claimParams: ClaimFee = {
+      token: token,
+      receiver: receiver,
+      amount: new BigNumber(30),
+    };
+
+    await utils.setProvider(bob.sk);
+    await dexCore.claimInterfaceFee(claimParams);
+    await dexCore.updateStorage({
+      interface_fee: [[token, referrer]],
+    });
+    await fa2Token1.updateStorage({
+      account_info: [receiver, dexCore.contract.address],
+    });
+
+    const currInterfaceFee: BigNumber =
+      dexCore.storage.storage.interface_fee[`${token.toString()},${referrer}`];
+    const currReceiverTokBalance: BigNumber = await fa2Token1.getBalance(
+      receiver
+    );
+    const currDexCoreTokBalance: BigNumber = await fa2Token1.getBalance(
+      dexCore.contract.address
+    );
+
+    expect(currInterfaceFee).to.be.bignumber.equal(
+      prevInterfaceFee.minus(claimParams.amount.multipliedBy(PRECISION))
+    );
+    expect(currReceiverTokBalance).to.be.bignumber.equal(
+      prevReceiverTokBalance.plus(claimParams.amount)
+    );
+    expect(currDexCoreTokBalance).to.be.bignumber.equal(
+      prevDexCoreTokBalance.minus(claimParams.amount)
+    );
+  });
+
+  it("should claim FA2 interface fee and transfer it to a receiver - 2", async () => {
+    const token: Token = {
+      fa2: { token: fa2Token1.contract.address, id: new BigNumber(0) },
+    };
+    const receiver: string = alice.pkh;
+    const referrer: string = bob.pkh;
+
+    await dexCore.updateStorage({
+      interface_fee: [[token, referrer]],
+    });
+    await fa2Token1.updateStorage({
+      account_info: [receiver, dexCore.contract.address],
+    });
+
+    const prevInterfaceFee: BigNumber =
+      dexCore.storage.storage.interface_fee[`${token.toString()},${referrer}`];
+    const prevReceiverTokBalance: BigNumber = await fa2Token1.getBalance(
+      receiver
+    );
+    const prevDexCoreTokBalance: BigNumber = await fa2Token1.getBalance(
+      dexCore.contract.address
+    );
+    const claimParams: ClaimFee = {
+      token: token,
+      receiver: receiver,
+      amount: prevInterfaceFee
+        .dividedBy(PRECISION)
+        .integerValue(BigNumber.ROUND_FLOOR),
+    };
+
+    await dexCore.claimInterfaceFee(claimParams);
+    await dexCore.updateStorage({
+      interface_fee: [[token, referrer]],
+    });
+    await fa2Token1.updateStorage({
+      account_info: [receiver, dexCore.contract.address],
+    });
+
+    const currInterfaceFee: BigNumber =
+      dexCore.storage.storage.interface_fee[`${token.toString()},${referrer}`];
+    const currReceiverTokBalance: BigNumber = await fa2Token1.getBalance(
+      receiver
+    );
+    const currDexCoreTokBalance: BigNumber = await fa2Token1.getBalance(
+      dexCore.contract.address
+    );
+
+    expect(currInterfaceFee).to.be.bignumber.equal(
+      prevInterfaceFee.minus(claimParams.amount.multipliedBy(PRECISION))
+    );
+    expect(currReceiverTokBalance).to.be.bignumber.equal(
+      prevReceiverTokBalance.plus(claimParams.amount)
+    );
+    expect(currDexCoreTokBalance).to.be.bignumber.equal(
+      prevDexCoreTokBalance.minus(claimParams.amount)
+    );
+  });
+
+  it("should claim TEZ interface fee and transfer it to a receiver - 1", async () => {
+    const pairId: BigNumber = new BigNumber(1);
+    const token: Token = { tez: undefined };
+    const receiver: string = alice.pkh;
+    const referrer: string = bob.pkh;
+    const swapParams: Swap = {
+      swaps: [{ direction: { b_to_a: undefined }, pair_id: new BigNumber(1) }],
+      receiver: receiver,
+      referrer: referrer,
+      amount_in: new BigNumber(333),
       min_amount_out: new BigNumber(0),
     };
 
     await utils.setProvider(alice.sk);
     await dexCore.swap(swapParams, swapParams.amount_in.toNumber());
     await dexCore.updateStorage({
-      tez_interface_fee: [[pairId, swapParams.referrer]],
-    });
-
-    const availableTezInterfaceFee: BigNumber =
-      dexCore.storage.storage.tez_interface_fee[
-        `${pairId},${swapParams.referrer}`
-      ]
-        .dividedBy(PRECISION)
-        .integerValue(BigNumber.ROUND_FLOOR);
-    const claimParams: ClaimTezFee = {
-      pair_id: pairId,
-      receiver: alice.pkh,
-      amount: availableTezInterfaceFee.plus(1),
-    };
-
-    await utils.setProvider(bob.sk);
-    await rejects(dexCore.claimTezInterfaceFee(claimParams), (err: Error) => {
-      expect(err.message).to.equal(
-        DexCoreErrors.ERR_INSUFFICIENT_INTERFACE_FEE_BALANCE
-      );
-
-      return true;
-    });
-  });
-
-  it("should claim TEZ interface fee and transfer it to a receiver - 1", async () => {
-    const pairId: BigNumber = new BigNumber(1);
-    const receiver: string = carol.pkh;
-    const referrer: string = bob.pkh;
-
-    await dexCore.updateStorage({
       pairs: [pairId],
-      tez_interface_fee: [[pairId, referrer]],
+      interface_fee: [[token, referrer]],
+      interface_tez_fee: [[pairId, referrer]],
     });
 
-    const prevTezInterfaceFee: BigNumber =
-      dexCore.storage.storage.tez_interface_fee[
-        `${pairId.toString()},${referrer}`
-      ];
+    const prevInterfaceFee: BigNumber =
+      dexCore.storage.storage.interface_fee[`${token},${referrer}`];
+    const prevInterfaceTezFee: BigNumber =
+      dexCore.storage.storage.interface_tez_fee[`${pairId},${referrer}`];
     const prevTezReceiverBalance: BigNumber = await utils.tezos.tz.getBalance(
       receiver
+    );
+    const prevTezDexCoreBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.contract.address
     );
     const prevTezTezStoreBalance: BigNumber = await utils.tezos.tz.getBalance(
       dexCore.storage.storage.pairs[pairId.toFixed()].tez_store
     );
-    const claimParams: ClaimTezFee = {
-      pair_id: pairId,
+    const claimParams: ClaimFee = {
+      token: token,
       receiver: receiver,
-      amount: new BigNumber(25),
+      amount: new BigNumber(35),
     };
 
-    await dexCore.claimTezInterfaceFee(claimParams);
+    await utils.setProvider(bob.sk);
+    await dexCore.claimInterfaceFee(claimParams);
     await dexCore.updateStorage({
       pairs: [pairId],
-      tez_interface_fee: [[pairId, referrer]],
+      interface_fee: [[token, referrer]],
+      interface_tez_fee: [[pairId, referrer]],
     });
 
-    const currTezInterfaceFee: BigNumber =
-      dexCore.storage.storage.tez_interface_fee[
-        `${pairId.toString()},${referrer}`
-      ];
+    const currInterfaceFee: BigNumber =
+      dexCore.storage.storage.interface_fee[`${token},${referrer}`];
+    const currInterfaceTezFee: BigNumber =
+      dexCore.storage.storage.interface_tez_fee[`${pairId},${referrer}`];
     const currTezReceiverBalance: BigNumber = await utils.tezos.tz.getBalance(
       receiver
+    );
+    const currTezDexCoreBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.contract.address
     );
     const currTezTezStoreBalance: BigNumber = await utils.tezos.tz.getBalance(
       dexCore.storage.storage.pairs[pairId.toFixed()].tez_store
     );
 
-    expect(currTezInterfaceFee).to.be.bignumber.equal(
-      prevTezInterfaceFee.minus(claimParams.amount.multipliedBy(PRECISION))
+    expect(currInterfaceFee).to.be.bignumber.equal(
+      prevInterfaceFee.minus(claimParams.amount.multipliedBy(PRECISION))
     );
+    expect(currInterfaceTezFee).to.be.bignumber.equal(prevInterfaceTezFee);
     expect(currTezReceiverBalance).to.be.bignumber.equal(
       prevTezReceiverBalance.plus(claimParams.amount)
     );
+    expect(currTezDexCoreBalance).to.be.bignumber.equal(
+      prevTezDexCoreBalance.minus(claimParams.amount)
+    );
     expect(currTezTezStoreBalance).to.be.bignumber.equal(
-      prevTezTezStoreBalance.minus(claimParams.amount)
+      prevTezTezStoreBalance
     );
   });
 
   it("should claim TEZ interface fee and transfer it to a receiver - 2", async () => {
     const pairId: BigNumber = new BigNumber(1);
-    const receiver: string = carol.pkh;
+    const token: Token = { tez: undefined };
+    const receiver: string = alice.pkh;
     const referrer: string = bob.pkh;
 
     await dexCore.updateStorage({
       pairs: [pairId],
-      tez_interface_fee: [[pairId, referrer]],
+      interface_fee: [[token, referrer]],
+      interface_tez_fee: [[pairId, referrer]],
     });
 
-    const prevTezInterfaceFee: BigNumber =
-      dexCore.storage.storage.tez_interface_fee[
-        `${pairId.toString()},${referrer}`
-      ];
+    const prevInterfaceFee: BigNumber =
+      dexCore.storage.storage.interface_fee[`${token},${referrer}`];
+    const prevInterfaceTezFee: BigNumber =
+      dexCore.storage.storage.interface_tez_fee[`${pairId},${referrer}`];
     const prevTezReceiverBalance: BigNumber = await utils.tezos.tz.getBalance(
       receiver
+    );
+    const prevTezDexCoreBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.contract.address
     );
     const prevTezTezStoreBalance: BigNumber = await utils.tezos.tz.getBalance(
       dexCore.storage.storage.pairs[pairId.toFixed()].tez_store
     );
-    const claimParams: ClaimTezFee = {
-      pair_id: pairId,
+    const claimParams: ClaimFee = {
+      token: token,
       receiver: receiver,
-      amount: prevTezInterfaceFee
+      amount: prevInterfaceFee
         .dividedBy(PRECISION)
         .integerValue(BigNumber.ROUND_FLOOR),
     };
 
-    await dexCore.claimTezInterfaceFee(claimParams);
+    await dexCore.claimInterfaceFee(claimParams);
     await dexCore.updateStorage({
       pairs: [pairId],
-      tez_interface_fee: [[pairId, referrer]],
+      interface_fee: [[token, referrer]],
+      interface_tez_fee: [[pairId, referrer]],
     });
 
-    const currTezInterfaceFee: BigNumber =
-      dexCore.storage.storage.tez_interface_fee[
-        `${pairId.toString()},${referrer}`
-      ];
+    const currInterfaceFee: BigNumber =
+      dexCore.storage.storage.interface_fee[`${token},${referrer}`];
+    const currInterfaceTezFee: BigNumber =
+      dexCore.storage.storage.interface_tez_fee[`${pairId},${referrer}`];
     const currTezReceiverBalance: BigNumber = await utils.tezos.tz.getBalance(
       receiver
+    );
+    const currTezDexCoreBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.contract.address
     );
     const currTezTezStoreBalance: BigNumber = await utils.tezos.tz.getBalance(
       dexCore.storage.storage.pairs[pairId.toFixed()].tez_store
     );
 
-    expect(currTezInterfaceFee).to.be.bignumber.equal(
-      prevTezInterfaceFee.minus(claimParams.amount.multipliedBy(PRECISION))
+    expect(currInterfaceFee).to.be.bignumber.equal(
+      prevInterfaceFee.minus(claimParams.amount.multipliedBy(PRECISION))
     );
+    expect(currInterfaceTezFee).to.be.bignumber.equal(prevInterfaceTezFee);
     expect(currTezReceiverBalance).to.be.bignumber.equal(
       prevTezReceiverBalance.plus(claimParams.amount)
     );
+    expect(currTezDexCoreBalance).to.be.bignumber.equal(
+      prevTezDexCoreBalance.minus(claimParams.amount)
+    );
     expect(currTezTezStoreBalance).to.be.bignumber.equal(
-      prevTezTezStoreBalance.minus(claimParams.amount)
+      prevTezTezStoreBalance
     );
   });
 
@@ -564,16 +643,6 @@ describe("DexCore (withdraw methods)", async () => {
   });
 
   it("should withdraw FA2 auction fee", async () => {
-    const swapParams: Swap = {
-      swaps: [{ direction: { b_to_a: undefined }, pair_id: new BigNumber(0) }],
-      receiver: alice.pkh,
-      referrer: bob.pkh,
-      amount_in: new BigNumber(333),
-      min_amount_out: new BigNumber(0),
-    };
-
-    await dexCore.swap(swapParams);
-
     const token: Token = {
       fa2: { token: fa2Token1.contract.address, id: new BigNumber(0) },
     };
@@ -597,7 +666,6 @@ describe("DexCore (withdraw methods)", async () => {
     );
     const prevAliceTokBal: BigNumber = await fa2Token1.getBalance(alice.pkh);
 
-    await utils.setProvider(alice.sk);
     await dexCore.withdrawAuctionFee(token);
     await dexCore.updateStorage({ auction_fee: [token] });
     await fa2Token1.updateStorage({
@@ -644,65 +712,75 @@ describe("DexCore (withdraw methods)", async () => {
     );
   });
 
-  // it("should withdraw TEZ auction fee", async () => {
-  //   const token: Token = { tez: undefined };
+  it("should withdraw TEZ auction fee", async () => {
+    const pairId: BigNumber = new BigNumber(1);
+    const token: Token = { tez: undefined };
 
-  //   await dexCore.updateStorage({ auction_fee: [token] });
+    await dexCore.updateStorage({
+      pairs: [pairId],
+      auction_fee: [token],
+      auction_tez_fee: [pairId],
+    });
 
-  //   const prevAuctionFee: BigNumber =
-  //     dexCore.storage.storage.auction_fee[token.toString()];
-  //   const prevDexCoreTokBal: BigNumber = await utils.tezos.tz.getBalance(
-  //     dexCore.contract.address
-  //   );
-  //   const prevAuctionTokBal: BigNumber = await utils.tezos.tz.getBalance(
-  //     auction.contract.address
-  //   );
-  //   const prevAliceTokBal: BigNumber = await utils.tezos.tz.getBalance(
-  //     alice.pkh
-  //   );
+    const prevAuctionFee: BigNumber =
+      dexCore.storage.storage.auction_fee[token.toString()];
+    const prevAuctionTezFee: BigNumber =
+      dexCore.storage.storage.auction_tez_fee[pairId.toString()];
+    const prevTezTezStoreBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[pairId.toFixed()].tez_store
+    );
+    const prevDexCoreTokBal: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.contract.address
+    );
+    const prevAuctionTokBal: BigNumber = await utils.tezos.tz.getBalance(
+      auction.contract.address
+    );
 
-  //   console.log(prevAuctionFee.toFixed());
-  //   console.log(prevDexCoreTokBal.toFixed());
+    await dexCore.withdrawAuctionFee(token);
+    await dexCore.updateStorage({
+      pairs: [pairId],
+      auction_fee: [token],
+      auction_tez_fee: [pairId],
+    });
 
-  //   await utils.setProvider(alice.sk);
-  //   await dexCore.withdrawAuctionFee(token);
-  //   await dexCore.updateStorage({ auction_fee: [token] });
+    const userReward: BigNumber = prevAuctionFee
+      .multipliedBy(dexCore.storage.storage.fees.withdraw_fee_reward)
+      .dividedBy(PRECISION)
+      .integerValue(BigNumber.ROUND_FLOOR)
+      .dividedBy(PRECISION)
+      .integerValue(BigNumber.ROUND_FLOOR);
+    const actualAuctionFee: BigNumber = prevAuctionFee
+      .dividedBy(PRECISION)
+      .integerValue(BigNumber.ROUND_FLOOR)
+      .minus(userReward);
+    const currAuctionFee: BigNumber =
+      dexCore.storage.storage.auction_fee[token.toString()];
+    const currAuctionTezFee: BigNumber =
+      dexCore.storage.storage.auction_tez_fee[pairId.toString()];
+    const currTezTezStoreBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[pairId.toFixed()].tez_store
+    );
+    const currDexCoreTokBal: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.contract.address
+    );
+    const currAuctionTokBal: BigNumber = await utils.tezos.tz.getBalance(
+      auction.contract.address
+    );
 
-  //   const userReward: BigNumber = prevAuctionFee
-  //     .multipliedBy(dexCore.storage.storage.fees.withdraw_fee_reward)
-  //     .dividedBy(PRECISION)
-  //     .integerValue(BigNumber.ROUND_FLOOR)
-  //     .dividedBy(PRECISION)
-  //     .integerValue(BigNumber.ROUND_FLOOR);
-  //   const actualAuctionFee: BigNumber = prevAuctionFee
-  //     .dividedBy(PRECISION)
-  //     .integerValue(BigNumber.ROUND_FLOOR)
-  //     .minus(userReward);
-  //   const currAuctionFee: BigNumber =
-  //     dexCore.storage.storage.auction_fee[token.toString()];
-  //   const currDexCoreTokBal: BigNumber = await utils.tezos.tz.getBalance(
-  //     dexCore.contract.address
-  //   );
-  //   const currAuctionTokBal: BigNumber = await utils.tezos.tz.getBalance(
-  //     auction.contract.address
-  //   );
-  //   const currAliceTokBal: BigNumber = await utils.tezos.tz.getBalance(
-  //     alice.pkh
-  //   );
-
-  //   expect(currAuctionFee).to.be.bignumber.equal(
-  //     prevAuctionFee.minus(
-  //       userReward.plus(actualAuctionFee).multipliedBy(PRECISION)
-  //     )
-  //   );
-  //   expect(currDexCoreTokBal).to.be.bignumber.equal(
-  //     prevDexCoreTokBal.minus(userReward.plus(actualAuctionFee))
-  //   );
-  //   expect(currAuctionTokBal).to.be.bignumber.equal(
-  //     prevAuctionTokBal.plus(actualAuctionFee)
-  //   );
-  //   expect(currAliceTokBal).to.be.bignumber.equal(
-  //     prevAliceTokBal.plus(userReward)
-  //   );
-  // });
+    expect(currAuctionFee).to.be.bignumber.equal(
+      prevAuctionFee.minus(
+        userReward.plus(actualAuctionFee).multipliedBy(PRECISION)
+      )
+    );
+    expect(currAuctionTezFee).to.be.bignumber.equal(prevAuctionTezFee);
+    expect(currTezTezStoreBalance).to.be.bignumber.equal(
+      prevTezTezStoreBalance
+    );
+    expect(currDexCoreTokBal).to.be.bignumber.equal(
+      prevDexCoreTokBal.minus(userReward.plus(actualAuctionFee))
+    );
+    expect(currAuctionTokBal).to.be.bignumber.equal(
+      prevAuctionTokBal.plus(actualAuctionFee)
+    );
+  });
 });

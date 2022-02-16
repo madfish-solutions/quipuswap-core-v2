@@ -31,6 +31,7 @@ function main(
   const s               : full_storage_t)
                         : full_return_t is
   case action of
-  | Use(params)         -> call_dex_core(params, s)
-  | Setup_func(params)  -> setup_func(params, s)
+  | Use(params)        -> call_dex_core(params, s)
+  | Setup_func(params) -> setup_func(params, s)
+  | Default            -> default(s)
   end

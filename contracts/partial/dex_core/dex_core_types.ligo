@@ -33,9 +33,10 @@ type storage_t          is [@layout:comb] record [
   token_to_id             : big_map(bytes, token_id_t);
   pairs                   : big_map(token_id_t, pair_t);
   permits                 : big_map(address, user_permits_t);
-  tok_interface_fee       : big_map((token_t * address), nat);
-  tez_interface_fee       : big_map((token_id_t * address), nat);
+  interface_fee           : big_map((token_t * address), nat);
+  interface_tez_fee       : big_map((token_id_t * address), nat);
   auction_fee             : big_map(token_t, nat);
+  auction_tez_fee         : big_map(token_id_t, nat);
   managers                : set(address);
   fees                    : fees_t;
   tmp                     : tmp_t;
@@ -96,7 +97,7 @@ type swap_data_t        is [@layout:comb] record [
 
 type tmp_swap_t         is [@layout:comb] record [
   s                       : storage_t;
-  operation               : option(operation);
+  ops                     : list(operation);
   token_in                : token_t;
   receiver                : address;
   referrer                : address;
@@ -125,14 +126,8 @@ type withdraw_profit_t  is [@layout:comb] record [
   pair_id                 : token_id_t;
 ]
 
-type claim_tok_fee_t    is [@layout:comb] record [
+type claim_fee_t        is [@layout:comb] record [
   token                   : token_t;
-  receiver                : address;
-  amount                  : nat;
-]
-
-type claim_tez_fee_t    is [@layout:comb] record [
-  pair_id                 : token_id_t;
   receiver                : address;
   amount                  : nat;
 ]
@@ -182,6 +177,8 @@ type fa12_balance_res_t is nat
 type fa2_balance_res_t  is list(balance_response_t)
 
 type close_t            is unit
+
+type default_t          is unit
 
 type reserves_t         is [@layout:comb] record [
   token_a_pool            : nat;
@@ -241,8 +238,7 @@ type action_t           is
 | Flash_swap              of flash_swap_t
 | Swap                    of swap_t
 | Withdraw_profit         of withdraw_profit_t
-| Claim_tok_interface_fee of claim_tok_fee_t
-| Claim_tez_interface_fee of claim_tez_fee_t
+| Claim_interface_fee     of claim_fee_t
 | Withdraw_auction_fee    of withdraw_fee_t
 (* ADMIN *)
 | Set_admin               of set_admin_t
@@ -288,6 +284,7 @@ type full_return_t      is list(operation) * full_storage_t
 type full_action_t      is
 | Use                     of action_t
 | Setup_func              of setup_func_t
+| Default                 of default_t
 
 type deploy_tez_store_t is (option(key_hash) * tez * tez_store_t) -> (operation * address)
 

@@ -69,3 +69,5 @@ type setup_func_t       is [@layout:comb] record [
   idx                     : nat;
   func_bytes              : bytes;
 ]
+
+type default_t          is unit

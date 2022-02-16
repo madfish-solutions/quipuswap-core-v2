@@ -42,11 +42,10 @@ import {
   RequiredTokens,
   TokensPerShare,
   CalculateSwap,
-  ClaimTokFee,
-  ClaimTezFee,
   AddManager,
   FlashSwap,
   SetExpiry,
+  ClaimFee,
   Swap,
   Pair,
   Fees,
@@ -259,23 +258,9 @@ export class DexCore {
     return operation;
   }
 
-  async claimTokInterfaceFee(
-    params: ClaimTokFee
-  ): Promise<TransactionOperation> {
+  async claimInterfaceFee(params: ClaimFee): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
-      .claim_tok_interface_fee(params)
-      .send();
-
-    await confirmOperation(this.tezos, operation.hash);
-
-    return operation;
-  }
-
-  async claimTezInterfaceFee(
-    params: ClaimTezFee
-  ): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methodsObject
-      .claim_tez_interface_fee(params)
+      .claim_interface_fee(params)
       .send();
 
     await confirmOperation(this.tezos, operation.hash);

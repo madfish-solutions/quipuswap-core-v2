@@ -48,14 +48,4 @@ type vote_t             is [@layout:comb] record [
 
 type is_banned_baker_t  is key_hash
 
-type default_t          is unit
-
-type action_t           is
-| Invest_tez              of invest_tez_t
-| Divest_tez              of divest_tez_t
-| Withdraw_rewards        of withdraw_rewards_t
-| Ban_baker               of ban_baker_t
-| Vote                    of vote_t
-| Default                 of default_t
-
 type return_t           is list(operation) * storage_t

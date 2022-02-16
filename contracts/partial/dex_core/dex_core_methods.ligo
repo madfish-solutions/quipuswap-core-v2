@@ -11,37 +11,36 @@ function call_dex_core(
     | Flash_swap(_)              -> 3n
     | Swap(_)                    -> 4n
     | Withdraw_profit(_)         -> 5n
-    | Claim_tok_interface_fee(_) -> 6n
-    | Claim_tez_interface_fee(_) -> 7n
-    | Withdraw_auction_fee(_)    -> 8n
+    | Claim_interface_fee(_)     -> 6n
+    | Withdraw_auction_fee(_)    -> 7n
     (* ADMIN *)
-    | Set_admin(_)               -> 9n
-    | Confirm_admin(_)           -> 10n
-    | Set_flash_swaps_proxy(_)   -> 11n
-    | Set_auction(_)             -> 12n
-    | Add_managers(_)            -> 13n
-    | Set_fees(_)                -> 14n
-    | Set_cycle_duration(_)      -> 15n
-    | Set_voting_period(_)       -> 16n
-    | Set_collecting_period(_)   -> 17n
-    | Update_token_metadata(_)   -> 18n
-    | Ban(_)                     -> 19n
+    | Set_admin(_)               -> 8n
+    | Confirm_admin(_)           -> 9n
+    | Set_flash_swaps_proxy(_)   -> 10n
+    | Set_auction(_)             -> 11n
+    | Add_managers(_)            -> 12n
+    | Set_fees(_)                -> 13n
+    | Set_cycle_duration(_)      -> 14n
+    | Set_voting_period(_)       -> 15n
+    | Set_collecting_period(_)   -> 16n
+    | Update_token_metadata(_)   -> 17n
+    | Ban(_)                     -> 18n
     (* PERMIT *)
-    | Permit(_)                  -> 20n
-    | Set_expiry(_)              -> 21n
+    | Permit(_)                  -> 19n
+    | Set_expiry(_)              -> 20n
     (* FA2 *)
-    | Transfer(_)                -> 22n
-    | Update_operators(_)        -> 23n
-    | Balance_of(_)              -> 24n
+    | Transfer(_)                -> 21n
+    | Update_operators(_)        -> 22n
+    | Balance_of(_)              -> 23n
     (* CALLBACKS *)
-    | Fa12_balance_callback_1(_) -> 25n
-    | Fa2_balance_callback_1(_)  -> 26n
-    | Fa12_balance_callback_2(_) -> 27n
-    | Fa2_balance_callback_2(_)  -> 28n
-    | Flash_swap_callback_1(_)   -> 29n
-    | Flash_swap_callback_2(_)   -> 30n
-    | Launch_callback(_)         -> 31n
-    | Close(_)                   -> 32n
+    | Fa12_balance_callback_1(_) -> 24n
+    | Fa2_balance_callback_1(_)  -> 25n
+    | Fa12_balance_callback_2(_) -> 26n
+    | Fa2_balance_callback_2(_)  -> 27n
+    | Flash_swap_callback_1(_)   -> 28n
+    | Flash_swap_callback_2(_)   -> 29n
+    | Launch_callback(_)         -> 30n
+    | Close(_)                   -> 31n
     end;
 
     const lambda_bytes : bytes = unwrap(s.dex_core_lambdas[id], DexCore.err_unknown_func);
@@ -67,4 +66,11 @@ function setup_func(
     | Some(_) -> failwith(DexCore.err_func_set)
     | None    -> s.dex_core_lambdas[params.idx] := params.func_bytes
     end;
+  } with ((nil : list(operation)), s)
+
+function default(
+  const s               : full_storage_t)
+                        : full_return_t is
+  block {
+    skip;
   } with ((nil : list(operation)), s)

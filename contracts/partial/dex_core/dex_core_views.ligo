@@ -73,7 +73,7 @@
       params.swaps,
       record [
         s         = s.storage;
-        operation = (None : option(operation));
+        ops       = (nil : list(operation));
         token_in  = token;
         receiver  = Constants.zero_address;
         referrer  = Constants.zero_address;
