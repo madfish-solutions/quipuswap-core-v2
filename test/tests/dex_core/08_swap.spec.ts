@@ -406,8 +406,8 @@ describe("DexCore (swap)", async () => {
     });
 
     const swapResult: CalculateSwap = DexCore.calculateSwap(
-      swapParams,
       dexCore.storage.storage.fees,
+      swapParams.amount_in,
       prevFromPool,
       prevToPool
     );
@@ -502,8 +502,8 @@ describe("DexCore (swap)", async () => {
     });
 
     const swapResult: CalculateSwap = DexCore.calculateSwap(
-      swapParams,
       dexCore.storage.storage.fees,
+      swapParams.amount_in,
       prevFromPool,
       prevToPool
     );
@@ -586,8 +586,8 @@ describe("DexCore (swap)", async () => {
     });
 
     const swapResult: CalculateSwap = DexCore.calculateSwap(
-      swapParams,
       dexCore.storage.storage.fees,
+      swapParams.amount_in,
       prevFromPool,
       prevToPool
     );
@@ -675,8 +675,8 @@ describe("DexCore (swap)", async () => {
     });
 
     const swapResult: CalculateSwap = DexCore.calculateSwap(
-      swapParams,
       dexCore.storage.storage.fees,
+      swapParams.amount_in,
       prevFromPool,
       prevToPool
     );
@@ -802,8 +802,8 @@ describe("DexCore (swap)", async () => {
     });
 
     const swapResult: CalculateSwap = DexCore.calculateSwap(
-      swapParams,
       dexCore.storage.storage.fees,
+      swapParams.amount_in,
       prevFromPool,
       prevToPool
     );
@@ -915,8 +915,8 @@ describe("DexCore (swap)", async () => {
     });
 
     const swapResult: CalculateSwap = DexCore.calculateSwap(
-      swapParams,
       dexCore.storage.storage.fees,
+      swapParams.amount_in,
       prevFromPool,
       prevToPool
     );
@@ -1029,8 +1029,8 @@ describe("DexCore (swap)", async () => {
     });
 
     const swapResult: CalculateSwap = DexCore.calculateSwap(
-      swapParams,
       dexCore.storage.storage.fees,
+      swapParams.amount_in,
       prevFromPool,
       prevToPool
     );
@@ -1159,8 +1159,8 @@ describe("DexCore (swap)", async () => {
     });
 
     const swapResult: CalculateSwap = DexCore.calculateSwap(
-      swapParams,
       dexCore.storage.storage.fees,
+      swapParams.amount_in,
       prevFromPool,
       prevToPool
     );

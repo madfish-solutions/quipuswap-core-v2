@@ -187,6 +187,11 @@ export type TokensPerShareRequest = {
   shares_amt: BigNumber;
 };
 
+export type SwapMinResRequest = {
+  swaps: SwapSlice[];
+  amount_in: BigNumber;
+};
+
 export type Permit = {
   created_at: string;
   expiry: BigNumber | null | undefined;

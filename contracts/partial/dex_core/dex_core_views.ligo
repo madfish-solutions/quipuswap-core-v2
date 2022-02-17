@@ -93,6 +93,9 @@
                       : list(toks_per_shr_res_t) is
       block {
         const pair : pair_t = unwrap(s.storage.pairs[request.pair_id], DexCore.err_pair_not_listed);
+
+        assert_with_error(pair.token_a_pool * pair.token_b_pool =/= 0n, DexCore.err_no_liquidity);
+
         const response : toks_per_shr_res_t = record [
           request          = request;
           tokens_per_share = record [

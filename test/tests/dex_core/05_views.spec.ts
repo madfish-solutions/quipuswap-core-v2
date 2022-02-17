@@ -25,12 +25,16 @@ import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa12Storage } from "../../../storage/test/FA12";
 import { fa2Storage } from "../../../storage/test/FA2";
 
+import { PRECISION } from "test/helpers/Constants";
 import { SBAccount } from "test/types/Common";
 import {
   TokensPerShareRequest,
   CheckIsBannedBaker,
+  SwapMinResRequest,
+  DivestLiquidity,
   LaunchExchange,
   TokensPerShare,
+  CalculateSwap,
   Pair,
   Swap,
   Ban,
@@ -67,6 +71,12 @@ describe("DexCore (views)", async () => {
     dexCoreStorage.storage.voting_period = defaultVotingPeriod;
     dexCoreStorage.storage.collecting_period = defaultCollectingPeriod;
     dexCoreStorage.storage.baker_registry = bakerRegistry.contract.address;
+    dexCoreStorage.storage.fees = {
+      interface_fee: new BigNumber(0.0025).multipliedBy(PRECISION),
+      swap_fee: new BigNumber(0.0005).multipliedBy(PRECISION),
+      auction_fee: new BigNumber(0.0005).multipliedBy(PRECISION),
+      withdraw_fee_reward: new BigNumber(0.0005).multipliedBy(PRECISION),
+    };
 
     dexCore = await DexCore.originate(utils.tezos, dexCoreStorage);
 
@@ -457,6 +467,219 @@ describe("DexCore (views)", async () => {
     }
   });
 
+  it("should fail if empty route", async () => {
+    const params: SwapMinResRequest = {
+      swaps: [],
+      amount_in: new BigNumber(0),
+    };
+
+    try {
+      await dexCore.contract.contractViews
+        .get_swap_min_res(params)
+        .executeView({ viewCaller: alice.pkh });
+    } catch (err: any) {
+      expect(err).to.be.instanceof(ViewSimulationError);
+      expect(
+        Utils.parseOnChainViewError(JSON.parse(err.originalError.body))
+      ).to.be.equal(DexCoreErrors.ERR_EMPTY_ROUTE);
+    }
+  });
+
+  it("should fail if pair not listed", async () => {
+    const params: SwapMinResRequest = {
+      swaps: [
+        { direction: { a_to_b: undefined }, pair_id: new BigNumber(666) },
+      ],
+      amount_in: new BigNumber(0),
+    };
+
+    try {
+      await dexCore.contract.contractViews
+        .get_swap_min_res(params)
+        .executeView({ viewCaller: alice.pkh });
+    } catch (err: any) {
+      expect(err).to.be.instanceof(ViewSimulationError);
+      expect(
+        Utils.parseOnChainViewError(JSON.parse(err.originalError.body))
+      ).to.be.equal(DexCoreErrors.ERR_PAIR_NOT_LISTED);
+    }
+  });
+
+  it("should fail if pair does not have a liquidity", async () => {
+    const pairId: BigNumber = new BigNumber(1);
+    const shares: BigNumber = new BigNumber(100_000);
+
+    await dexCore.updateStorage({
+      pairs: [pairId.toFixed()],
+    });
+
+    const divestedTokens: TokensPerShare = DexCore.getTokensPerShare(
+      shares,
+      dexCore.storage.storage.pairs[pairId.toFixed()]
+    );
+    const divestParams: DivestLiquidity = {
+      pair_id: pairId,
+      min_token_a_out: divestedTokens.token_a_amt,
+      min_token_b_out: divestedTokens.token_b_amt,
+      shares: shares,
+      liquidity_receiver: alice.pkh,
+      candidate: bob.pkh,
+    };
+
+    await dexCore.divestLiquidity(divestParams);
+
+    const params: SwapMinResRequest = {
+      swaps: [{ direction: { a_to_b: undefined }, pair_id: pairId }],
+      amount_in: new BigNumber(0),
+    };
+
+    try {
+      await dexCore.contract.contractViews
+        .get_swap_min_res(params)
+        .executeView({ viewCaller: alice.pkh });
+    } catch (err: any) {
+      expect(err).to.be.instanceof(ViewSimulationError);
+      expect(
+        Utils.parseOnChainViewError(JSON.parse(err.originalError.body))
+      ).to.be.equal(DexCoreErrors.ERR_NO_LIQUIDITY);
+    }
+  });
+
+  it("should fail if user passed zero amount in", async () => {
+    const params: SwapMinResRequest = {
+      swaps: [{ direction: { a_to_b: undefined }, pair_id: new BigNumber(0) }],
+      amount_in: new BigNumber(0),
+    };
+
+    try {
+      await dexCore.contract.contractViews
+        .get_swap_min_res(params)
+        .executeView({ viewCaller: alice.pkh });
+    } catch (err: any) {
+      expect(err).to.be.instanceof(ViewSimulationError);
+      expect(
+        Utils.parseOnChainViewError(JSON.parse(err.originalError.body))
+      ).to.be.equal(DexCoreErrors.ERR_ZERO_IN);
+    }
+  });
+
+  it("should fail if user put a wrong route", async () => {
+    const params: SwapMinResRequest = {
+      swaps: [
+        { direction: { a_to_b: undefined }, pair_id: new BigNumber(0) },
+        { direction: { a_to_b: undefined }, pair_id: new BigNumber(0) },
+      ],
+      amount_in: new BigNumber(50),
+    };
+
+    try {
+      await dexCore.contract.contractViews
+        .get_swap_min_res(params)
+        .executeView({ viewCaller: alice.pkh });
+    } catch (err: any) {
+      expect(err).to.be.instanceof(ViewSimulationError);
+      expect(
+        Utils.parseOnChainViewError(JSON.parse(err.originalError.body))
+      ).to.be.equal(DexCoreErrors.ERR_WRONG_ROUTE);
+    }
+  });
+
+  it("should fail if too high price impact", async () => {
+    const params: SwapMinResRequest = {
+      swaps: [{ direction: { a_to_b: undefined }, pair_id: new BigNumber(0) }],
+      amount_in: new BigNumber(100_000),
+    };
+
+    try {
+      await dexCore.contract.contractViews
+        .get_swap_min_res(params)
+        .executeView({ viewCaller: alice.pkh });
+    } catch (err: any) {
+      expect(err).to.be.instanceof(ViewSimulationError);
+      expect(
+        Utils.parseOnChainViewError(JSON.parse(err.originalError.body))
+      ).to.be.equal(DexCoreErrors.ERR_HIGH_OUT);
+    }
+  });
+
+  it("should return proper min swap result - 1", async () => {
+    const pairId: BigNumber = new BigNumber(0);
+    const params: SwapMinResRequest = {
+      swaps: [{ direction: { a_to_b: undefined }, pair_id: pairId }],
+      amount_in: new BigNumber(500),
+    };
+    const swapMinRes: any = await dexCore.contract.contractViews
+      .get_swap_min_res(params)
+      .executeView({ viewCaller: alice.pkh });
+
+    await dexCore.updateStorage({ pairs: [pairId] });
+
+    const prevFromPool: BigNumber =
+      dexCore.storage.storage.pairs[pairId.toFixed()].token_a_pool;
+    const prevToPool: BigNumber =
+      dexCore.storage.storage.pairs[pairId.toFixed()].token_b_pool;
+    const swapResult: CalculateSwap = DexCore.calculateSwap(
+      dexCore.storage.storage.fees,
+      params.amount_in,
+      prevFromPool,
+      prevToPool
+    );
+
+    expect(swapMinRes).to.be.bignumber.equal(swapResult.out);
+  });
+
+  it("should return proper min swap result - 2", async () => {
+    const pairId: BigNumber = new BigNumber(3);
+    const params: SwapMinResRequest = {
+      swaps: [{ direction: { b_to_a: undefined }, pair_id: pairId }],
+      amount_in: new BigNumber(999),
+    };
+    const swapMinRes: any = await dexCore.contract.contractViews
+      .get_swap_min_res(params)
+      .executeView({ viewCaller: alice.pkh });
+
+    await dexCore.updateStorage({ pairs: [pairId] });
+
+    const prevFromPool: BigNumber =
+      dexCore.storage.storage.pairs[pairId.toFixed()].token_a_pool;
+    const prevToPool: BigNumber =
+      dexCore.storage.storage.pairs[pairId.toFixed()].token_b_pool;
+    const swapResult: CalculateSwap = DexCore.calculateSwap(
+      dexCore.storage.storage.fees,
+      params.amount_in,
+      prevFromPool,
+      prevToPool
+    );
+
+    expect(swapMinRes).to.be.bignumber.equal(swapResult.out);
+  });
+
+  it("should return proper min swap result - 3", async () => {
+    const pairId: BigNumber = new BigNumber(2);
+    const params: SwapMinResRequest = {
+      swaps: [{ direction: { b_to_a: undefined }, pair_id: pairId }],
+      amount_in: new BigNumber(5999),
+    };
+    const swapMinRes: any = await dexCore.contract.contractViews
+      .get_swap_min_res(params)
+      .executeView({ viewCaller: alice.pkh });
+
+    await dexCore.updateStorage({ pairs: [pairId] });
+
+    const prevFromPool: BigNumber =
+      dexCore.storage.storage.pairs[pairId.toFixed()].token_a_pool;
+    const prevToPool: BigNumber =
+      dexCore.storage.storage.pairs[pairId.toFixed()].token_b_pool;
+    const swapResult: CalculateSwap = DexCore.calculateSwap(
+      dexCore.storage.storage.fees,
+      params.amount_in,
+      prevFromPool,
+      prevToPool
+    );
+
+    expect(swapMinRes).to.be.bignumber.equal(swapResult.out);
+  });
+
   it("should fail if pair not listed", async () => {
     const params: TokensPerShareRequest[] = [
       { pair_id: new BigNumber(666), shares_amt: new BigNumber(0) },
@@ -477,7 +700,7 @@ describe("DexCore (views)", async () => {
   it("should fail if one pair from list not listed", async () => {
     const params: TokensPerShareRequest[] = [
       { pair_id: new BigNumber(0), shares_amt: new BigNumber(0) },
-      { pair_id: new BigNumber(1), shares_amt: new BigNumber(0) },
+      { pair_id: new BigNumber(2), shares_amt: new BigNumber(0) },
       { pair_id: new BigNumber(666), shares_amt: new BigNumber(0) },
     ];
 
@@ -490,6 +713,42 @@ describe("DexCore (views)", async () => {
       expect(
         Utils.parseOnChainViewError(JSON.parse(err.originalError.body))
       ).to.be.equal(DexCoreErrors.ERR_PAIR_NOT_LISTED);
+    }
+  });
+
+  it("should fail if pair does not have a liquidity", async () => {
+    const params: TokensPerShareRequest[] = [
+      { pair_id: new BigNumber(1), shares_amt: new BigNumber(0) },
+    ];
+
+    try {
+      await dexCore.contract.contractViews
+        .get_toks_per_share(params)
+        .executeView({ viewCaller: alice.pkh });
+    } catch (err: any) {
+      expect(err).to.be.instanceof(ViewSimulationError);
+      expect(
+        Utils.parseOnChainViewError(JSON.parse(err.originalError.body))
+      ).to.be.equal(DexCoreErrors.ERR_NO_LIQUIDITY);
+    }
+  });
+
+  it("should fail if one pair from list does not have a liquidity", async () => {
+    const params: TokensPerShareRequest[] = [
+      { pair_id: new BigNumber(0), shares_amt: new BigNumber(100) },
+      { pair_id: new BigNumber(1), shares_amt: new BigNumber(100) },
+      { pair_id: new BigNumber(2), shares_amt: new BigNumber(100) },
+    ];
+
+    try {
+      await dexCore.contract.contractViews
+        .get_toks_per_share(params)
+        .executeView({ viewCaller: alice.pkh });
+    } catch (err: any) {
+      expect(err).to.be.instanceof(ViewSimulationError);
+      expect(
+        Utils.parseOnChainViewError(JSON.parse(err.originalError.body))
+      ).to.be.equal(DexCoreErrors.ERR_NO_LIQUIDITY);
     }
   });
 
@@ -525,8 +784,8 @@ describe("DexCore (views)", async () => {
   it("should return proper tokens per shares anount for all pairs in a list", async () => {
     const params: TokensPerShareRequest[] = [
       { pair_id: new BigNumber(0), shares_amt: new BigNumber(12345) },
-      { pair_id: new BigNumber(1), shares_amt: new BigNumber(13) },
-      { pair_id: new BigNumber(2), shares_amt: new BigNumber(666) },
+      { pair_id: new BigNumber(2), shares_amt: new BigNumber(13) },
+      { pair_id: new BigNumber(3), shares_amt: new BigNumber(666) },
     ];
     const tokensPerSharesResponse: any = await dexCore.contract.contractViews
       .get_toks_per_share(params)
@@ -578,7 +837,7 @@ describe("DexCore (views)", async () => {
   it("should fail if one pair from list not listed", async () => {
     const pairs: BigNumber[] = [
       new BigNumber(0),
-      new BigNumber(1),
+      new BigNumber(2),
       new BigNumber(666),
     ];
 
@@ -632,12 +891,11 @@ describe("DexCore (views)", async () => {
   it("should return proper cumulative prices for all pairs in a list", async () => {
     const pairs: BigNumber[] = [
       new BigNumber(0),
-      new BigNumber(1),
       new BigNumber(2),
       new BigNumber(3),
     ];
     const swapParams: Swap = {
-      swaps: [{ direction: { a_to_b: undefined }, pair_id: pairs[1] }],
+      swaps: [{ direction: { a_to_b: undefined }, pair_id: pairs[2] }],
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(2999),
@@ -650,7 +908,7 @@ describe("DexCore (views)", async () => {
       .get_cumulative_prices(pairs)
       .executeView({ viewCaller: alice.pkh });
 
-    expect(cumulativePricesResponse.length).to.be.equal(4);
+    expect(cumulativePricesResponse.length).to.be.equal(3);
 
     for (
       let i: number = 0, j: number = pairs.length - 1;

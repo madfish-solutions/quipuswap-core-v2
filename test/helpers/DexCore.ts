@@ -721,8 +721,8 @@ export class DexCore {
   }
 
   static calculateSwap(
-    swapParams: Swap,
     fees: Fees,
+    amountIn: BigNumber,
     fromPool: BigNumber,
     toPool: BigNumber
   ): CalculateSwap {
@@ -730,8 +730,7 @@ export class DexCore {
       .plus(fees.swap_fee)
       .plus(fees.auction_fee);
     const rateWithoutFee: BigNumber = PRECISION.minus(feeRate);
-    const fromInWithFee: BigNumber =
-      swapParams.amount_in.multipliedBy(rateWithoutFee);
+    const fromInWithFee: BigNumber = amountIn.multipliedBy(rateWithoutFee);
     const numerator: BigNumber = fromInWithFee.multipliedBy(toPool);
     const denominator: BigNumber = fromPool
       .multipliedBy(PRECISION)
@@ -739,14 +738,10 @@ export class DexCore {
     const out: BigNumber = numerator
       .dividedBy(denominator)
       .integerValue(BigNumber.ROUND_DOWN);
-    const interfaceFee: BigNumber = swapParams.amount_in.multipliedBy(
-      fees.interface_fee
-    );
-    const auctionFee: BigNumber = swapParams.amount_in.multipliedBy(
-      fees.auction_fee
-    );
+    const interfaceFee: BigNumber = amountIn.multipliedBy(fees.interface_fee);
+    const auctionFee: BigNumber = amountIn.multipliedBy(fees.auction_fee);
     const newFromPool: BigNumber = fromPool.plus(
-      swapParams.amount_in
+      amountIn
         .multipliedBy(PRECISION)
         .minus(interfaceFee)
         .minus(auctionFee)

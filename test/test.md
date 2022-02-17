@@ -408,12 +408,22 @@
 
 36. `get_swap_min_res` [VIEW]:
 
-    - ❌
+    - ✅ should fail if empty route;
+    - ✅ should fail if pair not listed;
+    - ✅ should fail if pair does not have a liquidity;
+    - ✅ should fail if user passed zero amount in;
+    - ✅ should fail if user put a wrong route;
+    - ✅ should fail if too high price impact;
+    - ✅ should return proper min swap result - 1;
+    - ✅ should return proper min swap result - 2;
+    - ✅ should return proper min swap result - 3.
 
 37. `get_toks_per_share` [VIEW]:
 
     - ✅ should fail if pair not listed;
     - ✅ should fail if one pair from list not listed;
+    - ✅ should fail if pair does not have a liquidity;
+    - ✅ should fail if one pair from list does not have a liquidity;
     - ✅ should return proper tokens per shares amount for pair;
     - ✅ should return proper tokens per shares anount for all pairs in a list.
 
