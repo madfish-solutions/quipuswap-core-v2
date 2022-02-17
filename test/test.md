@@ -419,7 +419,10 @@
 
 38. `get_cumulative_prices` [VIEW]:
 
-    - ❌
+    - ✅ should fail if pair not listed;
+    - ✅ should fail if one pair from list not listed;
+    - ✅ should return proper cumulative prices for pair;
+    - ✅ should return proper cumulative prices for all pairs in a list.
 
 39. `get_voting_period` [VIEW]:
 

@@ -32,6 +32,7 @@ import {
   LaunchExchange,
   TokensPerShare,
   Pair,
+  Swap,
   Ban,
 } from "test/types/DexCore";
 
@@ -48,6 +49,7 @@ describe("DexCore (views)", async () => {
   var utils: Utils;
 
   var alice: SBAccount = accounts.alice;
+  var bob: SBAccount = accounts.bob;
 
   before("setup", async () => {
     utils = new Utils();
@@ -555,6 +557,124 @@ describe("DexCore (views)", async () => {
       expect(
         tokensPerSharesResponse[j].tokens_per_share.token_b_amt
       ).to.be.bignumber.equal(expectedTokensPerShare.token_b_amt);
+    }
+  });
+
+  it("should fail if pair not listed", async () => {
+    const pairs: BigNumber[] = [new BigNumber(666)];
+
+    try {
+      await dexCore.contract.contractViews
+        .get_cumulative_prices(pairs)
+        .executeView({ viewCaller: alice.pkh });
+    } catch (err: any) {
+      expect(err).to.be.instanceof(ViewSimulationError);
+      expect(
+        Utils.parseOnChainViewError(JSON.parse(err.originalError.body))
+      ).to.be.equal(DexCoreErrors.ERR_PAIR_NOT_LISTED);
+    }
+  });
+
+  it("should fail if one pair from list not listed", async () => {
+    const pairs: BigNumber[] = [
+      new BigNumber(0),
+      new BigNumber(1),
+      new BigNumber(666),
+    ];
+
+    try {
+      await dexCore.contract.contractViews
+        .get_cumulative_prices(pairs)
+        .executeView({ viewCaller: alice.pkh });
+    } catch (err: any) {
+      expect(err).to.be.instanceof(ViewSimulationError);
+      expect(
+        Utils.parseOnChainViewError(JSON.parse(err.originalError.body))
+      ).to.be.equal(DexCoreErrors.ERR_PAIR_NOT_LISTED);
+    }
+  });
+
+  it("should return proper cumulative prices for pair", async () => {
+    const pairs: BigNumber[] = [new BigNumber(3)];
+    const swapParams: Swap = {
+      swaps: [{ direction: { a_to_b: undefined }, pair_id: pairs[0] }],
+      receiver: alice.pkh,
+      referrer: bob.pkh,
+      amount_in: new BigNumber(999),
+      min_amount_out: new BigNumber(0),
+    };
+
+    await dexCore.swap(swapParams);
+
+    const cumulativePricesResponse: any = await dexCore.contract.contractViews
+      .get_cumulative_prices(pairs)
+      .executeView({ viewCaller: alice.pkh });
+
+    await dexCore.updateStorage({
+      pairs: [pairs[0]],
+    });
+
+    const pair: Pair = dexCore.storage.storage.pairs[pairs[0].toFixed()];
+
+    expect(cumulativePricesResponse.length).to.be.equal(1);
+    expect(cumulativePricesResponse[0].request).to.be.bignumber.equal(pairs[0]);
+    expect(
+      cumulativePricesResponse[0].cumulative_prices.token_a_price_cum
+    ).to.be.bignumber.equal(pair.token_a_price_cum);
+    expect(
+      cumulativePricesResponse[0].cumulative_prices.token_b_price_cum
+    ).to.be.bignumber.equal(pair.token_b_price_cum);
+    expect(
+      cumulativePricesResponse[0].cumulative_prices.last_block_timestamp
+    ).to.be.equal(pair.last_block_timestamp);
+  });
+
+  it("should return proper cumulative prices for all pairs in a list", async () => {
+    const pairs: BigNumber[] = [
+      new BigNumber(0),
+      new BigNumber(1),
+      new BigNumber(2),
+      new BigNumber(3),
+    ];
+    const swapParams: Swap = {
+      swaps: [{ direction: { a_to_b: undefined }, pair_id: pairs[1] }],
+      receiver: alice.pkh,
+      referrer: bob.pkh,
+      amount_in: new BigNumber(2999),
+      min_amount_out: new BigNumber(0),
+    };
+
+    await dexCore.swap(swapParams);
+
+    const cumulativePricesResponse: any = await dexCore.contract.contractViews
+      .get_cumulative_prices(pairs)
+      .executeView({ viewCaller: alice.pkh });
+
+    expect(cumulativePricesResponse.length).to.be.equal(4);
+
+    for (
+      let i: number = 0, j: number = pairs.length - 1;
+      i < pairs.length;
+      ++i, --j
+    ) {
+      await dexCore.updateStorage({
+        pairs: [pairs[i]],
+      });
+
+      const pair: Pair = dexCore.storage.storage.pairs[pairs[i].toFixed()];
+
+      expect(cumulativePricesResponse[j].request).to.be.bignumber.equal(
+        pairs[i]
+      );
+      expect(
+        cumulativePricesResponse[j].cumulative_prices.token_a_price_cum
+      ).to.be.bignumber.equal(pair.token_a_price_cum);
+      expect(
+        cumulativePricesResponse[j].cumulative_prices.token_b_price_cum
+      ).to.be.bignumber.equal(pair.token_b_price_cum);
+      expect(
+        cumulativePricesResponse[j].cumulative_prices.last_block_timestamp
+      ).to.be.equal(pair.last_block_timestamp);
     }
   });
 });
