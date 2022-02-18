@@ -162,7 +162,6 @@ describe("DexCore (oracle part)", async () => {
       candidate: bob.pkh,
     };
 
-    await utils.bakeBlocks(2);
     await dexCore.investLiquidity(investParams);
     await dexCore.updateStorage({
       pairs: [pairId.toFixed()],
@@ -200,7 +199,6 @@ describe("DexCore (oracle part)", async () => {
     };
     const prevPair: Pair = dexCore.storage.storage.pairs[pairId.toFixed()];
 
-    await utils.bakeBlocks(3);
     await dexCore.swap(swapParams);
     await dexCore.updateStorage({
       pairs: [pairId.toFixed()],
@@ -244,7 +242,6 @@ describe("DexCore (oracle part)", async () => {
       candidate: alice.pkh,
     };
 
-    await utils.bakeBlocks(2);
     await dexCore.divestLiquidity(divestParams);
     await dexCore.updateStorage({
       pairs: [pairId.toFixed()],
@@ -282,7 +279,6 @@ describe("DexCore (oracle part)", async () => {
     };
     const prevPair: Pair = dexCore.storage.storage.pairs[pairId.toFixed()];
 
-    await utils.bakeBlocks(5);
     await dexCore.swap(swapParams);
     await dexCore.updateStorage({
       pairs: [pairId.toFixed()],

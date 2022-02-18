@@ -1,7 +1,7 @@
 import { Common, Auction as AuctionErrors } from "../../helpers/Errors";
 import { PRECISION } from "../../helpers/Constants";
 import { Auction } from "../../helpers/Auction";
-import { Utils } from "../../helpers/Utils";
+import { Utils, zeroAddress } from "../../helpers/Utils";
 import { FA12 } from "../../helpers/FA12";
 import { FA2 } from "../../helpers/FA2";
 
@@ -17,14 +17,16 @@ import { auctionStorage } from "../../../storage/Auction";
 import { fa12Storage } from "../../../storage/test/FA12";
 import { fa2Storage } from "../../../storage/test/FA2";
 
+import { SBAccount, Token } from "test/types/Common";
+import { Transfer } from "test/types/FA2";
 import {
+  UpdateWhitelist,
   LaunchAuction,
   ReceiveFees,
+  WithdrawFee,
   ReceiveFee,
   PlaceBid,
 } from "test/types/Auction";
-import { SBAccount } from "test/types/Common";
-import { Transfer } from "test/types/FA2";
 
 chai.use(require("chai-bignumber")(BigNumber));
 
@@ -55,10 +57,14 @@ describe("Auction (main methods)", async () => {
     auctionStorage.storage.whitelist = [
       { fa12: fa12Whitelisted.contract.address },
     ];
-    auctionStorage.storage.fees.bid_fee_f = new BigNumber(7 * 10 ** 18);
-    auctionStorage.storage.fees.dev_fee_f = new BigNumber(4.2 * 10 ** 18);
+    auctionStorage.storage.fees.bid_fee_f = new BigNumber(0.07).multipliedBy(
+      PRECISION
+    );
+    auctionStorage.storage.fees.dev_fee_f = new BigNumber(0.042).multipliedBy(
+      PRECISION
+    );
     auctionStorage.storage.min_bid = new BigNumber(10);
-    auctionStorage.storage.auction_duration = new BigNumber(25);
+    auctionStorage.storage.auction_duration = new BigNumber(17);
 
     auction = await Auction.originate(utils.tezos, auctionStorage);
 
@@ -277,7 +283,7 @@ describe("Auction (main methods)", async () => {
     ]);
     await auction.launchAuction(params);
     await auction.updateStorage({
-      auctions: [expectedAuctionId.toFixed()],
+      auctions: [expectedAuctionId],
       public_fee_balances_f: [params.token],
     });
     await quipuToken.updateStorage({
@@ -320,9 +326,7 @@ describe("Auction (main methods)", async () => {
       auction.storage.storage.auctions[expectedAuctionId.toFixed()].amt
     ).to.be.bignumber.equal(params.amt);
     expect(currPublicFeeBalance).to.be.bignumber.equal(
-      prevPublicFeeBalance.minus(
-        params.amt.multipliedBy(PRECISION).multipliedBy(100)
-      )
+      prevPublicFeeBalance.minus(params.amt.multipliedBy(PRECISION))
     );
     expect(currAliceQTBalance).to.be.bignumber.equal(
       prevAliceQTBalance.minus(params.bid)
@@ -360,7 +364,7 @@ describe("Auction (main methods)", async () => {
 
     await auction.launchAuction(params);
     await auction.updateStorage({
-      auctions: [expectedAuctionId.toFixed()],
+      auctions: [expectedAuctionId],
       public_fee_balances_f: [params.token],
     });
     await quipuToken.updateStorage({
@@ -406,9 +410,7 @@ describe("Auction (main methods)", async () => {
       auction.storage.storage.auctions[expectedAuctionId.toFixed()].amt
     ).to.be.bignumber.equal(params.amt);
     expect(currPublicFeeBalance).to.be.bignumber.equal(
-      prevPublicFeeBalance.minus(
-        params.amt.multipliedBy(PRECISION).multipliedBy(100)
-      )
+      prevPublicFeeBalance.minus(params.amt.multipliedBy(PRECISION))
     );
     expect(currAliceQTBalance).to.be.bignumber.equal(
       prevAliceQTBalance.minus(params.bid)
@@ -446,7 +448,7 @@ describe("Auction (main methods)", async () => {
 
     await auction.launchAuction(params);
     await auction.updateStorage({
-      auctions: [expectedAuctionId.toFixed()],
+      auctions: [expectedAuctionId],
       public_fee_balances_f: [params.token],
     });
     await quipuToken.updateStorage({
@@ -492,9 +494,7 @@ describe("Auction (main methods)", async () => {
       auction.storage.storage.auctions[expectedAuctionId.toFixed()].amt
     ).to.be.bignumber.equal(params.amt);
     expect(currPublicFeeBalance).to.be.bignumber.equal(
-      prevPublicFeeBalance.minus(
-        params.amt.multipliedBy(PRECISION).multipliedBy(100)
-      )
+      prevPublicFeeBalance.minus(params.amt.multipliedBy(PRECISION))
     );
     expect(currAliceQTBalance).to.be.bignumber.equal(
       prevAliceQTBalance.minus(params.bid)
@@ -548,7 +548,7 @@ describe("Auction (main methods)", async () => {
     ]);
     await auction.placeBid(params);
     await auction.updateStorage({
-      auctions: [params.auction_id.toFixed()],
+      auctions: [params.auction_id],
     });
 
     expect(
@@ -568,7 +568,7 @@ describe("Auction (main methods)", async () => {
 
     await auction.placeBid(params);
     await auction.updateStorage({
-      auctions: [params.auction_id.toFixed()],
+      auctions: [params.auction_id],
     });
 
     expect(
@@ -588,7 +588,7 @@ describe("Auction (main methods)", async () => {
 
     await auction.placeBid(params);
     await auction.updateStorage({
-      auctions: [params.auction_id.toFixed()],
+      auctions: [params.auction_id],
     });
 
     expect(
@@ -600,78 +600,536 @@ describe("Auction (main methods)", async () => {
     ).to.be.equal(bob.pkh);
   });
 
-  // it("should charge a bid fee from a previous bidder and refund QUIPU tokens without bid fee to him", async () => {
-  //   const params: PlaceBid = {
-  //     auction_id: new BigNumber(0),
-  //     bid: new BigNumber(16),
-  //   };
+  it("should charge a bid fee from a previous bidder and refund QUIPU tokens without bid fee to him", async () => {
+    const params: PlaceBid = {
+      auction_id: new BigNumber(0),
+      bid: new BigNumber(16),
+    };
 
-  //   await auction.updateStorage({
-  //     auctions: [params.auction_id.toFixed()],
-  //   });
-  //   await quipuToken.updateStorage({
-  //     account_info: [bob.pkh, auction.contract.address],
-  //   });
+    await auction.updateStorage({
+      auctions: [params.auction_id],
+    });
+    await quipuToken.updateStorage({
+      account_info: [bob.pkh, auction.contract.address],
+    });
 
-  //   const bidFee: BigNumber = auction.storage.storage.auctions[
-  //     params.auction_id.toFixed()
-  //   ].current_bid.multipliedBy(auction.storage.storage.fees.bid_fee_f);
-  //   const prevBid: BigNumber =
-  //     auction.storage.storage.auctions[params.auction_id.toFixed()].current_bid;
-  //   const refund: BigNumber = prevBid
-  //     .multipliedBy(100)
-  //     .multipliedBy(PRECISION)
-  //     .minus(bidFee)
-  //     .dividedBy(100)
-  //     .integerValue(BigNumber.ROUND_DOWN)
-  //     .dividedBy(PRECISION)
-  //     .integerValue(BigNumber.ROUND_DOWN);
-  //   const prevBidFeeBalance: BigNumber =
-  //     auction.storage.storage.bid_fee_balance_f;
-  //   const prevBobQTBalance: BigNumber = await quipuToken.getBalance(
-  //     bob.pkh,
-  //     new BigNumber(0)
-  //   );
-  //   const prevAuctionQTBalance: BigNumber = await quipuToken.getBalance(
-  //     auction.contract.address,
-  //     new BigNumber(0)
-  //   );
+    const currentBid: BigNumber =
+      auction.storage.storage.auctions[params.auction_id.toFixed()].current_bid;
+    const bidFee: BigNumber = currentBid.multipliedBy(
+      auction.storage.storage.fees.bid_fee_f
+    );
+    const refund: BigNumber = currentBid.minus(
+      bidFee.dividedBy(PRECISION).integerValue(BigNumber.ROUND_DOWN)
+    );
+    const prevBidFeeBalance: BigNumber =
+      auction.storage.storage.bid_fee_balance;
+    const prevBobQTBalance: BigNumber = await quipuToken.getBalance(
+      bob.pkh,
+      new BigNumber(0)
+    );
+    const prevAuctionQTBalance: BigNumber = await quipuToken.getBalance(
+      auction.contract.address,
+      new BigNumber(0)
+    );
 
-  //   await utils.setProvider(alice.sk);
-  //   await auction.placeBid(params);
-  //   await auction.updateStorage();
-  //   await quipuToken.updateStorage({
-  //     account_info: [bob.pkh, auction.contract.address],
-  //   });
+    await utils.setProvider(alice.sk);
+    await auction.placeBid(params);
+    await auction.updateStorage();
+    await quipuToken.updateStorage({
+      account_info: [bob.pkh, auction.contract.address],
+    });
 
-  //   const currBidFeeBalance: BigNumber =
-  //     auction.storage.storage.bid_fee_balance_f;
-  //   const currBobQTBalance: BigNumber = await quipuToken.getBalance(
-  //     bob.pkh,
-  //     new BigNumber(0)
-  //   );
-  //   const currAuctionQTBalance: BigNumber = await quipuToken.getBalance(
-  //     auction.contract.address,
-  //     new BigNumber(0)
-  //   );
+    const currBidFeeBalance: BigNumber =
+      auction.storage.storage.bid_fee_balance;
+    const currBobQTBalance: BigNumber = await quipuToken.getBalance(
+      bob.pkh,
+      new BigNumber(0)
+    );
+    const currAuctionQTBalance: BigNumber = await quipuToken.getBalance(
+      auction.contract.address,
+      new BigNumber(0)
+    );
 
-  //   console.log(bidFee.toFixed());
-  //   console.log(refund.toFixed());
-  //   console.log(prevBidFeeBalance.toFixed());
-  //   expect(currBidFeeBalance).to.be.bignumber.equal(
-  //     prevBidFeeBalance.plus(bidFee)
-  //   );
-  //   console.log(prevBobQTBalance.toFixed());
-  //   console.log(currBobQTBalance.toFixed());
-  //   expect(currBobQTBalance).to.be.bignumber.equal(
-  //     prevBobQTBalance.plus(refund)
-  //   );
-  //   console.log(prevAuctionQTBalance.toFixed());
-  //   console.log(currAuctionQTBalance.toFixed());
-  //   expect(currAuctionQTBalance).to.be.bignumber.equal(
-  //     prevAuctionQTBalance.plus(params.bid.minus(refund))
-  //   );
-  // });
+    expect(currBidFeeBalance).to.be.bignumber.equal(
+      prevBidFeeBalance.plus(currentBid.minus(refund))
+    );
+    expect(currBobQTBalance).to.be.bignumber.equal(
+      prevBobQTBalance.plus(refund)
+    );
+    expect(currAuctionQTBalance).to.be.bignumber.equal(
+      prevAuctionQTBalance.plus(params.bid.minus(refund))
+    );
+  });
+
+  it("should charge a new bid from a new bidder", async () => {
+    const params: PlaceBid = {
+      auction_id: new BigNumber(0),
+      bid: new BigNumber(666),
+    };
+
+    await auction.updateStorage({
+      auctions: [params.auction_id],
+    });
+    await quipuToken.updateStorage({
+      account_info: [bob.pkh, auction.contract.address],
+    });
+
+    const currentBid: BigNumber =
+      auction.storage.storage.auctions[params.auction_id.toFixed()].current_bid;
+    const bidFee: BigNumber = currentBid.multipliedBy(
+      auction.storage.storage.fees.bid_fee_f
+    );
+    const refund: BigNumber = currentBid.minus(
+      bidFee.dividedBy(PRECISION).integerValue(BigNumber.ROUND_DOWN)
+    );
+    const prevBobQTBalance: BigNumber = await quipuToken.getBalance(
+      bob.pkh,
+      new BigNumber(0)
+    );
+    const prevAuctionQTBalance: BigNumber = await quipuToken.getBalance(
+      auction.contract.address,
+      new BigNumber(0)
+    );
+
+    await utils.setProvider(bob.sk);
+    await auction.placeBid(params);
+    await quipuToken.updateStorage({
+      account_info: [bob.pkh, auction.contract.address],
+    });
+
+    const currBobQTBalance: BigNumber = await quipuToken.getBalance(
+      bob.pkh,
+      new BigNumber(0)
+    );
+    const currAuctionQTBalance: BigNumber = await quipuToken.getBalance(
+      auction.contract.address,
+      new BigNumber(0)
+    );
+
+    expect(currBobQTBalance).to.be.bignumber.equal(
+      prevBobQTBalance.minus(params.bid)
+    );
+    expect(currAuctionQTBalance).to.be.bignumber.equal(
+      prevAuctionQTBalance.plus(params.bid.minus(refund))
+    );
+  });
+
+  it("should fail if auction not found", async () => {
+    await rejects(auction.claim(new BigNumber(666)), (err: Error) => {
+      expect(err.message).to.equal(AuctionErrors.ERR_AUCTION_NOT_FOUND);
+
+      return true;
+    });
+  });
+
+  it("should fail if auction is not finished", async () => {
+    await rejects(auction.claim(new BigNumber(0)), (err: Error) => {
+      expect(err.message).to.equal(AuctionErrors.ERR_AUCTION_NOT_FINISHED);
+
+      return true;
+    });
+  });
+
+  it("should fail if not admin is trying to withdraw dev fee", async () => {
+    const params: WithdrawFee = {
+      token: { tez: undefined },
+      receiver: alice.pkh,
+    };
+
+    await rejects(auction.withdrawDevFee(params), (err: Error) => {
+      expect(err.message).to.equal(Common.ERR_NOT_ADMIN);
+
+      return true;
+    });
+  });
+
+  it("should withdraw TEZ dev fee by admin", async () => {
+    const params: WithdrawFee = {
+      token: { tez: undefined },
+      receiver: bob.pkh,
+    };
+
+    await auction.updateStorage({
+      dev_fee_balances_f: [params.token],
+    });
+
+    const prevTokDevFeeBalance: BigNumber =
+      auction.storage.storage.dev_fee_balances_f[params.token.toString()];
+    const prevTokReceiverBalance: BigNumber = await utils.tezos.tz.getBalance(
+      params.receiver
+    );
+
+    await utils.setProvider(alice.sk);
+    await auction.withdrawDevFee(params);
+    await auction.updateStorage({
+      dev_fee_balances_f: [params.token],
+    });
+
+    const currTokDevFeeBalance: BigNumber =
+      auction.storage.storage.dev_fee_balances_f[params.token.toString()];
+    const currTokReceiverBalance: BigNumber = await utils.tezos.tz.getBalance(
+      params.receiver
+    );
+
+    expect(currTokDevFeeBalance).to.be.bignumber.equal(
+      prevTokDevFeeBalance.minus(
+        prevTokDevFeeBalance
+          .dividedBy(PRECISION)
+          .integerValue(BigNumber.ROUND_DOWN)
+          .multipliedBy(PRECISION)
+      )
+    );
+    expect(currTokReceiverBalance).to.be.bignumber.equal(
+      prevTokReceiverBalance.plus(
+        prevTokDevFeeBalance
+          .dividedBy(PRECISION)
+          .integerValue(BigNumber.ROUND_DOWN)
+      )
+    );
+  });
+
+  it("should withdraw FA1.2 dev fee by admin", async () => {
+    const params: WithdrawFee = {
+      token: { fa12: fa12.contract.address },
+      receiver: alice.pkh,
+    };
+
+    await auction.updateStorage({
+      dev_fee_balances_f: [params.token],
+    });
+    await fa12.updateStorage({
+      ledger: [params.receiver],
+    });
+
+    const prevTokDevFeeBalance: BigNumber =
+      auction.storage.storage.dev_fee_balances_f[params.token.toString()];
+    const prevTokReceiverBalance: BigNumber = fa12.getBalance(params.receiver);
+
+    await auction.withdrawDevFee(params);
+    await auction.updateStorage({
+      dev_fee_balances_f: [params.token],
+    });
+    await fa12.updateStorage({
+      ledger: [params.receiver],
+    });
+
+    const currTokDevFeeBalance: BigNumber =
+      auction.storage.storage.dev_fee_balances_f[params.token.toString()];
+    const currTokReceiverBalance: BigNumber = fa12.getBalance(params.receiver);
+
+    expect(currTokDevFeeBalance).to.be.bignumber.equal(
+      prevTokDevFeeBalance.minus(
+        prevTokDevFeeBalance
+          .dividedBy(PRECISION)
+          .integerValue(BigNumber.ROUND_DOWN)
+          .multipliedBy(PRECISION)
+      )
+    );
+    expect(currTokReceiverBalance).to.be.bignumber.equal(
+      prevTokReceiverBalance.plus(
+        prevTokDevFeeBalance
+          .dividedBy(PRECISION)
+          .integerValue(BigNumber.ROUND_DOWN)
+      )
+    );
+  });
+
+  it("should withdraw FA2 dev fee by admin", async () => {
+    const params: WithdrawFee = {
+      token: { fa2: { token: fa2.contract.address, id: new BigNumber(0) } },
+      receiver: alice.pkh,
+    };
+
+    await auction.updateStorage({
+      dev_fee_balances_f: [params.token],
+    });
+    await fa2.updateStorage({
+      account_info: [params.receiver],
+    });
+
+    const prevTokDevFeeBalance: BigNumber =
+      auction.storage.storage.dev_fee_balances_f[params.token.toString()];
+    const prevTokReceiverBalance: BigNumber = await fa2.getBalance(
+      params.receiver
+    );
+
+    await auction.withdrawDevFee(params);
+    await auction.updateStorage({
+      dev_fee_balances_f: [params.token],
+    });
+    await fa2.updateStorage({
+      account_info: [params.receiver],
+    });
+
+    const currTokDevFeeBalance: BigNumber =
+      auction.storage.storage.dev_fee_balances_f[params.token.toString()];
+    const currTokReceiverBalance: BigNumber = await fa2.getBalance(
+      params.receiver
+    );
+
+    expect(currTokDevFeeBalance).to.be.bignumber.equal(
+      prevTokDevFeeBalance.minus(
+        prevTokDevFeeBalance
+          .dividedBy(PRECISION)
+          .integerValue(BigNumber.ROUND_DOWN)
+          .multipliedBy(PRECISION)
+      )
+    );
+    expect(currTokReceiverBalance).to.be.bignumber.equal(
+      prevTokReceiverBalance.plus(
+        prevTokDevFeeBalance
+          .dividedBy(PRECISION)
+          .integerValue(BigNumber.ROUND_DOWN)
+      )
+    );
+  });
+
+  it("should fail if not admin is trying to withdraw public fee", async () => {
+    const params: WithdrawFee = {
+      token: { tez: undefined },
+      receiver: alice.pkh,
+    };
+
+    await utils.setProvider(bob.sk);
+    await rejects(auction.withdrawPublicFee(params), (err: Error) => {
+      expect(err.message).to.equal(Common.ERR_NOT_ADMIN);
+
+      return true;
+    });
+  });
+
+  it("should fail if admin is trying to withdraw not whitelisted token", async () => {
+    const params: WithdrawFee = {
+      token: { tez: undefined },
+      receiver: bob.pkh,
+    };
+
+    await utils.setProvider(alice.sk);
+    await rejects(auction.withdrawPublicFee(params), (err: Error) => {
+      expect(err.message).to.equal(AuctionErrors.ERR_NOT_WHITELISTED_TOKEN);
+
+      return true;
+    });
+  });
+
+  it("should withdraw TEZ public fee by admin", async () => {
+    const token: Token = { tez: undefined };
+    const updateWhitelistParams: UpdateWhitelist = {
+      token: token,
+      add: true,
+    };
+
+    await auction.updateWhitelist(updateWhitelistParams);
+
+    const params: WithdrawFee = {
+      token: token,
+      receiver: bob.pkh,
+    };
+
+    await auction.updateStorage({
+      public_fee_balances_f: [params.token],
+    });
+
+    const prevTokPublicFeeBalance: BigNumber =
+      auction.storage.storage.public_fee_balances_f[params.token.toString()];
+    const prevTokReceiverBalance: BigNumber = await utils.tezos.tz.getBalance(
+      params.receiver
+    );
+
+    await auction.withdrawPublicFee(params);
+    await auction.updateStorage({
+      public_fee_balances_f: [params.token],
+    });
+
+    const currTokPublicFeeBalance: BigNumber =
+      auction.storage.storage.public_fee_balances_f[params.token.toString()];
+    const currTokReceiverBalance: BigNumber = await utils.tezos.tz.getBalance(
+      params.receiver
+    );
+
+    expect(currTokPublicFeeBalance).to.be.bignumber.equal(
+      prevTokPublicFeeBalance.minus(
+        prevTokPublicFeeBalance
+          .dividedBy(PRECISION)
+          .integerValue(BigNumber.ROUND_DOWN)
+          .multipliedBy(PRECISION)
+      )
+    );
+    expect(currTokReceiverBalance).to.be.bignumber.equal(
+      prevTokReceiverBalance.plus(
+        prevTokPublicFeeBalance
+          .dividedBy(PRECISION)
+          .integerValue(BigNumber.ROUND_DOWN)
+      )
+    );
+  });
+
+  it("should withdraw FA1.2 public fee by admin", async () => {
+    const token: Token = { fa12: fa12.contract.address };
+    const updateWhitelistParams: UpdateWhitelist = {
+      token: token,
+      add: true,
+    };
+
+    await auction.updateWhitelist(updateWhitelistParams);
+
+    const params: WithdrawFee = {
+      token: token,
+      receiver: alice.pkh,
+    };
+
+    await auction.updateStorage({
+      public_fee_balances_f: [params.token],
+    });
+    await fa12.updateStorage({
+      ledger: [params.receiver],
+    });
+
+    const prevTokPublicFeeBalance: BigNumber =
+      auction.storage.storage.public_fee_balances_f[params.token.toString()];
+    const prevTokReceiverBalance: BigNumber = fa12.getBalance(params.receiver);
+
+    await auction.withdrawPublicFee(params);
+    await auction.updateStorage({
+      public_fee_balances_f: [params.token],
+    });
+    await fa12.updateStorage({
+      ledger: [params.receiver],
+    });
+
+    const currTokPublicFeeBalance: BigNumber =
+      auction.storage.storage.public_fee_balances_f[params.token.toString()];
+    const currTokReceiverBalance: BigNumber = fa12.getBalance(params.receiver);
+
+    expect(currTokPublicFeeBalance).to.be.bignumber.equal(
+      prevTokPublicFeeBalance.minus(
+        prevTokPublicFeeBalance
+          .dividedBy(PRECISION)
+          .integerValue(BigNumber.ROUND_DOWN)
+          .multipliedBy(PRECISION)
+      )
+    );
+    expect(currTokReceiverBalance).to.be.bignumber.equal(
+      prevTokReceiverBalance.plus(
+        prevTokPublicFeeBalance
+          .dividedBy(PRECISION)
+          .integerValue(BigNumber.ROUND_DOWN)
+      )
+    );
+  });
+
+  it("should withdraw FA2 public fee by admin", async () => {
+    const token: Token = {
+      fa2: { token: fa2.contract.address, id: new BigNumber(0) },
+    };
+    const updateWhitelistParams: UpdateWhitelist = {
+      token: token,
+      add: true,
+    };
+
+    await auction.updateWhitelist(updateWhitelistParams);
+
+    const params: WithdrawFee = {
+      token: token,
+      receiver: alice.pkh,
+    };
+
+    await auction.updateStorage({
+      public_fee_balances_f: [params.token],
+    });
+    await fa2.updateStorage({
+      account_info: [params.receiver],
+    });
+
+    const prevTokPublicFeeBalance: BigNumber =
+      auction.storage.storage.public_fee_balances_f[params.token.toString()];
+    const prevTokReceiverBalance: BigNumber = await fa2.getBalance(
+      params.receiver
+    );
+
+    await auction.withdrawPublicFee(params);
+    await auction.updateStorage({
+      public_fee_balances_f: [params.token],
+    });
+    await fa2.updateStorage({
+      account_info: [params.receiver],
+    });
+
+    const currTokPublicFeeBalance: BigNumber =
+      auction.storage.storage.public_fee_balances_f[params.token.toString()];
+    const currTokReceiverBalance: BigNumber = await fa2.getBalance(
+      params.receiver
+    );
+
+    expect(currTokPublicFeeBalance).to.be.bignumber.equal(
+      prevTokPublicFeeBalance.minus(
+        prevTokPublicFeeBalance
+          .dividedBy(PRECISION)
+          .integerValue(BigNumber.ROUND_DOWN)
+          .multipliedBy(PRECISION)
+      )
+    );
+    expect(currTokReceiverBalance).to.be.bignumber.equal(
+      prevTokReceiverBalance.plus(
+        prevTokPublicFeeBalance
+          .dividedBy(PRECISION)
+          .integerValue(BigNumber.ROUND_DOWN)
+      )
+    );
+  });
+
+  it("should fail if not admin is trying to burn bid fee", async () => {
+    await utils.setProvider(bob.sk);
+    await rejects(auction.burnBidFee(), (err: Error) => {
+      expect(err.message).to.equal(Common.ERR_NOT_ADMIN);
+
+      return true;
+    });
+  });
+
+  it("should burn bid fee by admin", async () => {
+    await auction.updateStorage();
+    await quipuToken.updateStorage({
+      account_info: [auction.contract.address, zeroAddress],
+    });
+
+    const prevBidFeeBalance: BigNumber =
+      auction.storage.storage.bid_fee_balance;
+    const prevAuctionQTBalance: BigNumber = await quipuToken.getBalance(
+      auction.contract.address,
+      new BigNumber(0)
+    );
+    const prevZeroAddressQTBalance: BigNumber = await quipuToken.getBalance(
+      zeroAddress,
+      new BigNumber(0)
+    );
+
+    await utils.setProvider(alice.sk);
+    await auction.burnBidFee();
+    await auction.updateStorage();
+    await quipuToken.updateStorage({
+      account_info: [auction.contract.address, zeroAddress],
+    });
+
+    const currBidFeeBalance: BigNumber =
+      auction.storage.storage.bid_fee_balance;
+    const currAuctionQTBalance: BigNumber = await quipuToken.getBalance(
+      auction.contract.address,
+      new BigNumber(0)
+    );
+    const currZeroAddressQTBalance: BigNumber = await quipuToken.getBalance(
+      zeroAddress,
+      new BigNumber(0)
+    );
+
+    expect(currBidFeeBalance).to.be.bignumber.equal(new BigNumber(0));
+    expect(currAuctionQTBalance).to.be.bignumber.equal(
+      prevAuctionQTBalance.minus(prevBidFeeBalance)
+    );
+    expect(currZeroAddressQTBalance).to.be.bignumber.equal(
+      prevZeroAddressQTBalance.plus(prevBidFeeBalance)
+    );
+  });
 
   it("should fail if auction is finished", async () => {
     const params: PlaceBid = {
@@ -679,8 +1137,96 @@ describe("Auction (main methods)", async () => {
       bid: new BigNumber(0),
     };
 
-    await utils.bakeBlocks(20);
     await rejects(auction.placeBid(params), (err: Error) => {
+      expect(err.message).to.equal(AuctionErrors.ERR_AUCTION_FINISHED);
+
+      return true;
+    });
+  });
+
+  it("should burn current bid, transfer claimed tokens to user and change auction status to `finished`", async () => {
+    const auctionId: BigNumber = new BigNumber(1);
+
+    await auction.updateStorage({
+      auctions: [auctionId],
+    });
+    await quipuToken.updateStorage({
+      account_info: [auction.contract.address, zeroAddress],
+    });
+    await fa12.updateStorage({
+      ledger: [
+        auction.contract.address,
+        auction.storage.storage.auctions[auctionId.toFixed()].current_bidder,
+      ],
+    });
+
+    const prevAuctionQTBalance: BigNumber = await quipuToken.getBalance(
+      auction.contract.address
+    );
+    const prevZeroAddressQTBalance: BigNumber = await quipuToken.getBalance(
+      zeroAddress
+    );
+    const prevTokAuctionBalance: BigNumber = fa12.getBalance(
+      auction.contract.address
+    );
+    const prevTokReceiverBalance: BigNumber = fa12.getBalance(
+      auction.storage.storage.auctions[auctionId.toFixed()].current_bidder
+    );
+
+    await auction.claim(auctionId);
+    await auction.updateStorage({
+      auctions: [auctionId],
+    });
+    await quipuToken.updateStorage({
+      account_info: [auction.contract.address, zeroAddress],
+    });
+    await fa12.updateStorage({
+      ledger: [
+        auction.contract.address,
+        auction.storage.storage.auctions[auctionId.toFixed()].current_bidder,
+      ],
+    });
+
+    const currAuctionQTBalance: BigNumber = await quipuToken.getBalance(
+      auction.contract.address
+    );
+    const currZeroAddressQTBalance: BigNumber = await quipuToken.getBalance(
+      zeroAddress
+    );
+    const currTokAuctionBalance: BigNumber = fa12.getBalance(
+      auction.contract.address
+    );
+    const currTokReceiverBalance: BigNumber = fa12.getBalance(
+      auction.storage.storage.auctions[auctionId.toFixed()].current_bidder
+    );
+
+    expect(currAuctionQTBalance).to.be.bignumber.equal(
+      prevAuctionQTBalance.minus(
+        auction.storage.storage.auctions[auctionId.toFixed()].current_bid
+      )
+    );
+    expect(currZeroAddressQTBalance).to.be.bignumber.equal(
+      prevZeroAddressQTBalance.plus(
+        auction.storage.storage.auctions[auctionId.toFixed()].current_bid
+      )
+    );
+    expect(currTokAuctionBalance).to.be.bignumber.equal(
+      prevTokAuctionBalance.minus(
+        auction.storage.storage.auctions[auctionId.toFixed()].amt
+      )
+    );
+    expect(currTokReceiverBalance).to.be.bignumber.equal(
+      prevTokReceiverBalance.plus(
+        auction.storage.storage.auctions[auctionId.toFixed()].amt
+      )
+    );
+    expect(
+      auction.storage.storage.auctions[auctionId.toFixed()].status
+    ).to.has.keys("finished");
+  });
+
+  it("should fail if auction status is `finished`", async () => {
+    await rejects(auction.claim(new BigNumber(1)), (err: Error) => {
       expect(err.message).to.equal(AuctionErrors.ERR_AUCTION_FINISHED);
 
       return true;

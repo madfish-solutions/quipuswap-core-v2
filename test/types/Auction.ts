@@ -53,7 +53,7 @@ export type AuctionStorage = {
     dex_core: string;
     quipu_token: string;
     quipu_token_id: BigNumber;
-    bid_fee_balance_f: BigNumber;
+    bid_fee_balance: BigNumber;
     auctions_count: BigNumber;
     auction_duration: BigNumber;
     min_bid: BigNumber;

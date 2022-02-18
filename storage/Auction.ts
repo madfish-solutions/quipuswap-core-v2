@@ -22,7 +22,7 @@ export const auctionStorage: AuctionStorage = {
     dex_core: zeroAddress,
     quipu_token: zeroAddress,
     quipu_token_id: new BigNumber(0),
-    bid_fee_balance_f: new BigNumber(0),
+    bid_fee_balance: new BigNumber(0),
     auctions_count: new BigNumber(0),
     auction_duration: new BigNumber(0),
     min_bid: new BigNumber(0),

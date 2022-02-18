@@ -28,7 +28,7 @@ type storage_t          is [@layout:comb] record [
   dex_core                : address;
   quipu_token             : address;
   quipu_token_id          : nat;
-  bid_fee_balance_f       : nat;
+  bid_fee_balance         : nat;
   auctions_count          : nat;
   auction_duration        : int;
   min_bid                 : nat;

@@ -488,12 +488,15 @@
    - ✅ should make a new bid for TEZ tokens auction;
    - ✅ should make a new bid for FA1.2 tokens auction;
    - ✅ should make a new bid for FA2 tokens auction;
-   - ❌ should charge a bid fee from a previous bidder and refund QUIPU tokens without bid fee to him;
-   - ❌ should charge a new bid from a new bidder.
+   - ✅ should charge a bid fee from a previous bidder and refund QUIPU tokens without bid fee to him;
+   - ✅ should charge a new bid from a new bidder.
 
 4. `claim`:
 
-   - ❌
+   - ✅ should fail if auction not found;
+   - ✅ should fail if auction is not finished;
+   - ✅ should burn current bid, transfer claimed tokens to user and change auction status to `finished`;
+   - ✅ should fail if auction status is `finished`.
 
 5. `set_admin`:
 
@@ -539,12 +542,20 @@
 
 12. `withdraw_dev_fee`:
 
-    - ❌
+    - ✅ should fail if not admin is trying to withdraw dev fee;
+    - ✅ should withdraw TEZ dev fee by admin;
+    - ✅ should withdraw FA1.2 dev fee by admin;
+    - ✅ should withdraw FA2 dev fee by admin.
 
 13. `withdraw_public_fee`:
 
-    - ❌
+    - ✅ should fail if not admin is trying to withdraw public fee;
+    - ✅ should fail if admin is trying to withdraw not whitelisted token;
+    - ✅ should withdraw TEZ public fee by admin;
+    - ✅ should withdraw FA1.2 public fee by admin;
+    - ✅ should withdraw FA2 public fee by admin.
 
 14. `burn_bid_fee`:
 
-    - ❌
+    - ✅ should fail if not admin is trying to burn bid fee;
+    - ✅ should burn bid fee by admin.

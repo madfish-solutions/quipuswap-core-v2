@@ -91,10 +91,7 @@ export class Auction {
     const devFee: BigNumber = amount.multipliedBy(
       this.storage.storage.fees.dev_fee_f
     );
-    const publicFee: BigNumber = amount
-      .multipliedBy(100)
-      .multipliedBy(PRECISION)
-      .minus(devFee);
+    const publicFee: BigNumber = amount.multipliedBy(PRECISION).minus(devFee);
 
     return {
       devFee,
@@ -288,7 +285,7 @@ export class Auction {
     return operation;
   }
 
-  async withdrawPulicFee(params: WithdrawFee): Promise<TransactionOperation> {
+  async withdrawPublicFee(params: WithdrawFee): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .withdraw_public_fee(params)
       .send();
