@@ -30,23 +30,18 @@ function withdraw_rewards(
       s.users_rewards[params.user],
       Constants.default_user_reward_info
     );
-    const reward : nat = user_reward_info.reward;
+    const reward_f : nat = user_reward_info.reward;
+    const reward : nat = user_reward_info.reward / Constants.precision;
 
-    user_reward_info.reward := get_nat_or_fail(reward - reward / Constants.precision * Constants.precision);
+    user_reward_info.reward := get_nat_or_fail(reward_f - reward * Constants.precision);
 
     s.users_rewards[params.user] := user_reward_info;
-    s.reward_paid := s.reward_paid + reward / Constants.precision;
+    s.reward_paid := s.reward_paid + reward;
 
     var ops : list(operation) := (nil : list(operation));
 
-    if reward >= Constants.precision
-    then {
-      ops := Tezos.transaction(
-        unit,
-        reward / Constants.precision * 1mutez,
-        params.receiver
-      ) # ops;
-    }
+    if reward_f > Constants.precision
+    then ops := transfer_tez(params.receiver, reward) # ops
     else skip;
   } with (ops, s)
 

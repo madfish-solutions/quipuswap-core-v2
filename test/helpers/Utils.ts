@@ -65,6 +65,10 @@ export class Utils {
     return Date.parse((await this.tezos.rpc.getBlockHeader()).timestamp);
   }
 
+  async getLastBlock(): Promise<number> {
+    return (await this.tezos.rpc.getBlock()).header.level;
+  }
+
   static getMinFA12Token(tokenA: FA12Token, tokenB: FA12Token): string {
     return tokenA < tokenB ? tokenA : tokenB;
   }

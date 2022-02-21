@@ -58,3 +58,9 @@ export type TezStoreStorage = {
   collecting_period_ends: BigNumber;
   voting_period_ends: BigNumber;
 };
+
+export type UpdateRewards = {
+  rewardPerShare: BigNumber;
+  nextReward: BigNumber;
+  lastUpdateLevel: BigNumber;
+};

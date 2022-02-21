@@ -11,9 +11,14 @@ import env from "../../env";
 
 import { confirmOperation } from "../../scripts/confirmation";
 
+import { BigNumber } from "bignumber.js";
+
+import { Pair } from "test/types/DexCore";
+import { Utils } from "./Utils";
 import {
   TezStoreStorage,
   WithdrawRewards,
+  UpdateRewards,
   DivestTez,
   BanBaker,
   Vote,
@@ -157,5 +162,39 @@ export class TezStore {
     await confirmOperation(this.tezos, operation.hash);
 
     return operation;
+  }
+
+  async updateRewards(
+    amount: BigNumber,
+    storage: TezStoreStorage,
+    pair: Pair,
+    utils: Utils
+  ): Promise<UpdateRewards> {
+    const totalSupply: BigNumber = pair.total_supply;
+
+    if (totalSupply.gt(new BigNumber(0))) {
+      const rewardsLevel: BigNumber = new BigNumber(
+        await utils.getLastBlock()
+      ).gt(storage.collecting_period_ends)
+        ? storage.collecting_period_ends
+        : new BigNumber(await utils.getLastBlock());
+      const newReward: BigNumber = rewardsLevel
+        .minus(storage.last_update_level)
+        .multipliedBy(storage.reward_per_block);
+
+      return {
+        rewardPerShare: storage.reward_per_share.plus(
+          newReward.dividedBy(totalSupply).integerValue(BigNumber.ROUND_DOWN)
+        ),
+        nextReward: storage.next_reward.plus(amount),
+        lastUpdateLevel: new BigNumber(await utils.getLastBlock()),
+      };
+    }
+
+    return {
+      rewardPerShare: storage.reward_per_share,
+      nextReward: storage.next_reward,
+      lastUpdateLevel: storage.last_update_level,
+    };
   }
 }

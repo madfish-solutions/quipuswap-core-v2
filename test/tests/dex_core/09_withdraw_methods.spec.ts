@@ -26,8 +26,13 @@ import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa12Storage } from "../../../storage/test/FA12";
 import { fa2Storage } from "../../../storage/test/FA2";
 
-import { LaunchExchange, ClaimFee, Swap } from "test/types/DexCore";
 import { SBAccount, Token } from "test/types/Common";
+import {
+  LaunchExchange,
+  WithdrawProfit,
+  ClaimFee,
+  Swap,
+} from "test/types/DexCore";
 
 chai.use(require("chai-bignumber")(BigNumber));
 
@@ -129,6 +134,45 @@ describe("DexCore (withdraw methods)", async () => {
       launchParams,
       launchParams.token_b_in.toNumber()
     );
+  });
+
+  it("should fail if reentrancy", async () => {
+    const params: WithdrawProfit = {
+      receiver: alice.pkh,
+      pair_id: new BigNumber(0),
+    };
+
+    await rejects(dexCore2.withdrawProfit(params), (err: Error) => {
+      expect(err.message).to.equal(DexCoreErrors.ERR_REENTRANCY);
+
+      return true;
+    });
+  });
+
+  it("should fail if pair not listed", async () => {
+    const params: WithdrawProfit = {
+      receiver: alice.pkh,
+      pair_id: new BigNumber(666),
+    };
+
+    await rejects(dexCore.withdrawProfit(params), (err: Error) => {
+      expect(err.message).to.equal(DexCoreErrors.ERR_PAIR_NOT_LISTED);
+
+      return true;
+    });
+  });
+
+  it("should fail if pair does not have TEZ store contract (not TOK/TEZ pair)", async () => {
+    const params: WithdrawProfit = {
+      receiver: alice.pkh,
+      pair_id: new BigNumber(0),
+    };
+
+    await rejects(dexCore.withdrawProfit(params), (err: Error) => {
+      expect(err.message).to.equal(DexCoreErrors.ERR_TEZ_STORE_404);
+
+      return true;
+    });
   });
 
   it("should fail if reentrancy", async () => {

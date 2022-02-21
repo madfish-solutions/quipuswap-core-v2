@@ -47,6 +47,10 @@
              EQ ;
              IF { DROP } { FAILWITH } ;
              UNIT } ;
+         LAMBDA
+           (pair (contract unit) nat)
+           operation
+           { UNPAIR ; PUSH mutez 1 ; DIG 2 ; MUL ; UNIT ; TRANSFER_TOKENS } ;
          LAMBDA int nat { ISNAT ; IF_NONE { PUSH string "406" ; FAILWITH } {} } ;
          LAMBDA
            (pair (option (pair nat nat)) (pair nat nat))
@@ -90,7 +94,7 @@
              EXEC } ;
          SWAP ;
          APPLY ;
-         DUP 10 ;
+         DUP 11 ;
          DUP 7 ;
          DUP 5 ;
          DUP 4 ;
@@ -287,7 +291,7 @@
                 { SWAP ; DIG 3 ; DIG 4 ; DIG 5 ; DIG 6 ; DROP 6 } } ;
          SWAP ;
          APPLY ;
-         DUP 9 ;
+         DUP 10 ;
          DUP 8 ;
          DUP 8 ;
          PAIR 3 ;
@@ -365,7 +369,7 @@
              UPDATE 5 } ;
          SWAP ;
          APPLY ;
-         DIG 13 ;
+         DIG 14 ;
          UNPAIR ;
          IF_LEFT
            { DIG 2 ;
@@ -374,12 +378,14 @@
              DIG 6 ;
              DIG 8 ;
              DIG 9 ;
-             DIG 11 ;
-             DIG 13 ;
+             DIG 12 ;
              DIG 14 ;
+             DIG 15 ;
              DROP 9 ;
              IF_LEFT
-               { IF_LEFT
+               { DIG 4 ;
+                 DROP ;
+                 IF_LEFT
                    { DIG 2 ;
                      DROP ;
                      SWAP ;
@@ -435,14 +441,14 @@
                      PAIR } }
                { DIG 2 ;
                  DIG 3 ;
-                 DIG 5 ;
+                 DIG 6 ;
                  DROP 3 ;
                  IF_LEFT
                    { SWAP ;
                      DUP ;
                      DUG 2 ;
                      GET 15 ;
-                     DIG 3 ;
+                     DIG 4 ;
                      SWAP ;
                      EXEC ;
                      DROP ;
@@ -463,19 +469,28 @@
                      CDR ;
                      DIG 3 ;
                      CAR ;
-                     PUSH mutez 1 ;
-                     DIG 2 ;
-                     MUL ;
-                     UNIT ;
-                     TRANSFER_TOKENS ;
+                     PAIR ;
+                     DIG 3 ;
+                     SWAP ;
+                     EXEC ;
                      CONS ;
                      PAIR }
-                   { DROP ; DUP ; GET 15 ; DIG 2 ; SWAP ; EXEC ; DROP ; NIL operation ; PAIR } } }
+                   { DIG 2 ;
+                     DROP 2 ;
+                     DUP ;
+                     GET 15 ;
+                     DIG 2 ;
+                     SWAP ;
+                     EXEC ;
+                     DROP ;
+                     NIL operation ;
+                     PAIR } } }
            { IF_LEFT
                { DIG 8 ;
-                 DIG 11 ;
-                 DIG 13 ;
-                 DROP 3 ;
+                 DIG 10 ;
+                 DIG 12 ;
+                 DIG 14 ;
+                 DROP 4 ;
                  SWAP ;
                  DUP ;
                  DUG 2 ;
@@ -790,14 +805,14 @@
                  DIG 5 ;
                  DIG 6 ;
                  DIG 7 ;
-                 DIG 12 ;
-                 DIG 14 ;
+                 DIG 13 ;
+                 DIG 15 ;
                  DROP 6 ;
                  SWAP ;
                  DUP ;
                  DUG 2 ;
                  GET 15 ;
-                 DIG 7 ;
+                 DIG 8 ;
                  SWAP ;
                  EXEC ;
                  DROP ;
@@ -823,7 +838,7 @@
                  DIG 2 ;
                  SWAP ;
                  EXEC ;
-                 DIG 4 ;
+                 DIG 5 ;
                  SWAP ;
                  DUP ;
                  DUG 2 ;
@@ -837,27 +852,27 @@
                  EXEC ;
                  DUP ;
                  CAR ;
-                 SWAP ;
-                 DIG 5 ;
-                 DUP ;
-                 DUP ;
-                 DUG 7 ;
-                 DUP 4 ;
+                 DUP 7 ;
+                 DUP 3 ;
+                 CAR ;
                  EDIV ;
                  IF_NONE { PUSH string "DIV by 0" ; FAILWITH } {} ;
                  CAR ;
-                 MUL ;
+                 DIG 2 ;
+                 DUP 8 ;
                  DUP 3 ;
+                 MUL ;
+                 DUP 4 ;
                  SUB ;
-                 DIG 5 ;
+                 DIG 6 ;
                  SWAP ;
                  EXEC ;
                  UPDATE 1 ;
-                 DIG 2 ;
+                 DIG 3 ;
                  DUP ;
                  GET 5 ;
                  DIG 2 ;
-                 DUP 5 ;
+                 DUP 6 ;
                  GET 3 ;
                  SWAP ;
                  SOME ;
@@ -865,32 +880,17 @@
                  UPDATE ;
                  UPDATE 5 ;
                  DUP ;
-                 DUP 5 ;
-                 DUP 4 ;
-                 EDIV ;
-                 IF_NONE { PUSH string "DIV by 0" ; FAILWITH } {} ;
-                 CAR ;
+                 DUP 3 ;
                  DIG 2 ;
                  GET 23 ;
                  ADD ;
                  UPDATE 23 ;
                  NIL operation ;
-                 DUP 5 ;
-                 DUP 4 ;
+                 DIG 6 ;
+                 DIG 4 ;
                  COMPARE ;
-                 GE ;
-                 IF { DIG 3 ;
-                      CAR ;
-                      PUSH mutez 1 ;
-                      DIG 5 ;
-                      DIG 5 ;
-                      EDIV ;
-                      IF_NONE { PUSH string "DIV by 0" ; FAILWITH } {} ;
-                      CAR ;
-                      MUL ;
-                      UNIT ;
-                      TRANSFER_TOKENS ;
-                      CONS }
+                 GT ;
+                 IF { DIG 2 ; DIG 3 ; CAR ; PAIR ; DIG 3 ; SWAP ; EXEC ; CONS }
                     { DIG 2 ; DIG 3 ; DIG 4 ; DROP 3 } ;
                  PAIR } } } ;
   view "get_user_candidate"

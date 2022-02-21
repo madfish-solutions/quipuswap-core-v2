@@ -30,7 +30,11 @@
 
 3. `withdraw_rewards`:
 
-   - ❌
+   - ✅ should fail if not dex core is trying to withdraw rewards;
+   - ❌ should update global rewards;
+   - ❌ should update user rewards;
+   - ❌ should withdraw user's rewards - 1;
+   - ❌ should withdraw user's rewards - 2.
 
 4. `ban_baker`:
 
@@ -63,6 +67,8 @@
 
 6. `default`:
 
+   - ✅ should update global rewards - 1;
+   - ❌ should not update global rewards if pair total supply is 0;
    - ❌
 
 7. `is_banned_baker` [VIEW]:
@@ -193,8 +199,11 @@
 
 6. `withdraw_profit`:
 
-   - ❌ should fail if reentrancy;
-   - ❌
+   - ✅ should fail if reentrancy;
+   - ✅ should fail if pair not listed;
+   - ✅ should fail if pair does not have TEZ store contract (not TOK/TEZ pair);
+   - ❌ should withdraw user's profit - 1;
+   - ❌ should withdraw user's profit - 2.
 
 7. `claim_interface_fee`:
 
