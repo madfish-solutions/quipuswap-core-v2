@@ -33,9 +33,9 @@ import {
 } from "../types/Auction";
 
 export class Auction {
-  contract: Contract;
   storage: AuctionStorage;
   tezos: TezosToolkit;
+  contract: Contract;
 
   constructor(contract: Contract, tezos: TezosToolkit) {
     this.contract = contract;

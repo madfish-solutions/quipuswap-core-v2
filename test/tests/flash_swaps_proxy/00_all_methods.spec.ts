@@ -1,3 +1,5 @@
+import { TransactionOperation } from "@taquito/taquito";
+
 import { FlashSwapsProxy } from "../../helpers/FlashSwapsProxy";
 import { FlashSwapAgent } from "test/helpers/FlashSwapAgent";
 import { DexCore } from "../../helpers/DexCore";
@@ -91,28 +93,42 @@ describe("FlashSwapsProxy", async () => {
 
     fs.writeFile(
       "contracts/test/parameters.ligo",
-      `const agent : address = ("${flashSwapAgent.contract.address}" : address);\n`,
+      `const agent : address = ("${flashSwapAgent.contract.address}" : address);\nconst token1 : token_t = Fa12(("${fa12Token1.contract.address}" : address));\nconst token2 : token_t = Fa12(("${fa12Token2.contract.address}" : address));\n`,
       function (err) {
         if (err) console.log(err.message);
       }
     );
+
+    await fa12Token1.transfer(
+      alice.pkh,
+      flashSwapAgent.contract.address,
+      new BigNumber(100_000)
+    );
+    await fa12Token2.transfer(
+      alice.pkh,
+      flashSwapAgent.contract.address,
+      new BigNumber(100_000)
+    );
   });
 
-  it("should fail if not dex core is trying to call", async () => {
-    // const ligo = getLigo(true);
-    // const stdout = execSync(
-    //   `${ligo} compile parameter $PWD/contracts/test/lambdas.ligo 'Use(Flash_swap(record [ lambda = lambda2; pair_id = 0n; receiver = ("${alice.pkh}" : address); referrer = ("${bob.pkh}" : address); amount_a_out = 1n; amount_b_out = 1n ] ))' -p hangzhou --michelson-format json`,
-    //   { maxBuffer: 1024 * 500 }
-    // );
-    // const operation = await utils.tezos.contract.transfer({
-    //   to: dexCore.contract.address,
-    //   amount: 0,
-    //   parameter: {
-    //     entrypoint: "use",
-    //     value: JSON.parse(stdout.toString()).args[0],
-    //   },
-    //   storageLimit: 2000,
-    // });
-    // await confirmOperation(utils.tezos, operation.hash);
+  it("should call default entrypoint by dex core", async () => {
+    const ligo: string = getLigo(true);
+    const stdout: string = execSync(
+      `${ligo} compile parameter $PWD/contracts/test/lambdas.ligo 'Use(Flash_swap(record [ lambda = lambda2; pair_id = 0n; receiver = ("${alice.pkh}" : address); referrer = ("${bob.pkh}" : address); amount_a_out = 1n; amount_b_out = 1n ] ))' -p hangzhou --michelson-format json`,
+      { maxBuffer: 1024 * 500 }
+    ).toString();
+    const operation: TransactionOperation = await utils.tezos.contract.transfer(
+      {
+        to: dexCore.contract.address,
+        amount: 0,
+        parameter: {
+          entrypoint: "use",
+          value: JSON.parse(stdout).args[0],
+        },
+        storageLimit: 2000,
+      }
+    );
+
+    await confirmOperation(utils.tezos, operation.hash);
   });
 });

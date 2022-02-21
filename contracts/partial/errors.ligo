@@ -25,7 +25,7 @@ module DexCore is {
   const err_tez_store_ban_baker_entrypoint_404        : string = "123";
   const err_tez_store_vote_entrypoint_404             : string = "124";
   const err_tez_store_is_banned_baker_view_404        : string = "125";
-  const err_flash_swaps_proxy_call_entrypoint_404     : string = "126";
+  const err_flash_swaps_proxy_default_entrypoint_404  : string = "126";
   const err_tez_store_get_tez_balance_view_404        : string = "127";
   const err_flash_swap_callback_1_404                 : string = "128";
   const err_flash_swap_callback_2_404                 : string = "129";

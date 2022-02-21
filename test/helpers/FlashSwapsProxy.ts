@@ -14,9 +14,9 @@ import { confirmOperation } from "../../scripts/confirmation";
 import { FlashSwapsProxyStorage } from "../types/FlashSwapsProxy";
 
 export class FlashSwapsProxy {
-  contract: Contract;
   storage: FlashSwapsProxyStorage;
   tezos: TezosToolkit;
+  contract: Contract;
 
   constructor(contract: Contract, tezos: TezosToolkit) {
     this.contract = contract;
@@ -75,7 +75,7 @@ export class FlashSwapsProxy {
     this.storage = await this.contract.storage();
   }
 
-  async call(params: string): Promise<TransactionOperation> {
+  async default(params: string): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
       .default(params)
       .send();

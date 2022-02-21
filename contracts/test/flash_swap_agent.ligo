@@ -13,7 +13,7 @@ type storage_t          is [@layout:comb] record [
   dex_core                : address;
 ]
 
-type test_t             is [@layout:comb] record [
+type default_t          is [@layout:comb] record [
   token1                  : token_t;
   token2                  : token_t;
   token1_amt              : nat;
@@ -21,12 +21,12 @@ type test_t             is [@layout:comb] record [
 ]
 
 type action_t           is
-| Test                    of test_t
+| Default                 of default_t
 
 type return_t           is list(operation) * storage_t
 
-function test(
-  const params          : test_t;
+function default(
+  const params          : default_t;
   const s               : storage_t)
                         : return_t is
   block {
@@ -41,5 +41,5 @@ function main(
   const s               : storage_t)
                         : return_t is
   case action of
-  | Test(params) -> test(params, s)
+  | Default(params) -> default(params, s)
   end

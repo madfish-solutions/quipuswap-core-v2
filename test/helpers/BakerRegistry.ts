@@ -14,9 +14,9 @@ import { confirmOperation } from "../../scripts/confirmation";
 import { BakerRegistryStorage } from "../types/BakerRegistry";
 
 export class BakerRegistry {
-  contract: Contract;
   storage: BakerRegistryStorage;
   tezos: TezosToolkit;
+  contract: Contract;
 
   constructor(contract: Contract, tezos: TezosToolkit) {
     this.contract = contract;

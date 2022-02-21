@@ -69,9 +69,9 @@ const permitSchemaType: MichelsonV1Expression = {
 const permitSchema: Schema = new Schema(permitSchemaType);
 
 export class DexCore {
-  contract: Contract;
   storage: DexCoreStorage;
   tezos: TezosToolkit;
+  contract: Contract;
 
   constructor(contract: Contract, tezos: TezosToolkit) {
     this.contract = contract;

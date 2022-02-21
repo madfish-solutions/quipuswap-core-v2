@@ -14,9 +14,9 @@ import { confirmOperation } from "../../scripts/confirmation";
 import { UpdateOperator, FA2Storage, Transfer } from "../types/FA2";
 
 export class FA2 {
-  contract: Contract;
   storage: FA2Storage;
   tezos: TezosToolkit;
+  contract: Contract;
 
   constructor(contract: Contract, tezos: TezosToolkit) {
     this.contract = contract;

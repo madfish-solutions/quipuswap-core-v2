@@ -7,9 +7,9 @@ import { confirmOperation } from "../../scripts/confirmation";
 import { FlashSwapAgentStorage } from "../types/FlashSwapAgent";
 
 export class FlashSwapAgent {
-  contract: Contract;
   storage: FlashSwapAgentStorage;
   tezos: TezosToolkit;
+  contract: Contract;
 
   constructor(contract: Contract, tezos: TezosToolkit) {
     this.contract = contract;

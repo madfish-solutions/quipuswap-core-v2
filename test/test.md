@@ -87,8 +87,7 @@
 
 1.  `call`:
 
-    - ❌ should fail if not dex core is trying to call;
-    - ❌
+    - ✅ should call default entrypoint by dex core.
 
 ## DexCore
 

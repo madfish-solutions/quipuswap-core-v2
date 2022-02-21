@@ -20,9 +20,9 @@ import {
 } from "../types/TezStore";
 
 export class TezStore {
-  contract: Contract;
   storage: TezStoreStorage;
   tezos: TezosToolkit;
+  contract: Contract;
 
   constructor(contract: Contract, tezos: TezosToolkit) {
     this.contract = contract;

@@ -16,5 +16,5 @@ function main(
   const s               : storage_t)
                         : return_t is
   case action of
-  | Call(params) -> call(params, s)
+  | Dafault(params) -> default(params, s)
   end

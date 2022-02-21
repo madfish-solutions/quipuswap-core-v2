@@ -296,19 +296,16 @@ function swap_internal(
     else tmp.ops := transfer_token(Tezos.self_address, tmp.receiver, out, swap.to_.token) # tmp.ops;
   } with tmp
 
-function get_flash_swaps_proxy_call_entrypoint(
+function get_flash_swaps_proxy_default_entrypoint(
   const swaps_proxy     : address)
                         : contract(unit -> list(operation)) is
-  unwrap(
-    (Tezos.get_entrypoint_opt("%call", swaps_proxy) : option(contract(unit -> list(operation)))),
-    DexCore.err_flash_swaps_proxy_call_entrypoint_404
-  )
+  Tezos.get_contract_with_error(swaps_proxy, DexCore.err_flash_swaps_proxy_default_entrypoint_404)
 
 function call_flash_swaps_proxy(
   const lambda          : unit -> list(operation);
   const swaps_proxy     : address)
                         : operation is
-  Tezos.transaction(lambda, 0mutez, get_flash_swaps_proxy_call_entrypoint(swaps_proxy))
+  Tezos.transaction(lambda, 0mutez, get_flash_swaps_proxy_default_entrypoint(swaps_proxy))
 
 function get_token_address_or_fail(
   const token           : token_t)
