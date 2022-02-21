@@ -115,7 +115,9 @@ function update_user_reward(
     );
     const current_reward : nat = current_balance * s.reward_per_share;
 
-    user_reward_info.reward := user_reward_info.reward + get_nat_or_fail(current_reward - user_reward_info.reward_paid);
+    user_reward_info.reward := user_reward_info.reward + get_nat_or_fail(
+      current_reward - user_reward_info.reward_paid
+    );
     user_reward_info.reward_paid := new_balance * s.reward_per_share;
 
     s.users_rewards[user_address] := user_reward_info;

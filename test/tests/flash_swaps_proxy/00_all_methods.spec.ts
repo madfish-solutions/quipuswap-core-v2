@@ -1,5 +1,3 @@
-import { TransactionOperation } from "@taquito/taquito";
-
 import { FlashSwapsProxy } from "../../helpers/FlashSwapsProxy";
 import { FlashSwapAgent } from "test/helpers/FlashSwapAgent";
 import { DexCore } from "../../helpers/DexCore";
@@ -11,33 +9,26 @@ import { BigNumber } from "bignumber.js";
 
 import accounts from "../../../scripts/sandbox/accounts";
 
-import { confirmOperation } from "scripts/confirmation";
-
 import { flashSwapAgentStorage } from "../../../storage/test/FlashSwapAgent";
 import { flashSwapsProxyStorage } from "../../../storage/FlashSwapsProxy";
+import { dexCoreStorage } from "../../../storage/DexCore";
 
-import { LaunchExchange } from "test/types/DexCore";
+import { FlashSwap, LaunchExchange } from "test/types/DexCore";
 import { fa12Storage } from "storage/test/FA12";
 import { SBAccount } from "test/types/Common";
 import { FA12 } from "test/helpers/FA12";
 
 import fs from "fs";
 
-import { execSync } from "child_process";
-
-import { getLigo } from "../../../scripts/helpers";
-
-import { dexCoreStorage } from "storage/DexCore";
-
 chai.use(require("chai-bignumber")(BigNumber));
 
 describe("FlashSwapsProxy", async () => {
-  var utils: Utils;
   var flashSwapsProxy: FlashSwapsProxy;
   var flashSwapAgent: FlashSwapAgent;
   var dexCore: DexCore;
   var fa12Token1: FA12;
   var fa12Token2: FA12;
+  var utils: Utils;
 
   var alice: SBAccount = accounts.alice;
   var bob: SBAccount = accounts.bob;
@@ -112,23 +103,14 @@ describe("FlashSwapsProxy", async () => {
   });
 
   it("should call default entrypoint by dex core", async () => {
-    const ligo: string = getLigo(true);
-    const stdout: string = execSync(
-      `${ligo} compile parameter $PWD/contracts/test/lambdas.ligo 'Use(Flash_swap(record [ lambda = lambda2; pair_id = 0n; receiver = ("${alice.pkh}" : address); referrer = ("${bob.pkh}" : address); amount_a_out = 1n; amount_b_out = 1n ] ))' -p hangzhou --michelson-format json`,
-      { maxBuffer: 1024 * 500 }
-    ).toString();
-    const operation: TransactionOperation = await utils.tezos.contract.transfer(
-      {
-        to: dexCore.contract.address,
-        amount: 0,
-        parameter: {
-          entrypoint: "use",
-          value: JSON.parse(stdout).args[0],
-        },
-        storageLimit: 2000,
-      }
-    );
+    const params: FlashSwap = {
+      pair_id: new BigNumber(0),
+      receiver: alice.pkh,
+      referrer: bob.pkh,
+      amount_a_out: new BigNumber(1),
+      amount_b_out: new BigNumber(1),
+    };
 
-    await confirmOperation(utils.tezos, operation.hash);
+    await dexCore.flashSwap(params);
   });
 });

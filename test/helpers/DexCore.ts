@@ -20,6 +20,10 @@ import { BigNumber } from "bignumber.js";
 
 import env from "../../env";
 
+import { execSync } from "child_process";
+
+import { getLigo } from "../../scripts/helpers";
+
 import { confirmOperation } from "../../scripts/confirmation";
 
 import dexCoreLambdas from "../../build/lambdas/dex_core_lambdas.json";
@@ -226,11 +230,25 @@ export class DexCore {
   }
 
   async flashSwap(params: FlashSwap): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methodsObject
-      .flash_swap(params)
-      .send();
+    const ligo: string = getLigo(true);
+    const stdout: string = execSync(
+      `${ligo} compile parameter $PWD/contracts/test/lambdas.ligo 'Use(Flash_swap(record [ lambda = lambda2; pair_id = ${params.pair_id.toFixed()}n; receiver = ("${
+        params.receiver
+      }" : address); referrer = ("${
+        params.referrer
+      }" : address); amount_a_out = ${params.amount_a_out.toFixed()}n; amount_b_out = ${params.amount_b_out.toFixed()}n ] ))' -p hangzhou --michelson-format json`,
+      { maxBuffer: 1024 * 500 }
+    ).toString();
 
-    await confirmOperation(this.tezos, operation.hash);
+    const operation: TransactionOperation = await this.tezos.contract.transfer({
+      to: this.contract.address,
+      amount: 0,
+      parameter: {
+        entrypoint: "use",
+        value: JSON.parse(stdout).args[0],
+      },
+      storageLimit: 2000,
+    });
 
     return operation;
   }

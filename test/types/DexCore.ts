@@ -43,7 +43,6 @@ export type DivestLiquidity = {
 };
 
 export type FlashSwap = {
-  lambda: string;
   pair_id: BigNumber;
   receiver: string;
   referrer: string;

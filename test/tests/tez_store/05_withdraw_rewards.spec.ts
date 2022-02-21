@@ -17,13 +17,13 @@ import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa2Storage } from "../../../storage/test/FA2";
 
 import { WithdrawRewards } from "test/types/TezStore";
-import { LaunchExchange } from "test/types/DexCore";
+import { LaunchExchange, WithdrawProfit } from "test/types/DexCore";
 import { SBAccount } from "test/types/Common";
 import { Common } from "test/helpers/Errors";
 
 chai.use(require("chai-bignumber")(BigNumber));
 
-describe.only("TezStore (withdraw rewards)", async () => {
+describe("TezStore (withdraw rewards)", async () => {
   var bakerRegistry: BakerRegistry;
   var tezStore: TezStore;
   var dexCore: DexCore;
@@ -50,7 +50,7 @@ describe.only("TezStore (withdraw rewards)", async () => {
     dexCoreStorage.storage.entered = false;
     dexCoreStorage.storage.admin = alice.pkh;
     dexCoreStorage.storage.collecting_period = new BigNumber(4);
-    dexCoreStorage.storage.cycle_duration = new BigNumber(10);
+    dexCoreStorage.storage.cycle_duration = new BigNumber(1);
     dexCoreStorage.storage.voting_period = new BigNumber(10);
     dexCoreStorage.storage.baker_registry = bakerRegistry.contract.address;
 
@@ -108,4 +108,35 @@ describe.only("TezStore (withdraw rewards)", async () => {
       return true;
     });
   });
+
+  // it("should withdraw user's rewards - 1", async () => {
+  //   const params: WithdrawProfit = {
+  //     receiver: bob.pkh,
+  //     pair_id: new BigNumber(0),
+  //   };
+
+  //   await tezStore.default(100);
+  //   await utils.bakeBlocks(5);
+  //   await tezStore.default(300);
+  //   await tezStore.updateStorage({
+  //     users_rewards: [alice.pkh],
+  //   });
+
+  //   console.log(tezStore.storage.users_rewards[alice.pkh].reward.toFixed());
+  //   console.log(
+  //     tezStore.storage.users_rewards[alice.pkh].reward_paid.toFixed()
+  //   );
+  //   console.log((await utils.tezos.tz.getBalance(bob.pkh)).toFixed());
+
+  //   await dexCore.withdrawProfit(params);
+  //   await tezStore.updateStorage({
+  //     users_rewards: [alice.pkh],
+  //   });
+
+  //   console.log(tezStore.storage.users_rewards[alice.pkh].reward.toFixed());
+  //   console.log(
+  //     tezStore.storage.users_rewards[alice.pkh].reward_paid.toFixed()
+  //   );
+  //   console.log((await utils.tezos.tz.getBalance(bob.pkh)).toFixed());
+  // });
 });

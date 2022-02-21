@@ -173,7 +173,12 @@
 
 4. `flash_swap`:
 
-   - ❌ should fail if reentrancy;
+   - ✅ should fail if reentrancy;
+   - ✅ should fail if user is trying to refer himself;
+   - ✅ should fail if dust out;
+   - ✅ should fail if pair not listed;
+   - ✅ should fail if insufficient token A liquidity;
+   - ✅ should fail if insufficient token B liquidity;
    - ❌
 
 5. `swap`:
