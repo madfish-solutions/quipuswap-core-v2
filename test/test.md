@@ -360,33 +360,31 @@
 
 25. `fa12_balance_callback_1`:
 
-    - ❌ should fail if pair not listed;
-    - ❌
+    - ✅ should fail if not entered;
+    - ✅ should fail if pair not listed.
 
 26. `fa2_balance_callback_1`:
 
-    - ❌ should fail if pair not listed;
-    - ❌
+    - ✅ should fail if not entered;
+    - ✅ should fail if pair not listed.
 
 27. `fa12_balance_callback_2`:
 
-    - ❌ should fail if pair not listed;
-    - ❌
+    - ✅ should fail if not entered;
+    - ✅ should fail if pair not listed.
 
 28. `fa2_balance_callback_2`:
 
-    - ❌ should fail if pair not listed;
-    - ❌
+    - ✅ should fail if not entered;
+    - ✅ should fail if pair not listed.
 
 29. `flash_swap_callback_1`:
 
-    - ❌ should fail if not dex core is trying to call it;
-    - ❌
+    - ✅ should fail if not dex core is trying to call it.
 
 30. `flash_swap_callback_2`:
 
-    - ❌ should fail if not dex core is trying to call it;
-    - ❌
+    - ✅ should fail if not dex core is trying to call it.
 
 31. `launch_callback`:
 
