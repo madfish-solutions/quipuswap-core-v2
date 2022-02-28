@@ -61,6 +61,14 @@ export type TezStoreStorage = {
 
 export type UpdateRewards = {
   rewardPerShare: BigNumber;
+  rewardPerBlock: BigNumber;
   nextReward: BigNumber;
+  totalReward: BigNumber;
   lastUpdateLevel: BigNumber;
+  collectingPeriodEnds: BigNumber;
+};
+
+export type UpdateUserRewards = {
+  reward: BigNumber;
+  rewardPaid: BigNumber;
 };

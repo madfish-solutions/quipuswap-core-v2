@@ -269,7 +269,10 @@ export class DexCore {
   async withdrawProfit(params: WithdrawProfit): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .withdraw_profit(params)
-      .send();
+      .send({
+        fee: 1000000,
+        gasLimit: 1040000,
+      });
 
     await confirmOperation(this.tezos, operation.hash);
 

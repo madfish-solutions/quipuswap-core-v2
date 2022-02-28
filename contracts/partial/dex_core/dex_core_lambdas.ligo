@@ -351,20 +351,14 @@ function flash_swap(
           ops := get_balance_op_or_fail(
             Tezos.self_address,
             tokens.token_b,
-            (
-              get_fa12_balance_callback_1(Tezos.self_address),
-              get_fa2_balance_callback_1(Tezos.self_address)
-            )
+            (get_fa12_balance_callback_1(Tezos.self_address), get_fa2_balance_callback_1(Tezos.self_address))
           ) # ops;
         };
 
         ops := get_balance_op_or_fail(
           Tezos.self_address,
           tokens.token_a,
-          (
-            get_fa12_balance_callback_1(Tezos.self_address),
-            get_fa2_balance_callback_1(Tezos.self_address)
-          )
+          (get_fa12_balance_callback_1(Tezos.self_address), get_fa2_balance_callback_1(Tezos.self_address))
         ) # ops;
       }
     | _ -> skip

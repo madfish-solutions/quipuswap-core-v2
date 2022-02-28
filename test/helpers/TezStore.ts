@@ -13,9 +13,11 @@ import { confirmOperation } from "../../scripts/confirmation";
 
 import { BigNumber } from "bignumber.js";
 
-import { Pair } from "test/types/DexCore";
+import { DexCoreStorage, Pair } from "test/types/DexCore";
+import { PRECISION } from "./Constants";
 import { Utils } from "./Utils";
 import {
+  UpdateUserRewards,
   TezStoreStorage,
   WithdrawRewards,
   UpdateRewards,
@@ -166,35 +168,105 @@ export class TezStore {
 
   async updateRewards(
     amount: BigNumber,
-    storage: TezStoreStorage,
+    tezStoreStorage: TezStoreStorage,
+    dexCoreStorage: DexCoreStorage,
     pair: Pair,
     utils: Utils
   ): Promise<UpdateRewards> {
     const totalSupply: BigNumber = pair.total_supply;
+    const level: BigNumber = await utils.getLastBlock();
+    let collectingPeriodEnds: BigNumber =
+      tezStoreStorage.collecting_period_ends;
 
-    if (totalSupply.gt(new BigNumber(0))) {
-      const rewardsLevel: BigNumber = new BigNumber(
-        await utils.getLastBlock()
-      ).gt(storage.collecting_period_ends)
-        ? storage.collecting_period_ends
-        : new BigNumber(await utils.getLastBlock());
+    if (totalSupply.gt(0)) {
+      const rewardsLevel: BigNumber = level.gt(collectingPeriodEnds)
+        ? collectingPeriodEnds
+        : level;
       const newReward: BigNumber = rewardsLevel
-        .minus(storage.last_update_level)
-        .multipliedBy(storage.reward_per_block);
+        .minus(tezStoreStorage.last_update_level)
+        .multipliedBy(tezStoreStorage.reward_per_block);
+      let rewardPerShare: BigNumber = tezStoreStorage.reward_per_share.plus(
+        newReward.dividedBy(totalSupply).integerValue(BigNumber.ROUND_DOWN)
+      );
+      let nextReward: BigNumber = tezStoreStorage.next_reward.plus(amount);
+
+      if (level.gt(collectingPeriodEnds)) {
+        const collectingPeriod: BigNumber =
+          dexCoreStorage.storage.collecting_period;
+        const periodDuration: BigNumber = level
+          .minus(collectingPeriodEnds)
+          .dividedBy(collectingPeriod)
+          .integerValue(BigNumber.ROUND_DOWN)
+          .plus(1)
+          .multipliedBy(collectingPeriod)
+          .multipliedBy(dexCoreStorage.storage.cycle_duration);
+        const rewardPerBlock: BigNumber = nextReward
+          .multipliedBy(PRECISION)
+          .dividedBy(periodDuration)
+          .integerValue(BigNumber.ROUND_DOWN);
+        const newReward: BigNumber = level
+          .minus(collectingPeriodEnds)
+          .multipliedBy(rewardPerBlock);
+
+        collectingPeriodEnds = collectingPeriodEnds.plus(collectingPeriod);
+        rewardPerShare = rewardPerShare.plus(
+          newReward.dividedBy(totalSupply).integerValue(BigNumber.ROUND_DOWN)
+        );
+
+        const totalReward: BigNumber = tezStoreStorage.total_reward.plus(
+          rewardPerBlock
+            .multipliedBy(periodDuration)
+            .dividedBy(PRECISION)
+            .integerValue(BigNumber.ROUND_DOWN)
+        );
+
+        nextReward = new BigNumber(0);
+
+        return {
+          rewardPerShare: rewardPerShare,
+          rewardPerBlock: rewardPerBlock,
+          nextReward: nextReward,
+          totalReward: totalReward,
+          lastUpdateLevel: level,
+          collectingPeriodEnds: collectingPeriodEnds,
+        };
+      }
 
       return {
-        rewardPerShare: storage.reward_per_share.plus(
-          newReward.dividedBy(totalSupply).integerValue(BigNumber.ROUND_DOWN)
-        ),
-        nextReward: storage.next_reward.plus(amount),
-        lastUpdateLevel: new BigNumber(await utils.getLastBlock()),
+        rewardPerShare: rewardPerShare,
+        rewardPerBlock: tezStoreStorage.reward_per_block,
+        nextReward: nextReward,
+        totalReward: tezStoreStorage.total_reward,
+        lastUpdateLevel: level,
+        collectingPeriodEnds: tezStoreStorage.collecting_period_ends,
       };
     }
 
     return {
-      rewardPerShare: storage.reward_per_share,
-      nextReward: storage.next_reward,
-      lastUpdateLevel: storage.last_update_level,
+      rewardPerShare: tezStoreStorage.reward_per_share,
+      rewardPerBlock: tezStoreStorage.reward_per_block,
+      nextReward: tezStoreStorage.next_reward,
+      totalReward: tezStoreStorage.total_reward,
+      lastUpdateLevel: tezStoreStorage.last_update_level,
+      collectingPeriodEnds: tezStoreStorage.collecting_period_ends,
+    };
+  }
+
+  async updateUserRewards(
+    tezStoreStorage: TezStoreStorage,
+    user: string,
+    currentBalance: BigNumber,
+    newBalance: BigNumber
+  ): Promise<UpdateUserRewards> {
+    const currentReward: BigNumber = currentBalance.multipliedBy(
+      tezStoreStorage.reward_per_share
+    );
+
+    return {
+      reward: tezStoreStorage.users_rewards[user].reward.plus(
+        currentReward.minus(tezStoreStorage.users_rewards[user].reward_paid)
+      ),
+      rewardPaid: newBalance.multipliedBy(tezStoreStorage.reward_per_share),
     };
   }
 }
