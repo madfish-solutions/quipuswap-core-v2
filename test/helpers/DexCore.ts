@@ -222,7 +222,10 @@ export class DexCore {
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .divest_liquidity(params)
-      .send();
+      .send({
+        fee: 1000000,
+        gasLimit: 1040000,
+      });
 
     await confirmOperation(this.tezos, operation.hash);
 
@@ -446,7 +449,10 @@ export class DexCore {
   async transfer(params: Transfer[]): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
       .transfer(params)
-      .send();
+      .send({
+        fee: 1000000,
+        gasLimit: 1040000,
+      });
 
     await confirmOperation(this.tezos, operation.hash);
 

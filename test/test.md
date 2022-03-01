@@ -68,8 +68,10 @@
 6. `default`:
 
    - ✅ should update global rewards - 1;
-   - ❌ should not update global rewards if pair total supply is 0;
-   - ❌
+   - ✅ should update global rewards - 2;
+   - ✅ should update global rewards - 3;
+   - ✅ should update global rewards - 4;
+   - ✅ should not update global rewards if pair total supply is 0.
 
 7. `is_banned_baker` [VIEW]:
 

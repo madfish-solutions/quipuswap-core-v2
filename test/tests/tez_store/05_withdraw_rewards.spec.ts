@@ -16,10 +16,19 @@ import { bakerRegistryStorage } from "../../../storage/BakerRegistry";
 import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa2Storage } from "../../../storage/test/FA2";
 
-import { WithdrawRewards } from "test/types/TezStore";
-import { LaunchExchange, WithdrawProfit } from "test/types/DexCore";
 import { SBAccount } from "test/types/Common";
 import { Common } from "test/helpers/Errors";
+import {
+  TezStoreStorage,
+  WithdrawRewards,
+  UpdateRewards,
+} from "test/types/TezStore";
+import {
+  DexCoreStorage,
+  LaunchExchange,
+  WithdrawProfit,
+  Pair,
+} from "test/types/DexCore";
 
 chai.use(require("chai-bignumber")(BigNumber));
 
@@ -49,7 +58,7 @@ describe("TezStore (withdraw rewards)", async () => {
 
     dexCoreStorage.storage.entered = false;
     dexCoreStorage.storage.admin = alice.pkh;
-    dexCoreStorage.storage.collecting_period = new BigNumber(4);
+    dexCoreStorage.storage.collecting_period = new BigNumber(2);
     dexCoreStorage.storage.cycle_duration = new BigNumber(1);
     dexCoreStorage.storage.voting_period = new BigNumber(10);
     dexCoreStorage.storage.baker_registry = bakerRegistry.contract.address;
@@ -109,34 +118,39 @@ describe("TezStore (withdraw rewards)", async () => {
     });
   });
 
-  // it("should withdraw user's rewards - 1", async () => {
-  //   const params: WithdrawProfit = {
-  //     receiver: bob.pkh,
-  //     pair_id: new BigNumber(0),
-  //   };
+  it("should withdraw user's rewards - 1", async () => {
+    const pairId: BigNumber = new BigNumber(0);
 
-  //   await tezStore.default(100);
-  //   await utils.bakeBlocks(5);
-  //   await tezStore.default(300);
-  //   await tezStore.updateStorage({
-  //     users_rewards: [alice.pkh],
-  //   });
+    await dexCore.updateStorage({
+      pairs: [pairId],
+    });
+    await tezStore.updateStorage();
 
-  //   console.log(tezStore.storage.users_rewards[alice.pkh].reward.toFixed());
-  //   console.log(
-  //     tezStore.storage.users_rewards[alice.pkh].reward_paid.toFixed()
-  //   );
-  //   console.log((await utils.tezos.tz.getBalance(bob.pkh)).toFixed());
+    const amount: BigNumber = new BigNumber(100);
+    const prevTezStoreStorage: TezStoreStorage = tezStore.storage;
+    const prevDexCoreStorage: DexCoreStorage = dexCore.storage;
+    const prevPair: Pair = dexCore.storage.storage.pairs[pairId.toFixed()];
 
-  //   await dexCore.withdrawProfit(params);
-  //   await tezStore.updateStorage({
-  //     users_rewards: [alice.pkh],
-  //   });
+    await tezStore.default(amount.toNumber());
+    await utils.bakeBlocks(4);
+    await dexCore.updateStorage({
+      pairs: [pairId],
+    });
+    await tezStore.updateStorage();
 
-  //   console.log(tezStore.storage.users_rewards[alice.pkh].reward.toFixed());
-  //   console.log(
-  //     tezStore.storage.users_rewards[alice.pkh].reward_paid.toFixed()
-  //   );
-  //   console.log((await utils.tezos.tz.getBalance(bob.pkh)).toFixed());
-  // });
+    const expectedRewardsInfo: UpdateRewards = await TezStore.updateRewards(
+      amount,
+      prevTezStoreStorage,
+      prevDexCoreStorage,
+      prevPair.total_supply,
+      utils
+    );
+
+    const withdrawProfitParams: WithdrawProfit = {
+      receiver: bob.pkh,
+      pair_id: new BigNumber(0),
+    };
+
+    await dexCore.withdrawProfit(withdrawProfitParams);
+  });
 });

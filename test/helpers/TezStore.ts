@@ -159,27 +159,31 @@ export class TezStore {
   async default(mutezAmount: number = 0): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
       .default([])
-      .send({ amount: mutezAmount, mutez: true });
+      .send({
+        amount: mutezAmount,
+        mutez: true,
+        fee: 1000000,
+        gasLimit: 1040000,
+      });
 
     await confirmOperation(this.tezos, operation.hash);
 
     return operation;
   }
 
-  async updateRewards(
+  static async updateRewards(
     amount: BigNumber,
     tezStoreStorage: TezStoreStorage,
     dexCoreStorage: DexCoreStorage,
-    pair: Pair,
+    totalSupply: BigNumber,
     utils: Utils
   ): Promise<UpdateRewards> {
-    const totalSupply: BigNumber = pair.total_supply;
     const level: BigNumber = await utils.getLastBlock();
     let collectingPeriodEnds: BigNumber =
       tezStoreStorage.collecting_period_ends;
 
-    if (totalSupply.gt(0)) {
-      const rewardsLevel: BigNumber = level.gt(collectingPeriodEnds)
+    if (totalSupply.isGreaterThan(0)) {
+      const rewardsLevel: BigNumber = level.isGreaterThan(collectingPeriodEnds)
         ? collectingPeriodEnds
         : level;
       const newReward: BigNumber = rewardsLevel
@@ -190,7 +194,7 @@ export class TezStore {
       );
       let nextReward: BigNumber = tezStoreStorage.next_reward.plus(amount);
 
-      if (level.gt(collectingPeriodEnds)) {
+      if (level.isGreaterThan(collectingPeriodEnds)) {
         const collectingPeriod: BigNumber =
           dexCoreStorage.storage.collecting_period;
         const periodDuration: BigNumber = level
@@ -252,7 +256,7 @@ export class TezStore {
     };
   }
 
-  async updateUserRewards(
+  static async updateUserRewards(
     tezStoreStorage: TezStoreStorage,
     user: string,
     currentBalance: BigNumber,

@@ -15,8 +15,14 @@ import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa2Storage } from "../../../storage/test/FA2";
 
 import { TezStoreStorage, UpdateRewards } from "test/types/TezStore";
-import { LaunchExchange, Pair } from "test/types/DexCore";
 import { SBAccount } from "test/types/Common";
+import {
+  DivestLiquidity,
+  DexCoreStorage,
+  LaunchExchange,
+  TokensPerShare,
+  Pair,
+} from "test/types/DexCore";
 
 chai.use(require("chai-bignumber")(BigNumber));
 
@@ -92,34 +98,216 @@ describe("TezStore (default)", async () => {
   });
 
   it("should update global rewards - 1", async () => {
-    const amount: number = 100;
+    const pairId: BigNumber = new BigNumber(0);
+    const amount: BigNumber = new BigNumber(100);
 
     await dexCore.updateStorage({
       pairs: [pairId],
     });
     await tezStore.updateStorage();
 
+    const prevTezStoreStorage: TezStoreStorage = tezStore.storage;
+    const prevDexCoreStorage: DexCoreStorage = dexCore.storage;
     const prevPair: Pair = dexCore.storage.storage.pairs[pairId.toFixed()];
-    const prevStorage: TezStoreStorage = tezStore.storage;
 
-    await tezStore.default(amount);
+    await tezStore.default(amount.toNumber());
     await tezStore.updateStorage();
 
-    const expectedData: UpdateRewards = await tezStore.updateRewards(
-      new BigNumber(amount),
-      prevStorage,
-      prevPair,
+    const expectedRewardsInfo: UpdateRewards = await TezStore.updateRewards(
+      amount,
+      prevTezStoreStorage,
+      prevDexCoreStorage,
+      prevPair.total_supply,
       utils
     );
 
     expect(tezStore.storage.reward_per_share).to.be.bignumber.equal(
-      expectedData.rewardPerShare
+      expectedRewardsInfo.rewardPerShare
+    );
+    expect(tezStore.storage.reward_per_block).to.be.bignumber.equal(
+      expectedRewardsInfo.rewardPerBlock
     );
     expect(tezStore.storage.next_reward).to.be.bignumber.equal(
-      expectedData.nextReward
+      expectedRewardsInfo.nextReward
     );
     expect(tezStore.storage.last_update_level).to.be.bignumber.equal(
-      expectedData.lastUpdateLevel
+      expectedRewardsInfo.lastUpdateLevel
+    );
+    expect(tezStore.storage.collecting_period_ends).to.be.bignumber.equal(
+      expectedRewardsInfo.collectingPeriodEnds
+    );
+  });
+
+  it("should update global rewards - 2", async () => {
+    const pairId: BigNumber = new BigNumber(0);
+    const amount: BigNumber = new BigNumber(500);
+
+    await dexCore.updateStorage({
+      pairs: [pairId],
+    });
+    await tezStore.updateStorage();
+
+    const prevTezStoreStorage: TezStoreStorage = tezStore.storage;
+    const prevDexCoreStorage: DexCoreStorage = dexCore.storage;
+    const prevPair: Pair = dexCore.storage.storage.pairs[pairId.toFixed()];
+
+    await utils.bakeBlocks(2);
+    await tezStore.default(amount.toNumber());
+    await tezStore.updateStorage();
+
+    const expectedRewardsInfo: UpdateRewards = await TezStore.updateRewards(
+      amount,
+      prevTezStoreStorage,
+      prevDexCoreStorage,
+      prevPair.total_supply,
+      utils
+    );
+
+    expect(tezStore.storage.reward_per_share).to.be.bignumber.equal(
+      expectedRewardsInfo.rewardPerShare
+    );
+    expect(tezStore.storage.reward_per_block).to.be.bignumber.equal(
+      expectedRewardsInfo.rewardPerBlock
+    );
+    expect(tezStore.storage.next_reward).to.be.bignumber.equal(
+      expectedRewardsInfo.nextReward
+    );
+    expect(tezStore.storage.last_update_level).to.be.bignumber.equal(
+      expectedRewardsInfo.lastUpdateLevel
+    );
+    expect(tezStore.storage.collecting_period_ends).to.be.bignumber.equal(
+      expectedRewardsInfo.collectingPeriodEnds
+    );
+  });
+
+  it("should update global rewards - 3", async () => {
+    const pairId: BigNumber = new BigNumber(0);
+    const amount: BigNumber = new BigNumber(999);
+
+    await dexCore.updateStorage({
+      pairs: [pairId],
+    });
+    await tezStore.updateStorage();
+
+    const prevTezStoreStorage: TezStoreStorage = tezStore.storage;
+    const prevDexCoreStorage: DexCoreStorage = dexCore.storage;
+    const prevPair: Pair = dexCore.storage.storage.pairs[pairId.toFixed()];
+
+    await utils.bakeBlocks(1);
+    await tezStore.default(amount.toNumber());
+    await tezStore.updateStorage();
+
+    const expectedRewardsInfo: UpdateRewards = await TezStore.updateRewards(
+      amount,
+      prevTezStoreStorage,
+      prevDexCoreStorage,
+      prevPair.total_supply,
+      utils
+    );
+
+    expect(tezStore.storage.reward_per_share).to.be.bignumber.equal(
+      expectedRewardsInfo.rewardPerShare
+    );
+    expect(tezStore.storage.reward_per_block).to.be.bignumber.equal(
+      expectedRewardsInfo.rewardPerBlock
+    );
+    expect(tezStore.storage.next_reward).to.be.bignumber.equal(
+      expectedRewardsInfo.nextReward
+    );
+    expect(tezStore.storage.last_update_level).to.be.bignumber.equal(
+      expectedRewardsInfo.lastUpdateLevel
+    );
+    expect(tezStore.storage.collecting_period_ends).to.be.bignumber.equal(
+      expectedRewardsInfo.collectingPeriodEnds
+    );
+  });
+
+  it("should update global rewards - 4", async () => {
+    const pairId: BigNumber = new BigNumber(0);
+    const amount: BigNumber = new BigNumber(1000);
+
+    await dexCore.updateStorage({
+      pairs: [pairId],
+    });
+    await tezStore.updateStorage();
+
+    const prevTezStoreStorage: TezStoreStorage = tezStore.storage;
+    const prevDexCoreStorage: DexCoreStorage = dexCore.storage;
+    const prevPair: Pair = dexCore.storage.storage.pairs[pairId.toFixed()];
+
+    await utils.bakeBlocks(5);
+    await tezStore.default(amount.toNumber());
+    await tezStore.updateStorage();
+
+    const expectedRewardsInfo: UpdateRewards = await TezStore.updateRewards(
+      amount,
+      prevTezStoreStorage,
+      prevDexCoreStorage,
+      prevPair.total_supply,
+      utils
+    );
+
+    expect(tezStore.storage.reward_per_share).to.be.bignumber.equal(
+      expectedRewardsInfo.rewardPerShare
+    );
+    expect(tezStore.storage.reward_per_block).to.be.bignumber.equal(
+      expectedRewardsInfo.rewardPerBlock
+    );
+    expect(tezStore.storage.next_reward).to.be.bignumber.equal(
+      expectedRewardsInfo.nextReward
+    );
+    expect(tezStore.storage.last_update_level).to.be.bignumber.equal(
+      expectedRewardsInfo.lastUpdateLevel
+    );
+    expect(tezStore.storage.collecting_period_ends).to.be.bignumber.equal(
+      expectedRewardsInfo.collectingPeriodEnds
+    );
+  });
+
+  it("should not update global rewards if pair total supply is 0", async () => {
+    const pairId: BigNumber = new BigNumber(0);
+    const amount: BigNumber = new BigNumber(100);
+    const shares: BigNumber = new BigNumber(100);
+
+    await dexCore.updateStorage({
+      pairs: [pairId],
+    });
+
+    const divestedTokens: TokensPerShare = DexCore.getTokensPerShare(
+      shares,
+      dexCore.storage.storage.pairs[pairId.toFixed()]
+    );
+    const divestParams: DivestLiquidity = {
+      pair_id: pairId,
+      min_token_a_out: divestedTokens.token_a_amt,
+      min_token_b_out: divestedTokens.token_b_amt,
+      shares: shares,
+      liquidity_receiver: alice.pkh,
+      candidate: bob.pkh,
+    };
+
+    await dexCore.divestLiquidity(divestParams);
+    await tezStore.updateStorage();
+
+    const prevTezStoreStorage: TezStoreStorage = tezStore.storage;
+
+    await tezStore.default(amount.toNumber());
+    await tezStore.updateStorage();
+
+    expect(tezStore.storage.reward_per_share).to.be.bignumber.equal(
+      prevTezStoreStorage.reward_per_share
+    );
+    expect(tezStore.storage.reward_per_block).to.be.bignumber.equal(
+      prevTezStoreStorage.reward_per_block
+    );
+    expect(tezStore.storage.next_reward).to.be.bignumber.equal(
+      prevTezStoreStorage.next_reward
+    );
+    expect(tezStore.storage.last_update_level).to.be.bignumber.equal(
+      prevTezStoreStorage.last_update_level
+    );
+    expect(tezStore.storage.collecting_period_ends).to.be.bignumber.equal(
+      prevTezStoreStorage.collecting_period_ends
     );
   });
 });
