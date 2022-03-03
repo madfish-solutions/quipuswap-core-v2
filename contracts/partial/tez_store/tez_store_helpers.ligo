@@ -63,7 +63,6 @@ function get_cycle_duration(
   )
 
 function update_rewards(
-  var new_amount        : nat;
   var s                 : storage_t)
                         : storage_t is
   block {
@@ -78,7 +77,6 @@ function update_rewards(
       const new_reward : nat = get_nat_or_fail(rewards_level - s.last_update_level) * s.reward_per_block;
 
       s.reward_per_share := s.reward_per_share + (new_reward / total_supply);
-      s.next_reward := s.next_reward + new_amount;
       s.last_update_level := Tezos.level;
 
       if Tezos.level > s.collecting_period_ends
@@ -92,7 +90,7 @@ function update_rewards(
 
         const new_reward : nat = get_nat_or_fail(Tezos.level - s.collecting_period_ends) * s.reward_per_block;
 
-        s.collecting_period_ends := s.collecting_period_ends + collecting_period;
+        s.collecting_period_ends := s.collecting_period_ends + period_duration;
         s.reward_per_share := s.reward_per_share + (new_reward / total_supply);
         s.total_reward := s.total_reward + ((s.reward_per_block * period_duration) / Constants.precision);
         s.next_reward := 0n;
@@ -115,10 +113,10 @@ function update_user_reward(
     );
     const current_reward : nat = current_balance * s.reward_per_share;
 
-    user_reward_info.reward := user_reward_info.reward + get_nat_or_fail(
-      current_reward - user_reward_info.reward_paid
+    user_reward_info.reward_f := user_reward_info.reward_f + get_nat_or_fail(
+      current_reward - user_reward_info.reward_paid_f
     );
-    user_reward_info.reward_paid := new_balance * s.reward_per_share;
+    user_reward_info.reward_paid_f := new_balance * s.reward_per_share;
 
     s.users_rewards[user_address] := user_reward_info;
   } with s

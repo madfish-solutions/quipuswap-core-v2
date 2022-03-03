@@ -26,11 +26,11 @@ import {
 chai.use(require("chai-bignumber")(BigNumber));
 
 describe("TezStore (vote - 2)", async () => {
-  var utils: Utils;
   var bakerRegistry: BakerRegistry;
   var tezStore: TezStore;
   var dexCore: DexCore;
   var fa2Token1: FA2;
+  var utils: Utils;
 
   var alice: SBAccount = accounts.alice;
   var bob: SBAccount = accounts.bob;

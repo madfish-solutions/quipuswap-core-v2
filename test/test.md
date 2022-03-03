@@ -31,10 +31,10 @@
 3. `withdraw_rewards`:
 
    - ✅ should fail if not dex core is trying to withdraw rewards;
-   - ❌ should update global rewards;
-   - ❌ should update user rewards;
-   - ❌ should withdraw user's rewards - 1;
-   - ❌ should withdraw user's rewards - 2.
+   - ✅ should withdraw user's rewards - 1;
+   - ✅ should withdraw user's rewards - 2;
+   - ✅ should update user rewards;
+   - ✅ should update global rewards.
 
 4. `ban_baker`:
 

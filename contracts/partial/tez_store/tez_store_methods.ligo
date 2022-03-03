@@ -23,26 +23,28 @@ function withdraw_rewards(
   block {
     only_dex_core(s.dex_core);
 
-    s := update_rewards(0n, s);
+    s := update_rewards(s);
     s := update_user_reward(params.user, params.current_balance, params.new_balance, s);
 
     var user_reward_info : user_reward_info_t := unwrap_or(
       s.users_rewards[params.user],
       Constants.default_user_reward_info
     );
-    const reward_f : nat = user_reward_info.reward;
-    const reward : nat = user_reward_info.reward / Constants.precision;
-
-    user_reward_info.reward := get_nat_or_fail(reward_f - reward * Constants.precision);
-
-    s.users_rewards[params.user] := user_reward_info;
-    s.reward_paid := s.reward_paid + reward;
-
     var ops : list(operation) := (nil : list(operation));
 
-    if reward_f > Constants.precision
-    then ops := transfer_tez(params.receiver, reward) # ops
+    if user_reward_info.reward_f > Constants.precision
+    then {
+      const reward : nat = user_reward_info.reward_f / Constants.precision;
+
+      user_reward_info.reward_f := get_nat_or_fail(user_reward_info.reward_f - reward * Constants.precision);
+
+      s.reward_paid := s.reward_paid + reward;
+
+      ops := transfer_tez(params.receiver, reward) # ops
+    }
     else skip;
+
+    s.users_rewards[params.user] := user_reward_info;
   } with (ops, s)
 
 function ban_baker(
@@ -67,7 +69,7 @@ function vote(
   block {
     only_dex_core(s.dex_core);
 
-    s := update_rewards(0n, s);
+    s := update_rewards(s);
     s := update_user_reward(params.voter, params.current_balance, params.new_balance, s);
 
     var user : user_t := unwrap_or(s.users[params.voter], Constants.default_user);
@@ -155,5 +157,7 @@ function default(
   var s                 : storage_t)
                         : return_t is
   block {
-    s := update_rewards(Tezos.amount / 1mutez, s);
+    s.next_reward := s.next_reward + (Tezos.amount / 1mutez);
+
+    s := update_rewards(s);
   } with ((nil : list(operation)), s)
