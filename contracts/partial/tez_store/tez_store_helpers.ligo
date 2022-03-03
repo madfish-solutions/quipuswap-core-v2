@@ -90,7 +90,7 @@ function update_rewards(
 
         const new_reward : nat = get_nat_or_fail(Tezos.level - s.collecting_period_ends) * s.reward_per_block;
 
-        s.collecting_period_ends := s.collecting_period_ends + collecting_period;
+        s.collecting_period_ends := s.collecting_period_ends + period_duration;
         s.reward_per_share := s.reward_per_share + (new_reward / total_supply);
         s.total_reward := s.total_reward + ((s.reward_per_block * period_duration) / Constants.precision);
         s.next_reward := 0n;

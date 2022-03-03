@@ -121,8 +121,8 @@ describe.only("TezStore (withdraw rewards)", async () => {
     const user: string = alice.pkh;
 
     await tezStore.default(amount.toNumber());
-    await utils.bakeBlocks(3);
-    await tezStore.default(amount.toNumber());
+    await utils.bakeBlocks(5);
+    await tezStore.default(0);
     await dexCore.updateStorage({
       pairs: [pairId],
       ledger: [[user, pairId]],
@@ -181,7 +181,7 @@ describe.only("TezStore (withdraw rewards)", async () => {
     const receiver: string = bob.pkh;
     const user: string = alice.pkh;
 
-    await utils.bakeBlocks(3);
+    await utils.bakeBlocks(5);
     await tezStore.default(400);
     await dexCore.updateStorage({
       pairs: [pairId],

@@ -112,7 +112,7 @@ function get_tez_store_initial_storage(
     reward_per_share       = 0n;
     reward_per_block       = 0n;
     last_update_level      = Tezos.level;
-    collecting_period_ends = Tezos.level + collect_period;
+    collecting_period_ends = Tezos.level + collect_period * cycle_duration;
     voting_period_ends     = Tezos.level + (cycle_duration * voting_period);
   ]
 
