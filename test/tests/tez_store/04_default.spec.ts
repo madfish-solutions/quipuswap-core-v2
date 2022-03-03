@@ -138,7 +138,6 @@ describe("TezStore (default)", async () => {
   });
 
   it("should update global rewards - 2", async () => {
-    const pairId: BigNumber = new BigNumber(0);
     const amount: BigNumber = new BigNumber(500);
 
     await dexCore.updateStorage({
@@ -179,7 +178,6 @@ describe("TezStore (default)", async () => {
   });
 
   it("should update global rewards - 3", async () => {
-    const pairId: BigNumber = new BigNumber(0);
     const amount: BigNumber = new BigNumber(999);
 
     await dexCore.updateStorage({
@@ -220,7 +218,6 @@ describe("TezStore (default)", async () => {
   });
 
   it("should update global rewards - 4", async () => {
-    const pairId: BigNumber = new BigNumber(0);
     const amount: BigNumber = new BigNumber(1000);
 
     await dexCore.updateStorage({
@@ -261,7 +258,6 @@ describe("TezStore (default)", async () => {
   });
 
   it("should not update global rewards if pair total supply is 0", async () => {
-    const pairId: BigNumber = new BigNumber(0);
     const amount: BigNumber = new BigNumber(100);
     const shares: BigNumber = new BigNumber(100);
 
@@ -297,7 +293,7 @@ describe("TezStore (default)", async () => {
       prevTezStoreStorage.reward_per_block
     );
     expect(tezStore.storage.next_reward).to.be.bignumber.equal(
-      prevTezStoreStorage.next_reward
+      prevTezStoreStorage.next_reward.plus(amount)
     );
     expect(tezStore.storage.last_update_level).to.be.bignumber.equal(
       prevTezStoreStorage.last_update_level

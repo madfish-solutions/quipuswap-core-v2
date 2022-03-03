@@ -177,7 +177,7 @@ export class TezStore {
     totalSupply: BigNumber,
     utils: Utils
   ): Promise<UpdateRewards> {
-    const level: BigNumber = await utils.getLastBlock();
+    const level: BigNumber = (await utils.getLastBlock()).plus(1);
     let collectingPeriodEnds: BigNumber =
       tezStoreStorage.collecting_period_ends;
 
@@ -210,7 +210,7 @@ export class TezStore {
           .minus(collectingPeriodEnds)
           .multipliedBy(rewardPerBlock);
 
-        collectingPeriodEnds = collectingPeriodEnds.plus(collectingPeriod);
+        collectingPeriodEnds = collectingPeriodEnds.plus(periodDuration);
         rewardPerShare = rewardPerShare.plus(
           newReward.dividedBy(totalSupply).integerValue(BigNumber.ROUND_DOWN)
         );
@@ -226,7 +226,7 @@ export class TezStore {
           rewardPerShare: rewardPerShare,
           rewardPerBlock: rewardPerBlock,
           totalReward: totalReward,
-          lastUpdateLevel: level,
+          lastUpdateLevel: level.minus(1),
           collectingPeriodEnds: collectingPeriodEnds,
         };
       }
@@ -235,7 +235,7 @@ export class TezStore {
         rewardPerShare: rewardPerShare,
         rewardPerBlock: tezStoreStorage.reward_per_block,
         totalReward: tezStoreStorage.total_reward,
-        lastUpdateLevel: level,
+        lastUpdateLevel: level.minus(1),
         collectingPeriodEnds: tezStoreStorage.collecting_period_ends,
       };
     }
