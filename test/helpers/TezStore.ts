@@ -172,7 +172,6 @@ export class TezStore {
   }
 
   static async updateRewards(
-    amount: BigNumber,
     tezStoreStorage: TezStoreStorage,
     dexCoreStorage: DexCoreStorage,
     totalSupply: BigNumber,
@@ -192,7 +191,6 @@ export class TezStore {
       let rewardPerShare: BigNumber = tezStoreStorage.reward_per_share.plus(
         newReward.dividedBy(totalSupply).integerValue(BigNumber.ROUND_DOWN)
       );
-      let nextReward: BigNumber = tezStoreStorage.next_reward.plus(amount);
 
       if (level.isGreaterThan(collectingPeriodEnds)) {
         const collectingPeriod: BigNumber =
@@ -204,7 +202,7 @@ export class TezStore {
           .plus(1)
           .multipliedBy(collectingPeriod)
           .multipliedBy(dexCoreStorage.storage.cycle_duration);
-        const rewardPerBlock: BigNumber = nextReward
+        const rewardPerBlock: BigNumber = tezStoreStorage.next_reward
           .multipliedBy(PRECISION)
           .dividedBy(periodDuration)
           .integerValue(BigNumber.ROUND_DOWN);
@@ -224,12 +222,9 @@ export class TezStore {
             .integerValue(BigNumber.ROUND_DOWN)
         );
 
-        nextReward = new BigNumber(0);
-
         return {
           rewardPerShare: rewardPerShare,
           rewardPerBlock: rewardPerBlock,
-          nextReward: nextReward,
           totalReward: totalReward,
           lastUpdateLevel: level,
           collectingPeriodEnds: collectingPeriodEnds,
@@ -239,7 +234,6 @@ export class TezStore {
       return {
         rewardPerShare: rewardPerShare,
         rewardPerBlock: tezStoreStorage.reward_per_block,
-        nextReward: nextReward,
         totalReward: tezStoreStorage.total_reward,
         lastUpdateLevel: level,
         collectingPeriodEnds: tezStoreStorage.collecting_period_ends,
@@ -249,7 +243,6 @@ export class TezStore {
     return {
       rewardPerShare: tezStoreStorage.reward_per_share,
       rewardPerBlock: tezStoreStorage.reward_per_block,
-      nextReward: tezStoreStorage.next_reward,
       totalReward: tezStoreStorage.total_reward,
       lastUpdateLevel: tezStoreStorage.last_update_level,
       collectingPeriodEnds: tezStoreStorage.collecting_period_ends,
@@ -260,17 +253,17 @@ export class TezStore {
     tezStoreStorage: TezStoreStorage,
     user: string,
     currentBalance: BigNumber,
-    newBalance: BigNumber
+    newBalance: BigNumber,
+    rewardPerShare: BigNumber
   ): Promise<UpdateUserRewards> {
-    const currentReward: BigNumber = currentBalance.multipliedBy(
-      tezStoreStorage.reward_per_share
-    );
+    const currentReward: BigNumber =
+      currentBalance.multipliedBy(rewardPerShare);
 
     return {
-      reward: tezStoreStorage.users_rewards[user].reward.plus(
-        currentReward.minus(tezStoreStorage.users_rewards[user].reward_paid)
+      reward_f: tezStoreStorage.users_rewards[user].reward_f.plus(
+        currentReward.minus(tezStoreStorage.users_rewards[user].reward_paid_f)
       ),
-      rewardPaid: newBalance.multipliedBy(tezStoreStorage.reward_per_share),
+      rewardPaid_f: newBalance.multipliedBy(rewardPerShare),
     };
   }
 }

@@ -16,23 +16,20 @@ import { bakerRegistryStorage } from "../../../storage/BakerRegistry";
 import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa2Storage } from "../../../storage/test/FA2";
 
+import { LaunchExchange, WithdrawProfit } from "test/types/DexCore";
+import { PRECISION } from "test/helpers/Constants";
 import { SBAccount } from "test/types/Common";
 import { Common } from "test/helpers/Errors";
 import {
-  TezStoreStorage,
+  UpdateUserRewards,
   WithdrawRewards,
+  TezStoreStorage,
   UpdateRewards,
 } from "test/types/TezStore";
-import {
-  DexCoreStorage,
-  LaunchExchange,
-  WithdrawProfit,
-  Pair,
-} from "test/types/DexCore";
 
 chai.use(require("chai-bignumber")(BigNumber));
 
-describe("TezStore (withdraw rewards)", async () => {
+describe.only("TezStore (withdraw rewards)", async () => {
   var bakerRegistry: BakerRegistry;
   var tezStore: TezStore;
   var dexCore: DexCore;
@@ -58,7 +55,7 @@ describe("TezStore (withdraw rewards)", async () => {
 
     dexCoreStorage.storage.entered = false;
     dexCoreStorage.storage.admin = alice.pkh;
-    dexCoreStorage.storage.collecting_period = new BigNumber(2);
+    dexCoreStorage.storage.collecting_period = new BigNumber(3);
     dexCoreStorage.storage.cycle_duration = new BigNumber(1);
     dexCoreStorage.storage.voting_period = new BigNumber(10);
     dexCoreStorage.storage.baker_registry = bakerRegistry.contract.address;
@@ -119,38 +116,127 @@ describe("TezStore (withdraw rewards)", async () => {
   });
 
   it("should withdraw user's rewards - 1", async () => {
-    const pairId: BigNumber = new BigNumber(0);
-
-    await dexCore.updateStorage({
-      pairs: [pairId],
-    });
-    await tezStore.updateStorage();
-
     const amount: BigNumber = new BigNumber(100);
-    const prevTezStoreStorage: TezStoreStorage = tezStore.storage;
-    const prevDexCoreStorage: DexCoreStorage = dexCore.storage;
-    const prevPair: Pair = dexCore.storage.storage.pairs[pairId.toFixed()];
+    const receiver: string = bob.pkh;
+    const user: string = alice.pkh;
 
     await tezStore.default(amount.toNumber());
-    await utils.bakeBlocks(4);
+    await utils.bakeBlocks(3);
+    await tezStore.default(amount.toNumber());
     await dexCore.updateStorage({
       pairs: [pairId],
+      ledger: [[user, pairId]],
     });
-    await tezStore.updateStorage();
+    await tezStore.updateStorage({
+      users_rewards: [user],
+    });
 
     const expectedRewardsInfo: UpdateRewards = await TezStore.updateRewards(
-      amount,
-      prevTezStoreStorage,
-      prevDexCoreStorage,
-      prevPair.total_supply,
+      tezStore.storage,
+      dexCore.storage,
+      dexCore.storage.storage.pairs[pairId.toFixed()].total_supply,
       utils
     );
-
+    const expectedUserRewardsInfo: UpdateUserRewards =
+      await TezStore.updateUserRewards(
+        tezStore.storage,
+        user,
+        dexCore.storage.storage.ledger[`${user},${pairId}`],
+        dexCore.storage.storage.ledger[`${user},${pairId}`],
+        expectedRewardsInfo.rewardPerShare
+      );
     const withdrawProfitParams: WithdrawProfit = {
-      receiver: bob.pkh,
-      pair_id: new BigNumber(0),
+      receiver: receiver,
+      pair_id: pairId,
     };
+    const prevReceiverTezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      receiver
+    );
+    const actualReward: BigNumber = expectedUserRewardsInfo.reward_f
+      .dividedBy(PRECISION)
+      .integerValue(BigNumber.ROUND_DOWN);
+
+    console.log(actualReward.toFixed());
 
     await dexCore.withdrawProfit(withdrawProfitParams);
+    await tezStore.updateStorage({
+      users_rewards: [user],
+    });
+
+    expect(await utils.tezos.tz.getBalance(receiver)).to.be.bignumber.equal(
+      prevReceiverTezBalance.plus(actualReward)
+    );
+    expect(tezStore.storage.reward_paid).to.be.bignumber.equal(actualReward);
+    expect(tezStore.storage.users_rewards[user].reward_f).to.be.bignumber.equal(
+      expectedUserRewardsInfo.reward_f.minus(
+        actualReward.multipliedBy(PRECISION)
+      )
+    );
+    expect(
+      tezStore.storage.users_rewards[user].reward_paid_f
+    ).to.be.bignumber.equal(expectedUserRewardsInfo.rewardPaid_f);
+  });
+
+  it("should withdraw user's rewards - 2", async () => {
+    const receiver: string = bob.pkh;
+    const user: string = alice.pkh;
+
+    await utils.bakeBlocks(3);
+    await tezStore.default(400);
+    await dexCore.updateStorage({
+      pairs: [pairId],
+      ledger: [[user, pairId]],
+    });
+    await tezStore.updateStorage({
+      users_rewards: [user],
+    });
+
+    const prevTezStoreStorage: TezStoreStorage = tezStore.storage;
+    const expectedRewardsInfo: UpdateRewards = await TezStore.updateRewards(
+      prevTezStoreStorage,
+      dexCore.storage,
+      dexCore.storage.storage.pairs[pairId.toFixed()].total_supply,
+      utils
+    );
+    const expectedUserRewardsInfo: UpdateUserRewards =
+      await TezStore.updateUserRewards(
+        prevTezStoreStorage,
+        user,
+        dexCore.storage.storage.ledger[`${user},${pairId}`],
+        dexCore.storage.storage.ledger[`${user},${pairId}`],
+        expectedRewardsInfo.rewardPerShare
+      );
+    const withdrawProfitParams: WithdrawProfit = {
+      receiver: receiver,
+      pair_id: pairId,
+    };
+    const prevReceiverTezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      receiver
+    );
+    const actualReward: BigNumber = expectedUserRewardsInfo.reward_f
+      .dividedBy(PRECISION)
+      .integerValue(BigNumber.ROUND_DOWN);
+
+    console.log(actualReward.toFixed());
+
+    await dexCore.withdrawProfit(withdrawProfitParams);
+    await tezStore.updateStorage({
+      users_rewards: [user],
+    });
+
+    expect(await utils.tezos.tz.getBalance(receiver)).to.be.bignumber.equal(
+      prevReceiverTezBalance.plus(actualReward)
+    );
+    expect(tezStore.storage.reward_paid).to.be.bignumber.equal(
+      prevTezStoreStorage.reward_paid.plus(actualReward)
+    );
+    expect(tezStore.storage.users_rewards[user].reward_f).to.be.bignumber.equal(
+      expectedUserRewardsInfo.reward_f.minus(
+        actualReward.multipliedBy(PRECISION)
+      )
+    );
+    expect(
+      tezStore.storage.users_rewards[user].reward_paid_f
+    ).to.be.bignumber.equal(expectedUserRewardsInfo.rewardPaid_f);
   });
 });

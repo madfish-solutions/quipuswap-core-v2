@@ -21,10 +21,10 @@ import { SBAccount } from "../../types/Common";
 chai.use(require("chai-bignumber")(BigNumber));
 
 describe("TezStore (views)", async () => {
-  var utils: Utils;
   var bakerRegistry: BakerRegistry;
   var tezStore: TezStore;
   var dexCore: DexCore;
+  var utils: Utils;
 
   var alice: SBAccount = accounts.alice;
   var bob: SBAccount = accounts.bob;

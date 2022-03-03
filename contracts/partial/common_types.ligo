@@ -36,8 +36,8 @@ type user_t             is [@layout:comb] record [
 ]
 
 type user_reward_info_t is [@layout:comb] record [
-  reward                  : nat;
-  reward_paid             : nat;
+  reward_f                : nat;
+  reward_paid_f           : nat;
 ]
 
 type account_t          is [@layout:comb] record [

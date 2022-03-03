@@ -26,8 +26,8 @@ module Constants is {
   ];
 
   const default_user_reward_info : user_reward_info_t = record [
-    reward      = 0n;
-    reward_paid = 0n;
+    reward_f      = 0n;
+    reward_paid_f = 0n;
   ];
 
   const default_account : account_t = record [

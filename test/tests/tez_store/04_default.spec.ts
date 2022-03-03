@@ -114,7 +114,6 @@ describe("TezStore (default)", async () => {
     await tezStore.updateStorage();
 
     const expectedRewardsInfo: UpdateRewards = await TezStore.updateRewards(
-      amount,
       prevTezStoreStorage,
       prevDexCoreStorage,
       prevPair.total_supply,
@@ -128,7 +127,7 @@ describe("TezStore (default)", async () => {
       expectedRewardsInfo.rewardPerBlock
     );
     expect(tezStore.storage.next_reward).to.be.bignumber.equal(
-      expectedRewardsInfo.nextReward
+      prevTezStoreStorage.next_reward.plus(amount)
     );
     expect(tezStore.storage.last_update_level).to.be.bignumber.equal(
       expectedRewardsInfo.lastUpdateLevel
@@ -156,7 +155,6 @@ describe("TezStore (default)", async () => {
     await tezStore.updateStorage();
 
     const expectedRewardsInfo: UpdateRewards = await TezStore.updateRewards(
-      amount,
       prevTezStoreStorage,
       prevDexCoreStorage,
       prevPair.total_supply,
@@ -170,7 +168,7 @@ describe("TezStore (default)", async () => {
       expectedRewardsInfo.rewardPerBlock
     );
     expect(tezStore.storage.next_reward).to.be.bignumber.equal(
-      expectedRewardsInfo.nextReward
+      prevTezStoreStorage.next_reward.plus(amount)
     );
     expect(tezStore.storage.last_update_level).to.be.bignumber.equal(
       expectedRewardsInfo.lastUpdateLevel
@@ -198,7 +196,6 @@ describe("TezStore (default)", async () => {
     await tezStore.updateStorage();
 
     const expectedRewardsInfo: UpdateRewards = await TezStore.updateRewards(
-      amount,
       prevTezStoreStorage,
       prevDexCoreStorage,
       prevPair.total_supply,
@@ -212,7 +209,7 @@ describe("TezStore (default)", async () => {
       expectedRewardsInfo.rewardPerBlock
     );
     expect(tezStore.storage.next_reward).to.be.bignumber.equal(
-      expectedRewardsInfo.nextReward
+      prevTezStoreStorage.next_reward.plus(amount)
     );
     expect(tezStore.storage.last_update_level).to.be.bignumber.equal(
       expectedRewardsInfo.lastUpdateLevel
@@ -240,7 +237,6 @@ describe("TezStore (default)", async () => {
     await tezStore.updateStorage();
 
     const expectedRewardsInfo: UpdateRewards = await TezStore.updateRewards(
-      amount,
       prevTezStoreStorage,
       prevDexCoreStorage,
       prevPair.total_supply,
@@ -254,7 +250,7 @@ describe("TezStore (default)", async () => {
       expectedRewardsInfo.rewardPerBlock
     );
     expect(tezStore.storage.next_reward).to.be.bignumber.equal(
-      expectedRewardsInfo.nextReward
+      prevTezStoreStorage.next_reward.plus(amount)
     );
     expect(tezStore.storage.last_update_level).to.be.bignumber.equal(
       expectedRewardsInfo.lastUpdateLevel
