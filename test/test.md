@@ -61,9 +61,7 @@
    - ✅ should validate and set a new delegate if voting can be done and current delegated was changed - 2;
    - ✅ should change next candidate to the `zero_address` if voting can be done and next candidate is banned;
    - ✅ should update end of voting period if voting can be done;
-   - ✅ should remove delegate and set current delegated to the `zero_address` if voting can be done and current delegated is banned;
-   - ❌ should update global rewards;
-   - ❌ should update user rewards.
+   - ✅ should remove delegate and set current delegated to the `zero_address` if voting can be done and current delegated is banned.
 
 6. `default`:
 
@@ -209,8 +207,8 @@
    - ✅ should fail if reentrancy;
    - ✅ should fail if pair not listed;
    - ✅ should fail if pair does not have TEZ store contract (not TOK/TEZ pair);
-   - ❌ should withdraw user's profit - 1;
-   - ❌ should withdraw user's profit - 2.
+   - ✅ should withdraw user's profit - 1;
+   - ✅ should withdraw user's profit - 2.
 
 7. `claim_interface_fee`:
 

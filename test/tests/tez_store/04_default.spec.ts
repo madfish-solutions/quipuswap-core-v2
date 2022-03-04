@@ -98,7 +98,6 @@ describe("TezStore (default)", async () => {
   });
 
   it("should update global rewards - 1", async () => {
-    const pairId: BigNumber = new BigNumber(0);
     const amount: BigNumber = new BigNumber(100);
 
     await dexCore.updateStorage({
