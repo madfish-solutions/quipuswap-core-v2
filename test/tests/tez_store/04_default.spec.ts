@@ -14,15 +14,15 @@ import { bakerRegistryStorage } from "../../../storage/BakerRegistry";
 import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa2Storage } from "../../../storage/test/FA2";
 
-import { TezStoreStorage, UpdateRewards } from "test/types/TezStore";
-import { SBAccount } from "test/types/Common";
+import { TezStoreStorage, UpdateRewards } from "../../types/TezStore";
+import { SBAccount } from "../../types/Common";
 import {
   DivestLiquidity,
   DexCoreStorage,
   LaunchExchange,
   TokensPerShare,
   Pair,
-} from "test/types/DexCore";
+} from "../../types/DexCore";
 
 chai.use(require("chai-bignumber")(BigNumber));
 

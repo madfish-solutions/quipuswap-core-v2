@@ -17,8 +17,8 @@ import { auctionStorage } from "../../../storage/Auction";
 import { fa12Storage } from "../../../storage/test/FA12";
 import { fa2Storage } from "../../../storage/test/FA2";
 
-import { SBAccount, Token } from "test/types/Common";
-import { Transfer } from "test/types/FA2";
+import { SBAccount, Token } from "../../types/Common";
+import { Transfer } from "../../types/FA2";
 import {
   UpdateWhitelist,
   LaunchAuction,
@@ -26,7 +26,7 @@ import {
   WithdrawFee,
   ReceiveFee,
   PlaceBid,
-} from "test/types/Auction";
+} from "../../types/Auction";
 
 chai.use(require("chai-bignumber")(BigNumber));
 

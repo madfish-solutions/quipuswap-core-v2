@@ -27,9 +27,9 @@ import { bakerRegistryStorage } from "../../../storage/BakerRegistry";
 import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa12Storage } from "../../../storage/test/FA12";
 
-import { LaunchExchange, SetExpiry } from "test/types/DexCore";
-import { SBAccount } from "test/types/Common";
-import { Transfer } from "test/types/FA2";
+import { LaunchExchange, SetExpiry } from "../../types/DexCore";
+import { SBAccount } from "../../types/Common";
+import { Transfer } from "../../types/FA2";
 
 chai.use(require("chai-bignumber")(BigNumber));
 

@@ -25,8 +25,8 @@ import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa12Storage } from "../../../storage/test/FA12";
 import { fa2Storage } from "../../../storage/test/FA2";
 
-import { PRECISION } from "test/helpers/Constants";
-import { SBAccount } from "test/types/Common";
+import { PRECISION } from "../../helpers/Constants";
+import { SBAccount } from "../../types/Common";
 import {
   TokensPerShareRequest,
   CheckIsBannedBaker,
@@ -38,7 +38,7 @@ import {
   Pair,
   Swap,
   Ban,
-} from "test/types/DexCore";
+} from "../../types/DexCore";
 
 chai.use(require("chai-bignumber")(BigNumber));
 

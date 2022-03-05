@@ -16,21 +16,21 @@ import { bakerRegistryStorage } from "../../../storage/BakerRegistry";
 import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa2Storage } from "../../../storage/test/FA2";
 
-import { PRECISION } from "test/helpers/Constants";
-import { SBAccount } from "test/types/Common";
-import { Common } from "test/helpers/Errors";
-import {
-  DexCoreStorage,
-  LaunchExchange,
-  WithdrawProfit,
-  Pair,
-} from "test/types/DexCore";
+import { PRECISION } from "../../helpers/Constants";
+import { SBAccount } from "../../types/Common";
+import { Common } from "../../helpers/Errors";
 import {
   UpdateUserRewards,
   WithdrawRewards,
   TezStoreStorage,
   UpdateRewards,
-} from "test/types/TezStore";
+} from "../../types/TezStore";
+import {
+  DexCoreStorage,
+  LaunchExchange,
+  WithdrawProfit,
+  Pair,
+} from "../../types/DexCore";
 
 chai.use(require("chai-bignumber")(BigNumber));
 

@@ -14,14 +14,14 @@ import { bakerRegistryStorage } from "../../../storage/BakerRegistry";
 import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa2Storage } from "../../../storage/test/FA2";
 
-import { Baker, User } from "test/types/TezStore";
-import { SBAccount } from "test/types/Common";
+import { Baker, User } from "../../types/TezStore";
+import { SBAccount } from "../../types/Common";
 import {
   InvestLiquidity,
   LaunchExchange,
   RequiredTokens,
   Pair,
-} from "test/types/DexCore";
+} from "../../types/DexCore";
 
 chai.use(require("chai-bignumber")(BigNumber));
 

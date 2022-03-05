@@ -23,7 +23,7 @@ import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa12Storage } from "../../../storage/test/FA12";
 import { fa2Storage } from "../../../storage/test/FA2";
 
-import { SBAccount } from "test/types/Common";
+import { SBAccount } from "../../types/Common";
 import {
   UpdateTokenMetadata,
   LaunchExchange,

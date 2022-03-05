@@ -17,9 +17,9 @@ import { bakerRegistryStorage } from "../../../storage/BakerRegistry";
 import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa2Storage } from "../../../storage/test/FA2";
 
-import { Baker, User, Vote } from "test/types/TezStore";
-import { SBAccount } from "test/types/Common";
-import { Transfer } from "test/types/FA2";
+import { Baker, User, Vote } from "../../types/TezStore";
+import { SBAccount } from "../../types/Common";
+import { Transfer } from "../../types/FA2";
 import {
   InvestLiquidity,
   DivestLiquidity,

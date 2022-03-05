@@ -14,8 +14,8 @@ import accounts from "../../../scripts/sandbox/accounts";
 import { auctionStorage } from "../../../storage/Auction";
 import { fa2Storage } from "../../../storage/test/FA2";
 
-import { Fees, UpdateWhitelist } from "test/types/Auction";
-import { SBAccount } from "test/types/Common";
+import { Fees, UpdateWhitelist } from "../../types/Auction";
+import { SBAccount } from "../../types/Common";
 
 chai.use(require("chai-bignumber")(BigNumber));
 

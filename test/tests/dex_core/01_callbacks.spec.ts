@@ -14,10 +14,10 @@ import { bakerRegistryStorage } from "../../../storage/BakerRegistry";
 import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa12Storage } from "../../../storage/test/FA12";
 
-import { LaunchCallback, LaunchExchange } from "test/types/DexCore";
-import { BakerRegistry } from "test/helpers/BakerRegistry";
-import { SBAccount } from "test/types/Common";
-import { FA12 } from "test/helpers/FA12";
+import { LaunchCallback, LaunchExchange } from "../../types/DexCore";
+import { BakerRegistry } from "../../helpers/BakerRegistry";
+import { SBAccount } from "../../types/Common";
+import { FA12 } from "../../helpers/FA12";
 
 chai.use(require("chai-bignumber")(BigNumber));
 

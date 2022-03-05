@@ -1,5 +1,5 @@
 import { FlashSwapsProxy } from "../../helpers/FlashSwapsProxy";
-import { FlashSwapAgent } from "test/helpers/FlashSwapAgent";
+import { FlashSwapAgent } from "../../helpers/FlashSwapAgent";
 import { DexCore } from "../../helpers/DexCore";
 import { Utils } from "../../helpers/Utils";
 
@@ -12,11 +12,11 @@ import accounts from "../../../scripts/sandbox/accounts";
 import { flashSwapAgentStorage } from "../../../storage/test/FlashSwapAgent";
 import { flashSwapsProxyStorage } from "../../../storage/FlashSwapsProxy";
 import { dexCoreStorage } from "../../../storage/DexCore";
+import { fa12Storage } from "../../../storage/test/FA12";
 
-import { FlashSwap, LaunchExchange } from "test/types/DexCore";
-import { fa12Storage } from "storage/test/FA12";
-import { SBAccount } from "test/types/Common";
-import { FA12 } from "test/helpers/FA12";
+import { FlashSwap, LaunchExchange } from "../../types/DexCore";
+import { SBAccount } from "../../types/Common";
+import { FA12 } from "../../helpers/FA12";
 
 import fs from "fs";
 

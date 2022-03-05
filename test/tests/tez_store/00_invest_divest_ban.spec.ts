@@ -15,7 +15,7 @@ import { bakerRegistryStorage } from "../../../storage/BakerRegistry";
 import { tezStoreStorage } from "../../../storage/test/TezStore";
 
 import { BanBaker, DivestTez } from "../../types/TezStore";
-import { SBAccount } from "test/types/Common";
+import { SBAccount } from "../../types/Common";
 
 chai.use(require("chai-bignumber")(BigNumber));
 

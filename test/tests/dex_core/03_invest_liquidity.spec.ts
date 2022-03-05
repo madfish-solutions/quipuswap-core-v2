@@ -26,9 +26,9 @@ import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa12Storage } from "../../../storage/test/FA12";
 import { fa2Storage } from "../../../storage/test/FA2";
 
-import { User } from "test/types/TezStore";
-import { TezStore } from "test/helpers/TezStore";
-import { SBAccount } from "test/types/Common";
+import { User } from "../../types/TezStore";
+import { TezStore } from "../../helpers/TezStore";
+import { SBAccount } from "../../types/Common";
 import {
   InvestLiquidity,
   DivestLiquidity,
@@ -37,7 +37,7 @@ import {
   TokensPerShare,
   Pair,
   Swap,
-} from "test/types/DexCore";
+} from "../../types/DexCore";
 
 chai.use(require("chai-bignumber")(BigNumber));
 

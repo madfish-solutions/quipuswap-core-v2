@@ -21,7 +21,7 @@ import { auctionStorage } from "../../../storage/Auction";
 import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa2Storage } from "../../../storage/test/FA2";
 
-import { SBAccount } from "test/types/Common";
+import { SBAccount } from "../../types/Common";
 import {
   CumulativePrices,
   InvestLiquidity,
@@ -31,7 +31,7 @@ import {
   TokensPerShare,
   Pair,
   Swap,
-} from "test/types/DexCore";
+} from "../../types/DexCore";
 
 chai.use(require("chai-bignumber")(BigNumber));
 

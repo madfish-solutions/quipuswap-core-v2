@@ -26,14 +26,14 @@ import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa12Storage } from "../../../storage/test/FA12";
 import { fa2Storage } from "../../../storage/test/FA2";
 
-import { SBAccount, Token } from "test/types/Common";
+import { SBAccount, Token } from "../../types/Common";
 import {
   DivestLiquidity,
   TokensPerShare,
   LaunchExchange,
   CalculateSwap,
   Swap,
-} from "test/types/DexCore";
+} from "../../types/DexCore";
 
 chai.use(require("chai-bignumber")(BigNumber));
 

@@ -7,7 +7,7 @@ import accounts from "../../../scripts/sandbox/accounts";
 
 import { bakerRegistryStorage } from "../../../storage/BakerRegistry";
 
-import { SBAccount } from "test/types/Common";
+import { SBAccount } from "../../types/Common";
 
 describe("BakerRegistry", async () => {
   var utils: Utils;

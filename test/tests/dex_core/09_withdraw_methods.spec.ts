@@ -21,19 +21,19 @@ import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa12Storage } from "../../../storage/test/FA12";
 import { fa2Storage } from "../../../storage/test/FA2";
 
-import { SBAccount, Token } from "test/types/Common";
-import { TezStore } from "test/helpers/TezStore";
+import { SBAccount, Token } from "../../types/Common";
+import { TezStore } from "../../helpers/TezStore";
 import {
   UpdateUserRewards,
   TezStoreStorage,
   UpdateRewards,
-} from "test/types/TezStore";
+} from "../../types/TezStore";
 import {
   LaunchExchange,
   WithdrawProfit,
   ClaimFee,
   Swap,
-} from "test/types/DexCore";
+} from "../../types/DexCore";
 
 chai.use(require("chai-bignumber")(BigNumber));
 
