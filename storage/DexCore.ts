@@ -35,6 +35,7 @@ export const dexCoreStorage: DexCoreStorage = {
       token_b_balance_1: new BigNumber(0),
       token_a_balance_2: new BigNumber(0),
       token_b_balance_2: new BigNumber(0),
+      prev_tez_balance: new BigNumber(0),
     },
     admin: zeroAddress,
     pending_admin: zeroAddress,

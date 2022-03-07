@@ -70,6 +70,7 @@ describe("DexCore (callbacks)", async () => {
       token_b_balance_1: new BigNumber(0),
       token_a_balance_2: new BigNumber(0),
       token_b_balance_2: new BigNumber(0),
+      prev_tez_balance: new BigNumber(0),
     };
     dexCoreStorage.storage.entered = true;
 
@@ -101,6 +102,7 @@ describe("DexCore (callbacks)", async () => {
       token_b_balance_1: new BigNumber(0),
       token_a_balance_2: new BigNumber(0),
       token_b_balance_2: new BigNumber(0),
+      prev_tez_balance: new BigNumber(0),
     };
     dexCoreStorage.storage.entered = true;
 
@@ -135,6 +137,7 @@ describe("DexCore (callbacks)", async () => {
       token_b_balance_1: new BigNumber(0),
       token_a_balance_2: new BigNumber(0),
       token_b_balance_2: new BigNumber(0),
+      prev_tez_balance: new BigNumber(0),
     };
     dexCoreStorage.storage.entered = true;
 
@@ -166,6 +169,7 @@ describe("DexCore (callbacks)", async () => {
       token_b_balance_1: new BigNumber(0),
       token_a_balance_2: new BigNumber(0),
       token_b_balance_2: new BigNumber(0),
+      prev_tez_balance: new BigNumber(0),
     };
     dexCoreStorage.storage.entered = true;
 
@@ -189,6 +193,14 @@ describe("DexCore (callbacks)", async () => {
 
   it("should fail if not dex core is trying to call it", async () => {
     await rejects(dexCore.flashSwapCallback2(), (err: Error) => {
+      expect(err.message).to.equal(Common.ERR_NOT_DEX_CORE);
+
+      return true;
+    });
+  });
+
+  it("should fail if not dex core is trying to call it", async () => {
+    await rejects(dexCore.flashSwapCallback3(), (err: Error) => {
       expect(err.message).to.equal(Common.ERR_NOT_DEX_CORE);
 
       return true;

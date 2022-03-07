@@ -53,6 +53,7 @@ type tmp_t              is [@layout:comb] record [
   token_b_balance_1       : nat;
   token_a_balance_2       : nat;
   token_b_balance_2       : nat;
+  prev_tez_balance        : nat;
 ]
 
 type pair_t             is [@layout:comb] record [

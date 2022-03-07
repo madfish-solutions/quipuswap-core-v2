@@ -39,8 +39,9 @@ function call_dex_core(
     | Fa2_balance_callback_2(_)  -> 27n
     | Flash_swap_callback_1(_)   -> 28n
     | Flash_swap_callback_2(_)   -> 29n
-    | Launch_callback(_)         -> 30n
-    | Close(_)                   -> 31n
+    | Flash_swap_callback_3(_)   -> 30n
+    | Launch_callback(_)         -> 31n
+    | Close(_)                   -> 32n
     end;
 
     const lambda_bytes : bytes = unwrap(s.dex_core_lambdas[id], DexCore.err_unknown_func);

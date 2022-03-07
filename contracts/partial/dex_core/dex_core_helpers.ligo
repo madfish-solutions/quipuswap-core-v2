@@ -43,9 +43,10 @@ function get_tez_store_vote_entrypoint(
   )
 
 function get_invest_tez_op(
+  const amt             : tez;
   const tez_store       : address)
                         : operation is
-  Tezos.transaction(Unit, Tezos.amount, get_tez_store_invest_tez_entrypoint(tez_store))
+  Tezos.transaction(Unit, amt, get_tez_store_invest_tez_entrypoint(tez_store))
 
 function get_divest_tez_op(
   const divest_params   : divest_tez_t;
@@ -71,7 +72,7 @@ function invest_tez_or_transfer_tokens(
   const tez_store_opt   : option(address))
                         : operation is
   if token_type = Tez
-  then get_invest_tez_op(unwrap(tez_store_opt, DexCore.err_tez_store_404))
+  then get_invest_tez_op(Tezos.amount, unwrap(tez_store_opt, DexCore.err_tez_store_404))
   else transfer_token(Tezos.sender, Tezos.self_address, tokens_required, token_type)
 
 function divest_tez_or_transfer_tokens(
@@ -137,6 +138,66 @@ function calc_cumulative_prices(
     pair.token_b_pool := new_tok_b_pool;
     pair.last_block_timestamp := Tezos.now;
   } with pair
+
+function update_fees(
+  var s               : storage_t;
+  var ops             : list(operation);
+  const pair_id       : token_id_t;
+  const token_in      : token_t;
+  const referrer      : address;
+  const interface_fee : nat;
+  const auction_fee   : nat)
+                      : storage_t * list(operation) is
+  block {
+    if token_in = Tez
+    then {
+      s.interface_tez_fee[(pair_id, referrer)] := unwrap_or(s.interface_tez_fee[(pair_id, referrer)], 0n)
+        + interface_fee;
+      s.auction_tez_fee[pair_id] := unwrap_or(s.auction_tez_fee[pair_id], 0n) + auction_fee;
+
+      const interface_tez_fee_f : nat = unwrap_or(s.interface_tez_fee[(pair_id, referrer)], 0n);
+      const auction_tez_fee_f : nat = unwrap_or(s.auction_tez_fee[pair_id], 0n);
+      var divested_amount : nat := 0n;
+
+      if interface_tez_fee_f > Constants.precision
+      then {
+        const amt : nat = interface_tez_fee_f / Constants.precision;
+        const amt_f : nat = amt * Constants.precision;
+
+        divested_amount := divested_amount + amt;
+        s.interface_tez_fee[(pair_id, referrer)] := get_nat_or_fail(interface_tez_fee_f - amt_f);
+        s.interface_fee[(token_in, referrer)] := unwrap_or(s.interface_fee[(token_in, referrer)], 0n) + amt_f;
+      }
+      else skip;
+
+      if auction_tez_fee_f > Constants.precision
+      then {
+        const amt : nat = auction_tez_fee_f / Constants.precision;
+        const amt_f : nat = amt * Constants.precision;
+
+        divested_amount := divested_amount + amt;
+        s.auction_tez_fee[pair_id] := get_nat_or_fail(auction_tez_fee_f - amt_f);
+        s.auction_fee[token_in] := unwrap_or(s.auction_fee[token_in], 0n) + amt_f;
+      }
+      else skip;
+
+      if divested_amount > 0n
+      then {
+        const divest_params : divest_tez_t = record [
+          receiver     = (get_contract(Tezos.self_address) : contract(unit));
+          amt          = divested_amount;
+        ];
+        const pair : pair_t = unwrap(s.pairs[pair_id], DexCore.err_pair_not_listed);
+
+        ops := get_divest_tez_op(divest_params, unwrap(pair.tez_store, DexCore.err_tez_store_404)) # ops;
+      }
+      else skip;
+    }
+    else {
+      s.interface_fee[(token_in, referrer)] := unwrap_or(s.interface_fee[(token_in, referrer)], 0n) + interface_fee;
+      s.auction_fee[token_in] := unwrap_or(s.auction_fee[token_in], 0n) + auction_fee;
+    };
+  } with (s, ops)
 
 function form_swap_data(
   const pair            : pair_t;
@@ -217,58 +278,18 @@ function swap_internal(
     const interface_fee : nat = tmp.amount_in * fees.interface_fee;
     const auction_fee : nat = tmp.amount_in * fees.auction_fee;
 
-    if tmp.token_in = Tez
-    then {
-      tmp.s.interface_tez_fee[(params.pair_id, tmp.referrer)] := unwrap_or(
-        tmp.s.interface_tez_fee[(params.pair_id, tmp.referrer)], 0n
-      ) + interface_fee;
-      tmp.s.auction_tez_fee[params.pair_id] := unwrap_or(tmp.s.auction_tez_fee[params.pair_id], 0n) + auction_fee;
+    const (s, ops) = update_fees(
+      tmp.s,
+      tmp.ops,
+      params.pair_id,
+      tmp.token_in,
+      tmp.referrer,
+      interface_fee,
+      auction_fee
+    );
 
-      const interface_tez_fee_f : nat = unwrap_or(tmp.s.interface_tez_fee[(params.pair_id, tmp.referrer)], 0n);
-      const auction_tez_fee_f : nat = unwrap_or(tmp.s.auction_tez_fee[params.pair_id], 0n);
-      var divested_amount : nat := 0n;
-
-      if interface_tez_fee_f > Constants.precision
-      then {
-        const amt : nat = interface_tez_fee_f / Constants.precision;
-        const amt_f : nat = amt * Constants.precision;
-
-        divested_amount := divested_amount + amt;
-        tmp.s.interface_tez_fee[(params.pair_id, tmp.referrer)] := get_nat_or_fail(interface_tez_fee_f - amt_f);
-        tmp.s.interface_fee[(tmp.token_in, tmp.referrer)] := unwrap_or(
-          tmp.s.interface_fee[(tmp.token_in, tmp.referrer)], 0n
-        ) + amt_f;
-      }
-      else skip;
-
-      if auction_tez_fee_f > Constants.precision
-      then {
-        const amt : nat = auction_tez_fee_f / Constants.precision;
-        const amt_f : nat = amt * Constants.precision;
-
-        divested_amount := divested_amount + amt;
-        tmp.s.auction_tez_fee[params.pair_id] := get_nat_or_fail(auction_tez_fee_f - amt_f);
-        tmp.s.auction_fee[tmp.token_in] := unwrap_or(tmp.s.auction_fee[tmp.token_in], 0n) + amt_f;
-      }
-      else skip;
-
-      if divested_amount > 0n
-      then {
-        const divest_params : divest_tez_t = record [
-          receiver     = (get_contract(Tezos.self_address) : contract(unit));
-          amt          = divested_amount;
-        ];
-
-        tmp.ops := get_divest_tez_op(divest_params, unwrap(pair.tez_store, DexCore.err_tez_store_404)) # tmp.ops;
-      }
-      else skip;
-    }
-    else {
-      tmp.s.interface_fee[(tmp.token_in, tmp.referrer)] := unwrap_or(
-        tmp.s.interface_fee[(tmp.token_in, tmp.referrer)], 0n
-      ) + interface_fee;
-      tmp.s.auction_fee[tmp.token_in] := unwrap_or(tmp.s.auction_fee[tmp.token_in], 0n) + auction_fee;
-    };
+    tmp.s := s;
+    tmp.ops := ops;
 
     assert_with_error(out <= swap.to_.pool / 3n, DexCore.err_high_out);
 
@@ -350,6 +371,19 @@ function call_flash_swap_callback_2(
   const _               : unit)
                         : operation is
   Tezos.transaction(Unit, 0mutez, get_flash_swap_callback_2(Tezos.self_address))
+
+function get_flash_swap_callback_3(
+  const self            : address)
+                        : contract(flash_swap_4_t) is
+  unwrap(
+    (Tezos.get_entrypoint_opt("%flash_swap_callback_3", self) : option(contract(flash_swap_4_t))),
+    DexCore.err_flash_swap_callback_3_404
+  )
+
+function call_flash_swap_callback_3(
+  const _               : unit)
+                        : operation is
+  Tezos.transaction(Unit, 0mutez, get_flash_swap_callback_3(Tezos.self_address))
 
 function get_fa12_balance_callback_1(
   const this            : address)

@@ -539,6 +539,16 @@ export class DexCore {
     return operation;
   }
 
+  async flashSwapCallback3(): Promise<TransactionOperation> {
+    const operation: TransactionOperation = await this.contract.methods
+      .flash_swap_callback_3([])
+      .send();
+
+    await confirmOperation(this.tezos, operation.hash);
+
+    return operation;
+  }
+
   async launchCallback(params: LaunchCallback): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .launch_callback(params)

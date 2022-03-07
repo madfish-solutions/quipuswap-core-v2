@@ -180,6 +180,16 @@
    - ✅ should fail if insufficient token A liquidity;
    - ✅ should fail if insufficient token B liquidity;
    - ❌
+   - ❌ should flash swap one FA1.2 token;
+   - ❌ should flash swap one FA2 token;
+   - ❌ should flash swap one TEZ token;
+   - ❌ should flash swap two FA1.2 tokens;
+   - ❌ should flash swap two FA2 tokens;
+   - ❌ should flash swap FA1.2 and FA2 tokens;
+   - ❌ should flash swap FA2 and FA1.2 tokens;
+   - ❌ should flash swap FA1.2 and TEZ tokens;
+   - ❌ should flash swap FA2 and TEZ tokens;
+   - ❌
 
 5. `swap`:
 
@@ -386,16 +396,20 @@
 
     - ✅ should fail if not dex core is trying to call it.
 
-31. `launch_callback`:
+31. `flash_swap_callback_3`:
+
+    - ✅ should fail if not dex core is trying to call it.
+
+32. `launch_callback`:
 
     - ✅ should fail if not dex core is trying to call launch exchange callback.
 
-32. `close`:
+33. `close`:
 
     - ✅ should fail if not dex core is trying to call it;
     - ✅ should close (reentrancy protection).
 
-33. `check_is_banned_baker` [VIEW]:
+34. `check_is_banned_baker` [VIEW]:
 
     - ✅ should fail if pair not listed;
     - ✅ should fail if pair does not have TEZ store contract (not TOK/TEZ pair);
@@ -403,21 +417,21 @@
     - ✅ should return false if baker is not banned;
     - ✅ should return false if baker's banning period is finished.
 
-34. `get_reserves` [VIEW]:
+35. `get_reserves` [VIEW]:
 
     - ✅ should fail if pair not listed;
     - ✅ should fail if one pair from list not listed;
     - ✅ should return proper reserves for pair;
     - ✅ should return proper reserves for all pairs in a list.
 
-35. `get_total_supply` [VIEW]:
+36. `get_total_supply` [VIEW]:
 
     - ✅ should fail if pair not listed;
     - ✅ should fail if one pair from list not listed;
     - ✅ should return proper total supply for pair;
     - ✅ should return proper total supply for all pairs in a list.
 
-36. `get_swap_min_res` [VIEW]:
+37. `get_swap_min_res` [VIEW]:
 
     - ✅ should fail if empty route;
     - ✅ should fail if pair not listed;
@@ -429,7 +443,7 @@
     - ✅ should return proper min swap result - 2;
     - ✅ should return proper min swap result - 3.
 
-37. `get_toks_per_share` [VIEW]:
+38. `get_toks_per_share` [VIEW]:
 
     - ✅ should fail if pair not listed;
     - ✅ should fail if one pair from list not listed;
@@ -438,26 +452,26 @@
     - ✅ should return proper tokens per shares amount for pair;
     - ✅ should return proper tokens per shares anount for all pairs in a list.
 
-38. `get_cumulative_prices` [VIEW]:
+39. `get_cumulative_prices` [VIEW]:
 
     - ✅ should fail if pair not listed;
     - ✅ should fail if one pair from list not listed;
     - ✅ should return proper cumulative prices for pair;
     - ✅ should return proper cumulative prices for all pairs in a list.
 
-39. `get_voting_period` [VIEW]:
+40. `get_voting_period` [VIEW]:
 
     - ✅ should return proper voting period.
 
-40. `get_collecting_period` [VIEW]:
+41. `get_collecting_period` [VIEW]:
 
     - ✅ should return proper collecting period.
 
-41. `get_cycle_duration` [VIEW]:
+42. `get_cycle_duration` [VIEW]:
 
     - ✅ should return proper cycle duration.
 
-42. `oracle_part`:
+43. `oracle_part`:
 
     - ✅ should not calculate cumulative prices and should update last block timestamp in time of any exchange launch;
     - ✅ should calculate cumulative prices and update last block timestamp in time of liquidity investment;
@@ -465,7 +479,7 @@
     - ✅ should calculate cumulative prices and update last block timestamp in time of liquidity divestment;
     - ✅ should calculate cumulative prices and update last block timestamp in time of swap - 2.
 
-43. `integration_tests`:
+44. `integration_tests`:
 
     - ❌ should launch exchange, invest liquidity, swap, divest all liquidity and call launch exchange one more time successfully;
     - ❌ should not deploy a new TEZ store in time of a second launch of an TOK/TEZ exchange;

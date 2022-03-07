@@ -121,6 +121,7 @@ export type Tmp = {
   token_b_balance_1: BigNumber;
   token_a_balance_2: BigNumber;
   token_b_balance_2: BigNumber;
+  prev_tez_balance: BigNumber;
 };
 
 export type DexCoreStorage = {

@@ -25,6 +25,8 @@ type flash_swap_2_t     is unit
 
 type flash_swap_3_t     is unit
 
+type flash_swap_4_t     is unit
+
 type storage_t          is [@layout:comb] record [
   token_metadata          : big_map(token_id_t, token_metadata_t);
   ledger                  : big_map((address * token_id_t), nat);
@@ -266,6 +268,7 @@ type action_t           is
 | Fa2_balance_callback_2  of fa2_balance_res_t
 | Flash_swap_callback_1   of flash_swap_2_t
 | Flash_swap_callback_2   of flash_swap_3_t
+| Flash_swap_callback_3   of flash_swap_4_t
 | Launch_callback         of launch_callback_t
 | Close                   of close_t
 
@@ -288,4 +291,4 @@ type full_action_t      is
 
 type deploy_tez_store_t is (option(key_hash) * tez * tez_store_t) -> (operation * address)
 
-const dex_core_methods_max_index : nat = 32n;
+const dex_core_methods_max_index : nat = 33n;

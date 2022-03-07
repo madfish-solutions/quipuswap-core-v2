@@ -318,9 +318,17 @@ function flash_swap(
           token_b_balance_1 = 0n;
           token_a_balance_2 = 0n;
           token_b_balance_2 = 0n;
+          prev_tez_balance  = Tezos.balance / 1mutez;
         ];
 
-        ops := call_flash_swap_callback_1(Unit) # ops;
+        ops := call_flash_swap_callback_2(Unit) # ops;
+
+        if tokens.token_b = Tez
+        then {
+          ops := call_flash_swap_callback_1(Unit) # ops;
+        }
+        else skip;
+
         ops := call_flash_swaps_proxy(params.lambda, s.flash_swaps_proxy) # ops;
 
         if params.amount_b_out > 0n
@@ -411,7 +419,7 @@ function swap(
         else {
           assert_with_error(params.amount_in = Tezos.amount / 1mutez, DexCore.err_wrong_tez_amount);
 
-          ops := get_invest_tez_op(unwrap(pair.tez_store, DexCore.err_tez_store_404)) # ops;
+          ops := get_invest_tez_op(Tezos.amount, unwrap(pair.tez_store, DexCore.err_tez_store_404)) # ops;
         };
       }
     | _ -> skip

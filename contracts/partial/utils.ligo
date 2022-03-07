@@ -43,6 +43,7 @@ module Constants is {
     token_b_balance_1 = 0n;
     token_a_balance_2 = 0n;
     token_b_balance_2 = 0n;
+    prev_tez_balance  = 0n;
   ];
 
   const default_pair : pair_t = record [

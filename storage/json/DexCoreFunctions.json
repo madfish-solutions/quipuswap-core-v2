@@ -121,10 +121,14 @@
   },
   {
     "index": 30,
-    "name": "launch_callback"
+    "name": "flash_swap_callback_3"
   },
   {
     "index": 31,
+    "name": "launch_callback"
+  },
+  {
+    "index": 32,
     "name": "close"
   }
 ]
