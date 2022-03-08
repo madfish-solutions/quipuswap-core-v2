@@ -72,7 +72,7 @@ function invest_tez_or_transfer_tokens(
   const tez_store_opt   : option(address))
                         : operation is
   if token_type = Tez
-  then get_invest_tez_op(Tezos.amount, unwrap(tez_store_opt, DexCore.err_tez_store_404))
+  then get_invest_tez_op(tokens_required * 1mutez, unwrap(tez_store_opt, DexCore.err_tez_store_404))
   else transfer_token(Tezos.sender, Tezos.self_address, tokens_required, token_type)
 
 function divest_tez_or_transfer_tokens(

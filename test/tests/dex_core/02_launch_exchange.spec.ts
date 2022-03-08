@@ -27,8 +27,14 @@ import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa12Storage } from "../../../storage/test/FA12";
 import { fa2Storage } from "../../../storage/test/FA2";
 
-import { LaunchExchange, Swap } from "../../types/DexCore";
+import { TezStoreStorage } from "../../types/TezStore";
 import { SBAccount } from "../../types/Common";
+import {
+  DivestLiquidity,
+  LaunchExchange,
+  TokensPerShare,
+  Swap,
+} from "../../types/DexCore";
 
 chai.use(require("chai-bignumber")(BigNumber));
 
@@ -1100,6 +1106,120 @@ describe("DexCore (launch exchange)", async () => {
           dexCore.storage.storage.cycle_duration.toNumber() *
             dexCore.storage.storage.voting_period.toNumber()
       )
+    );
+  });
+
+  it("should vote on TEZ store contract if exchange already launched and have 0 liquidity", async () => {
+    const pairId: BigNumber = new BigNumber(12);
+    const shares: BigNumber = new BigNumber(50);
+    const params: LaunchExchange = {
+      pair: {
+        token_a: {
+          fa2: { token: fa2Token3.contract.address, id: new BigNumber(0) },
+        },
+        token_b: { tez: undefined },
+      },
+      token_a_in: new BigNumber(200),
+      token_b_in: new BigNumber(200),
+      shares_receiver: alice.pkh,
+      candidate: alice.pkh,
+    };
+
+    await dexCore.updateStorage({
+      pairs: [pairId.toFixed()],
+    });
+
+    const tezStore: TezStore = await TezStore.init(
+      dexCore.storage.storage.pairs[pairId.toFixed()].tez_store,
+      dexCore.tezos
+    );
+    const divestedTokens: TokensPerShare = DexCore.getTokensPerShare(
+      shares,
+      dexCore.storage.storage.pairs[pairId.toFixed()]
+    );
+    const divestParams: DivestLiquidity = {
+      pair_id: pairId,
+      min_token_a_out: divestedTokens.token_a_amt,
+      min_token_b_out: divestedTokens.token_b_amt,
+      shares: shares,
+      liquidity_receiver: alice.pkh,
+      candidate: alice.pkh,
+    };
+
+    await tezStore.updateStorage();
+
+    const prevTezStoreStorage: TezStoreStorage = tezStore.storage;
+
+    await dexCore.divestLiquidity(divestParams);
+    await tezStore.updateStorage({
+      users: [alice.pkh],
+      bakers: [alice.pkh],
+    });
+
+    expect(
+      tezStore.storage.users[params.shares_receiver].candidate
+    ).to.be.equal(null);
+    expect(
+      tezStore.storage.users[params.shares_receiver].votes
+    ).to.be.bignumber.equal(new BigNumber(0));
+    expect(
+      tezStore.storage.bakers[params.candidate].votes
+    ).to.be.bignumber.equal(new BigNumber(0));
+    expect(tezStore.storage.previous_delegated).to.be.equal(zeroAddress);
+    expect(tezStore.storage.current_delegated).to.be.equal(params.candidate);
+    expect(tezStore.storage.next_candidate).to.be.equal(zeroAddress);
+    expect(
+      await utils.tezos.rpc.getDelegate(tezStore.contract.address)
+    ).to.equal(null);
+    expect(tezStore.storage.baker_registry).to.be.equal(
+      dexCore.storage.storage.baker_registry
+    );
+    expect(tezStore.storage.last_update_level).to.be.bignumber.equal(
+      (await utils.getLastBlock()).minus(2).toFixed()
+    );
+    expect(tezStore.storage.collecting_period_ends).to.be.bignumber.equal(
+      prevTezStoreStorage.collecting_period_ends
+    );
+    expect(tezStore.storage.voting_period_ends).to.be.bignumber.equal(
+      prevTezStoreStorage.voting_period_ends
+    );
+
+    await dexCore.launchExchange(params, params.token_b_in.toNumber());
+    await tezStore.updateStorage({
+      users: [params.shares_receiver],
+      bakers: [params.candidate],
+    });
+
+    expect(
+      tezStore.storage.users[params.shares_receiver].candidate
+    ).to.be.equal(params.candidate);
+    expect(
+      tezStore.storage.users[params.shares_receiver].votes
+    ).to.be.bignumber.equal(
+      BigNumber.min(params.token_a_in, params.token_b_in)
+    );
+    expect(
+      tezStore.storage.bakers[params.candidate].votes
+    ).to.be.bignumber.equal(
+      BigNumber.min(params.token_a_in, params.token_b_in)
+    );
+    expect(tezStore.storage.previous_delegated).to.be.equal(zeroAddress);
+    expect(tezStore.storage.current_delegated).to.be.equal(params.candidate);
+    expect(tezStore.storage.next_candidate).to.be.equal(zeroAddress);
+    expect(
+      await utils.tezos.rpc.getDelegate(tezStore.contract.address)
+    ).to.equal(null);
+    expect(tezStore.storage.baker_registry).to.be.equal(
+      dexCore.storage.storage.baker_registry
+    );
+    expect(tezStore.storage.last_update_level).to.be.bignumber.equal(
+      (await utils.getLastBlock()).toFixed()
+    );
+    expect(tezStore.storage.collecting_period_ends).to.be.bignumber.equal(
+      prevTezStoreStorage.collecting_period_ends
+    );
+    expect(tezStore.storage.voting_period_ends).to.be.bignumber.equal(
+      prevTezStoreStorage.voting_period_ends
     );
   });
 });

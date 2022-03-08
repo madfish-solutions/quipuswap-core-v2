@@ -250,7 +250,9 @@ export class DexCore {
         entrypoint: "use",
         value: JSON.parse(stdout).args[0],
       },
-      storageLimit: 2000,
+      fee: 1000000,
+      gasLimit: 1040000,
+      storageLimit: 20000,
     });
 
     return operation;

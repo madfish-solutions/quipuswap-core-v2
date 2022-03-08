@@ -123,7 +123,7 @@
    - ✅ should transfer FA1.2 tokens and FA2 tokens in time of FA1.2/FA2 exchange launch;
    - ✅ should deploy TEZ store contract with correct initial storage in time of exchange launch with TEZ token;
    - ✅ should vote on TEZ store contract in time of exchange launch with TEZ token;
-   - ❌ should vote on TEZ store contract if exchange already launched and have 0 liquidity.
+   - ✅ should vote on TEZ store contract if exchange already launched and have 0 liquidity.
 
 2. `invest_liquidity`:
 
@@ -146,7 +146,7 @@
    - ✅ should transfer FA1.2 tokens and FA2 tokens in time of FA1.2/FA2 liquidity investment;
    - ✅ should vote for the baker on TEZ store contract in time of FA1.2/TEZ liquidity investment;
    - ✅ should vote for the baker on TEZ store contract in time of FA2/TEZ liquidity investment;
-   - ❌ should return the TEZ change to the sender if too many TEZ was send.
+   - ✅ should return the TEZ change to the sender if too many TEZ was send.
 
 3. `divest_liquidity`:
 

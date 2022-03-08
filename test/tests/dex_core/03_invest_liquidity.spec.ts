@@ -1091,4 +1091,54 @@ describe("DexCore (invest liquidity)", async () => {
       await utils.tezos.rpc.getDelegate(tezStore.contract.address)
     ).to.equal(null);
   });
+
+  it("should return the TEZ change to the sender if too many TEZ was send", async () => {
+    const pairId: BigNumber = new BigNumber(0);
+    const shares: BigNumber = new BigNumber(100);
+
+    await dexCore.updateStorage({
+      pairs: [pairId.toFixed()],
+    });
+
+    const tezStore: TezStore = await TezStore.init(
+      dexCore.storage.storage.pairs[pairId.toFixed()].tez_store,
+      dexCore.tezos
+    );
+    const requiredTokens: RequiredTokens = DexCore.getRequiredTokens(
+      shares,
+      dexCore.storage.storage.pairs[pairId.toFixed()]
+    );
+    const investParams: InvestLiquidity = {
+      pair_id: pairId,
+      token_a_in: requiredTokens.tokens_a_required,
+      token_b_in: requiredTokens.tokens_b_required,
+      shares: shares,
+      shares_receiver: alice.pkh,
+      candidate: alice.pkh,
+    };
+    const prevDexCoreTezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.contract.address
+    );
+    const prevTezStoreTezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      tezStore.contract.address
+    );
+
+    await fa12Token1.approve(dexCore.contract.address, investParams.token_a_in);
+    await dexCore.investLiquidity(
+      investParams,
+      investParams.token_a_in.toNumber() + 100_000
+    );
+
+    const currDexCoreTezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.contract.address
+    );
+    const currTezStoreTezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      tezStore.contract.address
+    );
+
+    expect(currDexCoreTezBalance).to.be.bignumber.equal(prevDexCoreTezBalance);
+    expect(currTezStoreTezBalance).to.be.bignumber.equal(
+      prevTezStoreTezBalance.plus(investParams.token_a_in)
+    );
+  });
 });
