@@ -179,7 +179,6 @@
    - ✅ should fail if pair not listed;
    - ✅ should fail if insufficient token A liquidity;
    - ✅ should fail if insufficient token B liquidity;
-   - ❌
    - ❌ should flash swap one FA1.2 token;
    - ❌ should flash swap one FA2 token;
    - ❌ should flash swap one TEZ token;
@@ -188,8 +187,7 @@
    - ❌ should flash swap FA1.2 and FA2 tokens;
    - ❌ should flash swap FA2 and FA1.2 tokens;
    - ❌ should flash swap FA1.2 and TEZ tokens;
-   - ❌ should flash swap FA2 and TEZ tokens;
-   - ❌
+   - ❌ should flash swap FA2 and TEZ tokens.
 
 5. `swap`:
 
@@ -478,14 +476,6 @@
     - ✅ should calculate cumulative prices and update last block timestamp in time of swap - 1;
     - ✅ should calculate cumulative prices and update last block timestamp in time of liquidity divestment;
     - ✅ should calculate cumulative prices and update last block timestamp in time of swap - 2.
-
-44. `integration_tests`:
-
-    - ❌ should launch exchange, invest liquidity, swap, divest all liquidity and call launch exchange one more time successfully;
-    - ❌ should not deploy a new TEZ store in time of a second launch of an TOK/TEZ exchange;
-    - ❌ should launch exchange, swap and invest in correct proportion;
-    - ❌ should divest all liquidity, invest one more time and vote;
-    - ❌
 
 ## Auction
 
