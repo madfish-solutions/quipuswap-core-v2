@@ -1175,7 +1175,7 @@ describe("DexCore (launch exchange)", async () => {
       dexCore.storage.storage.baker_registry
     );
     expect(tezStore.storage.last_update_level).to.be.bignumber.equal(
-      (await utils.getLastBlock()).minus(2).toFixed()
+      prevTezStoreStorage.last_update_level
     );
     expect(tezStore.storage.collecting_period_ends).to.be.bignumber.equal(
       prevTezStoreStorage.collecting_period_ends
