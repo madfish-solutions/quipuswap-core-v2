@@ -399,18 +399,24 @@ function swap(
           swap_internal,
           params.swaps,
           record [
-            s         = s;
-            ops       = (nil : list(operation));
-            token_in  = token;
-            receiver  = params.receiver;
-            referrer  = params.referrer;
-            amount_in = params.amount_in;
+            s              = s;
+            ops            = (nil : list(operation));
+            last_operation = (None : option(operation));
+            token_in       = token;
+            receiver       = params.receiver;
+            referrer       = params.referrer;
+            amount_in      = params.amount_in;
           ]
         );
 
         assert_with_error(tmp.amount_in >= params.min_amount_out, DexCore.err_high_min_out);
 
         s := tmp.s;
+
+        ops := case tmp.last_operation of
+        | Some(op) -> op # ops
+        | None     -> (failwith(DexCore.err_too_few_swaps) : list(operation))
+        end;
 
         ops := concat_lists(ops, tmp.ops);
 

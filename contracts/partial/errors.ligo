@@ -47,6 +47,7 @@ module DexCore is {
   const err_reentrancy                                : string = "145";
   const err_close_entrypoint_404                      : string = "146";
   const err_not_entered                               : string = "147";
+  const err_too_few_swaps                             : string = "148";
 }
 
 module TezStore is {

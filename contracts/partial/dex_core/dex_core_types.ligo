@@ -100,6 +100,7 @@ type swap_data_t        is [@layout:comb] record [
 type tmp_swap_t         is [@layout:comb] record [
   s                       : storage_t;
   ops                     : list(operation);
+  last_operation          : option(operation);
   token_in                : token_t;
   receiver                : address;
   referrer                : address;

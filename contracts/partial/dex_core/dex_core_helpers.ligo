@@ -201,17 +201,17 @@ function update_fees(
 
 function form_swap_data(
   const pair            : pair_t;
-  const swap            : tokens_t;
+  const tokens          : tokens_t;
   const direction       : swap_direction_t)
                         : swap_data_t is
   block {
     const side_a : swap_side_t = record [
       pool  = pair.token_a_pool;
-      token = swap.token_a;
+      token = tokens.token_a;
     ];
     const side_b : swap_side_t = record [
       pool  = pair.token_b_pool;
-      token = swap.token_b;
+      token = tokens.token_b;
     ];
   } with case direction of
     | A_to_b -> record [
@@ -312,9 +312,9 @@ function swap_internal(
         amt          = out;
       ];
 
-      tmp.ops := get_divest_tez_op(divest_params, unwrap(pair.tez_store, DexCore.err_tez_store_404)) # tmp.ops;
+      tmp.last_operation := Some(get_divest_tez_op(divest_params, unwrap(pair.tez_store, DexCore.err_tez_store_404)));
     }
-    else tmp.ops := transfer_token(Tezos.self_address, tmp.receiver, out, swap.to_.token) # tmp.ops;
+    else tmp.last_operation := Some(transfer_token(Tezos.self_address, tmp.receiver, out, swap.to_.token));
   } with tmp
 
 function get_flash_swaps_proxy_default_entrypoint(

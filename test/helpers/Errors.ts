@@ -47,6 +47,7 @@ export enum DexCore {
   ERR_REENTRANCY = "145",
   ERR_CLOSE_ENTRYPOINT_404 = "146",
   ERR_NOT_ENTERED = "147",
+  ERR_TOO_FEW_SWAPS = "148",
 }
 
 export enum TezStore {
