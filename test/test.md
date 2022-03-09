@@ -200,7 +200,6 @@
    - ✅ should fail if user passed zero amount in;
    - ✅ should fail if user put a wrong route;
    - ✅ should fail if too high price impact;
-   - ❌ should fail if too few swaps;
    - ✅ should swap FA1.2 token to TEZ;
    - ✅ should swap FA2 token to TEZ;
    - ✅ should swap TEZ to FA1.2 token;
@@ -210,7 +209,8 @@
    - ✅ should swap FA2 token to FA1.2 token;
    - ✅ should swap FA2 token to FA2 token;
    - ✅ should fail if pair does not have a liquidity;
-   - ❌ should swap using FA1.2 -> FA2 -> FA1.2 route;
+   - ✅ should swap using FA1.2 -> FA2 -> FA1.2 route;
+   - ✅ should swap using FA1.2 -> FA2 -> FA1.2 -> FA2 route;
    - ❌ should swap using 2-step TEZ/TOK-TOK/TEZ route;
    - ❌ should swap using 2-step TOK/TEZ-TEZ/TOK route.
 
