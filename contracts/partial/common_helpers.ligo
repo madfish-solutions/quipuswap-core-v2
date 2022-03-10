@@ -247,15 +247,28 @@ function unwrap(
   end
 
 function concat_lists(
-  const fst             : list(operation);
-  const snd             : list(operation))
-                        : list(operation) is
+  const lst1            : list(_a);
+  const lst2            : list(_a))
+                        : list(_a) is
   List.fold_right(
     function(
-      const operation   : operation;
-      const operations  : list(operation))
-                        : list(operation) is
-      operation # operations,
-    fst,
-    snd
+      const op          : _a;
+      const lst         : list(_a))
+                        : list(_a) is
+      op # lst,
+    lst1,
+    lst2
+  )
+
+function reverse_list(
+  const lst             : list(_a))
+                        : list(_a) is
+  List.fold(
+    function(
+      const lst         : list(_a);
+      const op          : _a)
+                        : list(_a) is
+      op # lst,
+    lst,
+    (nil : list(_a))
   )

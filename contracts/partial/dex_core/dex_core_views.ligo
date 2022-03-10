@@ -72,13 +72,15 @@
       swap_internal,
       params.swaps,
       record [
-        s              = s.storage;
-        ops            = (nil : list(operation));
-        last_operation = (None : option(operation));
-        token_in       = token;
-        receiver       = Constants.zero_address;
-        referrer       = Constants.zero_address;
-        amount_in      = params.amount_in;
+        s               = s.storage;
+        ops             = (nil : list(operation));
+        last_operation  = (None : option(operation));
+        token_in        = token;
+        receiver        = Constants.zero_address;
+        referrer        = Constants.zero_address;
+        amount_in       = params.amount_in;
+        swaps_list_size = List.size(params.swaps);
+        counter         = 0n;
       ]
     );
   } with tmp.amount_in

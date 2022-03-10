@@ -105,6 +105,8 @@ type tmp_swap_t         is [@layout:comb] record [
   receiver                : address;
   referrer                : address;
   amount_in               : nat;
+  swaps_list_size         : nat;
+  counter                 : nat;
 ]
 
 type swap_direction_t   is

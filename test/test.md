@@ -211,8 +211,9 @@
    - ✅ should fail if pair does not have a liquidity;
    - ✅ should swap using FA1.2 -> FA2 -> FA1.2 route;
    - ✅ should swap using FA1.2 -> FA2 -> FA1.2 -> FA2 route;
-   - ❌ should swap using 2-step TEZ/TOK-TOK/TEZ route;
-   - ❌ should swap using 2-step TOK/TEZ-TEZ/TOK route.
+   - ✅ should swap using TEZ -> FA1.2 -> FA2 -> TEZ route;
+   - ✅ should swap using FA1.2 -> TEZ -> FA2 route;
+   - ✅ should swap using FA1.2 -> TEZ -> FA2 -> FA1.2 -> TEZ -> FA1.2 route.
 
 6. `withdraw_profit`:
 

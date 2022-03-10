@@ -395,17 +395,19 @@ function swap(
         | A_to_b -> tokens.token_a
         | B_to_a -> tokens.token_b
         end;
-        const tmp : tmp_swap_t = List.fold(
+        var tmp : tmp_swap_t := List.fold(
           swap_internal,
           params.swaps,
           record [
-            s              = s;
-            ops            = (nil : list(operation));
-            last_operation = (None : option(operation));
-            token_in       = token;
-            receiver       = params.receiver;
-            referrer       = params.referrer;
-            amount_in      = params.amount_in;
+            s               = s;
+            ops             = (nil : list(operation));
+            last_operation  = (None : option(operation));
+            token_in        = token;
+            receiver        = params.receiver;
+            referrer        = params.referrer;
+            amount_in       = params.amount_in;
+            swaps_list_size = List.size(params.swaps);
+            counter         = 0n;
           ]
         );
 
@@ -418,7 +420,8 @@ function swap(
         | None     -> (failwith(DexCore.err_too_few_swaps) : list(operation))
         end;
 
-        ops := concat_lists(ops, tmp.ops);
+        tmp.ops := reverse_list(tmp.ops);
+        ops := concat_lists(tmp.ops, ops);
 
         if token =/= Tez
         then ops := transfer_token(Tezos.sender, Tezos.self_address, params.amount_in, token) # ops

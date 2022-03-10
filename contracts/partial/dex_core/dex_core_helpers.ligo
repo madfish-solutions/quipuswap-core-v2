@@ -84,8 +84,8 @@ function divest_tez_or_transfer_tokens(
   if token_type = Tez
   then block {
     const divest_params : divest_tez_t = record [
-      receiver     = (get_contract(receiver) : contract(unit));
-      amt          = tokens_divested;
+      receiver = (get_contract(receiver) : contract(unit));
+      amt      = tokens_divested;
     ];
   } with get_divest_tez_op(divest_params, unwrap(tez_store_opt, DexCore.err_tez_store_404))
   else transfer_token(Tezos.self_address, receiver, tokens_divested, token_type)
@@ -291,6 +291,26 @@ function swap_internal(
     tmp.s := s;
     tmp.ops := ops;
 
+    if swap.to_.token = Tez and tmp.counter =/= get_nat_or_fail(tmp.swaps_list_size - 1n)
+    then {
+      const divest_params : divest_tez_t = record [
+        receiver = (get_contract(Tezos.self_address) : contract(unit));
+        amt      = out;
+      ];
+
+      tmp.ops := get_divest_tez_op(divest_params, unwrap(pair.tez_store, DexCore.err_tez_store_404)) # tmp.ops;
+    }
+    else skip;
+
+    if tmp.token_in = Tez and tmp.counter > 0n
+    then {
+      tmp.ops := get_invest_tez_op(
+        tmp.amount_in * 1mutez,
+        unwrap(pair.tez_store, DexCore.err_tez_store_404)
+      ) # tmp.ops;
+    }
+    else skip;
+
     assert_with_error(out <= swap.to_.pool / 3n, DexCore.err_high_out);
 
     swap.to_.pool := get_nat_or_fail(swap.to_.pool - out);
@@ -305,7 +325,7 @@ function swap_internal(
 
     tmp.s.pairs[params.pair_id] := form_pools(swap.from_.pool, swap.to_.pool, updated_pair_1, params.direction);
 
-    if swap.to_.token = Tez
+    if swap.to_.token = Tez and tmp.counter = get_nat_or_fail(tmp.swaps_list_size - 1n)
     then {
       const divest_params : divest_tez_t = record [
         receiver     = (get_contract(tmp.receiver) : contract(unit));
@@ -315,6 +335,8 @@ function swap_internal(
       tmp.last_operation := Some(get_divest_tez_op(divest_params, unwrap(pair.tez_store, DexCore.err_tez_store_404)));
     }
     else tmp.last_operation := Some(transfer_token(Tezos.self_address, tmp.receiver, out, swap.to_.token));
+
+    tmp.counter := tmp.counter + 1n;
   } with tmp
 
 function get_flash_swaps_proxy_default_entrypoint(

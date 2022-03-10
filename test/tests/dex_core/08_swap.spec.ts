@@ -234,6 +234,23 @@ describe("DexCore (swap)", async () => {
 
     await fa12Token3.approve(dexCore.contract.address, launchParams.token_a_in);
     await dexCore.launchExchange(launchParams);
+
+    launchParams = {
+      pair: {
+        token_a: { fa12: fa12Token3.contract.address },
+        token_b: { tez: undefined },
+      },
+      token_a_in: new BigNumber(5_000_000),
+      token_b_in: new BigNumber(5_000_000),
+      shares_receiver: alice.pkh,
+      candidate: bob.pkh,
+    };
+
+    await fa12Token3.approve(dexCore.contract.address, launchParams.token_a_in);
+    await dexCore.launchExchange(
+      launchParams,
+      launchParams.token_b_in.toNumber()
+    );
   });
 
   it("should fail if reentrancy", async () => {
@@ -664,7 +681,7 @@ describe("DexCore (swap)", async () => {
       swaps: [{ direction: { b_to_a: undefined }, pair_id: pairId }],
       receiver: alice.pkh,
       referrer: bob.pkh,
-      amount_in: new BigNumber(200),
+      amount_in: new BigNumber(100),
       min_amount_out: new BigNumber(0),
     };
 
@@ -1714,5 +1731,792 @@ describe("DexCore (swap)", async () => {
     expect(currPair2ToPool).to.be.bignumber.equal(swapResult2.newToPool);
     expect(currPair3FromPool).to.be.bignumber.equal(swapResult3.newFromPool);
     expect(currPair3ToPool).to.be.bignumber.equal(swapResult3.newToPool);
+  });
+
+  it("should swap using TEZ -> FA1.2 -> FA2 -> TEZ route", async () => {
+    const pairIds: BigNumber[] = [
+      new BigNumber(0),
+      new BigNumber(3),
+      new BigNumber(1),
+    ];
+    const token1: Token = { tez: undefined };
+    const token2: Token = { fa12: fa12Token1.contract.address };
+    const token3: Token = {
+      fa2: { token: fa2Token1.contract.address, id: new BigNumber(0) },
+    };
+    const swapParams: Swap = {
+      swaps: [
+        { direction: { b_to_a: undefined }, pair_id: pairIds[0] },
+        { direction: { a_to_b: undefined }, pair_id: pairIds[1] },
+        { direction: { a_to_b: undefined }, pair_id: pairIds[2] },
+      ],
+      receiver: bob.pkh,
+      referrer: bob.pkh,
+      amount_in: new BigNumber(100),
+      min_amount_out: new BigNumber(0),
+    };
+
+    await dexCore.updateStorage({
+      pairs: pairIds,
+    });
+    await fa12Token1.updateStorage({
+      ledger: [alice.pkh, dexCore.contract.address],
+    });
+    await fa2Token1.updateStorage({
+      account_info: [alice.pkh, dexCore.contract.address],
+    });
+
+    const prevDexCoreTok1Balance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.contract.address
+    );
+    const prevTezStore1TezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[pairIds[0].toFixed()].tez_store
+    );
+    const prevAliceTok2Balance: BigNumber = fa12Token1.getBalance(alice.pkh);
+    const prevDexCoreTok2Balance: BigNumber = fa12Token1.getBalance(
+      dexCore.contract.address
+    );
+    const prevAliceTok3Balance: BigNumber = await fa2Token1.getBalance(
+      alice.pkh
+    );
+    const prevDexCoreTok3Balance: BigNumber = await fa2Token1.getBalance(
+      dexCore.contract.address
+    );
+    const prevBobTok4Balance: BigNumber = await utils.tezos.tz.getBalance(
+      swapParams.receiver
+    );
+    const prevDexCoreTok4Balance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.contract.address
+    );
+    const prevTezStore4TezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[pairIds[2].toFixed()].tez_store
+    );
+
+    await dexCore.updateStorage({
+      interface_tez_fee: [[pairIds[0], swapParams.referrer]],
+      auction_tez_fee: [pairIds[0]],
+    });
+
+    const prevTok1InterfaceFee: BigNumber =
+      dexCore.storage.storage.interface_tez_fee[
+        `${pairIds[0]},${swapParams.referrer}`
+      ];
+    const prevTok1AuctionFee: BigNumber =
+      dexCore.storage.storage.auction_tez_fee[pairIds[0].toString()];
+
+    await dexCore.updateStorage({
+      interface_fee: [[token2, swapParams.referrer]],
+      auction_fee: [token2],
+    });
+
+    const prevTok2InterfaceFee: BigNumber =
+      dexCore.storage.storage.interface_fee[
+        `${token2.toString()},${swapParams.referrer}`
+      ];
+    const prevTok2AuctionFee: BigNumber =
+      dexCore.storage.storage.auction_fee[token2.toString()];
+
+    await dexCore.updateStorage({
+      pairs: pairIds,
+      interface_fee: [[token3, swapParams.referrer]],
+      auction_fee: [token3],
+    });
+
+    const prevTok3InterfaceFee: BigNumber =
+      dexCore.storage.storage.interface_fee[
+        `${token3.toString()},${swapParams.referrer}`
+      ] || new BigNumber(0);
+    const prevTok3AuctionFee: BigNumber =
+      dexCore.storage.storage.auction_fee[token3.toString()] ||
+      new BigNumber(0);
+    const prevFromPool1: BigNumber =
+      dexCore.storage.storage.pairs[pairIds[0].toFixed()].token_b_pool;
+    const prevFromPool2: BigNumber =
+      dexCore.storage.storage.pairs[pairIds[1].toFixed()].token_a_pool;
+    const prevFromPool3: BigNumber =
+      dexCore.storage.storage.pairs[pairIds[2].toFixed()].token_a_pool;
+    const prevToPool1: BigNumber =
+      dexCore.storage.storage.pairs[pairIds[0].toFixed()].token_a_pool;
+    const prevToPool2: BigNumber =
+      dexCore.storage.storage.pairs[pairIds[1].toFixed()].token_b_pool;
+    const prevToPool3: BigNumber =
+      dexCore.storage.storage.pairs[pairIds[2].toFixed()].token_b_pool;
+
+    await dexCore.swap(swapParams, swapParams.amount_in.toNumber());
+    await dexCore.updateStorage({
+      pairs: pairIds,
+    });
+    await fa12Token1.updateStorage({
+      ledger: [alice.pkh, dexCore.contract.address],
+    });
+    await fa2Token1.updateStorage({
+      account_info: [alice.pkh, dexCore.contract.address],
+    });
+
+    const currDexCoreTok1Balance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.contract.address
+    );
+    const currTezStore1TezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[pairIds[0].toFixed()].tez_store
+    );
+    const currAliceTok2Balance: BigNumber = fa12Token1.getBalance(alice.pkh);
+    const currDexCoreTok2Balance: BigNumber = fa12Token1.getBalance(
+      dexCore.contract.address
+    );
+    const currAliceTok3Balance: BigNumber = await fa2Token1.getBalance(
+      alice.pkh
+    );
+    const currDexCoreTok3Balance: BigNumber = await fa2Token1.getBalance(
+      dexCore.contract.address
+    );
+    const currBobTok4Balance: BigNumber = await utils.tezos.tz.getBalance(
+      swapParams.receiver
+    );
+    const currDexCoreTok4Balance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.contract.address
+    );
+    const currTezStore4TezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[pairIds[2].toFixed()].tez_store
+    );
+
+    await dexCore.updateStorage({
+      interface_tez_fee: [[pairIds[0], swapParams.referrer]],
+      auction_tez_fee: [pairIds[0]],
+    });
+
+    const swapResult1: CalculateSwap = DexCore.calculateSwap(
+      dexCore.storage.storage.fees,
+      swapParams.amount_in,
+      prevFromPool1,
+      prevToPool1
+    );
+    const swapResult2: CalculateSwap = DexCore.calculateSwap(
+      dexCore.storage.storage.fees,
+      swapResult1.out,
+      prevFromPool2,
+      prevToPool2
+    );
+    const swapResult3: CalculateSwap = DexCore.calculateSwap(
+      dexCore.storage.storage.fees,
+      swapResult2.out,
+      prevFromPool3,
+      prevToPool3
+    );
+
+    expect(currDexCoreTok1Balance).to.be.bignumber.equal(
+      prevDexCoreTok1Balance
+    );
+    expect(currTezStore1TezBalance).to.be.bignumber.equal(
+      prevTezStore1TezBalance.plus(swapParams.amount_in)
+    );
+    expect(currAliceTok2Balance).to.be.bignumber.equal(prevAliceTok2Balance);
+    expect(currDexCoreTok2Balance).to.be.bignumber.equal(
+      prevDexCoreTok2Balance
+    );
+    expect(currAliceTok3Balance).to.be.bignumber.equal(prevAliceTok3Balance);
+    expect(currDexCoreTok3Balance).to.be.bignumber.equal(
+      prevDexCoreTok3Balance
+    );
+    expect(currBobTok4Balance).to.be.bignumber.equal(
+      prevBobTok4Balance.plus(swapResult3.out)
+    );
+    expect(currDexCoreTok4Balance).to.be.bignumber.equal(
+      prevDexCoreTok4Balance
+    );
+    expect(currTezStore4TezBalance).to.be.bignumber.equal(
+      prevTezStore4TezBalance.minus(swapResult3.out)
+    );
+
+    const currTok1InterfaceFee: BigNumber =
+      dexCore.storage.storage.interface_tez_fee[
+        `${pairIds[0]},${swapParams.referrer}`
+      ];
+    const currTok1AuctionFee: BigNumber =
+      dexCore.storage.storage.auction_tez_fee[pairIds[0].toString()];
+
+    await dexCore.updateStorage({
+      interface_fee: [[token2, swapParams.referrer]],
+      auction_fee: [token2],
+    });
+
+    const currTok2InterfaceFee: BigNumber =
+      dexCore.storage.storage.interface_fee[
+        `${token2.toString()},${swapParams.referrer}`
+      ];
+    const currTok2AuctionFee: BigNumber =
+      dexCore.storage.storage.auction_fee[token2.toString()];
+
+    await dexCore.updateStorage({
+      pairs: pairIds,
+      interface_fee: [[token3, swapParams.referrer]],
+      auction_fee: [token3],
+    });
+
+    const currTok3InterfaceFee: BigNumber =
+      dexCore.storage.storage.interface_fee[
+        `${token3.toString()},${swapParams.referrer}`
+      ];
+    const currTok3AuctionFee: BigNumber =
+      dexCore.storage.storage.auction_fee[token3.toString()];
+    const currPair1FromPool: BigNumber =
+      dexCore.storage.storage.pairs[pairIds[0].toFixed()].token_b_pool;
+    const currPair1ToPool: BigNumber =
+      dexCore.storage.storage.pairs[pairIds[0].toFixed()].token_a_pool;
+    const currPair2FromPool: BigNumber =
+      dexCore.storage.storage.pairs[pairIds[1].toFixed()].token_a_pool;
+    const currPair2ToPool: BigNumber =
+      dexCore.storage.storage.pairs[pairIds[1].toFixed()].token_b_pool;
+    const currPair3FromPool: BigNumber =
+      dexCore.storage.storage.pairs[pairIds[2].toFixed()].token_a_pool;
+    const currPair3ToPool: BigNumber =
+      dexCore.storage.storage.pairs[pairIds[2].toFixed()].token_b_pool;
+
+    expect(currTok1InterfaceFee).to.be.bignumber.equal(
+      prevTok1InterfaceFee.plus(swapResult1.interfaceFee)
+    );
+    expect(currTok2InterfaceFee).to.be.bignumber.equal(
+      prevTok2InterfaceFee.plus(swapResult2.interfaceFee)
+    );
+    expect(currTok3InterfaceFee).to.be.bignumber.equal(
+      prevTok3InterfaceFee.plus(swapResult3.interfaceFee)
+    );
+    expect(currTok1AuctionFee).to.be.bignumber.equal(
+      prevTok1AuctionFee.plus(swapResult1.auctionFee)
+    );
+    expect(currTok2AuctionFee).to.be.bignumber.equal(
+      prevTok2AuctionFee.plus(swapResult2.auctionFee)
+    );
+    expect(currTok3AuctionFee).to.be.bignumber.equal(
+      prevTok3AuctionFee.plus(swapResult3.auctionFee)
+    );
+    expect(currPair1FromPool).to.be.bignumber.equal(swapResult1.newFromPool);
+    expect(currPair1ToPool).to.be.bignumber.equal(swapResult1.newToPool);
+    expect(currPair2FromPool).to.be.bignumber.equal(swapResult2.newFromPool);
+    expect(currPair2ToPool).to.be.bignumber.equal(swapResult2.newToPool);
+    expect(currPair3FromPool).to.be.bignumber.equal(swapResult3.newFromPool);
+    expect(currPair3ToPool).to.be.bignumber.equal(swapResult3.newToPool);
+  });
+
+  it("should swap using FA1.2 -> TEZ -> FA2 route", async () => {
+    const pairIds: BigNumber[] = [new BigNumber(0), new BigNumber(1)];
+    const token1: Token = { fa12: fa12Token1.contract.address };
+    const token2: Token = { tez: undefined };
+    const swapParams: Swap = {
+      swaps: [
+        { direction: { a_to_b: undefined }, pair_id: pairIds[0] },
+        { direction: { b_to_a: undefined }, pair_id: pairIds[1] },
+      ],
+      receiver: alice.pkh,
+      referrer: bob.pkh,
+      amount_in: new BigNumber(100),
+      min_amount_out: new BigNumber(0),
+    };
+
+    await dexCore.updateStorage({
+      pairs: pairIds,
+    });
+    await fa12Token1.updateStorage({
+      ledger: [alice.pkh, dexCore.contract.address],
+    });
+    await fa2Token1.updateStorage({
+      account_info: [alice.pkh, dexCore.contract.address],
+    });
+
+    const prevAliceTok1Balance: BigNumber = fa12Token1.getBalance(alice.pkh);
+    const prevDexCoreTok1Balance: BigNumber = fa12Token1.getBalance(
+      dexCore.contract.address
+    );
+    const prevDexCoreTok2Balance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.contract.address
+    );
+    const prevTezStore1TezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[pairIds[0].toFixed()].tez_store
+    );
+    const prevTezStore2TezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[pairIds[1].toFixed()].tez_store
+    );
+    const prevAliceTok3Balance: BigNumber = await fa2Token1.getBalance(
+      alice.pkh
+    );
+    const prevDexCoreTok3Balance: BigNumber = await fa2Token1.getBalance(
+      dexCore.contract.address
+    );
+
+    await dexCore.updateStorage({
+      interface_fee: [[token1, swapParams.referrer]],
+      auction_fee: [token1],
+    });
+
+    const prevTok1InterfaceFee: BigNumber =
+      dexCore.storage.storage.interface_fee[`${token1},${swapParams.referrer}`];
+    const prevTok1AuctionFee: BigNumber =
+      dexCore.storage.storage.auction_fee[token1.toString()];
+
+    await dexCore.updateStorage({
+      pairs: pairIds,
+      interface_tez_fee: [[pairIds[1], swapParams.referrer]],
+      auction_tez_fee: [pairIds[1]],
+    });
+
+    const prevTok2InterfaceFee: BigNumber =
+      dexCore.storage.storage.interface_tez_fee[
+        `${pairIds[1]},${swapParams.referrer}`
+      ];
+    const prevTok2AuctionFee: BigNumber =
+      dexCore.storage.storage.auction_tez_fee[pairIds[1].toString()];
+
+    const prevFromPool1: BigNumber =
+      dexCore.storage.storage.pairs[pairIds[0].toFixed()].token_a_pool;
+    const prevFromPool2: BigNumber =
+      dexCore.storage.storage.pairs[pairIds[1].toFixed()].token_b_pool;
+    const prevToPool1: BigNumber =
+      dexCore.storage.storage.pairs[pairIds[0].toFixed()].token_b_pool;
+    const prevToPool2: BigNumber =
+      dexCore.storage.storage.pairs[pairIds[1].toFixed()].token_a_pool;
+
+    await fa12Token1.approve(dexCore.contract.address, swapParams.amount_in);
+    await dexCore.swap(swapParams);
+    await dexCore.updateStorage({
+      pairs: pairIds,
+    });
+    await fa12Token1.updateStorage({
+      ledger: [alice.pkh, dexCore.contract.address],
+    });
+    await fa2Token1.updateStorage({
+      account_info: [alice.pkh, dexCore.contract.address],
+    });
+
+    const currAliceTok1Balance: BigNumber = fa12Token1.getBalance(alice.pkh);
+    const currDexCoreTok1Balance: BigNumber = fa12Token1.getBalance(
+      dexCore.contract.address
+    );
+    const currDexCoreTok2Balance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.contract.address
+    );
+    const currTezStore1TezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[pairIds[0].toFixed()].tez_store
+    );
+    const currTezStore2TezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[pairIds[1].toFixed()].tez_store
+    );
+    const currAliceTok3Balance: BigNumber = await fa2Token1.getBalance(
+      alice.pkh
+    );
+    const currDexCoreTok3Balance: BigNumber = await fa2Token1.getBalance(
+      dexCore.contract.address
+    );
+
+    await dexCore.updateStorage({
+      interface_fee: [[token1, swapParams.referrer]],
+      auction_fee: [token1],
+    });
+
+    const swapResult1: CalculateSwap = DexCore.calculateSwap(
+      dexCore.storage.storage.fees,
+      swapParams.amount_in,
+      prevFromPool1,
+      prevToPool1
+    );
+    const swapResult2: CalculateSwap = DexCore.calculateSwap(
+      dexCore.storage.storage.fees,
+      swapResult1.out,
+      prevFromPool2,
+      prevToPool2
+    );
+
+    expect(currAliceTok1Balance).to.be.bignumber.equal(
+      prevAliceTok1Balance.minus(swapParams.amount_in)
+    );
+    expect(currDexCoreTok1Balance).to.be.bignumber.equal(
+      prevDexCoreTok1Balance.plus(swapParams.amount_in)
+    );
+    expect(currDexCoreTok2Balance).to.be.bignumber.equal(
+      prevDexCoreTok2Balance
+    );
+    expect(currTezStore1TezBalance).to.be.bignumber.equal(
+      prevTezStore1TezBalance.minus(swapResult1.out)
+    );
+    expect(currTezStore2TezBalance).to.be.bignumber.equal(
+      prevTezStore2TezBalance.plus(swapResult1.out)
+    );
+    expect(currAliceTok3Balance).to.be.bignumber.equal(
+      prevAliceTok3Balance.plus(swapResult2.out)
+    );
+    expect(currDexCoreTok3Balance).to.be.bignumber.equal(
+      prevDexCoreTok3Balance.minus(swapResult2.out)
+    );
+
+    const currTok1InterfaceFee: BigNumber =
+      dexCore.storage.storage.interface_fee[`${token2},${swapParams.referrer}`];
+    const currTok1AuctionFee: BigNumber =
+      dexCore.storage.storage.auction_fee[token2.toString()];
+
+    await dexCore.updateStorage({
+      pairs: pairIds,
+      interface_tez_fee: [[pairIds[1], swapParams.referrer]],
+      auction_tez_fee: [pairIds[1]],
+    });
+
+    const currTok2InterfaceFee: BigNumber =
+      dexCore.storage.storage.interface_tez_fee[
+        `${pairIds[1]},${swapParams.referrer}`
+      ];
+    const currTok2AuctionFee: BigNumber =
+      dexCore.storage.storage.auction_tez_fee[pairIds[1].toString()];
+
+    const currPair1FromPool: BigNumber =
+      dexCore.storage.storage.pairs[pairIds[0].toFixed()].token_a_pool;
+    const currPair1ToPool: BigNumber =
+      dexCore.storage.storage.pairs[pairIds[0].toFixed()].token_b_pool;
+    const currPair2FromPool: BigNumber =
+      dexCore.storage.storage.pairs[pairIds[1].toFixed()].token_b_pool;
+    const currPair2ToPool: BigNumber =
+      dexCore.storage.storage.pairs[pairIds[1].toFixed()].token_a_pool;
+
+    expect(currTok1InterfaceFee).to.be.bignumber.equal(
+      prevTok1InterfaceFee.plus(swapResult1.interfaceFee)
+    );
+    expect(currTok2InterfaceFee).to.be.bignumber.equal(
+      prevTok2InterfaceFee.plus(swapResult2.interfaceFee)
+    );
+    expect(currTok1AuctionFee).to.be.bignumber.equal(
+      prevTok1AuctionFee.plus(swapResult1.auctionFee)
+    );
+    expect(currTok2AuctionFee).to.be.bignumber.equal(
+      prevTok2AuctionFee.plus(swapResult2.auctionFee)
+    );
+    expect(currPair1FromPool).to.be.bignumber.equal(swapResult1.newFromPool);
+    expect(currPair1ToPool).to.be.bignumber.equal(swapResult1.newToPool);
+    expect(currPair2FromPool).to.be.bignumber.equal(swapResult2.newFromPool);
+    expect(currPair2ToPool).to.be.bignumber.equal(swapResult2.newToPool);
+  });
+
+  it("should swap using FA1.2 -> TEZ -> FA2 -> FA1.2 -> TEZ -> FA1.2 route", async () => {
+    const pairIds: BigNumber[] = [
+      new BigNumber(0),
+      new BigNumber(1),
+      new BigNumber(3),
+      new BigNumber(0),
+      new BigNumber(7),
+    ];
+    const token1: Token = { fa12: fa12Token1.contract.address };
+    const token2: Token = {
+      fa2: { token: fa2Token1.contract.address, id: new BigNumber(0) },
+    };
+    const swapParams: Swap = {
+      swaps: [
+        { direction: { a_to_b: undefined }, pair_id: pairIds[0] },
+        { direction: { b_to_a: undefined }, pair_id: pairIds[1] },
+        { direction: { b_to_a: undefined }, pair_id: pairIds[2] },
+        { direction: { a_to_b: undefined }, pair_id: pairIds[3] },
+        { direction: { b_to_a: undefined }, pair_id: pairIds[4] },
+      ],
+      receiver: alice.pkh,
+      referrer: bob.pkh,
+      amount_in: new BigNumber(100),
+      min_amount_out: new BigNumber(0),
+    };
+
+    await dexCore.updateStorage({
+      pairs: pairIds,
+    });
+    await fa12Token1.updateStorage({
+      ledger: [alice.pkh, dexCore.contract.address],
+    });
+    await fa12Token3.updateStorage({
+      ledger: [alice.pkh, dexCore.contract.address],
+    });
+    await fa2Token1.updateStorage({
+      account_info: [alice.pkh, dexCore.contract.address],
+    });
+
+    const prevAliceTok1Balance: BigNumber = fa12Token1.getBalance(alice.pkh);
+    const prevDexCoreTok1Balance: BigNumber = fa12Token1.getBalance(
+      dexCore.contract.address
+    );
+    const prevDexCoreTok2Balance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.contract.address
+    );
+    const prevTezStore1TezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[pairIds[0].toFixed()].tez_store
+    );
+    const prevTezStore2TezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[pairIds[1].toFixed()].tez_store
+    );
+    const prevTezStore3TezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[pairIds[4].toFixed()].tez_store
+    );
+    const prevAliceTok3Balance: BigNumber = await fa2Token1.getBalance(
+      alice.pkh
+    );
+    const prevDexCoreTok3Balance: BigNumber = await fa2Token1.getBalance(
+      dexCore.contract.address
+    );
+    const prevAliceTok4Balance: BigNumber = fa12Token3.getBalance(alice.pkh);
+    const prevDexCoreTok4Balance: BigNumber = fa12Token3.getBalance(
+      dexCore.contract.address
+    );
+
+    await dexCore.updateStorage({
+      interface_fee: [[token1, swapParams.referrer]],
+      auction_fee: [token1],
+    });
+
+    const prevTok1InterfaceFee: BigNumber =
+      dexCore.storage.storage.interface_fee[`${token1},${swapParams.referrer}`];
+    const prevTok1AuctionFee: BigNumber =
+      dexCore.storage.storage.auction_fee[token1.toString()];
+
+    await dexCore.updateStorage({
+      interface_tez_fee: [[pairIds[1], swapParams.referrer]],
+      auction_tez_fee: [pairIds[1]],
+    });
+
+    const prevTok2InterfaceFee: BigNumber =
+      dexCore.storage.storage.interface_tez_fee[
+        `${pairIds[1]},${swapParams.referrer}`
+      ];
+    const prevTok2AuctionFee: BigNumber =
+      dexCore.storage.storage.auction_tez_fee[pairIds[1].toString()];
+
+    await dexCore.updateStorage({
+      interface_fee: [[token2, swapParams.referrer]],
+      auction_fee: [token2],
+    });
+
+    const prevTok3InterfaceFee: BigNumber =
+      dexCore.storage.storage.interface_fee[`${token2},${swapParams.referrer}`];
+    const prevTok3AuctionFee: BigNumber =
+      dexCore.storage.storage.auction_fee[token2.toString()];
+
+    await dexCore.updateStorage({
+      pairs: pairIds,
+      interface_tez_fee: [[pairIds[4], swapParams.referrer]],
+      auction_tez_fee: [pairIds[4]],
+    });
+
+    const prevTok4InterfaceFee: BigNumber =
+      dexCore.storage.storage.interface_tez_fee[
+        `${pairIds[4]},${swapParams.referrer}`
+      ] || new BigNumber(0);
+    const prevTok4AuctionFee: BigNumber =
+      dexCore.storage.storage.auction_tez_fee[pairIds[4].toString()] ||
+      new BigNumber(0);
+    const prevFromPool1: BigNumber =
+      dexCore.storage.storage.pairs[pairIds[0].toFixed()].token_a_pool;
+    const prevToPool1: BigNumber =
+      dexCore.storage.storage.pairs[pairIds[0].toFixed()].token_b_pool;
+    const prevFromPool2: BigNumber =
+      dexCore.storage.storage.pairs[pairIds[1].toFixed()].token_b_pool;
+    const prevToPool2: BigNumber =
+      dexCore.storage.storage.pairs[pairIds[1].toFixed()].token_a_pool;
+    const prevFromPool3: BigNumber =
+      dexCore.storage.storage.pairs[pairIds[2].toFixed()].token_b_pool;
+    const prevToPool3: BigNumber =
+      dexCore.storage.storage.pairs[pairIds[2].toFixed()].token_a_pool;
+    const prevFromPool4: BigNumber =
+      dexCore.storage.storage.pairs[pairIds[4].toFixed()].token_b_pool;
+    const prevToPool4: BigNumber =
+      dexCore.storage.storage.pairs[pairIds[4].toFixed()].token_a_pool;
+
+    await fa12Token1.approve(dexCore.contract.address, swapParams.amount_in);
+    await dexCore.swap(swapParams);
+    await dexCore.updateStorage({
+      pairs: pairIds,
+    });
+    await fa12Token1.updateStorage({
+      ledger: [alice.pkh, dexCore.contract.address],
+    });
+    await fa12Token3.updateStorage({
+      ledger: [alice.pkh, dexCore.contract.address],
+    });
+    await fa2Token1.updateStorage({
+      account_info: [alice.pkh, dexCore.contract.address],
+    });
+
+    const currAliceTok1Balance: BigNumber = fa12Token1.getBalance(alice.pkh);
+    const currDexCoreTok1Balance: BigNumber = fa12Token1.getBalance(
+      dexCore.contract.address
+    );
+    const currDexCoreTok2Balance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.contract.address
+    );
+    const currTezStore1TezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[pairIds[0].toFixed()].tez_store
+    );
+    const currTezStore2TezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[pairIds[1].toFixed()].tez_store
+    );
+    const currTezStore3TezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[pairIds[4].toFixed()].tez_store
+    );
+    const currAliceTok3Balance: BigNumber = await fa2Token1.getBalance(
+      alice.pkh
+    );
+    const currDexCoreTok3Balance: BigNumber = await fa2Token1.getBalance(
+      dexCore.contract.address
+    );
+    const currAliceTok4Balance: BigNumber = fa12Token3.getBalance(alice.pkh);
+    const currDexCoreTok4Balance: BigNumber = fa12Token3.getBalance(
+      dexCore.contract.address
+    );
+
+    await dexCore.updateStorage({
+      interface_fee: [[token1, swapParams.referrer]],
+      auction_fee: [token1],
+    });
+
+    const swapResult1: CalculateSwap = DexCore.calculateSwap(
+      dexCore.storage.storage.fees,
+      swapParams.amount_in,
+      prevFromPool1,
+      prevToPool1
+    );
+    const swapResult2: CalculateSwap = DexCore.calculateSwap(
+      dexCore.storage.storage.fees,
+      swapResult1.out,
+      prevFromPool2,
+      prevToPool2
+    );
+    const swapResult3: CalculateSwap = DexCore.calculateSwap(
+      dexCore.storage.storage.fees,
+      swapResult2.out,
+      prevFromPool3,
+      prevToPool3
+    );
+    const swapResult4: CalculateSwap = DexCore.calculateSwap(
+      dexCore.storage.storage.fees,
+      swapResult3.out,
+      swapResult1.newFromPool,
+      swapResult1.newToPool
+    );
+    const swapResult5: CalculateSwap = DexCore.calculateSwap(
+      dexCore.storage.storage.fees,
+      swapResult4.out,
+      prevFromPool4,
+      prevToPool4
+    );
+
+    expect(currAliceTok1Balance).to.be.bignumber.equal(
+      prevAliceTok1Balance.minus(swapParams.amount_in)
+    );
+    expect(currDexCoreTok1Balance).to.be.bignumber.equal(
+      prevDexCoreTok1Balance.plus(swapParams.amount_in)
+    );
+    expect(currDexCoreTok2Balance).to.be.bignumber.equal(
+      prevDexCoreTok2Balance
+    );
+    expect(currTezStore1TezBalance).to.be.bignumber.equal(
+      prevTezStore1TezBalance.minus(swapResult1.out).minus(swapResult4.out)
+    );
+    expect(currTezStore2TezBalance).to.be.bignumber.equal(
+      prevTezStore2TezBalance.plus(swapResult1.out)
+    );
+    expect(currTezStore3TezBalance).to.be.bignumber.equal(
+      prevTezStore3TezBalance.plus(swapResult4.out)
+    );
+    expect(currAliceTok3Balance).to.be.bignumber.equal(prevAliceTok3Balance);
+    expect(currDexCoreTok3Balance).to.be.bignumber.equal(
+      prevDexCoreTok3Balance
+    );
+    expect(currAliceTok4Balance).to.be.bignumber.equal(
+      prevAliceTok4Balance.plus(swapResult5.out)
+    );
+    expect(currDexCoreTok4Balance).to.be.bignumber.equal(
+      prevDexCoreTok4Balance.minus(swapResult5.out)
+    );
+
+    const currTok1InterfaceFee: BigNumber =
+      dexCore.storage.storage.interface_fee[`${token1},${swapParams.referrer}`];
+    const currTok1AuctionFee: BigNumber =
+      dexCore.storage.storage.auction_fee[token1.toString()];
+
+    await dexCore.updateStorage({
+      interface_tez_fee: [[pairIds[1], swapParams.referrer]],
+      auction_tez_fee: [pairIds[1]],
+    });
+
+    const currTok2InterfaceFee: BigNumber =
+      dexCore.storage.storage.interface_tez_fee[
+        `${pairIds[1]},${swapParams.referrer}`
+      ];
+    const currTok2AuctionFee: BigNumber =
+      dexCore.storage.storage.auction_tez_fee[pairIds[1].toString()];
+
+    await dexCore.updateStorage({
+      interface_fee: [[token2, swapParams.referrer]],
+      auction_fee: [token2],
+    });
+
+    const currTok3InterfaceFee: BigNumber =
+      dexCore.storage.storage.interface_fee[`${token2},${swapParams.referrer}`];
+    const currTok3AuctionFee: BigNumber =
+      dexCore.storage.storage.auction_fee[token2.toString()];
+
+    await dexCore.updateStorage({
+      pairs: pairIds,
+      interface_tez_fee: [[pairIds[4], swapParams.referrer]],
+      auction_tez_fee: [pairIds[4]],
+    });
+
+    const currTok4InterfaceFee: BigNumber =
+      dexCore.storage.storage.interface_tez_fee[
+        `${pairIds[4]},${swapParams.referrer}`
+      ];
+    const currTok4AuctionFee: BigNumber =
+      dexCore.storage.storage.auction_tez_fee[pairIds[4].toString()];
+    const currPair1FromPool: BigNumber =
+      dexCore.storage.storage.pairs[pairIds[0].toFixed()].token_a_pool;
+    const currPair1ToPool: BigNumber =
+      dexCore.storage.storage.pairs[pairIds[0].toFixed()].token_b_pool;
+    const currPair2FromPool: BigNumber =
+      dexCore.storage.storage.pairs[pairIds[1].toFixed()].token_b_pool;
+    const currPair2ToPool: BigNumber =
+      dexCore.storage.storage.pairs[pairIds[1].toFixed()].token_a_pool;
+    const currPair3FromPool: BigNumber =
+      dexCore.storage.storage.pairs[pairIds[2].toFixed()].token_b_pool;
+    const currPair3ToPool: BigNumber =
+      dexCore.storage.storage.pairs[pairIds[2].toFixed()].token_a_pool;
+    const currPair4FromPool: BigNumber =
+      dexCore.storage.storage.pairs[pairIds[4].toFixed()].token_b_pool;
+    const currPair4ToPool: BigNumber =
+      dexCore.storage.storage.pairs[pairIds[4].toFixed()].token_a_pool;
+
+    expect(currTok1InterfaceFee).to.be.bignumber.equal(
+      prevTok1InterfaceFee
+        .plus(swapResult1.interfaceFee)
+        .plus(swapResult4.interfaceFee)
+    );
+    expect(currTok2InterfaceFee).to.be.bignumber.equal(
+      prevTok2InterfaceFee.plus(swapResult2.interfaceFee)
+    );
+    expect(currTok3InterfaceFee).to.be.bignumber.equal(
+      prevTok3InterfaceFee.plus(swapResult3.interfaceFee)
+    );
+    expect(currTok4InterfaceFee).to.be.bignumber.equal(
+      prevTok4InterfaceFee.plus(swapResult5.interfaceFee)
+    );
+    expect(currTok1AuctionFee).to.be.bignumber.equal(
+      prevTok1AuctionFee
+        .plus(swapResult1.auctionFee)
+        .plus(swapResult4.auctionFee)
+    );
+    expect(currTok2AuctionFee).to.be.bignumber.equal(
+      prevTok2AuctionFee.plus(swapResult2.auctionFee)
+    );
+    expect(currTok3AuctionFee).to.be.bignumber.equal(
+      prevTok3AuctionFee.plus(swapResult3.auctionFee)
+    );
+    expect(currTok4AuctionFee).to.be.bignumber.equal(
+      prevTok4AuctionFee.plus(swapResult5.auctionFee)
+    );
+    expect(currPair1FromPool).to.be.bignumber.equal(swapResult4.newFromPool);
+    expect(currPair1ToPool).to.be.bignumber.equal(swapResult4.newToPool);
+    expect(currPair2FromPool).to.be.bignumber.equal(swapResult2.newFromPool);
+    expect(currPair2ToPool).to.be.bignumber.equal(swapResult2.newToPool);
+    expect(currPair3FromPool).to.be.bignumber.equal(swapResult3.newFromPool);
+    expect(currPair3ToPool).to.be.bignumber.equal(swapResult3.newToPool);
+    expect(currPair4FromPool).to.be.bignumber.equal(swapResult5.newFromPool);
+    expect(currPair4ToPool).to.be.bignumber.equal(swapResult5.newToPool);
   });
 });
