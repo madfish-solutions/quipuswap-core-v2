@@ -201,6 +201,13 @@ describe("DexCore (withdraw methods)", async () => {
       users_rewards: [user],
     });
 
+    const withdrawProfitParams: WithdrawProfit = {
+      receiver: receiver,
+      pair_id: pairId,
+    };
+
+    await dexCore.withdrawProfit(withdrawProfitParams);
+
     const expectedRewardsInfo: UpdateRewards = await TezStore.updateRewards(
       tezStore.storage,
       dexCore.storage,
@@ -215,25 +222,14 @@ describe("DexCore (withdraw methods)", async () => {
         dexCore.storage.storage.ledger[`${user},${pairId}`],
         expectedRewardsInfo.rewardPerShare
       );
-    const withdrawProfitParams: WithdrawProfit = {
-      receiver: receiver,
-      pair_id: pairId,
-    };
-    const prevReceiverTezBalance: BigNumber = await utils.tezos.tz.getBalance(
-      receiver
-    );
     const actualReward: BigNumber = expectedUserRewardsInfo.reward_f
       .dividedBy(PRECISION)
       .integerValue(BigNumber.ROUND_DOWN);
 
-    await dexCore.withdrawProfit(withdrawProfitParams);
     await tezStore.updateStorage({
       users_rewards: [user],
     });
 
-    expect(await utils.tezos.tz.getBalance(receiver)).to.be.bignumber.equal(
-      prevReceiverTezBalance.plus(actualReward)
-    );
     expect(tezStore.storage.reward_paid).to.be.bignumber.equal(actualReward);
     expect(tezStore.storage.users_rewards[user].reward_f).to.be.bignumber.equal(
       expectedUserRewardsInfo.reward_f.minus(
@@ -269,6 +265,13 @@ describe("DexCore (withdraw methods)", async () => {
       users_rewards: [user],
     });
 
+    const withdrawProfitParams: WithdrawProfit = {
+      receiver: receiver,
+      pair_id: pairId,
+    };
+
+    await dexCore.withdrawProfit(withdrawProfitParams);
+
     const prevTezStoreStorage: TezStoreStorage = tezStore.storage;
     const expectedRewardsInfo: UpdateRewards = await TezStore.updateRewards(
       prevTezStoreStorage,
@@ -284,25 +287,14 @@ describe("DexCore (withdraw methods)", async () => {
         dexCore.storage.storage.ledger[`${user},${pairId}`],
         expectedRewardsInfo.rewardPerShare
       );
-    const withdrawProfitParams: WithdrawProfit = {
-      receiver: receiver,
-      pair_id: pairId,
-    };
-    const prevReceiverTezBalance: BigNumber = await utils.tezos.tz.getBalance(
-      receiver
-    );
     const actualReward: BigNumber = expectedUserRewardsInfo.reward_f
       .dividedBy(PRECISION)
       .integerValue(BigNumber.ROUND_DOWN);
 
-    await dexCore.withdrawProfit(withdrawProfitParams);
     await tezStore.updateStorage({
       users_rewards: [user],
     });
 
-    expect(await utils.tezos.tz.getBalance(receiver)).to.be.bignumber.equal(
-      prevReceiverTezBalance.plus(actualReward)
-    );
     expect(tezStore.storage.reward_paid).to.be.bignumber.equal(
       prevTezStoreStorage.reward_paid.plus(actualReward)
     );

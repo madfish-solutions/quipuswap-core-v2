@@ -1,3 +1,3 @@
-const agent : address = ("KT1G4MoCYgueEowFNshzywHC1gfc7Wp595DV" : address);
-const token1 : token_t = Fa12(("KT1PXFwcdPXDfHzsuzudPXxezicPc9xr9JhJ" : address));
-const token2 : token_t = Fa12(("KT1Q1HHw3nEcNNN36dPRHGGgpdiYWbdSFwpK" : address));
+const agent : address = ("KT1NXUV8xj7oMM671YijMnrAfZTBTLPFoVw6" : address);
+const token1 : token_t = Fa12(("KT1Wemu8j2FWvMidiyAJjHPJRdd9NWDLJGjH" : address));
+const token2 : token_t = Fa12(("KT1VnDaMx7mMaR8RunuadvRg4ijWwWo1EfjR" : address));

@@ -22,7 +22,7 @@ import fs from "fs";
 
 chai.use(require("chai-bignumber")(BigNumber));
 
-describe("FlashSwapsProxy", async () => {
+describe.skip("FlashSwapsProxy", async () => {
   var flashSwapsProxy: FlashSwapsProxy;
   var flashSwapAgent: FlashSwapAgent;
   var dexCore: DexCore;
