@@ -584,24 +584,6 @@ describe("DexCore (views)", async () => {
     }
   });
 
-  it("should fail if too high price impact", async () => {
-    const params: SwapMinResRequest = {
-      swaps: [{ direction: { a_to_b: undefined }, pair_id: new BigNumber(0) }],
-      amount_in: new BigNumber(100_000),
-    };
-
-    try {
-      await dexCore.contract.contractViews
-        .get_swap_min_res(params)
-        .executeView({ viewCaller: alice.pkh });
-    } catch (err: any) {
-      expect(err).to.be.instanceof(ViewSimulationError);
-      expect(
-        Utils.parseOnChainViewError(JSON.parse(err.originalError.body))
-      ).to.be.equal(DexCoreErrors.ERR_HIGH_OUT);
-    }
-  });
-
   it("should return proper min swap result - 1", async () => {
     const pairId: BigNumber = new BigNumber(0);
     const params: SwapMinResRequest = {

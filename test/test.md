@@ -199,7 +199,6 @@
    - ✅ should fail if a user expects too high min out;
    - ✅ should fail if user passed zero amount in;
    - ✅ should fail if user put a wrong route;
-   - ✅ should fail if too high price impact;
    - ✅ should swap FA1.2 token to TEZ;
    - ✅ should swap FA2 token to TEZ;
    - ✅ should swap TEZ to FA1.2 token;
@@ -441,8 +440,6 @@
     - ✅ should fail if pair does not have a liquidity;
     - ✅ should fail if user passed zero amount in;
     - ✅ should fail if user put a wrong route;
-    - ✅ should fail if too high price impact;
-    - ❌ should fail if too few swaps;
     - ✅ should return proper min swap result - 1;
     - ✅ should return proper min swap result - 2;
     - ✅ should return proper min swap result - 3.

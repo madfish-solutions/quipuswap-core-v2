@@ -311,8 +311,6 @@ function swap_internal(
     }
     else skip;
 
-    assert_with_error(out <= swap.to_.pool / 3n, DexCore.err_high_out);
-
     swap.to_.pool := get_nat_or_fail(swap.to_.pool - out);
     swap.from_.pool := get_nat_or_fail(
       swap.from_.pool + (tmp.amount_in * Constants.precision - interface_fee - auction_fee) / Constants.precision

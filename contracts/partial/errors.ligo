@@ -39,15 +39,14 @@ module DexCore is {
   const err_wrong_flash_swap_returns                  : string = "137";
   const err_can_not_refer_yourself                    : string = "138";
   const err_tez_store_withdraw_rewards_entrypoint_404 : string = "139";
-  const err_high_out                                  : string = "140";
-  const err_insufficient_interface_fee_balance        : string = "141";
-  const err_tez_store_get_user_candidate_view_404     : string = "142";
-  const err_launch_callback_404                       : string = "143";
-  const err_auction_receive_fee_entrypoint_404        : string = "144";
-  const err_reentrancy                                : string = "145";
-  const err_close_entrypoint_404                      : string = "146";
-  const err_not_entered                               : string = "147";
-  const err_too_few_swaps                             : string = "148";
+  const err_insufficient_interface_fee_balance        : string = "140";
+  const err_tez_store_get_user_candidate_view_404     : string = "141";
+  const err_launch_callback_404                       : string = "142";
+  const err_auction_receive_fee_entrypoint_404        : string = "143";
+  const err_reentrancy                                : string = "144";
+  const err_close_entrypoint_404                      : string = "145";
+  const err_not_entered                               : string = "146";
+  const err_too_few_swaps                             : string = "147";
 }
 
 module TezStore is {

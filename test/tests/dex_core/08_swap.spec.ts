@@ -386,22 +386,6 @@ describe("DexCore (swap)", async () => {
     });
   });
 
-  it("should fail if too high price impact", async () => {
-    const swapParams: Swap = {
-      swaps: [{ direction: { a_to_b: undefined }, pair_id: new BigNumber(0) }],
-      receiver: alice.pkh,
-      referrer: bob.pkh,
-      amount_in: new BigNumber(5_000_000),
-      min_amount_out: new BigNumber(0),
-    };
-
-    await rejects(dexCore.swap(swapParams), (err: Error) => {
-      expect(err.message).to.equal(DexCoreErrors.ERR_HIGH_OUT);
-
-      return true;
-    });
-  });
-
   it("should swap FA1.2 token to TEZ", async () => {
     const pairId: BigNumber = new BigNumber(0);
     const token: Token = { fa12: fa12Token1.contract.address };
