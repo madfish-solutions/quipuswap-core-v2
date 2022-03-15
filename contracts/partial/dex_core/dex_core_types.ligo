@@ -139,6 +139,11 @@ type claim_fee_t        is [@layout:comb] record [
 
 type withdraw_fee_t     is token_t
 
+type dex_vote_t         is [@layout:comb] record [
+  pair_id                 : token_id_t;
+  candidate               : key_hash;
+]
+
 type set_admin_t        is address
 
 type confirm_admin_t    is unit
@@ -245,6 +250,7 @@ type action_t           is
 | Withdraw_profit         of withdraw_profit_t
 | Claim_interface_fee     of claim_fee_t
 | Withdraw_auction_fee    of withdraw_fee_t
+| Vote                    of dex_vote_t
 (* ADMIN *)
 | Set_admin               of set_admin_t
 | Confirm_admin           of confirm_admin_t

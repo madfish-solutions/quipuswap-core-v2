@@ -527,6 +527,40 @@ function withdraw_auction_fee(
     end
   } with (ops, s)
 
+function vote(
+  const action          : action_t;
+  var s                 : storage_t)
+                        : return_t is
+  block {
+    s.entered := check_reentrancy(s.entered);
+
+    var ops : list(operation) := list [
+      get_close_op(Unit);
+    ];
+
+    case action of
+    | Vote(params) -> {
+        const pair : pair_t = unwrap(s.pairs[params.pair_id], DexCore.err_pair_not_listed);
+        const voter_balance : nat = unwrap_or(s.ledger[(Tezos.sender, params.pair_id)], 0n);
+
+        assert_with_error(voter_balance > 0n, DexCore.err_can_not_perform_voting);
+
+        ops := get_vote_op(
+          record [
+            voter           = Tezos.sender;
+            candidate       = params.candidate;
+            execute_voting  = True;
+            votes           = voter_balance;
+            current_balance = voter_balance;
+            new_balance     = voter_balance;
+          ],
+          unwrap(pair.tez_store, DexCore.err_tez_store_404)
+        ) # ops;
+      }
+    | _ -> skip
+    end
+  } with (ops, s)
+
 (* ADMIN *)
 
 function set_admin(

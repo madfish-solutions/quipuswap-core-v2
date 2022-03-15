@@ -50,6 +50,7 @@ import {
   FlashSwap,
   SetExpiry,
   ClaimFee,
+  DexVote,
   Swap,
   Pair,
   Fees,
@@ -297,6 +298,16 @@ export class DexCore {
   async withdrawAuctionFee(token: Token): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .withdraw_auction_fee(token)
+      .send();
+
+    await confirmOperation(this.tezos, operation.hash);
+
+    return operation;
+  }
+
+  async vote(params: DexVote): Promise<TransactionOperation> {
+    const operation: TransactionOperation = await this.contract.methodsObject
+      .vote(params)
       .send();
 
     await confirmOperation(this.tezos, operation.hash);

@@ -69,6 +69,11 @@ export type ClaimFee = {
   amount: BigNumber;
 };
 
+export type DexVote = {
+  pair_id: BigNumber;
+  candidate: string;
+};
+
 export type AddManager = {
   manager: string;
   add: boolean;

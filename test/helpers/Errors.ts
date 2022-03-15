@@ -47,6 +47,7 @@ export enum DexCore {
   ERR_CLOSE_ENTRYPOINT_404 = "145",
   ERR_NOT_ENTERED = "146",
   ERR_TOO_FEW_SWAPS = "147",
+  ERR_CAN_NOT_PERFORM_VOTING = "148",
 }
 
 export enum TezStore {
