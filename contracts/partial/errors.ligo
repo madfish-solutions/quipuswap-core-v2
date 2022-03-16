@@ -40,6 +40,7 @@ module DexCore is {
   const err_not_entered                               : string = "138";
   const err_too_few_swaps                             : string = "139";
   const err_can_not_perform_voting                    : string = "140";
+  const err_tmp_404                                   : string = "141";
 }
 
 module TezStore is {

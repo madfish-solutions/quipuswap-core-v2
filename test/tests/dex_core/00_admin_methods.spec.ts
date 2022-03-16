@@ -34,7 +34,7 @@ import {
 
 chai.use(require("chai-bignumber")(BigNumber));
 
-describe.only("DexCore (admin methods)", async () => {
+describe("DexCore (admin methods)", async () => {
   var flashSwapsProxy: FlashSwapsProxy;
   var auction: Auction;
   var dexCore: DexCore;

@@ -5,13 +5,6 @@ type tokens_t           is [@layout:comb] record [
   token_b                 : token_t;
 ]
 
-type fees_t             is [@layout:comb] record [
-  interface_fee           : nat;
-  swap_fee                : nat;
-  auction_fee             : nat;
-  withdraw_fee_reward     : nat;
-]
-
 type flash_swap_rule_t  is
 | Loan_a_return_a
 | Loan_a_return_b
@@ -40,6 +33,13 @@ type tmp_t              is [@layout:comb] record [
   prev_tez_balance        : nat;
 ]
 
+type fees_t             is [@layout:comb] record [
+  interface_fee           : nat;
+  swap_fee                : nat;
+  auction_fee             : nat;
+  withdraw_fee_reward     : nat;
+]
+
 type storage_t          is [@layout:comb] record [
   token_metadata          : big_map(token_id_t, token_metadata_t);
   ledger                  : big_map((address * token_id_t), nat);
@@ -52,9 +52,9 @@ type storage_t          is [@layout:comb] record [
   interface_tez_fee       : big_map((token_id_t * address), nat);
   auction_fee             : big_map(token_t, nat);
   auction_tez_fee         : big_map(token_id_t, nat);
+  tmp                     : option(tmp_t);
   managers                : set(address);
   fees                    : fees_t;
-  tmp                     : tmp_t;
   admin                   : address;
   pending_admin           : address;
   baker_registry          : address;

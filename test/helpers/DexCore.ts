@@ -233,12 +233,13 @@ export class DexCore {
     return operation;
   }
 
-  async flashSwap(params: FlashSwap): Promise<TransactionOperation> {
+  async flashSwap(
+    params: FlashSwap,
+    flashSwapRule: string
+  ): Promise<TransactionOperation> {
     const ligo: string = getLigo(true);
     const stdout: string = execSync(
-      `${ligo} compile parameter $PWD/contracts/test/lambdas.ligo 'Use(Flash_swap(record [ lambda = lambda2; flash_swap_rule = ${
-        params.flash_swap_rule
-      }; pair_id = ${params.pair_id.toFixed()}n; receiver = ("${
+      `${ligo} compile parameter $PWD/contracts/test/lambdas.ligo 'Use(Flash_swap(record [ lambda = lambda2; flash_swap_rule = ${flashSwapRule}; pair_id = ${params.pair_id.toFixed()}n; receiver = ("${
         params.receiver
       }" : address); referrer = ("${
         params.referrer

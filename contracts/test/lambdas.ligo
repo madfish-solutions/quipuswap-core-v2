@@ -17,17 +17,13 @@ function lambda1(const _ : unit) : list(operation) is
 (*****************************************************************************)
 
 type default_t          is [@layout:comb] record [
-  token1                  : token_t;
-  token2                  : token_t;
-  token1_amt              : nat;
-  token2_amt              : nat;
+  token                   : token_t;
+  token_amt               : nat;
 ]
 
 const params : default_t = record [
-  token1     = token1;
-  token2     = token2;
-  token1_amt = 5n;
-  token2_amt = 5n;
+  token     = token;
+  token_amt = 5n;
 ];
 
 function get_flash_swap_agent_default_entrypoint(

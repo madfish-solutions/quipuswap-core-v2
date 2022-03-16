@@ -37,7 +37,7 @@ import fs from "fs";
 
 chai.use(require("chai-bignumber")(BigNumber));
 
-describe("DexCore (flash swap)", async () => {
+describe.only("DexCore (flash swap)", async () => {
   var flashSwapsProxy: FlashSwapsProxy;
   var flashSwapAgent: FlashSwapAgent;
   var bakerRegistry: BakerRegistry;
@@ -131,7 +131,7 @@ describe("DexCore (flash swap)", async () => {
 
     fs.writeFile(
       "contracts/test/parameters.ligo",
-      `const agent : address = ("${flashSwapAgent.contract.address}" : address);\nconst token1 : token_t = Fa12(("${fa12Token1.contract.address}" : address));\nconst token2 : token_t = Fa12(("${fa12Token2.contract.address}" : address));\n`,
+      `const agent : address = ("${flashSwapAgent.contract.address}" : address);\nconst token : token_t = Fa12(("${fa12Token1.contract.address}" : address));\n`,
       function (err) {
         if (err) console.log(err.message);
       }
@@ -151,97 +151,96 @@ describe("DexCore (flash swap)", async () => {
 
   it("should fail if reentrancy", async () => {
     const params: FlashSwap = {
+      flash_swap_rule: { loan_a_return_a: undefined },
       pair_id: new BigNumber(0),
       receiver: alice.pkh,
       referrer: alice.pkh,
-      amount_a_out: new BigNumber(1),
-      amount_b_out: new BigNumber(1),
+      amount_out: new BigNumber(1),
     };
 
-    await rejects(dexCore2.flashSwap(params), (err: Error) => {
-      expect(err.message).to.equal(DexCoreErrors.ERR_REENTRANCY);
+    await rejects(
+      dexCore2.flashSwap(params, "Loan_a_return_a"),
+      (err: Error) => {
+        expect(err.message).to.equal(DexCoreErrors.ERR_REENTRANCY);
 
-      return true;
-    });
+        return true;
+      }
+    );
   });
 
   it("should fail if user is trying to refer himself", async () => {
     const params: FlashSwap = {
+      flash_swap_rule: { loan_a_return_a: undefined },
       pair_id: new BigNumber(0),
       receiver: alice.pkh,
       referrer: alice.pkh,
-      amount_a_out: new BigNumber(1),
-      amount_b_out: new BigNumber(1),
+      amount_out: new BigNumber(1),
     };
 
-    await rejects(dexCore.flashSwap(params), (err: Error) => {
-      expect(err.message).to.equal(DexCoreErrors.ERR_CAN_NOT_REFER_YOURSELF);
+    await rejects(
+      dexCore.flashSwap(params, "Loan_a_return_a"),
+      (err: Error) => {
+        expect(err.message).to.equal(DexCoreErrors.ERR_CAN_NOT_REFER_YOURSELF);
 
-      return true;
-    });
+        return true;
+      }
+    );
   });
 
   it("should fail if dust out", async () => {
     const params: FlashSwap = {
+      flash_swap_rule: { loan_a_return_a: undefined },
       pair_id: new BigNumber(0),
       receiver: alice.pkh,
       referrer: bob.pkh,
-      amount_a_out: new BigNumber(0),
-      amount_b_out: new BigNumber(0),
+      amount_out: new BigNumber(0),
     };
 
-    await rejects(dexCore.flashSwap(params), (err: Error) => {
-      expect(err.message).to.equal(DexCoreErrors.ERR_DUST_OUT);
+    await rejects(
+      dexCore.flashSwap(params, "Loan_a_return_a"),
+      (err: Error) => {
+        expect(err.message).to.equal(DexCoreErrors.ERR_DUST_OUT);
 
-      return true;
-    });
+        return true;
+      }
+    );
   });
 
   it("should fail if pair not listed", async () => {
     const params: FlashSwap = {
+      flash_swap_rule: { loan_a_return_a: undefined },
       pair_id: new BigNumber(666),
       receiver: alice.pkh,
       referrer: bob.pkh,
-      amount_a_out: new BigNumber(1),
-      amount_b_out: new BigNumber(1),
+      amount_out: new BigNumber(1),
     };
 
-    await rejects(dexCore.flashSwap(params), (err: Error) => {
-      expect(err.message).to.equal(DexCoreErrors.ERR_PAIR_NOT_LISTED);
+    await rejects(
+      dexCore.flashSwap(params, "Loan_a_return_a"),
+      (err: Error) => {
+        expect(err.message).to.equal(DexCoreErrors.ERR_PAIR_NOT_LISTED);
 
-      return true;
-    });
+        return true;
+      }
+    );
   });
 
-  it("should fail if insufficient token A liquidity", async () => {
+  it("should fail if insufficient out token liquidity", async () => {
     const params: FlashSwap = {
+      flash_swap_rule: { loan_a_return_a: undefined },
       pair_id: new BigNumber(0),
       receiver: alice.pkh,
       referrer: bob.pkh,
-      amount_a_out: new BigNumber(5_000_000),
-      amount_b_out: new BigNumber(0),
+      amount_out: new BigNumber(5_000_000),
     };
 
-    await rejects(dexCore.flashSwap(params), (err: Error) => {
-      expect(err.message).to.equal(DexCoreErrors.ERR_INSUFFICIENT_LIQUIDITY);
+    await rejects(
+      dexCore.flashSwap(params, "Loan_a_return_a"),
+      (err: Error) => {
+        expect(err.message).to.equal(DexCoreErrors.ERR_INSUFFICIENT_LIQUIDITY);
 
-      return true;
-    });
-  });
-
-  it("should fail if insufficient token B liquidity", async () => {
-    const params: FlashSwap = {
-      pair_id: new BigNumber(0),
-      receiver: alice.pkh,
-      referrer: bob.pkh,
-      amount_a_out: new BigNumber(0),
-      amount_b_out: new BigNumber(5_000_000),
-    };
-
-    await rejects(dexCore.flashSwap(params), (err: Error) => {
-      expect(err.message).to.equal(DexCoreErrors.ERR_INSUFFICIENT_LIQUIDITY);
-
-      return true;
-    });
+        return true;
+      }
+    );
   });
 });

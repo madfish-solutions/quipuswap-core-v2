@@ -14,10 +14,8 @@ type storage_t          is [@layout:comb] record [
 ]
 
 type default_t          is [@layout:comb] record [
-  token1                  : token_t;
-  token2                  : token_t;
-  token1_amt              : nat;
-  token2_amt              : nat;
+  token                   : token_t;
+  token_amt               : nat;
 ]
 
 type action_t           is
@@ -31,8 +29,7 @@ function default(
                         : return_t is
   block {
     const ops : list(operation) = list [
-      transfer_token(Tezos.self_address, s.dex_core, params.token1_amt + fee_amt, params.token1);
-      transfer_token(Tezos.self_address, s.dex_core, params.token2_amt + fee_amt, params.token2);
+      transfer_token(Tezos.self_address, s.dex_core, params.token_amt + fee_amt, params.token);
     ];
   } with (ops, s)
 

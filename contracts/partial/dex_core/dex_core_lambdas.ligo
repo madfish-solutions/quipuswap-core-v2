@@ -294,15 +294,21 @@ function flash_swap(
 
         assert_with_error(params.amount_out < flash_swap_data.swap_token_pool, DexCore.err_insufficient_liquidity);
 
-        s.tmp := record [
+        s.tmp := Some(record [
           flash_swap_params = params;
           flash_swap_data   = flash_swap_data;
           sender            = Tezos.sender;
           prev_tez_balance  = Tezos.balance / 1mutez;
-        ];
+        ]);
 
         ops := call_flash_swap_callback(Unit) # ops;
         ops := call_flash_swaps_proxy(params.lambda, s.flash_swaps_proxy) # ops;
+        ops := divest_tez_or_transfer_tokens(
+          params.receiver,
+          params.amount_out,
+          flash_swap_data.swap_token,
+          pair.tez_store
+        ) # ops;
       }
     | _ -> skip
     end

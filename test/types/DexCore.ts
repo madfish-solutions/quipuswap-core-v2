@@ -149,9 +149,9 @@ export type DexCoreStorage = {
     interface_tez_fee: MichelsonMap<MichelsonMapKey, unknown>;
     auction_fee: MichelsonMap<MichelsonMapKey, unknown>;
     auction_tez_fee: MichelsonMap<MichelsonMapKey, unknown>;
+    tmp: Tmp | undefined | null;
     managers: string[];
     fees: Fees;
-    tmp: Tmp;
     admin: string;
     pending_admin: string;
     baker_registry: string;

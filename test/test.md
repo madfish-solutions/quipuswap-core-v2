@@ -177,17 +177,10 @@
    - ✅ should fail if user is trying to refer himself;
    - ✅ should fail if dust out;
    - ✅ should fail if pair not listed;
-   - ✅ should fail if insufficient token A liquidity;
-   - ✅ should fail if insufficient token B liquidity;
+   - ✅ should fail if insufficient out token liquidity;
    - ❌ should flash swap one FA1.2 token;
    - ❌ should flash swap one FA2 token;
-   - ❌ should flash swap one TEZ token;
-   - ❌ should flash swap two FA1.2 tokens;
-   - ❌ should flash swap two FA2 tokens;
-   - ❌ should flash swap FA1.2 and FA2 tokens;
-   - ❌ should flash swap FA2 and FA1.2 tokens;
-   - ❌ should flash swap FA1.2 and TEZ tokens;
-   - ❌ should flash swap FA2 and TEZ tokens.
+   - ❌ should flash swap one TEZ token.
 
 5. `swap`:
 

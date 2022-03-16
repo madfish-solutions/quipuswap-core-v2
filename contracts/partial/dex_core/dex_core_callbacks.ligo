@@ -10,34 +10,35 @@ function flash_swap_callback(
         only_dex_core(Tezos.self_address);
         only_entered(s.entered);
 
-        const interface_fee : nat = s.tmp.flash_swap_params.amount_out * s.fees.interface_fee;
-        const auction_fee : nat = s.tmp.flash_swap_params.amount_out * s.fees.auction_fee;
-        const swap_fee : nat = s.tmp.flash_swap_params.amount_out * s.fees.swap_fee;
-        const full_fee : nat = interface_fee + auction_fee + swap_fee;
+        const tmp : tmp_t = unwrap(s.tmp, DexCore.err_tmp_404);
+        const interface_fee : nat = tmp.flash_swap_params.amount_out * s.fees.interface_fee;
+        const auction_fee : nat = tmp.flash_swap_params.amount_out * s.fees.auction_fee;
+        const swap_fee : nat = tmp.flash_swap_params.amount_out * s.fees.swap_fee;
+        const _full_fee : nat = interface_fee + auction_fee + swap_fee;
 
-        if s.tmp.flash_swap_data.return_token = Tez
+        if tmp.flash_swap_data.return_token = Tez
         then {
           const curr_tez_balance : nat = Tezos.balance / 1mutez;
 
           assert_with_error(
-            curr_tez_balance >= s.tmp.prev_tez_balance + full_fee,
+            curr_tez_balance >= tmp.prev_tez_balance,
             DexCore.err_wrong_flash_swap_returns
           );
         }
         else {
           ops := transfer_token(
-            s.tmp.sender,
+            tmp.sender,
             Tezos.self_address,
-            s.tmp.flash_swap_params.amount_out,
-            s.tmp.flash_swap_data.return_token
+            tmp.flash_swap_params.amount_out,
+            tmp.flash_swap_data.return_token
           ) # ops;
         };
 
         const (storage, divest_tez_operation_opt) = update_fees(
           s,
-          s.tmp.flash_swap_params.pair_id,
-          s.tmp.flash_swap_data.return_token,
-          s.tmp.flash_swap_params.referrer,
+          tmp.flash_swap_params.pair_id,
+          tmp.flash_swap_data.return_token,
+          tmp.flash_swap_params.referrer,
           interface_fee,
           auction_fee
         );
@@ -48,6 +49,8 @@ function flash_swap_callback(
         | Some(op) -> ops := op # ops
         | None     -> skip
         end;
+
+        s.tmp := (None : option(tmp_t));
       }
     | _ -> skip
     end
