@@ -37,13 +37,13 @@ function launch_exchange(
         const pair : pair_t = pair_info.0;
         const token_id : nat = pair_info.1;
 
-        assert_with_error(params.token_a_in > 0n, DexCore.err_zero_a_in);
-        assert_with_error(
-          (params.pair.token_b = Tez and Tezos.amount =/= 0mutez and Tezos.amount / 1mutez = params.token_b_in)
-            or params.token_b_in > 0n,
-          DexCore.err_zero_b_in
-        );
         assert_with_error(pair.total_supply = 0n, DexCore.err_pair_listed);
+        assert_with_error(params.token_a_in > 0n, DexCore.err_zero_a_in);
+        assert_with_error(params.token_b_in > 0n, DexCore.err_zero_b_in);
+        
+        if params.pair.token_b = Tez then
+          assert_with_error(Tezos.amount / 1mutez = params.token_b_in, DexCore.err_wrong_tez_amount)
+        else skip;
 
         const init_shares : nat = Math.min_nat(params.token_a_in, params.token_b_in);
 
