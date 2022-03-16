@@ -141,14 +141,15 @@ function calc_cumulative_prices(
 
 function update_fees(
   var s               : storage_t;
-  var ops             : list(operation);
   const pair_id       : token_id_t;
   const token_in      : token_t;
   const referrer      : address;
   const interface_fee : nat;
   const auction_fee   : nat)
-                      : storage_t * list(operation) is
+                      : storage_t * option(operation) is
   block {
+    var divest_tez_operation : option(operation) := (None : option(operation));
+
     if token_in = Tez
     then {
       s.interface_tez_fee[(pair_id, referrer)] := unwrap_or(s.interface_tez_fee[(pair_id, referrer)], 0n)
@@ -189,7 +190,9 @@ function update_fees(
         ];
         const pair : pair_t = unwrap(s.pairs[pair_id], DexCore.err_pair_not_listed);
 
-        ops := get_divest_tez_op(divest_params, unwrap(pair.tez_store, DexCore.err_tez_store_404)) # ops;
+        divest_tez_operation := Some(
+          get_divest_tez_op(divest_params, unwrap(pair.tez_store, DexCore.err_tez_store_404))
+        );
       }
       else skip;
     }
@@ -197,7 +200,35 @@ function update_fees(
       s.interface_fee[(token_in, referrer)] := unwrap_or(s.interface_fee[(token_in, referrer)], 0n) + interface_fee;
       s.auction_fee[token_in] := unwrap_or(s.auction_fee[token_in], 0n) + auction_fee;
     };
-  } with (s, ops)
+  } with (s, divest_tez_operation)
+
+function form_flash_swap_data(
+  const pair            : pair_t;
+  const tokens          : tokens_t;
+  const flash_swap_rule : flash_swap_rule_t)
+                        : flash_swap_data_t is
+  case flash_swap_rule of
+  | Loan_a_return_a -> record [
+      swap_token      = tokens.token_a;
+      return_token    = tokens.token_a;
+      swap_token_pool = pair.token_a_pool;
+    ]
+  | Loan_a_return_b -> record [
+      swap_token      = tokens.token_a;
+      return_token    = tokens.token_b;
+      swap_token_pool = pair.token_a_pool;
+    ]
+  | Loan_b_return_a -> record [
+      swap_token      = tokens.token_b;
+      return_token    = tokens.token_a;
+      swap_token_pool = pair.token_b_pool;
+    ]
+  | Loan_b_return_b -> record [
+      swap_token      = tokens.token_b;
+      return_token    = tokens.token_b;
+      swap_token_pool = pair.token_b_pool;
+    ]
+  end
 
 function form_swap_data(
   const pair            : pair_t;
@@ -278,9 +309,8 @@ function swap_internal(
     const interface_fee : nat = tmp.amount_in * fees.interface_fee;
     const auction_fee : nat = tmp.amount_in * fees.auction_fee;
 
-    const (s, ops) = update_fees(
+    const (s, divest_tez_operation_opt) = update_fees(
       tmp.s,
-      tmp.ops,
       params.pair_id,
       tmp.token_in,
       tmp.referrer,
@@ -289,7 +319,11 @@ function swap_internal(
     );
 
     tmp.s := s;
-    tmp.ops := ops;
+
+    case divest_tez_operation_opt of
+    | Some(op) -> tmp.ops := op # tmp.ops
+    | None     -> skip
+    end;
 
     if swap.to_.token = Tez and tmp.counter =/= get_nat_or_fail(tmp.swaps_list_size - 1n)
     then {
@@ -366,76 +400,18 @@ function get_token_id_or_fail(
   | Tez             -> (failwith(Common.err_wrong_token_type) : token_id_t)
   end
 
-function get_flash_swap_callback_1(
+function get_flash_swap_callback(
   const self            : address)
-                        : contract(flash_swap_2_t) is
+                        : contract(flash_swap_unit_t) is
   unwrap(
-    (Tezos.get_entrypoint_opt("%flash_swap_callback_1", self) : option(contract(flash_swap_2_t))),
-    DexCore.err_flash_swap_callback_1_404
+    (Tezos.get_entrypoint_opt("%flash_swap_callback", self) : option(contract(flash_swap_unit_t))),
+    DexCore.err_flash_swap_callback_404
   )
 
-function call_flash_swap_callback_1(
+function call_flash_swap_callback(
   const _               : unit)
                         : operation is
-  Tezos.transaction(Unit, 0mutez, get_flash_swap_callback_1(Tezos.self_address))
-
-function get_flash_swap_callback_2(
-  const self            : address)
-                        : contract(flash_swap_3_t) is
-  unwrap(
-    (Tezos.get_entrypoint_opt("%flash_swap_callback_2", self) : option(contract(flash_swap_3_t))),
-    DexCore.err_flash_swap_callback_2_404
-  )
-
-function call_flash_swap_callback_2(
-  const _               : unit)
-                        : operation is
-  Tezos.transaction(Unit, 0mutez, get_flash_swap_callback_2(Tezos.self_address))
-
-function get_flash_swap_callback_3(
-  const self            : address)
-                        : contract(flash_swap_4_t) is
-  unwrap(
-    (Tezos.get_entrypoint_opt("%flash_swap_callback_3", self) : option(contract(flash_swap_4_t))),
-    DexCore.err_flash_swap_callback_3_404
-  )
-
-function call_flash_swap_callback_3(
-  const _               : unit)
-                        : operation is
-  Tezos.transaction(Unit, 0mutez, get_flash_swap_callback_3(Tezos.self_address))
-
-function get_fa12_balance_callback_1(
-  const this            : address)
-                        : contract(nat) is
-  unwrap(
-    (Tezos.get_entrypoint_opt("%fa12_balance_callback_1", this) : option(contract(nat))),
-    DexCore.err_fa12_balance_callback_1_404
-  )
-
-function get_fa2_balance_callback_1(
-  const this            : address)
-                        : contract(list(balance_response_t)) is
-  unwrap(
-    (Tezos.get_entrypoint_opt("%fa2_balance_callback_1", this) : option(contract(list(balance_response_t)))),
-    DexCore.err_fa2_balance_callback_1_404
-  )
-
-function get_fa12_balance_callback_2(
-  const this            : address)
-                        : contract(nat) is
-  unwrap(
-    (Tezos.get_entrypoint_opt("%fa12_balance_callback_2", this) : option(contract(nat))),
-    DexCore.err_fa12_balance_callback_2_404
-  )
-
-function get_fa2_balance_callback_2(
-  const this            : address)
-                        : contract(list(balance_response_t)) is
-  unwrap(
-    (Tezos.get_entrypoint_opt("%fa2_balance_callback_2", this) : option(contract(list(balance_response_t)))),
-    DexCore.err_fa2_balance_callback_2_404
-  )
+  Tezos.transaction(Unit, 0mutez, get_flash_swap_callback(Tezos.self_address))
 
 function get_tez_store_withdraw_rewards_entrypoint(
   const tez_store       : address)

@@ -272,21 +272,6 @@ function divest_liquidity(
     end;
   } with (ops, s)
 
-(*
-
-  DEV: operations order is fully reverted in the implementation because
-  operation can be added only to the beginning of the list.
-
-  Execution order of the operations will be the next:
-
-  1) get_balance for token A, receive callback and save it
-  2) get_balance for token B, receive callback and save it
-  3) optimistically transfer token A to the user
-  4) optimistically transfer token B to the user
-  5) call flash swap proxy and execute user's lambda
-  6) call flash_swap callback
-
- *)
 function flash_swap(
   const action          : action_t;
   var s                 : storage_t)
@@ -301,73 +286,23 @@ function flash_swap(
     case action of
     | Flash_swap(params) -> {
         assert_with_error(params.referrer =/= Tezos.sender, DexCore.err_can_not_refer_yourself);
-        assert_with_error(params.amount_a_out > 0n or params.amount_b_out > 0n, DexCore.err_dust_out);
+        assert_with_error(params.amount_out > 0n, DexCore.err_dust_out);
 
-        const tokens : tokens_t = unwrap(s.tokens[params.pair_id], DexCore.err_pair_not_listed);
         const pair : pair_t = unwrap(s.pairs[params.pair_id], DexCore.err_pair_not_listed);
+        const tokens : tokens_t = unwrap(s.tokens[params.pair_id], DexCore.err_pair_not_listed);
+        const flash_swap_data : flash_swap_data_t = form_flash_swap_data(pair, tokens, params.flash_swap_rule);
 
-        assert_with_error(params.amount_a_out < pair.token_a_pool, DexCore.err_insufficient_liquidity);
-        assert_with_error(params.amount_b_out < pair.token_b_pool, DexCore.err_insufficient_liquidity);
+        assert_with_error(params.amount_out < flash_swap_data.swap_token_pool, DexCore.err_insufficient_liquidity);
 
         s.tmp := record [
-          pair_id           = params.pair_id;
-          amount_a_out      = params.amount_a_out;
-          amount_b_out      = params.amount_b_out;
-          referrer          = params.referrer;
-          token_a_balance_1 = 0n;
-          token_b_balance_1 = 0n;
-          token_a_balance_2 = 0n;
-          token_b_balance_2 = 0n;
+          flash_swap_params = params;
+          flash_swap_data   = flash_swap_data;
+          sender            = Tezos.sender;
           prev_tez_balance  = Tezos.balance / 1mutez;
         ];
 
-        ops := call_flash_swap_callback_2(Unit) # ops;
-
-        if tokens.token_b = Tez
-        then {
-          ops := call_flash_swap_callback_1(Unit) # ops;
-        }
-        else skip;
-
+        ops := call_flash_swap_callback(Unit) # ops;
         ops := call_flash_swaps_proxy(params.lambda, s.flash_swaps_proxy) # ops;
-
-        if params.amount_b_out > 0n
-        then {
-          ops := divest_tez_or_transfer_tokens(
-            params.receiver,
-            params.amount_b_out,
-            tokens.token_b,
-            pair.tez_store
-          ) # ops;
-        }
-        else skip;
-
-        if params.amount_a_out > 0n
-        then ops := transfer_token(Tezos.self_address, params.receiver, params.amount_a_out, tokens.token_a) # ops
-        else skip;
-
-        if tokens.token_b = Tez
-        then {
-          const tez_store : address = unwrap(pair.tez_store, DexCore.err_tez_store_404);
-
-          s.tmp.token_b_balance_1 := unwrap(
-            (Tezos.call_view("get_tez_balance", Unit, tez_store) : option(nat)),
-            DexCore.err_tez_store_get_tez_balance_view_404
-          );
-        }
-        else {
-          ops := get_balance_op_or_fail(
-            Tezos.self_address,
-            tokens.token_b,
-            (get_fa12_balance_callback_1(Tezos.self_address), get_fa2_balance_callback_1(Tezos.self_address))
-          ) # ops;
-        };
-
-        ops := get_balance_op_or_fail(
-          Tezos.self_address,
-          tokens.token_a,
-          (get_fa12_balance_callback_1(Tezos.self_address), get_fa2_balance_callback_1(Tezos.self_address))
-        ) # ops;
       }
     | _ -> skip
     end

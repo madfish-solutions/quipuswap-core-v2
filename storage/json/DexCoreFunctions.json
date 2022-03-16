@@ -101,38 +101,14 @@
   },
   {
     "index": 25,
-    "name": "fa12_balance_callback_1"
-  },
-  {
-    "index": 26,
-    "name": "fa2_balance_callback_1"
-  },
-  {
-    "index": 27,
-    "name": "fa12_balance_callback_2"
-  },
-  {
-    "index": 28,
-    "name": "fa2_balance_callback_2"
-  },
-  {
-    "index": 29,
-    "name": "flash_swap_callback_1"
-  },
-  {
-    "index": 30,
-    "name": "flash_swap_callback_2"
-  },
-  {
-    "index": 31,
-    "name": "flash_swap_callback_3"
-  },
-  {
-    "index": 32,
     "name": "launch_callback"
   },
   {
-    "index": 33,
+    "index": 26,
+    "name": "flash_swap_callback"
+  },
+  {
+    "index": 27,
     "name": "close"
   }
 ]

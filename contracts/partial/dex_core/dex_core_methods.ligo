@@ -34,15 +34,9 @@ function call_dex_core(
     | Update_operators(_)        -> 23n
     | Balance_of(_)              -> 24n
     (* CALLBACKS *)
-    | Fa12_balance_callback_1(_) -> 25n
-    | Fa2_balance_callback_1(_)  -> 26n
-    | Fa12_balance_callback_2(_) -> 27n
-    | Fa2_balance_callback_2(_)  -> 28n
-    | Flash_swap_callback_1(_)   -> 29n
-    | Flash_swap_callback_2(_)   -> 30n
-    | Flash_swap_callback_3(_)   -> 31n
-    | Launch_callback(_)         -> 32n
-    | Close(_)                   -> 33n
+    | Launch_callback(_)         -> 25n
+    | Flash_swap_callback(_)     -> 26n
+    | Close(_)                   -> 27n
     end;
 
     const lambda_bytes : bytes = unwrap(s.dex_core_lambdas[id], DexCore.err_unknown_func);

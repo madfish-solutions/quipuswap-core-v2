@@ -16,6 +16,18 @@ export type SwapSlice = {
   pair_id: BigNumber;
 };
 
+export type FlashSwapRule =
+  | { loan_a_return_a: undefined }
+  | { loan_a_return_b: undefined }
+  | { loan_b_return_a: undefined }
+  | { loan_b_return_b: undefined };
+
+export type FlashSwapData = {
+  swap_token: Token;
+  return_token: Token;
+  swap_token_pool: BigNumber;
+};
+
 export type LaunchExchange = {
   pair: Tokens;
   token_a_in: BigNumber;
@@ -43,11 +55,11 @@ export type DivestLiquidity = {
 };
 
 export type FlashSwap = {
+  flash_swap_rule: FlashSwapRule;
   pair_id: BigNumber;
   receiver: string;
   referrer: string;
-  amount_a_out: BigNumber;
-  amount_b_out: BigNumber;
+  amount_out: BigNumber;
 };
 
 export type Swap = {
@@ -118,14 +130,9 @@ export type CheckIsBannedBaker = {
 };
 
 export type Tmp = {
-  pair_id: BigNumber;
-  amount_a_out: BigNumber;
-  amount_b_out: BigNumber;
-  referrer: string;
-  token_a_balance_1: BigNumber;
-  token_b_balance_1: BigNumber;
-  token_a_balance_2: BigNumber;
-  token_b_balance_2: BigNumber;
+  flash_swap_params: FlashSwap;
+  flash_swap_data: FlashSwapData;
+  sender: string;
   prev_tez_balance: BigNumber;
 };
 

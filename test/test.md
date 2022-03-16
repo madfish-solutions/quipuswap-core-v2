@@ -378,48 +378,20 @@
     - ✅ should return the same balance for the same account 2 times in one request;
     - ✅ should return 0 if an account does not have tokens.
 
-26. `fa12_balance_callback_1`:
-
-    - ✅ should fail if not entered;
-    - ✅ should fail if pair not listed.
-
-27. `fa2_balance_callback_1`:
-
-    - ✅ should fail if not entered;
-    - ✅ should fail if pair not listed.
-
-28. `fa12_balance_callback_2`:
-
-    - ✅ should fail if not entered;
-    - ✅ should fail if pair not listed.
-
-29. `fa2_balance_callback_2`:
-
-    - ✅ should fail if not entered;
-    - ✅ should fail if pair not listed.
-
-30. `flash_swap_callback_1`:
+26. `flash_swap_callback`:
 
     - ✅ should fail if not dex core is trying to call it.
 
-31. `flash_swap_callback_2`:
-
-    - ✅ should fail if not dex core is trying to call it.
-
-32. `flash_swap_callback_3`:
-
-    - ✅ should fail if not dex core is trying to call it.
-
-33. `launch_callback`:
+27. `launch_callback`:
 
     - ✅ should fail if not dex core is trying to call launch exchange callback.
 
-34. `close`:
+28. `close`:
 
     - ✅ should fail if not dex core is trying to call it;
     - ✅ should close (reentrancy protection).
 
-35. `check_is_banned_baker` [VIEW]:
+29. `check_is_banned_baker` [VIEW]:
 
     - ✅ should fail if pair not listed;
     - ✅ should fail if pair does not have TEZ store contract (not TOK/TEZ pair);
@@ -427,21 +399,21 @@
     - ✅ should return false if baker is not banned;
     - ✅ should return false if baker's banning period is finished.
 
-36. `get_reserves` [VIEW]:
+30. `get_reserves` [VIEW]:
 
     - ✅ should fail if pair not listed;
     - ✅ should fail if one pair from list not listed;
     - ✅ should return proper reserves for pair;
     - ✅ should return proper reserves for all pairs in a list.
 
-37. `get_total_supply` [VIEW]:
+31. `get_total_supply` [VIEW]:
 
     - ✅ should fail if pair not listed;
     - ✅ should fail if one pair from list not listed;
     - ✅ should return proper total supply for pair;
     - ✅ should return proper total supply for all pairs in a list.
 
-38. `get_swap_min_res` [VIEW]:
+32. `get_swap_min_res` [VIEW]:
 
     - ✅ should fail if empty route;
     - ✅ should fail if pair not listed;
@@ -452,7 +424,7 @@
     - ✅ should return proper min swap result - 2;
     - ✅ should return proper min swap result - 3.
 
-39. `get_toks_per_share` [VIEW]:
+33. `get_toks_per_share` [VIEW]:
 
     - ✅ should fail if pair not listed;
     - ✅ should fail if one pair from list not listed;
@@ -461,26 +433,26 @@
     - ✅ should return proper tokens per shares amount for pair;
     - ✅ should return proper tokens per shares anount for all pairs in a list.
 
-40. `get_cumulative_prices` [VIEW]:
+34. `get_cumulative_prices` [VIEW]:
 
     - ✅ should fail if pair not listed;
     - ✅ should fail if one pair from list not listed;
     - ✅ should return proper cumulative prices for pair;
     - ✅ should return proper cumulative prices for all pairs in a list.
 
-41. `get_voting_period` [VIEW]:
+35. `get_voting_period` [VIEW]:
 
     - ✅ should return proper voting period.
 
-42. `get_collecting_period` [VIEW]:
+36. `get_collecting_period` [VIEW]:
 
     - ✅ should return proper collecting period.
 
-43. `get_cycle_duration` [VIEW]:
+37. `get_cycle_duration` [VIEW]:
 
     - ✅ should return proper cycle duration.
 
-44. `oracle_part`:
+38. `oracle_part`:
 
     - ✅ should not calculate cumulative prices and should update last block timestamp in time of any exchange launch;
     - ✅ should calculate cumulative prices and update last block timestamp in time of liquidity investment;

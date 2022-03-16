@@ -32,8 +32,8 @@ import { PRECISION } from "./Constants";
 
 import { Utils } from "./Utils";
 
-import { BalanceResponse, Transfer, UpdateOperator } from "test/types/FA2";
 import { FA12Token, FA2Token, Token } from "test/types/Common";
+import { Transfer, UpdateOperator } from "test/types/FA2";
 import {
   UpdateTokenMetadata,
   CumulativePrices,
@@ -236,11 +236,13 @@ export class DexCore {
   async flashSwap(params: FlashSwap): Promise<TransactionOperation> {
     const ligo: string = getLigo(true);
     const stdout: string = execSync(
-      `${ligo} compile parameter $PWD/contracts/test/lambdas.ligo 'Use(Flash_swap(record [ lambda = lambda2; pair_id = ${params.pair_id.toFixed()}n; receiver = ("${
+      `${ligo} compile parameter $PWD/contracts/test/lambdas.ligo 'Use(Flash_swap(record [ lambda = lambda2; flash_swap_rule = ${
+        params.flash_swap_rule
+      }; pair_id = ${params.pair_id.toFixed()}n; receiver = ("${
         params.receiver
       }" : address); referrer = ("${
         params.referrer
-      }" : address); amount_a_out = ${params.amount_a_out.toFixed()}n; amount_b_out = ${params.amount_b_out.toFixed()}n ] ))' -p hangzhou --michelson-format json`,
+      }" : address); amount_out = ${params.amount_out.toFixed()}n ] ))' -p hangzhou --michelson-format json`,
       { maxBuffer: 1024 * 500 }
     ).toString();
 
@@ -484,77 +486,9 @@ export class DexCore {
     return operation;
   }
 
-  async fa12BalanceCallback1(
-    balance: BigNumber
-  ): Promise<TransactionOperation> {
+  async flashSwapCallback(): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
-      .fa12_balance_callback_1(balance.toString())
-      .send();
-
-    await confirmOperation(this.tezos, operation.hash);
-
-    return operation;
-  }
-
-  async fa2BalanceCallback1(
-    params: BalanceResponse[]
-  ): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methods
-      .fa2_balance_callback_1(params)
-      .send();
-
-    await confirmOperation(this.tezos, operation.hash);
-
-    return operation;
-  }
-
-  async fa12BalanceCallback2(
-    balance: BigNumber
-  ): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methods
-      .fa12_balance_callback_2(balance.toString())
-      .send();
-
-    await confirmOperation(this.tezos, operation.hash);
-
-    return operation;
-  }
-
-  async fa2BalanceCallback2(
-    params: BalanceResponse[]
-  ): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methods
-      .fa2_balance_callback_2(params)
-      .send();
-
-    await confirmOperation(this.tezos, operation.hash);
-
-    return operation;
-  }
-
-  async flashSwapCallback1(): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methods
-      .flash_swap_callback_1([])
-      .send();
-
-    await confirmOperation(this.tezos, operation.hash);
-
-    return operation;
-  }
-
-  async flashSwapCallback2(): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methods
-      .flash_swap_callback_2([])
-      .send();
-
-    await confirmOperation(this.tezos, operation.hash);
-
-    return operation;
-  }
-
-  async flashSwapCallback3(): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methods
-      .flash_swap_callback_3([])
+      .flash_swap_callback([])
       .send();
 
     await confirmOperation(this.tezos, operation.hash);
