@@ -402,16 +402,16 @@ function get_token_id_or_fail(
 
 function get_flash_swap_callback(
   const self            : address)
-                        : contract(flash_swap_unit_t) is
+                        : contract(flash_swap_1_t) is
   unwrap(
-    (Tezos.get_entrypoint_opt("%flash_swap_callback", self) : option(contract(flash_swap_unit_t))),
+    (Tezos.get_entrypoint_opt("%flash_swap_callback", self) : option(contract(flash_swap_1_t))),
     DexCore.err_flash_swap_callback_404
   )
 
 function call_flash_swap_callback(
-  const _               : unit)
+  const params          : flash_swap_1_t)
                         : operation is
-  Tezos.transaction(Unit, 0mutez, get_flash_swap_callback(Tezos.self_address))
+  Tezos.transaction(params, 0mutez, get_flash_swap_callback(Tezos.self_address))
 
 function get_tez_store_withdraw_rewards_entrypoint(
   const tez_store       : address)

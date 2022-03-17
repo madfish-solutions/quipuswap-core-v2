@@ -40,7 +40,6 @@ export enum DexCore {
   ERR_NOT_ENTERED = "138",
   ERR_TOO_FEW_SWAPS = "139",
   ERR_CAN_NOT_PERFORM_VOTING = "140",
-  ERR_TMP_404 = "141",
 }
 
 export enum TezStore {
@@ -77,6 +76,7 @@ export enum Common {
   ERR_FA12_BALANCE_OF_ENTRYPOINT_404 = "407",
   ERR_FA2_BALANCE_OF_ENTRYPOINT_404 = "408",
   ERR_WRONG_TOKEN_TYPE = "409",
+  ERR_DIV_BY_ZERO = "410",
 }
 
 export enum FA2 {

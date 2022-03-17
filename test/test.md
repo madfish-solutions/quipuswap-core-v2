@@ -178,9 +178,8 @@
    - ✅ should fail if dust out;
    - ✅ should fail if pair not listed;
    - ✅ should fail if insufficient out token liquidity;
-   - ❌ should flash swap one FA1.2 token;
-   - ❌ should flash swap one FA2 token;
-   - ❌ should flash swap one TEZ token.
+   - ❌ should flash swap FA1.2 token and return the same token with fee;
+   - ❌
 
 5. `swap`:
 

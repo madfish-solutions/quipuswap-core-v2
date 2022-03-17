@@ -191,7 +191,7 @@ function div_ceil(
       if result.1 > 0n
       then result.0 + 1n
       else result.0
-  | None         -> failwith(DexCore.err_no_liquidity)
+  | None         -> failwith(Common.err_div_by_zero)
   end
 
 function get_nat_or_fail(

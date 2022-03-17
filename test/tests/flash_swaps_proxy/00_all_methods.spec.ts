@@ -104,7 +104,7 @@ describe("FlashSwapsProxy", async () => {
 
   it("should call default entrypoint by dex core", async () => {
     const params: FlashSwap = {
-      flash_swap_rule: { loan_a_return_a: undefined },
+      flash_swap_rule: "Loan_a_return_a",
       pair_id: new BigNumber(0),
       receiver: alice.pkh,
       referrer: bob.pkh,
@@ -119,6 +119,6 @@ describe("FlashSwapsProxy", async () => {
     );
 
     await tokenA.approve(dexCore.contract.address, new BigNumber(100));
-    await dexCore.flashSwap(params, "Loan_a_return_a");
+    await dexCore.flashSwap(params);
   });
 });

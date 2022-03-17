@@ -19,7 +19,6 @@ export const dexCoreStorage: DexCoreStorage = {
     interface_tez_fee: MichelsonMap.fromLiteral({}),
     auction_fee: MichelsonMap.fromLiteral({}),
     auction_tez_fee: MichelsonMap.fromLiteral({}),
-    tmp: undefined,
     managers: [],
     fees: {
       interface_fee: new BigNumber(0),

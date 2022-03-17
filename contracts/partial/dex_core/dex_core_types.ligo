@@ -20,17 +20,20 @@ type flash_swap_t       is [@layout:comb] record [
   amount_out              : nat;
 ]
 
+type flash_swap_1_t     is [@layout:comb] record [
+  flash_swap_rule         : flash_swap_rule_t;
+  pair_id                 : token_id_t;
+  return_token            : token_t;
+  referrer                : address;
+  sender                  : address;
+  amount_out              : nat;
+  prev_tez_balance        : nat;
+]
+
 type flash_swap_data_t  is [@layout:comb] record [
   swap_token              : token_t;
   return_token            : token_t;
   swap_token_pool         : nat;
-]
-
-type tmp_t              is [@layout:comb] record [
-  flash_swap_params       : flash_swap_t;
-  flash_swap_data         : flash_swap_data_t;
-  sender                  : address;
-  prev_tez_balance        : nat;
 ]
 
 type fees_t             is [@layout:comb] record [
@@ -52,7 +55,6 @@ type storage_t          is [@layout:comb] record [
   interface_tez_fee       : big_map((token_id_t * address), nat);
   auction_fee             : big_map(token_t, nat);
   auction_tez_fee         : big_map(token_id_t, nat);
-  tmp                     : option(tmp_t);
   managers                : set(address);
   fees                    : fees_t;
   admin                   : address;
@@ -99,8 +101,6 @@ type divest_liquidity_t is [@layout:comb] record [
   liquidity_receiver      : address;
   candidate               : key_hash;
 ]
-
-type flash_swap_unit_t  is unit
 
 type swap_side_t        is [@layout:comb] record [
   pool                    : nat;
@@ -283,7 +283,7 @@ type action_t           is
 | Balance_of              of balance_of_t
 (* CALLBACKS *)
 | Launch_callback         of launch_callback_t
-| Flash_swap_callback     of flash_swap_unit_t
+| Flash_swap_callback     of flash_swap_1_t
 | Close                   of close_t
 
 type return_t           is list(operation) * storage_t

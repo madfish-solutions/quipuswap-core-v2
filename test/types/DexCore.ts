@@ -17,16 +17,10 @@ export type SwapSlice = {
 };
 
 export type FlashSwapRule =
-  | { loan_a_return_a: undefined }
-  | { loan_a_return_b: undefined }
-  | { loan_b_return_a: undefined }
-  | { loan_b_return_b: undefined };
-
-export type FlashSwapData = {
-  swap_token: Token;
-  return_token: Token;
-  swap_token_pool: BigNumber;
-};
+  | "Loan_a_return_a"
+  | "Loan_a_return_b"
+  | "Loan_b_return_a"
+  | "Loan_b_return_b";
 
 export type LaunchExchange = {
   pair: Tokens;
@@ -129,13 +123,6 @@ export type CheckIsBannedBaker = {
   baker: string;
 };
 
-export type Tmp = {
-  flash_swap_params: FlashSwap;
-  flash_swap_data: FlashSwapData;
-  sender: string;
-  prev_tez_balance: BigNumber;
-};
-
 export type DexCoreStorage = {
   storage: {
     token_metadata: MichelsonMap<MichelsonMapKey, unknown>;
@@ -149,7 +136,6 @@ export type DexCoreStorage = {
     interface_tez_fee: MichelsonMap<MichelsonMapKey, unknown>;
     auction_fee: MichelsonMap<MichelsonMapKey, unknown>;
     auction_tez_fee: MichelsonMap<MichelsonMapKey, unknown>;
-    tmp: Tmp | undefined | null;
     managers: string[];
     fees: Fees;
     admin: string;
