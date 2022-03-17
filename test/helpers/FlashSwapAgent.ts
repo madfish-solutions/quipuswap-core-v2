@@ -35,8 +35,9 @@ export class FlashSwapAgent {
     );
     const operation: OriginationOperation = await tezos.contract
       .originate({
+        balance: "10", // 10 TEZ
         code: artifacts.michelson,
-        storage: storage.dex_core,
+        storage: storage,
       })
       .catch((e) => {
         console.error(e);

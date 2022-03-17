@@ -36,6 +36,7 @@ import { FA12Token, FA2Token, Token } from "test/types/Common";
 import { Transfer, UpdateOperator } from "test/types/FA2";
 import {
   UpdateTokenMetadata,
+  CalculateFlashSwap,
   CumulativePrices,
   InvestLiquidity,
   DivestLiquidity,
@@ -257,6 +258,8 @@ export class DexCore {
       gasLimit: 1040000,
       storageLimit: 20000,
     });
+
+    await confirmOperation(this.tezos, operation.hash);
 
     return operation;
   }
@@ -739,6 +742,33 @@ export class DexCore {
       auctionFee,
       newFromPool,
       newToPool,
+    };
+  }
+
+  static calculateFlashSwap(
+    fees: Fees,
+    amountOut: BigNumber,
+    returnTokenPool: BigNumber
+  ): CalculateFlashSwap {
+    const interfaceFee: BigNumber = amountOut.multipliedBy(fees.interface_fee);
+    const auctionFee: BigNumber = amountOut.multipliedBy(fees.auction_fee);
+    const swapFee: BigNumber = amountOut.multipliedBy(fees.swap_fee);
+    const fullFee: BigNumber = interfaceFee.plus(auctionFee).plus(swapFee);
+    const fee: BigNumber = amountOut
+      .multipliedBy(PRECISION)
+      .minus(interfaceFee)
+      .minus(auctionFee)
+      .dividedBy(PRECISION)
+      .integerValue(BigNumber.ROUND_DOWN);
+    const newReturtnTokenPool: BigNumber = returnTokenPool.plus(fee);
+
+    return {
+      interfaceFee: interfaceFee,
+      auctionFee: auctionFee,
+      swapFee: swapFee,
+      fullFee: fullFee,
+      fee: fee,
+      newReturnTokenPool: newReturtnTokenPool,
     };
   }
 }

@@ -30,8 +30,13 @@ import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa12Storage } from "../../../storage/test/FA12";
 import { fa2Storage } from "../../../storage/test/FA2";
 
-import { FlashSwap, LaunchExchange } from "../../types/DexCore";
+import { TezStore } from "../../helpers/TezStore";
 import { SBAccount } from "../../types/Common";
+import {
+  CalculateFlashSwap,
+  LaunchExchange,
+  FlashSwap,
+} from "../../types/DexCore";
 
 import fs from "fs";
 
@@ -52,6 +57,8 @@ describe("DexCore (flash swap)", async () => {
 
   var alice: SBAccount = accounts.alice;
   var bob: SBAccount = accounts.bob;
+
+  var value: number = Math.round(Math.random() * 100 + 1);
 
   before("setup", async () => {
     utils = new Utils();
@@ -220,7 +227,7 @@ describe("DexCore (flash swap)", async () => {
 
     fs.writeFile(
       "contracts/test/parameters.ligo",
-      `const agent : address = ("${flashSwapAgent.contract.address}" : address);\nconst token : token_t = Fa12(("${fa12Token1.contract.address}" : address));\n`,
+      `const agent : address = ("${flashSwapAgent.contract.address}" : address);\nconst fa12_token : token_t = Fa12(("${fa12Token1.contract.address}" : address));\nconst val : nat = ${value}n;\n`,
       function (err) {
         if (err) console.log(err.message);
       }
@@ -318,15 +325,247 @@ describe("DexCore (flash swap)", async () => {
     });
   });
 
-  xit("should flash swap FA1.2 token and return the same token with fee", async () => {
+  it("should flash swap FA1.2 token and return the same token with fee", async () => {
     const params: FlashSwap = {
       flash_swap_rule: "Loan_a_return_a",
       pair_id: new BigNumber(0),
-      receiver: alice.pkh,
+      receiver: flashSwapAgent.contract.address,
       referrer: bob.pkh,
       amount_out: new BigNumber(1000),
     };
 
+    await dexCore.updateStorage({
+      pairs: [params.pair_id],
+    });
+    await fa12Token1.updateStorage({
+      ledger: [
+        alice.pkh,
+        dexCore.contract.address,
+        flashSwapAgent.contract.address,
+      ],
+    });
+    await flashSwapAgent.updateStorage();
+
+    const flashSwapResults: CalculateFlashSwap = DexCore.calculateFlashSwap(
+      dexCore.storage.storage.fees,
+      params.amount_out,
+      dexCore.storage.storage.pairs[params.pair_id.toFixed()].token_a_pool
+    );
+    const prevAliceTokBalance: BigNumber = fa12Token1.getBalance(alice.pkh);
+    const prevDexCoreTokBalance: BigNumber = fa12Token1.getBalance(
+      dexCore.contract.address
+    );
+    const prevFlashSwapAgentTokBalance: BigNumber = fa12Token1.getBalance(
+      flashSwapAgent.contract.address
+    );
+
+    await fa12Token1.approve(
+      dexCore.contract.address,
+      params.amount_out.plus(
+        flashSwapResults.fullFee
+          .dividedBy(PRECISION)
+          .integerValue(BigNumber.ROUND_CEIL)
+      )
+    );
     await dexCore.flashSwap(params);
+    await dexCore.updateStorage({
+      pairs: [params.pair_id],
+    });
+    await fa12Token1.updateStorage({
+      ledger: [
+        alice.pkh,
+        dexCore.contract.address,
+        flashSwapAgent.contract.address,
+      ],
+    });
+    await flashSwapAgent.updateStorage();
+
+    const currAliceTokBalance: BigNumber = fa12Token1.getBalance(alice.pkh);
+    const currDexCoreTokBalance: BigNumber = fa12Token1.getBalance(
+      dexCore.contract.address
+    );
+    const currFlashSwapAgentTokBalance: BigNumber = fa12Token1.getBalance(
+      flashSwapAgent.contract.address
+    );
+
+    expect(currDexCoreTokBalance).to.be.bignumber.equal(
+      prevDexCoreTokBalance.plus(
+        flashSwapResults.fullFee
+          .dividedBy(PRECISION)
+          .integerValue(BigNumber.ROUND_CEIL)
+      )
+    );
+    expect(currAliceTokBalance).to.be.bignumber.equal(
+      prevAliceTokBalance
+        .minus(params.amount_out)
+        .minus(
+          flashSwapResults.fullFee
+            .dividedBy(PRECISION)
+            .integerValue(BigNumber.ROUND_CEIL)
+        )
+    );
+    expect(currFlashSwapAgentTokBalance).to.be.bignumber.equal(
+      prevFlashSwapAgentTokBalance.plus(params.amount_out)
+    );
+    expect(
+      dexCore.storage.storage.pairs[params.pair_id.toFixed()].token_a_pool
+    ).to.be.bignumber.equal(flashSwapResults.newReturnTokenPool);
+    expect(flashSwapAgent.storage.val).to.be.bignumber.equal(
+      new BigNumber(value)
+    );
+  });
+
+  it("should flash swap FA2 token and return the same token with fee", async () => {
+    const params: FlashSwap = {
+      flash_swap_rule: "Loan_a_return_a",
+      pair_id: new BigNumber(1),
+      receiver: flashSwapAgent.contract.address,
+      referrer: bob.pkh,
+      amount_out: new BigNumber(1000),
+    };
+
+    await dexCore.updateStorage({
+      pairs: [params.pair_id],
+    });
+    await fa2Token1.updateStorage({
+      account_info: [
+        alice.pkh,
+        dexCore.contract.address,
+        flashSwapAgent.contract.address,
+      ],
+    });
+    await flashSwapAgent.updateStorage();
+
+    const flashSwapResults: CalculateFlashSwap = DexCore.calculateFlashSwap(
+      dexCore.storage.storage.fees,
+      params.amount_out,
+      dexCore.storage.storage.pairs[params.pair_id.toFixed()].token_a_pool
+    );
+    const prevAliceTokBalance: BigNumber = await fa2Token1.getBalance(
+      alice.pkh
+    );
+    const prevDexCoreTokBalance: BigNumber = await fa2Token1.getBalance(
+      dexCore.contract.address
+    );
+    const prevFlashSwapAgentTokBalance: BigNumber = await fa2Token1.getBalance(
+      flashSwapAgent.contract.address
+    );
+
+    await dexCore.flashSwap(params);
+    await dexCore.updateStorage({
+      pairs: [params.pair_id],
+    });
+    await fa2Token1.updateStorage({
+      account_info: [
+        alice.pkh,
+        dexCore.contract.address,
+        flashSwapAgent.contract.address,
+      ],
+    });
+    await flashSwapAgent.updateStorage();
+
+    const currAliceTokBalance: BigNumber = await fa2Token1.getBalance(
+      alice.pkh
+    );
+    const currDexCoreTokBalance: BigNumber = await fa2Token1.getBalance(
+      dexCore.contract.address
+    );
+    const currFlashSwapAgentTokBalance: BigNumber = await fa2Token1.getBalance(
+      flashSwapAgent.contract.address
+    );
+
+    expect(currDexCoreTokBalance).to.be.bignumber.equal(
+      prevDexCoreTokBalance.plus(
+        flashSwapResults.fullFee
+          .dividedBy(PRECISION)
+          .integerValue(BigNumber.ROUND_CEIL)
+      )
+    );
+    expect(currAliceTokBalance).to.be.bignumber.equal(
+      prevAliceTokBalance
+        .minus(params.amount_out)
+        .minus(
+          flashSwapResults.fullFee
+            .dividedBy(PRECISION)
+            .integerValue(BigNumber.ROUND_CEIL)
+        )
+    );
+    expect(currFlashSwapAgentTokBalance).to.be.bignumber.equal(
+      prevFlashSwapAgentTokBalance.plus(params.amount_out)
+    );
+    expect(
+      dexCore.storage.storage.pairs[params.pair_id.toFixed()].token_a_pool
+    ).to.be.bignumber.equal(flashSwapResults.newReturnTokenPool);
+    expect(flashSwapAgent.storage.val).to.be.bignumber.equal(
+      new BigNumber(value)
+    );
+  });
+
+  it("should flash swap TEZ token and return the same token with fee", async () => {
+    const params: FlashSwap = {
+      flash_swap_rule: "Loan_b_return_b",
+      pair_id: new BigNumber(0),
+      receiver: bob.pkh,
+      referrer: bob.pkh,
+      amount_out: new BigNumber(1000),
+    };
+
+    await dexCore.updateStorage({
+      pairs: [params.pair_id],
+    });
+    await flashSwapAgent.updateStorage();
+
+    const tezStore: TezStore = await TezStore.init(
+      dexCore.storage.storage.pairs[params.pair_id.toFixed()].tez_store,
+      dexCore.tezos
+    );
+    const prevPool: BigNumber =
+      dexCore.storage.storage.pairs[params.pair_id.toFixed()].token_b_pool;
+    const flashSwapResults: CalculateFlashSwap = DexCore.calculateFlashSwap(
+      dexCore.storage.storage.fees,
+      params.amount_out,
+      prevPool
+    );
+    const prevDexCoreTokBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.contract.address
+    );
+    const prevTezStoreTokBalance: BigNumber = await utils.tezos.tz.getBalance(
+      tezStore.contract.address
+    );
+    const prevBobTokBalance: BigNumber = await utils.tezos.tz.getBalance(
+      bob.pkh
+    );
+
+    await dexCore.flashSwap(params);
+    await dexCore.updateStorage({
+      pairs: [params.pair_id],
+    });
+    await flashSwapAgent.updateStorage();
+
+    const currDexCoreTokBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.contract.address
+    );
+    const currTezStoreTokBalance: BigNumber = await utils.tezos.tz.getBalance(
+      tezStore.contract.address
+    );
+    const currBobTokBalance: BigNumber = await utils.tezos.tz.getBalance(
+      bob.pkh
+    );
+
+    expect(currDexCoreTokBalance).to.be.bignumber.equal(
+      prevDexCoreTokBalance.plus(new BigNumber(500))
+    );
+    expect(currTezStoreTokBalance).to.be.bignumber.equal(
+      prevTezStoreTokBalance.plus(new BigNumber(500))
+    );
+    expect(currBobTokBalance).to.be.bignumber.equal(
+      prevBobTokBalance.plus(params.amount_out)
+    );
+    expect(
+      dexCore.storage.storage.pairs[params.pair_id.toFixed()].token_b_pool
+    ).to.be.bignumber.equal(prevPool.plus(new BigNumber(1000)));
+    expect(flashSwapAgent.storage.val).to.be.bignumber.equal(
+      new BigNumber(value)
+    );
   });
 });

@@ -207,3 +207,12 @@ export type CalculateSwap = {
   newFromPool: BigNumber;
   newToPool: BigNumber;
 };
+
+export type CalculateFlashSwap = {
+  interfaceFee: BigNumber;
+  auctionFee: BigNumber;
+  swapFee: BigNumber;
+  fullFee: BigNumber;
+  fee: BigNumber;
+  newReturnTokenPool: BigNumber;
+};

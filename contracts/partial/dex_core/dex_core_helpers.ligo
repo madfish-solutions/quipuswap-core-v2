@@ -353,9 +353,9 @@ function swap_internal(
     tmp.amount_in := out;
     tmp.token_in := swap.to_.token;
 
-    const updated_pair_1 : pair_t = calc_cumulative_prices(pair, pair.token_a_pool, pair.token_b_pool);
+    const updated_pair : pair_t = calc_cumulative_prices(pair, pair.token_a_pool, pair.token_b_pool);
 
-    tmp.s.pairs[params.pair_id] := form_pools(swap.from_.pool, swap.to_.pool, updated_pair_1, params.direction);
+    tmp.s.pairs[params.pair_id] := form_pools(swap.from_.pool, swap.to_.pool, updated_pair, params.direction);
 
     if swap.to_.token = Tez and tmp.counter = get_nat_or_fail(tmp.swaps_list_size - 1n)
     then {
