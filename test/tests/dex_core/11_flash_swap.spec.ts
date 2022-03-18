@@ -52,7 +52,7 @@ function updateParameters(
   );
 }
 
-describe("DexCore (flash swap)", async () => {
+describeg("DexCore (flash swap)", async () => {
   var flashSwapsProxy: FlashSwapsProxy;
   var flashSwapAgent: FlashSwapAgent;
   var bakerRegistry: BakerRegistry;
@@ -320,6 +320,22 @@ describe("DexCore (flash swap)", async () => {
 
     await rejects(dexCore.flashSwap(params), (err: Error) => {
       expect(err.message).to.equal(DexCoreErrors.ERR_INSUFFICIENT_LIQUIDITY);
+
+      return true;
+    });
+  });
+
+  it("should fail if wrong flash swap returns in TEZ token", async () => {
+    const params: FlashSwap = {
+      flash_swap_rule: "Loan_a_return_b",
+      pair_id: new BigNumber(0),
+      receiver: alice.pkh,
+      referrer: bob.pkh,
+      amount_out: new BigNumber(2000),
+    };
+
+    await rejects(dexCore.flashSwap(params), (err: Error) => {
+      expect(err.message).to.equal(DexCoreErrors.ERR_WRONG_FLASH_SWAP_RETURNS);
 
       return true;
     });
