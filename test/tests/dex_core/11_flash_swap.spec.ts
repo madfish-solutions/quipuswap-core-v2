@@ -325,22 +325,6 @@ describe("DexCore (flash swap)", async () => {
     });
   });
 
-  it.skip("should fail if wrong flash swap returns in TEZ token", async () => {
-    const params: FlashSwap = {
-      flash_swap_rule: "Loan_a_return_b",
-      pair_id: new BigNumber(0),
-      receiver: alice.pkh,
-      referrer: bob.pkh,
-      amount_out: new BigNumber(3000),
-    };
-
-    await rejects(dexCore.flashSwap(params), (err: Error) => {
-      expect(err.message).to.equal(DexCoreErrors.ERR_WRONG_FLASH_SWAP_RETURNS);
-
-      return true;
-    });
-  });
-
   it("should flash swap FA1.2 token and return the same token with fee", async () => {
     const params: FlashSwap = {
       flash_swap_rule: "Loan_a_return_a",
@@ -1687,5 +1671,23 @@ describe("DexCore (flash swap)", async () => {
     expect(currTokenAPool.multipliedBy(currTokenBPool)).to.be.bignumber.gt(
       prevTokenAPool.multipliedBy(prevTokenBPool)
     );
+  });
+
+  it("should fail if wrong flash swap returns in TEZ token", async () => {
+    const params: FlashSwap = {
+      flash_swap_rule: "Loan_a_return_b",
+      pair_id: new BigNumber(0),
+      receiver: alice.pkh,
+      referrer: bob.pkh,
+      amount_out: new BigNumber(3000),
+    };
+    const value: number = Math.round(Math.random() * 100 + 1);
+
+    await updateParameters(flashSwapAgent.contract.address, value);
+    await rejects(dexCore.flashSwap(params), (err: Error) => {
+      expect(err.message).to.equal(DexCoreErrors.ERR_WRONG_FLASH_SWAP_RETURNS);
+
+      return true;
+    });
   });
 });

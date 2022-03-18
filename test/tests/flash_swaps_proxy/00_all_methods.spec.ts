@@ -82,9 +82,11 @@ describe("FlashSwapsProxy", async () => {
       flashSwapAgentStorage
     );
 
+    const value: number = Math.round(Math.random() * 100 + 1);
+
     fs.writeFile(
       "contracts/test/parameters.ligo",
-      `const agent : address = ("${flashSwapAgent.contract.address}" : address);\nconst token : token_t = Fa12(("${fa12Token1.contract.address}" : address));\n`,
+      `const agent : address = ("${flashSwapAgent.contract.address}" : address);\nconst val : nat = ${value}n;\n`,
       function (err) {
         if (err) console.log(err.message);
       }
