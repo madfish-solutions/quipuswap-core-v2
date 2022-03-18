@@ -47,6 +47,7 @@ import {
   RequiredTokens,
   TokensPerShare,
   CalculateSwap,
+  FlashSwapRule,
   AddManager,
   FlashSwap,
   SetExpiry,
@@ -748,7 +749,9 @@ export class DexCore {
   static calculateFlashSwap(
     fees: Fees,
     amountOut: BigNumber,
-    returnTokenPool: BigNumber
+    tokenAPool: BigNumber,
+    tokenBPool: BigNumber,
+    flashSwapRule: FlashSwapRule
   ): CalculateFlashSwap {
     const interfaceFee: BigNumber = amountOut.multipliedBy(fees.interface_fee);
     const auctionFee: BigNumber = amountOut.multipliedBy(fees.auction_fee);
@@ -760,7 +763,27 @@ export class DexCore {
       .minus(auctionFee)
       .dividedBy(PRECISION)
       .integerValue(BigNumber.ROUND_DOWN);
-    const newReturtnTokenPool: BigNumber = returnTokenPool.plus(fee);
+    let newTokenAPool: BigNumber = tokenAPool;
+    let newTokenBPool: BigNumber = tokenBPool;
+
+    switch (flashSwapRule) {
+      case "Loan_a_return_a":
+        newTokenAPool = tokenAPool.plus(fee);
+        break;
+      case "Loan_a_return_b":
+        newTokenAPool = tokenAPool.minus(amountOut);
+        newTokenBPool = tokenBPool.plus(amountOut).plus(fee);
+        break;
+      case "Loan_b_return_a":
+        newTokenAPool = tokenAPool.plus(amountOut).plus(fee);
+        newTokenBPool = tokenBPool.minus(amountOut);
+        break;
+      case "Loan_b_return_b":
+        newTokenBPool = tokenBPool.plus(fee);
+        break;
+      default:
+        break;
+    }
 
     return {
       interfaceFee: interfaceFee,
@@ -768,7 +791,8 @@ export class DexCore {
       swapFee: swapFee,
       fullFee: fullFee,
       fee: fee,
-      newReturnTokenPool: newReturtnTokenPool,
+      newTokenAPool: newTokenAPool,
+      newTokenBPool: newTokenBPool,
     };
   }
 }

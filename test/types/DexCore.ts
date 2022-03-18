@@ -214,5 +214,6 @@ export type CalculateFlashSwap = {
   swapFee: BigNumber;
   fullFee: BigNumber;
   fee: BigNumber;
-  newReturnTokenPool: BigNumber;
+  newTokenAPool: BigNumber;
+  newTokenBPool: BigNumber;
 };

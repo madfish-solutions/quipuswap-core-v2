@@ -179,9 +179,16 @@
    - ✅ should fail if pair not listed;
    - ✅ should fail if insufficient out token liquidity;
    - ✅ should flash swap FA1.2 token and return the same token with fee;
+   - ✅ should flash swap FA1.2 token and return opposite FA1.2 token with fee;
+   - ✅ should flash swap FA1.2 token and return opposite FA2 token with fee;
+   - ✅ should flash swap FA1.2 token and return opposite TEZ token with fee;
    - ✅ should flash swap FA2 token and return the same token with fee;
+   - ✅ should flash swap FA2 token and return opposite FA1.2 token with fee;
+   - ✅ should flash swap FA2 token and return opposite FA2 token with fee;
+   - ✅ should flash swap FA2 token and return opposite TEZ token with fee;
    - ✅ should flash swap TEZ token and return the same token with fee;
-   - ❌
+   - ✅ should flash swap TEZ token and return opposite FA1.2 token with fee;
+   - ✅ should flash swap TEZ token and return opposite FA2 token with fee.
 
 5. `swap`:
 
