@@ -331,7 +331,7 @@ describe("DexCore (flash swap)", async () => {
       pair_id: new BigNumber(0),
       receiver: alice.pkh,
       referrer: bob.pkh,
-      amount_out: new BigNumber(2000),
+      amount_out: new BigNumber(3000),
     };
 
     await rejects(dexCore.flashSwap(params), (err: Error) => {

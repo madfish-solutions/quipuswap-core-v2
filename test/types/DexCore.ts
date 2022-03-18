@@ -118,6 +118,16 @@ export type LaunchCallback = {
   tez_store: string;
 };
 
+export type FlashSwapCallback = {
+  flash_swap_rule: any;
+  pair_id: BigNumber;
+  return_token: Token;
+  referrer: string;
+  sender: string;
+  amount_out: BigNumber;
+  prev_tez_balance: BigNumber;
+};
+
 export type CheckIsBannedBaker = {
   pair_id: BigNumber;
   baker: string;

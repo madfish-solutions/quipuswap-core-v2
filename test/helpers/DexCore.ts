@@ -37,6 +37,7 @@ import { Transfer, UpdateOperator } from "test/types/FA2";
 import {
   UpdateTokenMetadata,
   CalculateFlashSwap,
+  FlashSwapCallback,
   CumulativePrices,
   InvestLiquidity,
   DivestLiquidity,
@@ -490,9 +491,11 @@ export class DexCore {
     return operation;
   }
 
-  async flashSwapCallback(): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methods
-      .flash_swap_callback([])
+  async flashSwapCallback(
+    params: FlashSwapCallback
+  ): Promise<TransactionOperation> {
+    const operation: TransactionOperation = await this.contract.methodsObject
+      .flash_swap_callback(params)
       .send();
 
     await confirmOperation(this.tezos, operation.hash);

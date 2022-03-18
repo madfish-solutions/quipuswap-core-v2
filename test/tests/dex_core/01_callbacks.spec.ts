@@ -1,6 +1,6 @@
+import { Utils, zeroAddress } from "../../helpers/Utils";
 import { DexCore } from "../../helpers/DexCore";
 import { Common } from "../../helpers/Errors";
-import { Utils } from "../../helpers/Utils";
 
 import { rejects } from "assert";
 
@@ -14,10 +14,14 @@ import { bakerRegistryStorage } from "../../../storage/BakerRegistry";
 import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa12Storage } from "../../../storage/test/FA12";
 
-import { LaunchCallback, LaunchExchange } from "../../types/DexCore";
 import { BakerRegistry } from "../../helpers/BakerRegistry";
 import { SBAccount } from "../../types/Common";
 import { FA12 } from "../../helpers/FA12";
+import {
+  LaunchCallback,
+  LaunchExchange,
+  FlashSwapCallback,
+} from "../../types/DexCore";
 
 chai.use(require("chai-bignumber")(BigNumber));
 
@@ -50,7 +54,17 @@ describe("DexCore (callbacks)", async () => {
   });
 
   it("should fail if not dex core is trying to call it", async () => {
-    await rejects(dexCore.flashSwapCallback(), (err: Error) => {
+    const params: FlashSwapCallback = {
+      flash_swap_rule: { loan_a_return_a: undefined },
+      pair_id: new BigNumber(0),
+      return_token: { fa12: zeroAddress },
+      referrer: zeroAddress,
+      sender: zeroAddress,
+      amount_out: new BigNumber(0),
+      prev_tez_balance: new BigNumber(0),
+    };
+
+    await rejects(dexCore.flashSwapCallback(params), (err: Error) => {
       expect(err.message).to.equal(Common.ERR_NOT_DEX_CORE);
 
       return true;
