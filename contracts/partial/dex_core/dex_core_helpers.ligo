@@ -146,61 +146,18 @@ function update_fees(
   const referrer      : address;
   const interface_fee : nat;
   const auction_fee   : nat)
-                      : storage_t * option(operation) is
+                      : storage_t is
   block {
-    var divest_tez_operation : option(operation) := (None : option(operation));
-
     if token_in = Tez
     then {
-      s.interface_tez_fee[(pair_id, referrer)] := unwrap_or(s.interface_tez_fee[(pair_id, referrer)], 0n)
-        + interface_fee;
+      s.interface_tez_fee[(pair_id, referrer)] := unwrap_or(s.interface_tez_fee[(pair_id, referrer)], 0n) + interface_fee;
       s.auction_tez_fee[pair_id] := unwrap_or(s.auction_tez_fee[pair_id], 0n) + auction_fee;
-
-      const interface_tez_fee_f : nat = unwrap_or(s.interface_tez_fee[(pair_id, referrer)], 0n);
-      const auction_tez_fee_f : nat = unwrap_or(s.auction_tez_fee[pair_id], 0n);
-      var divested_amount : nat := 0n;
-
-      if interface_tez_fee_f > Constants.precision
-      then {
-        const amt : nat = interface_tez_fee_f / Constants.precision;
-        const amt_f : nat = amt * Constants.precision;
-
-        divested_amount := divested_amount + amt;
-        s.interface_tez_fee[(pair_id, referrer)] := get_nat_or_fail(interface_tez_fee_f - amt_f);
-        s.interface_fee[(token_in, referrer)] := unwrap_or(s.interface_fee[(token_in, referrer)], 0n) + amt_f;
-      }
-      else skip;
-
-      if auction_tez_fee_f > Constants.precision
-      then {
-        const amt : nat = auction_tez_fee_f / Constants.precision;
-        const amt_f : nat = amt * Constants.precision;
-
-        divested_amount := divested_amount + amt;
-        s.auction_tez_fee[pair_id] := get_nat_or_fail(auction_tez_fee_f - amt_f);
-        s.auction_fee[token_in] := unwrap_or(s.auction_fee[token_in], 0n) + amt_f;
-      }
-      else skip;
-
-      if divested_amount > 0n
-      then {
-        const divest_params : divest_tez_t = record [
-          receiver     = (get_contract(Tezos.self_address) : contract(unit));
-          amt          = divested_amount;
-        ];
-        const pair : pair_t = unwrap(s.pairs[pair_id], DexCore.err_pair_not_listed);
-
-        divest_tez_operation := Some(
-          get_divest_tez_op(divest_params, unwrap(pair.tez_store, DexCore.err_tez_store_404))
-        );
-      }
-      else skip;
     }
     else {
       s.interface_fee[(token_in, referrer)] := unwrap_or(s.interface_fee[(token_in, referrer)], 0n) + interface_fee;
       s.auction_fee[token_in] := unwrap_or(s.auction_fee[token_in], 0n) + auction_fee;
     };
-  } with (s, divest_tez_operation)
+  } with s
 
 function form_flash_swap_data(
   const pair            : pair_t;
@@ -262,23 +219,13 @@ function form_pools(
   const direction       : swap_direction_t)
                         : pair_t is
   case direction of
-  | B_to_a -> record [
+  | B_to_a -> pair with record [
       token_a_pool         = to_pool;
       token_b_pool         = from_pool;
-      token_a_price_cum    = pair.token_a_price_cum;
-      token_b_price_cum    = pair.token_b_price_cum;
-      total_supply         = pair.total_supply;
-      last_block_timestamp = pair.last_block_timestamp;
-      tez_store            = pair.tez_store;
     ]
-  | A_to_b -> record [
+  | A_to_b -> pair with record [
       token_a_pool         = from_pool;
       token_b_pool         = to_pool;
-      token_a_price_cum    = pair.token_a_price_cum;
-      token_b_price_cum    = pair.token_b_price_cum;
-      total_supply         = pair.total_supply;
-      last_block_timestamp = pair.last_block_timestamp;
-      tez_store            = pair.tez_store;
     ]
   end
 
@@ -309,7 +256,7 @@ function swap_internal(
     const interface_fee : nat = tmp.amount_in * fees.interface_fee;
     const auction_fee : nat = tmp.amount_in * fees.auction_fee;
 
-    const (s, divest_tez_operation_opt) = update_fees(
+    const s = update_fees(
       tmp.s,
       params.pair_id,
       tmp.token_in,
@@ -319,11 +266,6 @@ function swap_internal(
     );
 
     tmp.s := s;
-
-    case divest_tez_operation_opt of
-    | Some(op) -> tmp.ops := op # tmp.ops
-    | None     -> skip
-    end;
 
     if swap.to_.token = Tez and tmp.counter =/= get_nat_or_fail(tmp.swaps_list_size - 1n)
     then {
@@ -353,21 +295,21 @@ function swap_internal(
     tmp.amount_in := out;
     tmp.token_in := swap.to_.token;
 
-    const updated_pair : pair_t = calc_cumulative_prices(pair, pair.token_a_pool, pair.token_b_pool);
+    const updated_pair : pair_t = form_pools(swap.from_.pool, swap.to_.pool, pair, params.direction);
 
-    tmp.s.pairs[params.pair_id] := form_pools(swap.from_.pool, swap.to_.pool, updated_pair, params.direction);
+    tmp.s.pairs[params.pair_id] := calc_cumulative_prices(pair, updated_pair.token_a_pool, updated_pair.token_b_pool);
 
-    if swap.to_.token = Tez and tmp.counter = get_nat_or_fail(tmp.swaps_list_size - 1n)
+    if tmp.counter = get_nat_or_fail(tmp.swaps_list_size - 1n)
     then {
-      const divest_params : divest_tez_t = record [
-        receiver     = (get_contract(tmp.receiver) : contract(unit));
-        amt          = out;
-      ];
-
-      tmp.last_operation := Some(get_divest_tez_op(divest_params, unwrap(pair.tez_store, DexCore.err_tez_store_404)));
-    }
-    else tmp.last_operation := Some(transfer_token(Tezos.self_address, tmp.receiver, out, swap.to_.token));
-
+      tmp.last_operation := Some(
+        if swap.to_.token = Tez
+        then get_divest_tez_op(record [
+            receiver     = (get_contract(tmp.receiver) : contract(unit));
+            amt          = out;
+          ], unwrap(pair.tez_store, DexCore.err_tez_store_404))
+        else transfer_token(Tezos.self_address, tmp.receiver, out, swap.to_.token)
+      );
+    } else skip;
     tmp.counter := tmp.counter + 1n;
   } with tmp
 

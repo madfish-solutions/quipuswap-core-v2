@@ -94,7 +94,7 @@ function flash_swap_callback(
 
         s.pairs[params.pair_id] := pair;
 
-        const (storage, divest_tez_operation_opt) = update_fees(
+        const storage = update_fees(
           s,
           params.pair_id,
           params.return_token,
@@ -104,11 +104,6 @@ function flash_swap_callback(
         );
 
         s := storage;
-
-        case divest_tez_operation_opt of
-        | Some(op) -> ops := op # ops
-        | None     -> skip
-        end;
 
         ops := reverse_list(ops);
       }

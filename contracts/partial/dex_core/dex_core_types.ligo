@@ -149,10 +149,13 @@ type withdraw_profit_t  is [@layout:comb] record [
 type claim_fee_t        is [@layout:comb] record [
   token                   : token_t;
   receiver                : address;
-  amount                  : nat;
+  pair_id                 : option(token_id_t);
 ]
 
-type withdraw_fee_t     is token_t
+type withdraw_fee_t     is [@layout:comb] record [
+  pair_id                 : option(token_id_t);
+  token                   : token_t;
+]
 
 type dex_vote_t         is [@layout:comb] record [
   pair_id                 : token_id_t;

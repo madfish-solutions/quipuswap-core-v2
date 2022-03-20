@@ -147,12 +147,10 @@ function invest_liquidity(
         const tokens_a_required : nat = div_ceil(params.shares * pair.token_a_pool, pair.total_supply);
         const tokens_b_required : nat = div_ceil(params.shares * pair.token_b_pool, pair.total_supply);
 
+        assert_with_error(tokens.token_b =/= Tez or params.token_b_in = Tezos.amount / 1mutez,
+          DexCore.err_tez_amount_mismatch);
         assert_with_error(tokens_a_required <= params.token_a_in, DexCore.err_low_token_a_in);
-        assert_with_error(
-          (tokens.token_b = Tez and tokens_b_required <= Tezos.amount / 1mutez)
-            or tokens_b_required <= params.token_b_in,
-          DexCore.err_low_token_b_in
-        );
+        assert_with_error(tokens_b_required <= params.token_b_in, DexCore.err_low_token_b_in);
 
         const sender_balance : nat = unwrap_or(s.ledger[(params.shares_receiver, params.pair_id)], 0n);
 
@@ -239,6 +237,11 @@ function divest_liquidity(
         );
 
         updated_pair.total_supply := get_nat_or_fail(updated_pair.total_supply - params.shares);
+
+        assert_with_error(
+          ((updated_pair.total_supply or updated_pair.token_a_pool or updated_pair.token_b_pool) = 0n)
+          or (updated_pair.total_supply * updated_pair.token_a_pool * updated_pair.token_b_pool =/= 0n),
+          DexCore.err_wrong_reserves_state);
 
         s.pairs[params.pair_id] := updated_pair;
 
@@ -339,6 +342,9 @@ function swap(
         | A_to_b -> tokens.token_a
         | B_to_a -> tokens.token_b
         end;
+
+        assert_with_error(token =/= Tez or params.amount_in = Tezos.amount / 1mutez, DexCore.err_wrong_tez_amount);
+
         var tmp : tmp_swap_t := List.fold(
           swap_internal,
           params.swaps,
@@ -367,13 +373,7 @@ function swap(
         tmp.ops := reverse_list(tmp.ops);
         ops := concat_lists(tmp.ops, ops);
 
-        if token =/= Tez
-        then ops := transfer_token(Tezos.sender, Tezos.self_address, params.amount_in, token) # ops
-        else {
-          assert_with_error(params.amount_in = Tezos.amount / 1mutez, DexCore.err_wrong_tez_amount);
-
-          ops := get_invest_tez_op(Tezos.amount, unwrap(pair.tez_store, DexCore.err_tez_store_404)) # ops;
-        };
+        ops := invest_tez_or_transfer_tokens(params.amount_in, token, pair.tez_store) # ops;
       }
     | _ -> skip
     end
@@ -420,18 +420,35 @@ function claim_interface_fee(
 
     case action of
     | Claim_interface_fee(params) -> {
-        const interface_fee_f : nat = unwrap_or(s.interface_fee[(params.token, Tezos.sender)], 0n);
-        const amount_f : nat = params.amount * Constants.precision;
-
-        assert_with_error(amount_f <= interface_fee_f, DexCore.err_insufficient_interface_fee_balance);
-
-        if interface_fee_f > Constants.precision
+        if params.token = Tez
         then {
-          s.interface_fee[(params.token, Tezos.sender)] := get_nat_or_fail(interface_fee_f - amount_f);
+          const pair_id : nat = unwrap(params.pair_id, DexCore.err_no_token_id);
+          const interface_fee_f : nat = unwrap_or(s.interface_tez_fee[(pair_id, Tezos.sender)], 0n);
+          const value : nat = interface_fee_f / Constants.precision;
 
-          ops := transfer_token(Tezos.self_address, params.receiver, params.amount, params.token) # ops;
+          if value > 0n
+          then {
+            s.interface_tez_fee[(pair_id, Tezos.sender)] := get_nat_or_fail(interface_fee_f - value *
+              Constants.precision);
+
+            const pair : pair_t = unwrap(s.pairs[pair_id], DexCore.err_pair_not_listed);
+            ops := divest_tez_or_transfer_tokens(params.receiver, value, params.token, pair.tez_store) # ops;
+          }
+          else skip;
         }
-        else skip;
+        else {
+          const interface_fee_f : nat = unwrap_or(s.interface_fee[(params.token, Tezos.sender)], 0n);
+          const value : nat = interface_fee_f / Constants.precision;
+
+          if value > 0n
+          then {
+            s.interface_fee[(params.token, Tezos.sender)] := get_nat_or_fail(interface_fee_f - value *
+              Constants.precision);
+
+            ops := transfer_token(Tezos.self_address, params.receiver, value, params.token) # ops;
+          }
+          else skip;
+        }
       }
     | _ -> skip
     end
@@ -449,23 +466,38 @@ function withdraw_auction_fee(
     ];
 
     case action of
-    | Withdraw_auction_fee(token) -> {
-        const auction_fee_f : nat = unwrap_or(s.auction_fee[token], 0n);
+    | Withdraw_auction_fee(params) -> {
+        var tez_store : option(address) := (None : option(address));
+        const token : token_t = params.token;
+
+        const auction_fee_f : nat = unwrap_or(
+          if token = Tez
+          then s.auction_tez_fee[unwrap(params.pair_id, DexCore.err_no_token_id)]
+          else s.auction_fee[token], 0n);
         const user_reward : nat = auction_fee_f * s.fees.withdraw_fee_reward / Constants.precision /
           Constants.precision;
         const actual_auction_fee : nat = get_nat_or_fail((auction_fee_f / Constants.precision) - user_reward);
+        const auction_fee_change : nat = get_nat_or_fail(
+            auction_fee_f - ((user_reward + actual_auction_fee) * Constants.precision)
+          );
+
+        if token = Tez
+        then {
+          const pair_id : nat = unwrap(params.pair_id, DexCore.err_no_token_id);
+          s.auction_tez_fee[pair_id] := auction_fee_change;
+          const pair : pair_t = unwrap(s.pairs[pair_id], DexCore.err_pair_not_listed);
+          tez_store := pair.tez_store;
+        }
+        else s.auction_fee[token] := auction_fee_change;
+
         const params : receive_fee_t = record [
           token = token;
           fee   = actual_auction_fee;
         ];
 
-        s.auction_fee[token] := get_nat_or_fail(
-          auction_fee_f - ((user_reward + actual_auction_fee) * Constants.precision)
-        );
-
         ops := get_auction_receive_fee_op(params, s.auction) # ops;
-        ops := transfer_token(Tezos.self_address, s.auction, actual_auction_fee, token) # ops;
-        ops := transfer_token(Tezos.self_address, Tezos.sender, user_reward, token) # ops;
+        ops := divest_tez_or_transfer_tokens(s.auction, actual_auction_fee, token, tez_store) # ops;
+        ops := divest_tez_or_transfer_tokens(Tezos.sender, user_reward, token, tez_store) # ops;
       }
     | _ -> skip
     end
