@@ -75,6 +75,7 @@
         s               = s.storage;
         ops             = (nil : list(operation));
         last_operation  = (None : option(operation));
+        forwards        = (nil : list((address * nat)));
         token_in        = token;
         receiver        = Constants.zero_address;
         referrer        = Constants.zero_address;

@@ -99,7 +99,7 @@ function flash_swap_callback_1(
         const pair : pair_t = unwrap(s.pairs[s.tmp.pair_id], DexCore.err_pair_not_listed);
         const invest_amount : nat = get_nat_or_fail((Tezos.balance / 1mutez) - s.tmp.prev_tez_balance);
 
-        ops := get_invest_tez_op(invest_amount * 1mutez, unwrap(pair.tez_store, DexCore.err_tez_store_404)) # ops;
+        ops := get_deposit_op(invest_amount * 1mutez, unwrap(pair.tez_store, DexCore.err_tez_store_404)) # ops;
       }
     | _ -> skip
     end

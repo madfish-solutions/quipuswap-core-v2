@@ -18,15 +18,20 @@ type storage_t          is [@layout:comb] record [
   voting_period_ends      : nat;
 ]
 
-type invest_tez_t       is unit
+type deposit_t        is unit
 
-type divest_tez_t       is [@layout:comb] record [
-  receiver                : contract(unit);
+type withdraw_t       is [@layout:comb] record [
+  receiver                : address;
+  amt                     : nat;
+]
+
+type forward_t       is [@layout:comb] record [
+  receiver                : address;
   amt                     : nat;
 ]
 
 type withdraw_rewards_t is [@layout:comb] record [
-  receiver                : contract(unit);
+  receiver                : address;
   user                    : address;
   current_balance         : nat;
   new_balance             : nat;

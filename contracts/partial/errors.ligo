@@ -20,8 +20,8 @@ module DexCore is {
   const err_zero_in                                   : string = "118";
   const err_wrong_route                               : string = "119";
   const err_wrong_tez_amount                          : string = "120";
-  const err_tez_store_invest_tez_entrypoint_404       : string = "121";
-  const err_tez_store_divest_tez_entrypoint_404       : string = "122";
+  const err_tez_store_deposit_entrypoint_404          : string = "121";
+  const err_tez_store_withdraw_entrypoint_404         : string = "122";
   const err_tez_store_ban_baker_entrypoint_404        : string = "123";
   const err_tez_store_vote_entrypoint_404             : string = "124";
   const err_tez_store_is_banned_baker_view_404        : string = "125";
@@ -48,6 +48,7 @@ module DexCore is {
   const err_not_entered                               : string = "146";
   const err_too_few_swaps                             : string = "147";
   const err_can_not_perform_voting                    : string = "148";
+  const err_tez_store_migrate_entrypoint_404          : string = "149";
 }
 
 module TezStore is {

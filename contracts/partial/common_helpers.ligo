@@ -1,3 +1,23 @@
+#include "../partial/tez_store/tez_store_types.ligo"
+
+function unwrap_or(
+  const param           : option(_a);
+  const default         : _a)
+                        : _a is
+  case param of
+  | Some(instance) -> instance
+  | None           -> default
+  end
+
+function unwrap(
+  const param           : option(_a);
+  const error           : string)
+                        : _a is
+  case param of
+  | Some(instance) -> instance
+  | None           -> (failwith(error) : _a)
+  end
+
 function only_admin(
   const admin           : address)
                         : unit is
@@ -71,10 +91,24 @@ function wrap_fa2_transfer_trx(
   )
 
 function transfer_tez(
-  const to_             : contract(unit);
+  const from_           : address;
+  const to_             : address;
   const amt             : nat)
-                        : operation is
-  Tezos.transaction(unit, amt * 1mutez, to_)
+                        : operation is block {
+    const op = if from_ = Tezos.self_address then 
+      Tezos.transaction(unit, amt * 1mutez, (get_contract(to_) : contract(unit)))
+    else 
+      Tezos.transaction(record [
+        receiver = to_;
+        amt      = amt;
+      ],
+      amt * 1mutez,
+      unwrap(
+        (Tezos.get_entrypoint_opt("%withdraw", from_) : option(contract(withdraw_t))),
+        DexCore.err_tez_store_withdraw_entrypoint_404
+      ))
+  } with op
+    
 
 function transfer_fa12(
   const from_           : address;
@@ -108,7 +142,7 @@ function transfer_token(
   const token           : token_t)
                         : operation is
   case token of
-  | Tez         -> transfer_tez((get_contract(to_) : contract(unit)), amt)
+  | Tez -> transfer_tez(from_, to_, amt)
   | Fa12(token) -> transfer_fa12(from_, to_, amt, token)
   | Fa2(token)  -> transfer_fa2(from_, to_, amt, token.token, token.id)
   end
@@ -227,24 +261,6 @@ function get_fa2_token_balance(
 
     bal := List.fold(get_fa2_balance, response, bal);
   } with bal
-
-function unwrap_or(
-  const param           : option(_a);
-  const default         : _a)
-                        : _a is
-  case param of
-  | Some(instance) -> instance
-  | None           -> default
-  end
-
-function unwrap(
-  const param           : option(_a);
-  const error           : string)
-                        : _a is
-  case param of
-  | Some(instance) -> instance
-  | None           -> (failwith(error) : _a)
-  end
 
 function concat_lists(
   const lst1            : list(_a);

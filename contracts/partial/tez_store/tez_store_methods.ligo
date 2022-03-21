@@ -1,20 +1,30 @@
-function invest_tez(
-  const _               : invest_tez_t;
+function withdraw(
+  const params          : withdraw_t;
   const s               : storage_t)
                         : return_t is
   block {
     only_dex_core(s.dex_core);
-  } with ((nil : list(operation)), s)
+  } with (list [transfer_tez(Tezos.self_address, params.receiver, params.amt)], s)
 
-function divest_tez(
-  const params          : divest_tez_t;
+function forward(
+  const params          : withdraw_t;
   const s               : storage_t)
                         : return_t is
   block {
     only_dex_core(s.dex_core);
 
-    assert_with_error(params.amt <= Tezos.balance / 1mutez, TezStore.err_insufficient_tez_balance);
-  } with (list [transfer_tez(params.receiver, params.amt)], s)
+    const deposit_entrypoint = unwrap(
+      (Tezos.get_entrypoint_opt("%deposit", params.receiver) : option(contract(deposit_t))),
+      DexCore.err_tez_store_deposit_entrypoint_404
+    );
+
+    const op = Tezos.transaction(unit, params.amt * 1mutez, deposit_entrypoint);
+  } with (list [op], s)
+
+(* an alternative  to `default` entrypoint, which doesn't affect rewards *)
+function deposit(
+  const s               : storage_t)
+                        : return_t is ((nil : list(operation)), s)
 
 function withdraw_rewards(
   const params          : withdraw_rewards_t;
@@ -40,7 +50,7 @@ function withdraw_rewards(
 
       s.reward_paid := s.reward_paid + reward;
 
-      ops := transfer_tez(params.receiver, reward) # ops
+      ops := transfer_tez(Tezos.self_address, params.receiver, reward) # ops
     }
     else skip;
 
@@ -158,6 +168,5 @@ function default(
                         : return_t is
   block {
     s.next_reward := s.next_reward + (Tezos.amount / 1mutez);
-
     s := update_rewards(s);
   } with ((nil : list(operation)), s)

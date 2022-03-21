@@ -37,13 +37,13 @@ function launch_exchange(
         const pair : pair_t = pair_info.0;
         const token_id : nat = pair_info.1;
 
-        assert_with_error(params.token_a_in > 0n, DexCore.err_zero_a_in);
-        assert_with_error(
-          (params.pair.token_b = Tez and Tezos.amount =/= 0mutez and Tezos.amount / 1mutez = params.token_b_in)
-            or params.token_b_in > 0n,
-          DexCore.err_zero_b_in
-        );
         assert_with_error(pair.total_supply = 0n, DexCore.err_pair_listed);
+        assert_with_error(params.token_a_in > 0n, DexCore.err_zero_a_in);
+        assert_with_error(params.token_b_in > 0n, DexCore.err_zero_b_in);
+        
+        if params.pair.token_b = Tez then
+          assert_with_error(Tezos.amount / 1mutez = params.token_b_in, DexCore.err_wrong_tez_amount)
+        else skip;
 
         const init_shares : nat = Math.min_nat(params.token_a_in, params.token_b_in);
 
@@ -185,12 +185,13 @@ function invest_liquidity(
         else skip;
 
         ops := transfer_token(Tezos.sender, Tezos.self_address, tokens_a_required, tokens.token_a) # ops;
-        ops := invest_tez_or_transfer_tokens(tokens_b_required, tokens.token_b, updated_pair.tez_store) # ops;
+        ops := deposit_or_transfer_tokens(tokens_b_required, tokens.token_b, updated_pair.tez_store) # ops;
 
         if Tezos.amount / 1mutez > tokens_b_required
         then {
           ops := transfer_tez(
-            (get_contract(Tezos.sender) : contract(unit)),
+            Tezos.self_address,
+            Tezos.sender,
             get_nat_or_fail(Tezos.amount / 1mutez - tokens_b_required)
           ) # ops;
         }
@@ -261,7 +262,7 @@ function divest_liquidity(
         else skip;
 
         ops := transfer_token(Tezos.self_address, params.liquidity_receiver, token_a_divested, tokens.token_a) # ops;
-        ops := divest_tez_or_transfer_tokens(
+        ops := withdraw_or_transfer_tokens(
           params.liquidity_receiver,
           token_b_divested,
           tokens.token_b,
@@ -333,7 +334,7 @@ function flash_swap(
 
         if params.amount_b_out > 0n
         then {
-          ops := divest_tez_or_transfer_tokens(
+          ops := withdraw_or_transfer_tokens(
             params.receiver,
             params.amount_b_out,
             tokens.token_b,
@@ -373,6 +374,8 @@ function flash_swap(
     end
   } with (ops, s)
 
+  
+
 function swap(
   const action          : action_t;
   var s                 : storage_t)
@@ -392,8 +395,8 @@ function swap(
         const tokens : tokens_t = unwrap(s.tokens[first_swap.pair_id], DexCore.err_pair_not_listed);
         const pair : pair_t = unwrap(s.pairs[first_swap.pair_id], DexCore.err_pair_not_listed);
         const token : token_t = case first_swap.direction of
-        | A_to_b -> tokens.token_a
-        | B_to_a -> tokens.token_b
+          | A_to_b -> tokens.token_a
+          | B_to_a -> tokens.token_b
         end;
         var tmp : tmp_swap_t := List.fold(
           swap_internal,
@@ -402,6 +405,7 @@ function swap(
             s               = s;
             ops             = (nil : list(operation));
             last_operation  = (None : option(operation));
+            forwards        = (nil : list((address * nat)));
             token_in        = token;
             receiver        = params.receiver;
             referrer        = params.referrer;
@@ -411,24 +415,53 @@ function swap(
           ]
         );
 
+        function create_forward_op( const accumulator   : (list(operation) * address);
+                                    const input         : (address * nat))
+                                                        : (list(operation) * address) is block {
+          const receiver = input.0;
+          const amt = input.1;
+
+          const ops = accumulator.0;
+          const previous_addr = accumulator.1;
+
+          const op = Tezos.transaction(
+            record [
+              receiver = receiver;
+              amt      = amt;
+            ],
+            amt * 1mutez,
+            unwrap(
+              (Tezos.get_entrypoint_opt("%forward", previous_addr) : option(contract(forward_t))),
+              DexCore.err_tez_store_withdraw_entrypoint_404
+            )
+          );
+          const previous_addr = receiver;
+          const new_ops = op # ops;
+        } with (new_ops, previous_addr);
+
+        const forwardings = List.fold(create_forward_op, tmp.forwards, ((nil : list(operation)), Tezos.self_address));
+
         assert_with_error(tmp.amount_in >= params.min_amount_out, DexCore.err_high_min_out);
 
         s := tmp.s;
 
         ops := case tmp.last_operation of
-        | Some(op) -> op # ops
-        | None     -> (failwith(DexCore.err_too_few_swaps) : list(operation))
+          | Some(op) -> op # ops
+          | None     -> (failwith(DexCore.err_too_few_swaps) : list(operation))
         end;
+
+
 
         tmp.ops := reverse_list(tmp.ops);
         ops := concat_lists(tmp.ops, ops);
+        ops := concat_lists(forwardings, ops);
 
         if token =/= Tez
         then ops := transfer_token(Tezos.sender, Tezos.self_address, params.amount_in, token) # ops
         else {
           assert_with_error(params.amount_in = Tezos.amount / 1mutez, DexCore.err_wrong_tez_amount);
 
-          ops := get_invest_tez_op(Tezos.amount, unwrap(pair.tez_store, DexCore.err_tez_store_404)) # ops;
+          ops := get_deposit_op(Tezos.amount, unwrap(pair.tez_store, DexCore.err_tez_store_404)) # ops;
         };
       }
     | _ -> skip

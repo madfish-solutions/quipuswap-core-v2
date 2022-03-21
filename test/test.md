@@ -15,13 +15,13 @@
 
 ## TezStore
 
-1. `invest_tez`:
+1. `deposit`:
 
    - ✅ should fail if not dex core is trying to invest tez;
    - ✅ should invest tez - 1;
    - ✅ should invest tez - 2.
 
-2. `divest_tez`:
+2. `withdraw`:
 
    - ✅ should fail if not dex core is trying to divest tez;
    - ✅ should fail if tez store have not enough TEZ on contract's balance;

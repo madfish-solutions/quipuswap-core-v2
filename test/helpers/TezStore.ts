@@ -106,7 +106,7 @@ export class TezStore {
     mutezAmount: number = 0
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
-      .invest_tez(user)
+      .deposit(user)
       .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
@@ -116,7 +116,7 @@ export class TezStore {
 
   async divestTez(params: DivestTez): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
-      .divest_tez(params)
+      .withdraw(params)
       .send();
 
     await confirmOperation(this.tezos, operation.hash);
