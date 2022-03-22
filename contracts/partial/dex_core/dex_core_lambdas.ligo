@@ -439,7 +439,7 @@ function swap(
           const new_ops = op # ops;
         } with (new_ops, previous_addr);
 
-        const forwardings = List.fold(create_forward_op, tmp.forwards, ((nil : list(operation)), Tezos.self_address));
+        const (forward_ops, _) = List.fold(create_forward_op, tmp.forwards, ((nil : list(operation)), Tezos.self_address));
 
         assert_with_error(tmp.amount_in >= params.min_amount_out, DexCore.err_high_min_out);
 
@@ -454,7 +454,7 @@ function swap(
 
         tmp.ops := reverse_list(tmp.ops);
         ops := concat_lists(tmp.ops, ops);
-        ops := concat_lists(forwardings, ops);
+        ops := concat_lists(forward_ops, ops);
 
         if token =/= Tez
         then ops := transfer_token(Tezos.sender, Tezos.self_address, params.amount_in, token) # ops
