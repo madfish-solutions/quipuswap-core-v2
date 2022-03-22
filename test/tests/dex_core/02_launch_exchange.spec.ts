@@ -1157,6 +1157,9 @@ describe("DexCore (launch exchange)", async () => {
     });
 
     expect(
+      await utils.tezos.tz.getBalance(tezStore.contract.address)
+    ).to.be.bignumber.equal(new BigNumber(0));
+    expect(
       tezStore.storage.users[params.shares_receiver].candidate
     ).to.be.equal(null);
     expect(
@@ -1190,6 +1193,9 @@ describe("DexCore (launch exchange)", async () => {
       bakers: [params.candidate],
     });
 
+    expect(
+      await utils.tezos.tz.getBalance(tezStore.contract.address)
+    ).to.be.bignumber.equal(params.token_b_in);
     expect(
       tezStore.storage.users[params.shares_receiver].candidate
     ).to.be.equal(params.candidate);

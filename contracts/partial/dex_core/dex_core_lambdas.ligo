@@ -107,6 +107,7 @@ function launch_exchange(
               ],
               unwrap(updated_pair.tez_store, DexCore.err_tez_store_404)
             ) # ops;
+            ops := get_invest_tez_op(Tezos.amount, unwrap(updated_pair.tez_store, DexCore.err_tez_store_404)) # ops;
           }
           else skip;
         };
