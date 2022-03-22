@@ -131,8 +131,8 @@
    - ✅ should fail if pair not listed;
    - ✅ should fail if pair does not have liquidity;
    - ✅ should fail if investor expects zero shares amount in result of investment;
+   - ✅ should fail if TEZ token mismatch;
    - ✅ should fail if low token A in;
-   - ✅ should fail if token B is TEZ and low token B in;
    - ✅ should fail if low token B in;
    - ✅ should invest FA1.2/TEZ liquidity;
    - ✅ should invest FA2/TEZ liquidity;

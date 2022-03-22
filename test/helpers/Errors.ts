@@ -40,6 +40,7 @@ export enum DexCore {
   ERR_NOT_ENTERED = "138",
   ERR_TOO_FEW_SWAPS = "139",
   ERR_CAN_NOT_PERFORM_VOTING = "140",
+  ERR_TEZ_AMOUNT_MISMATCH = "141",
 }
 
 export enum TezStore {

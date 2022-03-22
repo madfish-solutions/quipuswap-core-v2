@@ -248,6 +248,40 @@ describe("DexCore (invest liquidity)", async () => {
     });
   });
 
+  it("should fail if TEZ token mismatch", async () => {
+    const pairId: BigNumber = new BigNumber(0);
+
+    await dexCore.updateStorage({
+      pairs: [pairId.toFixed()],
+    });
+
+    const shares: BigNumber = new BigNumber(100);
+    const requiredTokens: RequiredTokens = DexCore.getRequiredTokens(
+      shares,
+      dexCore.storage.storage.pairs[pairId.toFixed()]
+    );
+    const investParams: InvestLiquidity = {
+      pair_id: pairId,
+      token_a_in: requiredTokens.tokens_a_required,
+      token_b_in: requiredTokens.tokens_b_required,
+      shares: shares,
+      shares_receiver: alice.pkh,
+      candidate: alice.pkh,
+    };
+
+    await rejects(
+      dexCore.investLiquidity(
+        investParams,
+        investParams.token_b_in.toNumber() - 1
+      ),
+      (err: Error) => {
+        expect(err.message).to.equal(DexCoreErrors.ERR_TEZ_AMOUNT_MISMATCH);
+
+        return true;
+      }
+    );
+  });
+
   it("should fail if low token A in", async () => {
     const pairId: BigNumber = new BigNumber(0);
 
@@ -269,38 +303,10 @@ describe("DexCore (invest liquidity)", async () => {
       candidate: alice.pkh,
     };
 
-    await rejects(dexCore.investLiquidity(investParams), (err: Error) => {
-      expect(err.message).to.equal(DexCoreErrors.ERR_LOW_TOKEN_A_IN);
-
-      return true;
-    });
-  });
-
-  it("should fail if token B is TEZ and low token B in", async () => {
-    const pairId: BigNumber = new BigNumber(0);
-
-    await dexCore.updateStorage({
-      pairs: [pairId.toFixed()],
-    });
-
-    const shares: BigNumber = new BigNumber(100);
-    const requiredTokens: RequiredTokens = DexCore.getRequiredTokens(
-      shares,
-      dexCore.storage.storage.pairs[pairId.toFixed()]
-    );
-    const investParams: InvestLiquidity = {
-      pair_id: pairId,
-      token_a_in: requiredTokens.tokens_a_required,
-      token_b_in: requiredTokens.tokens_b_required.minus(1),
-      shares: shares,
-      shares_receiver: alice.pkh,
-      candidate: alice.pkh,
-    };
-
     await rejects(
       dexCore.investLiquidity(investParams, investParams.token_b_in.toNumber()),
       (err: Error) => {
-        expect(err.message).to.equal(DexCoreErrors.ERR_LOW_TOKEN_B_IN);
+        expect(err.message).to.equal(DexCoreErrors.ERR_LOW_TOKEN_A_IN);
 
         return true;
       }
@@ -328,11 +334,14 @@ describe("DexCore (invest liquidity)", async () => {
       candidate: alice.pkh,
     };
 
-    await rejects(dexCore.investLiquidity(investParams), (err: Error) => {
-      expect(err.message).to.equal(DexCoreErrors.ERR_LOW_TOKEN_B_IN);
+    await rejects(
+      dexCore.investLiquidity(investParams, investParams.token_b_in.toNumber()),
+      (err: Error) => {
+        expect(err.message).to.equal(DexCoreErrors.ERR_LOW_TOKEN_B_IN);
 
-      return true;
-    });
+        return true;
+      }
+    );
   });
 
   it("should invest FA1.2/TEZ liquidity", async () => {
@@ -1126,7 +1135,7 @@ describe("DexCore (invest liquidity)", async () => {
     await fa12Token1.approve(dexCore.contract.address, investParams.token_a_in);
     await dexCore.investLiquidity(
       investParams,
-      investParams.token_a_in.toNumber() + 100_000
+      investParams.token_a_in.toNumber()
     );
 
     const currDexCoreTezBalance: BigNumber = await utils.tezos.tz.getBalance(

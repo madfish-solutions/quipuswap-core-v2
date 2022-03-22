@@ -148,14 +148,16 @@ function invest_liquidity(
         const tokens_a_required : nat = div_ceil(params.shares * pair.token_a_pool, pair.total_supply);
         const tokens_b_required : nat = div_ceil(params.shares * pair.token_b_pool, pair.total_supply);
 
-        assert_with_error(tokens.token_b =/= Tez or params.token_b_in = Tezos.amount / 1mutez,
-          DexCore.err_tez_amount_mismatch);
+        assert_with_error(
+          tokens.token_b =/= Tez or params.token_b_in = Tezos.amount / 1mutez,
+          DexCore.err_tez_amount_mismatch
+        );
         assert_with_error(tokens_a_required <= params.token_a_in, DexCore.err_low_token_a_in);
         assert_with_error(tokens_b_required <= params.token_b_in, DexCore.err_low_token_b_in);
 
-        const sender_balance : nat = unwrap_or(s.ledger[(params.shares_receiver, params.pair_id)], 0n);
+        const receiver_balance : nat = unwrap_or(s.ledger[(params.shares_receiver, params.pair_id)], 0n);
 
-        s.ledger[(params.shares_receiver, params.pair_id)] := sender_balance + params.shares;
+        s.ledger[(params.shares_receiver, params.pair_id)] := receiver_balance + params.shares;
 
         var updated_pair : pair_t := calc_cumulative_prices(
           pair,
@@ -174,8 +176,8 @@ function invest_liquidity(
               voter           = params.shares_receiver;
               candidate       = params.candidate;
               execute_voting  = True;
-              votes           = sender_balance + params.shares;
-              current_balance = sender_balance;
+              votes           = receiver_balance + params.shares;
+              current_balance = receiver_balance;
               new_balance     = unwrap_or(s.ledger[(params.shares_receiver, params.pair_id)], 0n);
             ],
             unwrap(updated_pair.tez_store, DexCore.err_tez_store_404)
