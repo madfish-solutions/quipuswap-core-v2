@@ -182,7 +182,7 @@ function get_balance_op_or_fail(
   | Fa2(token)  -> get_fa2_balance(user, token.token, token.id, callbacks.1)
   end
 
-function div_ceil(
+function ceil_div(
   const numerator       : nat;
   const denominator     : nat)
                         : nat is

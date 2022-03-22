@@ -26,6 +26,8 @@ type flash_swap_1_t     is [@layout:comb] record [
   return_token            : token_t;
   referrer                : address;
   sender                  : address;
+  swap_token_pool         : nat;
+  return_token_pool       : nat;
   amount_out              : nat;
   prev_tez_balance        : nat;
 ]
@@ -34,6 +36,16 @@ type flash_swap_data_t  is [@layout:comb] record [
   swap_token              : token_t;
   return_token            : token_t;
   swap_token_pool         : nat;
+  return_token_pool       : nat;
+]
+
+type flash_swap_res_t   is [@layout:comb] record [
+  returns                 : nat;
+  full_fee                : nat;
+  new_return_tok_pool     : nat;
+  fee                     : nat;
+  interface_fee           : nat;
+  auction_fee             : nat;
 ]
 
 type fees_t             is [@layout:comb] record [
