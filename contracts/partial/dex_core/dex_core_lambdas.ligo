@@ -243,8 +243,9 @@ function divest_liquidity(
 
         assert_with_error(
           ((updated_pair.total_supply or updated_pair.token_a_pool or updated_pair.token_b_pool) = 0n)
-          or (updated_pair.total_supply * updated_pair.token_a_pool * updated_pair.token_b_pool =/= 0n),
-          DexCore.err_wrong_reserves_state);
+            or (updated_pair.total_supply * updated_pair.token_a_pool * updated_pair.token_b_pool =/= 0n),
+          DexCore.err_wrong_reserves_state
+        );
 
         s.pairs[params.pair_id] := updated_pair;
 
@@ -374,8 +375,8 @@ function swap(
         end;
 
         tmp.ops := reverse_list(tmp.ops);
-        ops := concat_lists(tmp.ops, ops);
 
+        ops := concat_lists(tmp.ops, ops);
         ops := invest_tez_or_transfer_tokens(params.amount_in, token, pair.tez_store) # ops;
       }
     | _ -> skip

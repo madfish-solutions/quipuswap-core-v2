@@ -219,13 +219,13 @@ function form_pools(
   const direction       : swap_direction_t)
                         : pair_t is
   case direction of
-  | B_to_a -> pair with record [
-      token_a_pool         = to_pool;
-      token_b_pool         = from_pool;
-    ]
   | A_to_b -> pair with record [
-      token_a_pool         = from_pool;
-      token_b_pool         = to_pool;
+      token_a_pool = from_pool;
+      token_b_pool = to_pool;
+    ]
+  | B_to_a -> pair with record [
+      token_a_pool = to_pool;
+      token_b_pool = from_pool;
     ]
   end
 
