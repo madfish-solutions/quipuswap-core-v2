@@ -31,8 +31,8 @@
           (nat %reward_per_share)
           (nat %reward_per_block)
           (nat %last_update_level)
-          (nat %collecting_period_ends)
-          (nat %voting_period_ends)) ;
+          (nat %collecting_period_end)
+          (nat %voting_period_end)) ;
   code { PUSH key_hash "tz1ZZZZZZZZZZZZZZZZZZZZZZZZZZZZNkiRg" ;
          PUSH nat 1000000000000000000 ;
          PUSH nat 0 ;

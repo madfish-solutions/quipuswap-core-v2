@@ -1026,12 +1026,12 @@ describe("DexCore (launch exchange)", async () => {
     expect(tezStore.storage.last_update_level).to.be.bignumber.equal(
       new BigNumber((await utils.tezos.rpc.getBlock()).header.level)
     );
-    expect(tezStore.storage.collecting_period_ends).to.be.bignumber.equal(
+    expect(tezStore.storage.collecting_period_end).to.be.bignumber.equal(
       dexCore.storage.storage.collecting_period
         .multipliedBy(defaultCycleDuration)
         .plus(new BigNumber((await utils.tezos.rpc.getBlock()).header.level))
     );
-    expect(tezStore.storage.voting_period_ends).to.be.bignumber.equal(
+    expect(tezStore.storage.voting_period_end).to.be.bignumber.equal(
       new BigNumber(
         (await utils.tezos.rpc.getBlock()).header.level +
           dexCore.storage.storage.cycle_duration.toNumber() *
@@ -1095,12 +1095,12 @@ describe("DexCore (launch exchange)", async () => {
     expect(tezStore.storage.last_update_level).to.be.bignumber.equal(
       new BigNumber((await utils.tezos.rpc.getBlock()).header.level)
     );
-    expect(tezStore.storage.collecting_period_ends).to.be.bignumber.equal(
+    expect(tezStore.storage.collecting_period_end).to.be.bignumber.equal(
       dexCore.storage.storage.collecting_period
         .multipliedBy(defaultCycleDuration)
         .plus(new BigNumber((await utils.tezos.rpc.getBlock()).header.level))
     );
-    expect(tezStore.storage.voting_period_ends).to.be.bignumber.equal(
+    expect(tezStore.storage.voting_period_end).to.be.bignumber.equal(
       new BigNumber(
         (await utils.tezos.rpc.getBlock()).header.level +
           dexCore.storage.storage.cycle_duration.toNumber() *
@@ -1180,11 +1180,11 @@ describe("DexCore (launch exchange)", async () => {
     expect(tezStore.storage.last_update_level).to.be.bignumber.equal(
       prevTezStoreStorage.last_update_level
     );
-    expect(tezStore.storage.collecting_period_ends).to.be.bignumber.equal(
-      prevTezStoreStorage.collecting_period_ends
+    expect(tezStore.storage.collecting_period_end).to.be.bignumber.equal(
+      prevTezStoreStorage.collecting_period_end
     );
-    expect(tezStore.storage.voting_period_ends).to.be.bignumber.equal(
-      prevTezStoreStorage.voting_period_ends
+    expect(tezStore.storage.voting_period_end).to.be.bignumber.equal(
+      prevTezStoreStorage.voting_period_end
     );
 
     await dexCore.launchExchange(params, params.token_b_in.toNumber());
@@ -1221,11 +1221,11 @@ describe("DexCore (launch exchange)", async () => {
     expect(tezStore.storage.last_update_level).to.be.bignumber.equal(
       (await utils.getLastBlock()).toFixed()
     );
-    expect(tezStore.storage.collecting_period_ends).to.be.bignumber.equal(
-      prevTezStoreStorage.collecting_period_ends
+    expect(tezStore.storage.collecting_period_end).to.be.bignumber.equal(
+      prevTezStoreStorage.collecting_period_end
     );
-    expect(tezStore.storage.voting_period_ends).to.be.bignumber.equal(
-      prevTezStoreStorage.voting_period_ends
+    expect(tezStore.storage.voting_period_end).to.be.bignumber.equal(
+      prevTezStoreStorage.voting_period_end
     );
   });
 });

@@ -55,8 +55,8 @@ export type TezStoreStorage = {
   reward_per_share: BigNumber;
   reward_per_block: BigNumber;
   last_update_level: BigNumber;
-  collecting_period_ends: BigNumber;
-  voting_period_ends: BigNumber;
+  collecting_period_end: BigNumber;
+  voting_period_end: BigNumber;
 };
 
 export type UpdateRewards = {
@@ -64,7 +64,7 @@ export type UpdateRewards = {
   rewardPerBlock: BigNumber;
   totalReward: BigNumber;
   lastUpdateLevel: BigNumber;
-  collectingPeriodEnds: BigNumber;
+  collectingPeriodEnd: BigNumber;
 };
 
 export type UpdateUserRewards = {

@@ -178,12 +178,11 @@ export class TezStore {
     utils: Utils
   ): Promise<UpdateRewards> {
     const level: BigNumber = await utils.getLastBlock();
-    let collectingPeriodEnds: BigNumber =
-      tezStoreStorage.collecting_period_ends;
+    let collectingPeriodEnd: BigNumber = tezStoreStorage.collecting_period_end;
 
     if (totalSupply.isGreaterThan(0)) {
-      const rewardsLevel: BigNumber = level.isGreaterThan(collectingPeriodEnds)
-        ? collectingPeriodEnds
+      const rewardsLevel: BigNumber = level.isGreaterThan(collectingPeriodEnd)
+        ? collectingPeriodEnd
         : level;
       const newReward: BigNumber = rewardsLevel
         .minus(tezStoreStorage.last_update_level)
@@ -192,11 +191,11 @@ export class TezStore {
         newReward.dividedBy(totalSupply).integerValue(BigNumber.ROUND_DOWN)
       );
 
-      if (level.isGreaterThan(collectingPeriodEnds)) {
+      if (level.isGreaterThan(collectingPeriodEnd)) {
         const collectingPeriod: BigNumber =
           dexCoreStorage.storage.collecting_period;
         const periodDuration: BigNumber = level
-          .minus(collectingPeriodEnds)
+          .minus(collectingPeriodEnd)
           .dividedBy(collectingPeriod)
           .integerValue(BigNumber.ROUND_DOWN)
           .plus(1)
@@ -207,10 +206,10 @@ export class TezStore {
           .dividedBy(periodDuration)
           .integerValue(BigNumber.ROUND_DOWN);
         const newReward: BigNumber = level
-          .minus(collectingPeriodEnds)
+          .minus(collectingPeriodEnd)
           .multipliedBy(rewardPerBlock);
 
-        collectingPeriodEnds = collectingPeriodEnds.plus(periodDuration);
+        collectingPeriodEnd = collectingPeriodEnd.plus(periodDuration);
         rewardPerShare = rewardPerShare.plus(
           newReward.dividedBy(totalSupply).integerValue(BigNumber.ROUND_DOWN)
         );
@@ -227,7 +226,7 @@ export class TezStore {
           rewardPerBlock: rewardPerBlock,
           totalReward: totalReward,
           lastUpdateLevel: level,
-          collectingPeriodEnds: collectingPeriodEnds,
+          collectingPeriodEnd: collectingPeriodEnd,
         };
       }
 
@@ -236,7 +235,7 @@ export class TezStore {
         rewardPerBlock: tezStoreStorage.reward_per_block,
         totalReward: tezStoreStorage.total_reward,
         lastUpdateLevel: level,
-        collectingPeriodEnds: tezStoreStorage.collecting_period_ends,
+        collectingPeriodEnd: tezStoreStorage.collecting_period_end,
       };
     }
 
@@ -245,7 +244,7 @@ export class TezStore {
       rewardPerBlock: tezStoreStorage.reward_per_block,
       totalReward: tezStoreStorage.total_reward,
       lastUpdateLevel: tezStoreStorage.last_update_level,
-      collectingPeriodEnds: tezStoreStorage.collecting_period_ends,
+      collectingPeriodEnd: tezStoreStorage.collecting_period_end,
     };
   }
 

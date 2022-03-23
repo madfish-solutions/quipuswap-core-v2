@@ -270,8 +270,8 @@ describe.skip("TezStore (withdraw rewards)", async () => {
     expect(tezStore.storage.last_update_level).to.be.bignumber.equal(
       expectedRewardsInfo.lastUpdateLevel
     );
-    expect(tezStore.storage.collecting_period_ends).to.be.bignumber.equal(
-      expectedRewardsInfo.collectingPeriodEnds
+    expect(tezStore.storage.collecting_period_end).to.be.bignumber.equal(
+      expectedRewardsInfo.collectingPeriodEnd
     );
   });
 

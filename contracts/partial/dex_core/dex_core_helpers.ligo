@@ -98,23 +98,23 @@ function get_tez_store_initial_storage(
   const voting_period   : nat)
                         : tez_store_t is
   record [
-    users                  = (Big_map.empty : big_map(address, user_t));
-    bakers                 = (Big_map.empty : big_map(key_hash, baker_t));
-    users_rewards          = (Big_map.empty : big_map(address, user_reward_info_t));
-    previous_delegated     = Constants.zero_key_hash;
-    current_delegated      = Constants.zero_key_hash;
-    next_candidate         = Constants.zero_key_hash;
-    baker_registry         = baker_registry;
-    dex_core               = Tezos.self_address;
-    pair_id                = pair_id;
-    next_reward            = 0n;
-    total_reward           = 0n;
-    reward_paid            = 0n;
-    reward_per_share       = 0n;
-    reward_per_block       = 0n;
-    last_update_level      = Tezos.level;
-    collecting_period_ends = Tezos.level + (cycle_duration * collect_period);
-    voting_period_ends     = Tezos.level + (cycle_duration * voting_period);
+    users                 = (Big_map.empty : big_map(address, user_t));
+    bakers                = (Big_map.empty : big_map(key_hash, baker_t));
+    users_rewards         = (Big_map.empty : big_map(address, user_reward_info_t));
+    previous_delegated    = Constants.zero_key_hash;
+    current_delegated     = Constants.zero_key_hash;
+    next_candidate        = Constants.zero_key_hash;
+    baker_registry        = baker_registry;
+    dex_core              = Tezos.self_address;
+    pair_id               = pair_id;
+    next_reward           = 0n;
+    total_reward          = 0n;
+    reward_paid           = 0n;
+    reward_per_share      = 0n;
+    reward_per_block      = 0n;
+    last_update_level     = Tezos.level;
+    collecting_period_end = Tezos.level + (cycle_duration * collect_period);
+    voting_period_end     = Tezos.level + (cycle_duration * voting_period);
   ]
 
 function calc_cumulative_prices(
