@@ -4,6 +4,7 @@ output/
 .vscode/
 venv/
 .idea/
+__pycache__/
 
 .DS_Store
 yarn.lock
