@@ -15,6 +15,6 @@ function main(
   const action          : action_t;
   const s               : storage_t)
                         : return_t is
-  case action of
+  case action of [
   | Dafault(params) -> default(params, s)
-  end
+  ]

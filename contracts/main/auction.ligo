@@ -19,8 +19,8 @@ function main(
   const action          : full_action_t;
   const s               : full_storage_t)
                         : full_return_t is
-  case action of
+  case action of [
   | Use(params)        -> call_auction(params, s)
   | Setup_func(params) -> setup_func(params, s)
   | Default            -> default(s)
-  end
+  ]

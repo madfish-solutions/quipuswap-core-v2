@@ -3,7 +3,7 @@ function call_dex_core(
   var s                 : full_storage_t)
                         : full_return_t is
   block {
-    const id : nat = case action of
+    const id : nat = case action of [
     (* DEX *)
     | Launch_exchange(_)         -> 0n
     | Invest_liquidity(_)        -> 1n
@@ -37,14 +37,14 @@ function call_dex_core(
     | Launch_callback(_)         -> 25n
     | Flash_swap_callback(_)     -> 26n
     | Close(_)                   -> 27n
-    end;
+    ];
 
     const lambda_bytes : bytes = unwrap(s.dex_core_lambdas[id], DexCore.err_unknown_func);
 
-    const res : return_t = case (Bytes.unpack(lambda_bytes) : option(dex_core_func_t)) of
+    const res : return_t = case (Bytes.unpack(lambda_bytes) : option(dex_core_func_t)) of [
     | Some(f) -> f(action, s.storage)
     | None    -> failwith(DexCore.err_cant_unpack_lambda)
-    end;
+    ];
 
     s.storage := res.1;
   } with (res.0, s)
@@ -58,10 +58,10 @@ function setup_func(
 
     assert_with_error(params.idx <= dex_core_methods_max_index, DexCore.err_high_func_index);
 
-    case s.dex_core_lambdas[params.idx] of
+    case s.dex_core_lambdas[params.idx] of [
     | Some(_) -> failwith(DexCore.err_func_set)
     | None    -> s.dex_core_lambdas[params.idx] := params.func_bytes
-    end;
+    ];
   } with ((nil : list(operation)), s)
 
 function default(

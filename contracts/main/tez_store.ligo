@@ -20,11 +20,11 @@ function main(
   const action          : action_t;
   const s               : storage_t)
                         : return_t is
-  case action of
+  case action of [
   | Invest_tez(params)       -> invest_tez(params, s)
   | Divest_tez(params)       -> divest_tez(params, s)
   | Withdraw_rewards(params) -> withdraw_rewards(params, s)
   | Ban_baker(params)        -> ban_baker(params, s)
   | Vote(params)             -> vote(params, s)
   | Default                  -> default(s)
-  end
+  ]

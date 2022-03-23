@@ -79,6 +79,7 @@ export enum Common {
   ERR_FA2_BALANCE_OF_ENTRYPOINT_404 = "408",
   ERR_WRONG_TOKEN_TYPE = "409",
   ERR_DIV_BY_ZERO = "410",
+  ERR_CONTRACT_404 = "411",
 }
 
 export enum FA2 {

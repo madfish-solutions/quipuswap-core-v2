@@ -3,7 +3,7 @@ function permit(
   var s                 : storage_t)
                         : return_t is
   block {
-    case action of
+    case action of [
     | Permit(param) -> {
       const key : key = param.0;
       const signature : signature = param.1.0;
@@ -30,7 +30,7 @@ function permit(
       } with (failwith_("MISSIGNED", to_sign) : storage_t);
     }
     | _ -> skip
-    end
+    ]
   } with ((nil : list(operation)), s)
 
 function set_expiry(
@@ -38,7 +38,7 @@ function set_expiry(
   var s                 : storage_t)
                         : return_t is
   block {
-    case action of
+    case action of [
     | Set_expiry(param) -> {
       const owner : address = param.issuer;
       const new_expiry : seconds_t = param.expiry;
@@ -50,13 +50,13 @@ function set_expiry(
       then failwith("EXPIRY_TOO_BIG")
       else skip;
 
-      const updated_permits : permits_t = case specific_permit_or_default of
+      const updated_permits : permits_t = case specific_permit_or_default of [
       | None       -> set_user_default_expiry(owner, new_expiry, s.permits)
       | Some(hash) -> set_permit_expiry(owner, hash, new_expiry, s.permits, s.default_expiry)
-      end;
+      ];
 
       s.permits := updated_permits;
     }
     | _ -> skip
-    end;
+    ]
   } with ((nil : list(operation)), s)

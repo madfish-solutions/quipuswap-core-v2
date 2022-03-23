@@ -164,7 +164,7 @@ function form_flash_swap_data(
   const tokens          : tokens_t;
   const flash_swap_rule : flash_swap_rule_t)
                         : flash_swap_data_t is
-  case flash_swap_rule of
+  case flash_swap_rule of [
   | Loan_a_return_a -> record [
       swap_token      = tokens.token_a;
       return_token    = tokens.token_a;
@@ -185,7 +185,7 @@ function form_flash_swap_data(
       return_token    = tokens.token_b;
       swap_token_pool = pair.token_b_pool;
     ]
-  end
+  ]
 
 function form_swap_data(
   const pair            : pair_t;
@@ -201,7 +201,7 @@ function form_swap_data(
       pool  = pair.token_b_pool;
       token = tokens.token_b;
     ];
-  } with case direction of
+  } with case direction of [
     | A_to_b -> record [
         from_ = side_a;
         to_   = side_b;
@@ -210,7 +210,7 @@ function form_swap_data(
         from_ = side_b;
         to_   = side_a;
       ]
-    end
+    ]
 
 function form_pools(
   const from_pool       : nat;
@@ -218,7 +218,7 @@ function form_pools(
   const pair            : pair_t;
   const direction       : swap_direction_t)
                         : pair_t is
-  case direction of
+  case direction of [
   | A_to_b -> pair with record [
       token_a_pool = from_pool;
       token_b_pool = to_pool;
@@ -227,7 +227,7 @@ function form_pools(
       token_a_pool = to_pool;
       token_b_pool = from_pool;
     ]
-  end
+  ]
 
 function swap_internal(
   var tmp               : tmp_swap_t;
@@ -327,20 +327,20 @@ function call_flash_swaps_proxy(
 function get_token_address_or_fail(
   const token           : token_t)
                         : address is
-  case token of
+  case token of [
   | Fa12(token_address) -> token_address
   | Fa2(token_info)     -> token_info.token
   | Tez                 -> (failwith(Common.err_wrong_token_type) : address)
-  end
+  ]
 
 function get_token_id_or_fail(
   const token           : token_t)
                         : token_id_t is
-  case token of
+  case token of [
   | Fa12(_)         -> (failwith(Common.err_wrong_token_type) : token_id_t)
   | Fa2(token_info) -> token_info.id
   | Tez             -> (failwith(Common.err_wrong_token_type) : token_id_t)
-  end
+  ]
 
 function get_flash_swap_callback(
   const self            : address)

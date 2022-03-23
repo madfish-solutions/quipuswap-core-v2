@@ -80,4 +80,5 @@ module Common is {
   const err_fa2_balance_of_entrypoint_404  : string = "408";
   const err_wrong_token_type               : string = "409";
   const err_div_by_zero                    : string = "410";
+  const err_contract_404                   : string = "411";
 }

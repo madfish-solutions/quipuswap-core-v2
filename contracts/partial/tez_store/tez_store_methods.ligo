@@ -74,7 +74,7 @@ function vote(
 
     var user : user_t := unwrap_or(s.users[params.voter], Constants.default_user);
 
-    case user.candidate of
+    case user.candidate of [
       None                 -> skip
     | Some(user_candidate) -> {
       var candidate : baker_t := unwrap_or(s.bakers[user_candidate], Constants.default_baker);
@@ -82,7 +82,7 @@ function vote(
 
       s.bakers[user_candidate] := candidate with record [ votes = candidate_new_votes ];
     }
-    end;
+    ];
 
     var user_candidate : baker_t := unwrap_or(s.bakers[params.candidate], Constants.default_baker);
     const user_candidate_votes : nat = user_candidate.votes + params.votes;

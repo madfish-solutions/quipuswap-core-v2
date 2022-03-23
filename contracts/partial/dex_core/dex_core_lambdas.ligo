@@ -24,7 +24,7 @@ function launch_exchange(
       get_close_op(Unit);
     ];
 
-    case action of
+    case action of [
     | Launch_exchange(params) -> {
         assert_with_error(params.pair.token_a < params.pair.token_b, DexCore.err_wrong_pair_order);
 
@@ -123,7 +123,7 @@ function launch_exchange(
         else skip;
       }
     | _ -> skip
-    end
+    ]
   } with (ops, s)
 
 function invest_liquidity(
@@ -137,7 +137,7 @@ function invest_liquidity(
       get_close_op(Unit);
     ];
 
-    case action of
+    case action of [
     | Invest_liquidity(params) -> {
         const pair : pair_t = unwrap(s.pairs[params.pair_id], DexCore.err_pair_not_listed);
 
@@ -198,7 +198,7 @@ function invest_liquidity(
         else skip;
       }
     | _ -> skip
-    end;
+    ]
   } with (ops, s)
 
 function divest_liquidity(
@@ -212,7 +212,7 @@ function divest_liquidity(
       get_close_op(Unit);
     ];
 
-    case action of
+    case action of [
     | Divest_liquidity(params) -> {
         const pair : pair_t = unwrap(s.pairs[params.pair_id], DexCore.err_pair_not_listed);
 
@@ -276,7 +276,7 @@ function divest_liquidity(
         ) # ops;
       }
     | _ -> skip
-    end;
+    ]
   } with (ops, s)
 
 function flash_swap(
@@ -290,7 +290,7 @@ function flash_swap(
       get_close_op(Unit);
     ];
 
-    case action of
+    case action of [
     | Flash_swap(params) -> {
         assert_with_error(params.referrer =/= Tezos.sender, DexCore.err_can_not_refer_yourself);
         assert_with_error(params.amount_out > 0n, DexCore.err_dust_out);
@@ -321,7 +321,7 @@ function flash_swap(
         ) # ops;
       }
     | _ -> skip
-    end
+    ]
   } with (ops, s)
 
 function swap(
@@ -335,17 +335,17 @@ function swap(
       get_close_op(Unit);
     ];
 
-    case action of
+    case action of [
     | Swap(params) -> {
         assert_with_error(params.referrer =/= Tezos.sender, DexCore.err_can_not_refer_yourself);
 
         const first_swap : swap_slice_t = unwrap(List.head_opt(params.swaps), DexCore.err_empty_route);
         const tokens : tokens_t = unwrap(s.tokens[first_swap.pair_id], DexCore.err_pair_not_listed);
         const pair : pair_t = unwrap(s.pairs[first_swap.pair_id], DexCore.err_pair_not_listed);
-        const token : token_t = case first_swap.direction of
+        const token : token_t = case first_swap.direction of [
         | A_to_b -> tokens.token_a
         | B_to_a -> tokens.token_b
-        end;
+        ];
 
         assert_with_error(token =/= Tez or params.amount_in = Tezos.amount / 1mutez, DexCore.err_wrong_tez_amount);
 
@@ -369,10 +369,10 @@ function swap(
 
         s := tmp.s;
 
-        ops := case tmp.last_operation of
+        ops := case tmp.last_operation of [
         | Some(op) -> op # ops
         | None     -> (failwith(DexCore.err_too_few_swaps) : list(operation))
-        end;
+        ];
 
         tmp.ops := reverse_list(tmp.ops);
 
@@ -380,7 +380,7 @@ function swap(
         ops := invest_tez_or_transfer_tokens(params.amount_in, token, pair.tez_store) # ops;
       }
     | _ -> skip
-    end
+    ]
   } with (ops, s)
 
 function withdraw_profit(
@@ -394,7 +394,7 @@ function withdraw_profit(
       get_close_op(Unit);
     ];
 
-    case action of
+    case action of [
     | Withdraw_profit(params) -> {
         const pair : pair_t = unwrap(s.pairs[params.pair_id], DexCore.err_pair_not_listed);
         const user_balance : nat = unwrap_or(s.ledger[(Tezos.sender, params.pair_id)], 0n);
@@ -408,7 +408,7 @@ function withdraw_profit(
         ) # ops;
       }
     | _ -> skip
-    end
+    ]
   } with (ops, s)
 
 function claim_interface_fee(
@@ -422,7 +422,7 @@ function claim_interface_fee(
       get_close_op(Unit);
     ];
 
-    case action of
+    case action of [
     | Claim_interface_fee(params) -> {
         if params.token = Tez
         then {
@@ -455,7 +455,7 @@ function claim_interface_fee(
         }
       }
     | _ -> skip
-    end
+    ]
   } with (ops, s)
 
 function withdraw_auction_fee(
@@ -469,7 +469,7 @@ function withdraw_auction_fee(
       get_close_op(Unit);
     ];
 
-    case action of
+    case action of [
     | Withdraw_auction_fee(params) -> {
         var tez_store : option(address) := (None : option(address));
         const token : token_t = params.token;
@@ -504,7 +504,7 @@ function withdraw_auction_fee(
         ops := divest_tez_or_transfer_tokens(Tezos.sender, user_reward, token, tez_store) # ops;
       }
     | _ -> skip
-    end
+    ]
   } with (ops, s)
 
 function vote(
@@ -518,7 +518,7 @@ function vote(
       get_close_op(Unit);
     ];
 
-    case action of
+    case action of [
     | Vote(params) -> {
         const pair : pair_t = unwrap(s.pairs[params.pair_id], DexCore.err_pair_not_listed);
         const voter_balance : nat = unwrap_or(s.ledger[(Tezos.sender, params.pair_id)], 0n);
@@ -538,7 +538,7 @@ function vote(
         ) # ops;
       }
     | _ -> skip
-    end
+    ]
   } with (ops, s)
 
 (* ADMIN *)
@@ -548,14 +548,14 @@ function set_admin(
   var s                 : storage_t)
                         : return_t is
   block {
-    case action of
+    case action of [
     | Set_admin(admin) -> {
         only_admin(s.admin);
 
         s.pending_admin := admin;
       }
     | _ -> skip
-    end
+    ]
   } with ((nil : list(operation)), s)
 
 function confirm_admin(
@@ -563,7 +563,7 @@ function confirm_admin(
   var s                 : storage_t)
                         : return_t is
   block {
-    case action of
+    case action of [
     | Confirm_admin -> {
         only_pending_admin(s.pending_admin);
 
@@ -571,7 +571,7 @@ function confirm_admin(
         s.pending_admin := Constants.zero_address;
       }
     | _ -> skip
-    end
+    ]
   } with ((nil : list(operation)), s)
 
 function set_flash_swaps_proxy(
@@ -579,14 +579,14 @@ function set_flash_swaps_proxy(
   var s                 : storage_t)
                         : return_t is
   block {
-    case action of
+    case action of [
     | Set_flash_swaps_proxy(flash_swaps_proxy) -> {
         only_admin(s.admin);
 
         s.flash_swaps_proxy := flash_swaps_proxy;
       }
     | _ -> skip
-    end
+    ]
   } with ((nil : list(operation)), s)
 
 function set_auction(
@@ -594,14 +594,14 @@ function set_auction(
   var s                 : storage_t)
                         : return_t is
   block {
-    case action of
+    case action of [
     | Set_auction(auction) -> {
         only_admin(s.admin);
 
         s.auction := auction;
       }
     | _ -> skip
-    end
+    ]
   } with ((nil : list(operation)), s)
 
 function add_managers(
@@ -609,7 +609,7 @@ function add_managers(
   var s                 : storage_t)
                         : return_t is
   block {
-    case action of
+    case action of [
     | Add_managers(params) -> {
         only_admin(s.admin);
 
@@ -624,7 +624,7 @@ function add_managers(
         s := List.fold(add_manager, params, s);
       }
     | _ -> skip
-    end
+    ]
   } with ((nil : list(operation)), s)
 
 function set_fees(
@@ -632,14 +632,14 @@ function set_fees(
   var s                 : storage_t)
                         : return_t is
   block {
-    case action of
+    case action of [
     | Set_fees(fees) -> {
         only_admin(s.admin);
 
         s.fees := fees;
       }
     | _ -> skip
-    end
+    ]
   } with ((nil : list(operation)), s)
 
 function set_cycle_duration(
@@ -647,14 +647,14 @@ function set_cycle_duration(
   var s                 : storage_t)
                         : return_t is
   block {
-    case action of
+    case action of [
     | Set_cycle_duration(cycle_duration) -> {
         only_admin(s.admin);
 
         s.cycle_duration := cycle_duration;
       }
     | _ -> skip
-    end
+    ]
   } with ((nil : list(operation)), s)
 
 function set_voting_period(
@@ -662,14 +662,14 @@ function set_voting_period(
   var s                 : storage_t)
                         : return_t is
   block {
-    case action of
+    case action of [
     | Set_voting_period(voting_period) -> {
         only_admin(s.admin);
 
         s.voting_period := voting_period;
       }
     | _ -> skip
-    end
+    ]
   } with ((nil : list(operation)), s)
 
 function set_collecting_period(
@@ -677,14 +677,14 @@ function set_collecting_period(
   var s                 : storage_t)
                         : return_t is
   block {
-    case action of
+    case action of [
     | Set_collecting_period(collecting_period) -> {
         only_admin(s.admin);
 
         s.collecting_period := collecting_period;
       }
     | _ -> skip
-    end
+    ]
   } with ((nil : list(operation)), s)
 
 function update_token_metadata(
@@ -692,7 +692,7 @@ function update_token_metadata(
   var s                 : storage_t)
                         : return_t is
   block {
-    case action of
+    case action of [
     | Update_token_metadata(params) -> {
         only_manager(s.managers);
 
@@ -711,7 +711,7 @@ function update_token_metadata(
         s.token_metadata[params.token_id] := metadata;
       }
     | _ -> skip
-    end
+    ]
   } with ((nil : list(operation)), s)
 
 function ban(
@@ -721,7 +721,7 @@ function ban(
   block {
     var ops : list(operation) := nil;
 
-    case action of
+    case action of [
       Ban(params) -> {
         only_admin(s.admin);
 
@@ -730,5 +730,5 @@ function ban(
         ops := get_ban_baker_op(params.ban_params, unwrap(pair.tez_store, DexCore.err_tez_store_404)) # ops;
       }
     | _ -> skip
-    end
+    ]
   } with (ops, s)

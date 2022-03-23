@@ -5,7 +5,7 @@ function flash_swap_callback(
   block {
     var ops : list(operation) := nil;
 
-    case action of
+    case action of [
     | Flash_swap_callback(params) -> {
         only_dex_core(Tezos.self_address);
         only_entered(s.entered);
@@ -35,7 +35,7 @@ function flash_swap_callback(
             unwrap(pair.tez_store, DexCore.err_tez_store_404)
           ) # ops;
 
-          case params.flash_swap_rule of
+          case params.flash_swap_rule of [
           | Loan_a_return_a -> skip
           | Loan_a_return_b -> {
             pair := calc_cumulative_prices(
@@ -58,10 +58,10 @@ function flash_swap_callback(
               pair.token_b_pool + get_nat_or_fail(tez_amount_to_invest - params.amount_out)
             );
           }
-          end;
+          ];
         }
         else {
-          case params.flash_swap_rule of
+          case params.flash_swap_rule of [
           | Loan_a_return_a -> {
             pair := calc_cumulative_prices(pair, pair.token_a_pool + fee, pair.token_b_pool);
           }
@@ -82,7 +82,7 @@ function flash_swap_callback(
           | Loan_b_return_b -> {
             pair := calc_cumulative_prices(pair, pair.token_a_pool, pair.token_b_pool + fee);
           }
-          end;
+          ];
 
           ops := transfer_token(
             params.sender,
@@ -108,7 +108,7 @@ function flash_swap_callback(
         ops := reverse_list(ops);
       }
     | _ -> skip
-    end
+    ]
   } with (ops, s)
 
 function launch_callback(
@@ -118,7 +118,7 @@ function launch_callback(
   block {
     var ops : list(operation) := nil;
 
-    case action of
+    case action of [
     | Launch_callback(params) -> {
         only_dex_core(Tezos.self_address);
         only_entered(s.entered);
@@ -126,7 +126,7 @@ function launch_callback(
         ops := get_vote_op(params.vote_params, params.tez_store) # ops;
       }
     | _ -> skip
-    end
+    ]
   } with (ops, s)
 
 function close(
@@ -136,7 +136,7 @@ function close(
   block {
     var ops : list(operation) := nil;
 
-    case action of
+    case action of [
     | Close(_) -> {
         only_dex_core(Tezos.self_address);
         only_entered(s.entered);
@@ -144,5 +144,5 @@ function close(
         s.entered := False;
       }
     | _ -> skip
-    end
+    ]
   } with (ops, s)
