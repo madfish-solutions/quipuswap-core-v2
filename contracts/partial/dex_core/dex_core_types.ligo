@@ -149,7 +149,11 @@ type withdraw_profit_t  is [@layout:comb] record [
 type claim_fee_t        is [@layout:comb] record [
   token                   : token_t;
   receiver                : address;
-  pair_id                 : option(token_id_t);
+]
+
+type claim_tez_fee_t    is [@layout:comb] record [
+  pair_id                 : token_id_t;
+  receiver                : address;
 ]
 
 type withdraw_fee_t     is [@layout:comb] record [
@@ -263,6 +267,7 @@ type action_t           is
 | Swap                    of swap_t
 | Withdraw_profit         of withdraw_profit_t
 | Claim_interface_fee     of claim_fee_t
+| Claim_interface_tez_fee of claim_tez_fee_t
 | Withdraw_auction_fee    of withdraw_fee_t
 | Vote                    of dex_vote_t
 (* ADMIN *)
@@ -308,4 +313,4 @@ type full_action_t      is
 
 type deploy_tez_store_t is (option(key_hash) * tez * tez_store_t) -> (operation * address)
 
-const dex_core_methods_max_index : nat = 27n;
+const dex_core_methods_max_index : nat = 28n;

@@ -34,7 +34,7 @@ import {
 
 chai.use(require("chai-bignumber")(BigNumber));
 
-describe("TezStore (withdraw rewards)", async () => {
+describe.skip("TezStore (withdraw rewards)", async () => {
   var bakerRegistry: BakerRegistry;
   var tezStore: TezStore;
   var dexCore: DexCore;

@@ -37,6 +37,7 @@ import { Transfer, UpdateOperator } from "test/types/FA2";
 import {
   UpdateTokenMetadata,
   CalculateFlashSwap,
+  WithdrawAuctionFee,
   FlashSwapCallback,
   CumulativePrices,
   InvestLiquidity,
@@ -49,6 +50,7 @@ import {
   TokensPerShare,
   CalculateSwap,
   FlashSwapRule,
+  ClaimTezFee,
   AddManager,
   FlashSwap,
   SetExpiry,
@@ -302,9 +304,23 @@ export class DexCore {
     return operation;
   }
 
-  async withdrawAuctionFee(token: Token): Promise<TransactionOperation> {
+  async claimInterfaceTezFee(
+    params: ClaimTezFee
+  ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
-      .withdraw_auction_fee(token)
+      .claim_interface_tez_fee(params)
+      .send();
+
+    await confirmOperation(this.tezos, operation.hash);
+
+    return operation;
+  }
+
+  async withdrawAuctionFee(
+    params: WithdrawAuctionFee
+  ): Promise<TransactionOperation> {
+    const operation: TransactionOperation = await this.contract.methodsObject
+      .withdraw_auction_fee(params)
       .send();
 
     await confirmOperation(this.tezos, operation.hash);

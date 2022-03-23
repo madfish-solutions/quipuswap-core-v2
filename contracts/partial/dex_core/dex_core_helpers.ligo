@@ -84,7 +84,7 @@ function divest_tez_or_transfer_tokens(
   if token_type = Tez
   then block {
     const divest_params : divest_tez_t = record [
-      receiver = (get_contract(receiver) : contract(unit));
+      receiver = (Tezos.get_contract_with_error(receiver, Common.err_contract_404) : contract(unit));
       amt      = tokens_divested;
     ];
   } with get_divest_tez_op(divest_params, unwrap(tez_store_opt, DexCore.err_tez_store_404))
@@ -150,7 +150,8 @@ function update_fees(
   block {
     if token_in = Tez
     then {
-      s.interface_tez_fee[(pair_id, referrer)] := unwrap_or(s.interface_tez_fee[(pair_id, referrer)], 0n) + interface_fee;
+      s.interface_tez_fee[(pair_id, referrer)] := unwrap_or(s.interface_tez_fee[(pair_id, referrer)], 0n) +
+        interface_fee;
       s.auction_tez_fee[pair_id] := unwrap_or(s.auction_tez_fee[pair_id], 0n) + auction_fee;
     }
     else {
@@ -256,21 +257,12 @@ function swap_internal(
     const interface_fee : nat = tmp.amount_in * fees.interface_fee;
     const auction_fee : nat = tmp.amount_in * fees.auction_fee;
 
-    const s = update_fees(
-      tmp.s,
-      params.pair_id,
-      tmp.token_in,
-      tmp.referrer,
-      interface_fee,
-      auction_fee
-    );
-
-    tmp.s := s;
+    tmp.s := update_fees(tmp.s, params.pair_id, tmp.token_in, tmp.referrer, interface_fee, auction_fee);
 
     if swap.to_.token = Tez and tmp.counter =/= get_nat_or_fail(tmp.swaps_list_size - 1n)
     then {
       const divest_params : divest_tez_t = record [
-        receiver = (get_contract(Tezos.self_address) : contract(unit));
+        receiver = (Tezos.get_contract_with_error(Tezos.self_address, Common.err_contract_404) : contract(unit));
         amt      = out;
       ];
 
@@ -303,13 +295,18 @@ function swap_internal(
     then {
       tmp.last_operation := Some(
         if swap.to_.token = Tez
-        then get_divest_tez_op(record [
-            receiver     = (get_contract(tmp.receiver) : contract(unit));
-            amt          = out;
-          ], unwrap(pair.tez_store, DexCore.err_tez_store_404))
+        then get_divest_tez_op(
+          record [
+            receiver = (Tezos.get_contract_with_error(tmp.receiver, Common.err_contract_404) : contract(unit));
+            amt      = out;
+          ],
+          unwrap(pair.tez_store, DexCore.err_tez_store_404)
+        )
         else transfer_token(Tezos.self_address, tmp.receiver, out, swap.to_.token)
       );
-    } else skip;
+    }
+    else skip;
+
     tmp.counter := tmp.counter + 1n;
   } with tmp
 

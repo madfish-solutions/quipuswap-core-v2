@@ -54,16 +54,21 @@
             ]
           },
           {
-            "prim": "SWAP"
-          },
-          {
-            "prim": "DUP"
-          },
-          {
-            "prim": "DUG",
+            "prim": "PUSH",
             "args": [
               {
-                "int": "2"
+                "prim": "string"
+              },
+              {
+                "string": "411"
+              }
+            ]
+          },
+          {
+            "prim": "DUP",
+            "args": [
+              {
+                "int": "3"
               }
             ]
           },
@@ -83,21 +88,17 @@
             "args": [
               [
                 {
-                  "prim": "PUSH",
-                  "args": [
-                    {
-                      "prim": "string"
-                    },
-                    {
-                      "string": "bad address for get_contract"
-                    }
-                  ]
-                },
-                {
                   "prim": "FAILWITH"
                 }
               ],
-              []
+              [
+                {
+                  "prim": "SWAP"
+                },
+                {
+                  "prim": "DROP"
+                }
+              ]
             ]
           },
           {
@@ -160,7 +161,7 @@
   "networks": {},
   "compiler": {
     "name": "ligo",
-    "version": "0.37.0"
+    "version": "next"
   },
   "networkType": "tezos"
 }

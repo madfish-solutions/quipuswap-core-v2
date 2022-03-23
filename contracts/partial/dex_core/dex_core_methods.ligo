@@ -12,31 +12,32 @@ function call_dex_core(
     | Swap(_)                    -> 4n
     | Withdraw_profit(_)         -> 5n
     | Claim_interface_fee(_)     -> 6n
-    | Withdraw_auction_fee(_)    -> 7n
-    | Vote(_)                    -> 8n
+    | Claim_interface_tez_fee(_) -> 7n
+    | Withdraw_auction_fee(_)    -> 8n
+    | Vote(_)                    -> 9n
     (* ADMIN *)
-    | Set_admin(_)               -> 9n
-    | Confirm_admin(_)           -> 10n
-    | Set_flash_swaps_proxy(_)   -> 11n
-    | Set_auction(_)             -> 12n
-    | Add_managers(_)            -> 13n
-    | Set_fees(_)                -> 14n
-    | Set_cycle_duration(_)      -> 15n
-    | Set_voting_period(_)       -> 16n
-    | Set_collecting_period(_)   -> 17n
-    | Update_token_metadata(_)   -> 18n
-    | Ban(_)                     -> 19n
+    | Set_admin(_)               -> 10n
+    | Confirm_admin(_)           -> 11n
+    | Set_flash_swaps_proxy(_)   -> 12n
+    | Set_auction(_)             -> 13n
+    | Add_managers(_)            -> 14n
+    | Set_fees(_)                -> 15n
+    | Set_cycle_duration(_)      -> 16n
+    | Set_voting_period(_)       -> 17n
+    | Set_collecting_period(_)   -> 18n
+    | Update_token_metadata(_)   -> 19n
+    | Ban(_)                     -> 20n
     (* PERMIT *)
-    | Permit(_)                  -> 20n
-    | Set_expiry(_)              -> 21n
+    | Permit(_)                  -> 21n
+    | Set_expiry(_)              -> 22n
     (* FA2 *)
-    | Transfer(_)                -> 22n
-    | Update_operators(_)        -> 23n
-    | Balance_of(_)              -> 24n
+    | Transfer(_)                -> 23n
+    | Update_operators(_)        -> 24n
+    | Balance_of(_)              -> 25n
     (* CALLBACKS *)
-    | Launch_callback(_)         -> 25n
-    | Flash_swap_callback(_)     -> 26n
-    | Close(_)                   -> 27n
+    | Launch_callback(_)         -> 26n
+    | Flash_swap_callback(_)     -> 27n
+    | Close(_)                   -> 28n
     ];
 
     const lambda_bytes : bytes = unwrap(s.dex_core_lambdas[id], DexCore.err_unknown_func);

@@ -94,16 +94,7 @@ function flash_swap_callback(
 
         s.pairs[params.pair_id] := pair;
 
-        const storage = update_fees(
-          s,
-          params.pair_id,
-          params.return_token,
-          params.referrer,
-          interface_fee,
-          auction_fee
-        );
-
-        s := storage;
+        s := update_fees(s, params.pair_id, params.return_token, params.referrer, interface_fee, auction_fee);
 
         ops := reverse_list(ops);
       }
