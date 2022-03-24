@@ -24,13 +24,16 @@ function default(
   block {
     s.val := val;
 
-    const op : operation = transfer_tez((get_contract(s.dex_core) : contract(unit)), 2000n);
+    const op : operation = transfer_tez(
+      (Tezos.get_contract_with_error(s.dex_core, Common.err_contract_404) : contract(unit)),
+      2000n
+    );
   } with (list [op], s)
 
 function main(
   const action          : action_t;
   const s               : storage_t)
                         : return_t is
-  case action of
+  case action of [
   | Default(val) -> default(val, s)
-  end
+  ]

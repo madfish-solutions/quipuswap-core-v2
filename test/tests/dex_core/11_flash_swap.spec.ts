@@ -823,10 +823,10 @@ describe("DexCore (flash swap)", async () => {
       prevDexCoreTokABalance.minus(params.amount_out)
     );
     expect(currDexCoreTokBBalance).to.be.bignumber.equal(
-      prevDexCoreTokBBalance.plus(new BigNumber(500))
+      prevDexCoreTokBBalance
     );
     expect(currTezStoreTokBBalance).to.be.bignumber.equal(
-      prevTezStoreTokBBalance.plus(new BigNumber(1500))
+      prevTezStoreTokBBalance.plus(new BigNumber(2000))
     );
     expect(currFlashSwapAgentTokABalance).to.be.bignumber.equal(
       prevFlashSwapAgentTokABalance.plus(params.amount_out)
@@ -1332,10 +1332,10 @@ describe("DexCore (flash swap)", async () => {
       prevDexCoreTokABalance.minus(params.amount_out)
     );
     expect(currDexCoreTokBBalance).to.be.bignumber.equal(
-      prevDexCoreTokBBalance.plus(new BigNumber(500))
+      prevDexCoreTokBBalance
     );
     expect(currTezStoreTokBBalance).to.be.bignumber.equal(
-      prevTezStoreTokBBalance.plus(new BigNumber(1500))
+      prevTezStoreTokBBalance.plus(new BigNumber(2000))
     );
     expect(currFlashSwapAgentTokABalance).to.be.bignumber.equal(
       prevFlashSwapAgentTokABalance.plus(params.amount_out)
@@ -1411,11 +1411,9 @@ describe("DexCore (flash swap)", async () => {
       bob.pkh
     );
 
-    expect(currDexCoreTokBalance).to.be.bignumber.equal(
-      prevDexCoreTokBalance.plus(new BigNumber(500))
-    );
+    expect(currDexCoreTokBalance).to.be.bignumber.equal(prevDexCoreTokBalance);
     expect(currTezStoreTokBalance).to.be.bignumber.equal(
-      prevTezStoreTokBalance.plus(new BigNumber(500))
+      prevTezStoreTokBalance.plus(new BigNumber(1000))
     );
     expect(currBobTokBalance).to.be.bignumber.equal(
       prevBobTokBalance.plus(params.amount_out)
@@ -1679,7 +1677,7 @@ describe("DexCore (flash swap)", async () => {
       pair_id: new BigNumber(0),
       receiver: alice.pkh,
       referrer: bob.pkh,
-      amount_out: new BigNumber(3000),
+      amount_out: new BigNumber(10000),
     };
     const value: number = Math.round(Math.random() * 100 + 1);
 

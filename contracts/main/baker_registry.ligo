@@ -17,7 +17,7 @@ function main(
   const action          : action_t;
   const s               : storage_t)
                         : return_t is
-  case action of
+  case action of [
   | Validate(baker) -> validate(baker, s)
   | Register(baker) -> register(baker, s)
-  end
+  ]

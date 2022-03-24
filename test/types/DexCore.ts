@@ -72,7 +72,16 @@ export type WithdrawProfit = {
 export type ClaimFee = {
   token: Token;
   receiver: string;
-  amount: BigNumber;
+};
+
+export type ClaimTezFee = {
+  pair_id: BigNumber;
+  receiver: string;
+};
+
+export type WithdrawAuctionFee = {
+  pair_id: BigNumber | undefined | null;
+  token: Token;
 };
 
 export type DexVote = {

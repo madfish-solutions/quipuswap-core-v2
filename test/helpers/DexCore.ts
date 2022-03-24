@@ -37,6 +37,7 @@ import { Transfer, UpdateOperator } from "test/types/FA2";
 import {
   UpdateTokenMetadata,
   CalculateFlashSwap,
+  WithdrawAuctionFee,
   FlashSwapCallback,
   CumulativePrices,
   InvestLiquidity,
@@ -49,6 +50,7 @@ import {
   TokensPerShare,
   CalculateSwap,
   FlashSwapRule,
+  ClaimTezFee,
   AddManager,
   FlashSwap,
   SetExpiry,
@@ -239,7 +241,7 @@ export class DexCore {
   async flashSwap(params: FlashSwap): Promise<TransactionOperation> {
     const ligo: string = getLigo(true);
     const stdout: string = execSync(
-      `${ligo} compile parameter $PWD/contracts/test/lambdas.ligo 'Use(Flash_swap(record [ lambda = lambda2; flash_swap_rule = ${
+      `${ligo} compile parameter $PWD/contracts/test/lambdas.ligo 'Use(Flash_swap(record [ lambda = lambda; flash_swap_rule = ${
         params.flash_swap_rule
       }; pair_id = ${params.pair_id.toFixed()}n; receiver = ("${
         params.receiver
@@ -302,9 +304,23 @@ export class DexCore {
     return operation;
   }
 
-  async withdrawAuctionFee(token: Token): Promise<TransactionOperation> {
+  async claimInterfaceTezFee(
+    params: ClaimTezFee
+  ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
-      .withdraw_auction_fee(token)
+      .claim_interface_tez_fee(params)
+      .send();
+
+    await confirmOperation(this.tezos, operation.hash);
+
+    return operation;
+  }
+
+  async withdrawAuctionFee(
+    params: WithdrawAuctionFee
+  ): Promise<TransactionOperation> {
+    const operation: TransactionOperation = await this.contract.methodsObject
+      .withdraw_auction_fee(params)
       .send();
 
     await confirmOperation(this.tezos, operation.hash);

@@ -34,7 +34,7 @@ import {
 
 chai.use(require("chai-bignumber")(BigNumber));
 
-describe("TezStore (withdraw rewards)", async () => {
+describe.skip("TezStore (withdraw rewards)", async () => {
   var bakerRegistry: BakerRegistry;
   var tezStore: TezStore;
   var dexCore: DexCore;
@@ -270,8 +270,8 @@ describe("TezStore (withdraw rewards)", async () => {
     expect(tezStore.storage.last_update_level).to.be.bignumber.equal(
       expectedRewardsInfo.lastUpdateLevel
     );
-    expect(tezStore.storage.collecting_period_ends).to.be.bignumber.equal(
-      expectedRewardsInfo.collectingPeriodEnds
+    expect(tezStore.storage.collecting_period_end).to.be.bignumber.equal(
+      expectedRewardsInfo.collectingPeriodEnd
     );
   });
 

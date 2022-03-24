@@ -317,7 +317,7 @@ describe("TezStore (vote - 2)", async () => {
     expect(
       await utils.tezos.rpc.getDelegate(tezStore.contract.address)
     ).to.equal(investParams.candidate);
-    expect(tezStore.storage.voting_period_ends).to.be.bignumber.equal(
+    expect(tezStore.storage.voting_period_end).to.be.bignumber.equal(
       (await utils.tezos.rpc.getBlock()).header.level +
         dexCoreStorage.storage.cycle_duration.toNumber() *
           dexCoreStorage.storage.voting_period.toNumber()

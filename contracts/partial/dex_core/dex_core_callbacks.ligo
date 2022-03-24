@@ -5,7 +5,7 @@ function flash_swap_callback(
   block {
     var ops : list(operation) := nil;
 
-    case action of
+    case action of [
     | Flash_swap_callback(params) -> {
         only_dex_core(Tezos.self_address);
         only_entered(s.entered);
@@ -91,26 +91,12 @@ function flash_swap_callback(
 
         s.pairs[params.pair_id] := pair;
 
-        const (storage, divest_tez_operation_opt) = update_fees(
-          s,
-          params.pair_id,
-          params.return_token,
-          params.referrer,
-          flash_swap_result.interface_fee,
-          flash_swap_result.auction_fee
-        );
-
-        s := storage;
-
-        case divest_tez_operation_opt of
-        | Some(op) -> ops := op # ops
-        | None     -> skip
-        end;
+        s := update_fees(s, params.pair_id, params.return_token, params.referrer, interface_fee, auction_fee);
 
         ops := reverse_list(ops);
       }
     | _ -> skip
-    end
+    ]
   } with (ops, s)
 
 function launch_callback(
@@ -120,7 +106,7 @@ function launch_callback(
   block {
     var ops : list(operation) := nil;
 
-    case action of
+    case action of [
     | Launch_callback(params) -> {
         only_dex_core(Tezos.self_address);
         only_entered(s.entered);
@@ -128,7 +114,7 @@ function launch_callback(
         ops := get_vote_op(params.vote_params, params.tez_store) # ops;
       }
     | _ -> skip
-    end
+    ]
   } with (ops, s)
 
 function close(
@@ -138,7 +124,7 @@ function close(
   block {
     var ops : list(operation) := nil;
 
-    case action of
+    case action of [
     | Close(_) -> {
         only_dex_core(Tezos.self_address);
         only_entered(s.entered);
@@ -146,5 +132,5 @@ function close(
         s.entered := False;
       }
     | _ -> skip
-    end
+    ]
   } with (ops, s)
