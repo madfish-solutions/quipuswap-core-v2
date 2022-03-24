@@ -11,12 +11,12 @@ function flash_swap_callback(
         only_entered(s.entered);
 
         var pair : pair_t := unwrap(s.pairs[params.pair_id], DexCore.err_pair_not_listed);
-        const interface_fee : nat = params.amount_out * s.fees.interface_fee;
-        const auction_fee : nat = params.amount_out * s.fees.auction_fee;
-        const swap_fee : nat = params.amount_out * s.fees.swap_fee;
-        const full_fee : nat = interface_fee + auction_fee + swap_fee;
-        const fee : nat = get_nat_or_fail(
-          (params.amount_out * Constants.precision - interface_fee - auction_fee) / Constants.precision
+        const flash_swap_result : flash_swap_res_t = calculate_flash_swap_result(
+          params.flash_swap_rule,
+          s.fees,
+          params.amount_out,
+          params.swap_token_pool,
+          params.return_token_pool
         );
 
         if params.return_token = Tez
@@ -24,7 +24,7 @@ function flash_swap_callback(
           const curr_tez_balance : nat = Tezos.balance / 1mutez;
 
           assert_with_error(
-            curr_tez_balance >= params.prev_tez_balance + div_ceil(full_fee, Constants.precision),
+            curr_tez_balance >= params.prev_tez_balance + flash_swap_result.full_fee,
             DexCore.err_wrong_flash_swap_returns
           );
 
@@ -47,7 +47,7 @@ function flash_swap_callback(
           | Loan_b_return_a -> {
             pair := calc_cumulative_prices(
               pair,
-              pair.token_a_pool + params.amount_out + fee,
+              flash_swap_result.new_return_tok_pool,
               get_nat_or_fail(pair.token_b_pool - params.amount_out)
             );
           }
@@ -63,31 +63,31 @@ function flash_swap_callback(
         else {
           case params.flash_swap_rule of [
           | Loan_a_return_a -> {
-            pair := calc_cumulative_prices(pair, pair.token_a_pool + fee, pair.token_b_pool);
+            pair := calc_cumulative_prices(pair, pair.token_a_pool + flash_swap_result.fee, pair.token_b_pool);
           }
           | Loan_a_return_b -> {
             pair := calc_cumulative_prices(
               pair,
               get_nat_or_fail(pair.token_a_pool - params.amount_out),
-              pair.token_b_pool + params.amount_out + fee
+              flash_swap_result.new_return_tok_pool
             );
           }
           | Loan_b_return_a -> {
             pair := calc_cumulative_prices(
               pair,
-              pair.token_a_pool + params.amount_out + fee,
+              flash_swap_result.new_return_tok_pool,
               get_nat_or_fail(pair.token_b_pool - params.amount_out)
             );
           }
           | Loan_b_return_b -> {
-            pair := calc_cumulative_prices(pair, pair.token_a_pool, pair.token_b_pool + fee);
+            pair := calc_cumulative_prices(pair, pair.token_a_pool, pair.token_b_pool + flash_swap_result.fee);
           }
           ];
 
           ops := transfer_token(
             params.sender,
             Tezos.self_address,
-            params.amount_out + div_ceil(full_fee, Constants.precision),
+            flash_swap_result.returns,
             params.return_token
           ) # ops;
         };

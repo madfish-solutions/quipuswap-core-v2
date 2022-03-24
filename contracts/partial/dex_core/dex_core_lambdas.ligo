@@ -145,8 +145,8 @@ function invest_liquidity(
         assert_with_error(params.shares =/= 0n, DexCore.err_no_shares_expected);
 
         const tokens : tokens_t = unwrap(s.tokens[params.pair_id], DexCore.err_pair_not_listed);
-        const tokens_a_required : nat = div_ceil(params.shares * pair.token_a_pool, pair.total_supply);
-        const tokens_b_required : nat = div_ceil(params.shares * pair.token_b_pool, pair.total_supply);
+        const tokens_a_required : nat = ceil_div(params.shares * pair.token_a_pool, pair.total_supply);
+        const tokens_b_required : nat = ceil_div(params.shares * pair.token_b_pool, pair.total_supply);
 
         assert_with_error(
           tokens.token_b =/= Tez or params.token_b_in = Tezos.amount / 1mutez,
@@ -302,13 +302,15 @@ function flash_swap(
         assert_with_error(params.amount_out <= flash_swap_data.swap_token_pool, DexCore.err_insufficient_liquidity);
 
         const flash_swap_callback_params : flash_swap_1_t = record [
-          flash_swap_rule  = params.flash_swap_rule;
-          pair_id          = params.pair_id;
-          return_token     = flash_swap_data.return_token;
-          referrer         = params.referrer;
-          sender           = Tezos.sender;
-          amount_out       = params.amount_out;
-          prev_tez_balance = Tezos.balance / 1mutez;
+          flash_swap_rule   = params.flash_swap_rule;
+          pair_id           = params.pair_id;
+          return_token      = flash_swap_data.return_token;
+          referrer          = params.referrer;
+          sender            = Tezos.sender;
+          swap_token_pool   = flash_swap_data.swap_token_pool;
+          return_token_pool = flash_swap_data.return_token_pool;
+          amount_out        = params.amount_out;
+          prev_tez_balance  = Tezos.balance / 1mutez;
         ];
 
         ops := call_flash_swap_callback(flash_swap_callback_params) # ops;
