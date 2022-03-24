@@ -43,7 +43,6 @@ type flash_swap_res_t   is [@layout:comb] record [
   returns                 : nat;
   full_fee                : nat;
   new_return_tok_pool     : nat;
-  fee                     : nat;
   interface_fee           : nat;
   auction_fee             : nat;
 ]

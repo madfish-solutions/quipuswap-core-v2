@@ -175,6 +175,31 @@ function calculate_opposite_token_returns(
     const from_in_with_fee : nat = from_in / rate_without_fee;
   } with from_in_with_fee
 
+function calculate_flash_swap_params(
+  const fees            : fees_t;
+  const amount_in       : nat;
+  const return_tok_pool : nat)
+                        : flash_swap_res_t is
+  block {
+    const interface_fee : nat = amount_in * fees.interface_fee;
+    const auction_fee : nat = amount_in * fees.auction_fee;
+    const swap_fee : nat = amount_in * fees.swap_fee;
+    const full_fee : nat = ceil_div(interface_fee + auction_fee + swap_fee, Constants.precision);
+    const returns : nat = amount_in  + ceil_div(full_fee, Constants.precision);
+    const amount_to_pool : nat = get_nat_or_fail(
+      (returns * Constants.precision - interface_fee - auction_fee) / Constants.precision
+    );
+    const new_return_tok_pool : nat = return_tok_pool + amount_to_pool;
+    const result : flash_swap_res_t = record [
+      full_fee            = full_fee;
+      new_return_tok_pool = new_return_tok_pool;
+      interface_fee       = interface_fee;
+      auction_fee         = auction_fee;
+      returns             = returns;
+    ];
+
+  } with result
+
 function calculate_flash_swap_result(
   const flash_swap_rule : flash_swap_rule_t;
   const fees            : fees_t;
@@ -183,28 +208,20 @@ function calculate_flash_swap_result(
   const return_tok_pool : nat)
                         : flash_swap_res_t is
   block {
-    const interface_fee : nat = amount_out * fees.interface_fee;
-    const auction_fee : nat = amount_out * fees.auction_fee;
-    const swap_fee : nat = amount_out * fees.swap_fee;
-    const full_fee : nat = ceil_div(interface_fee + auction_fee + swap_fee, Constants.precision);
-    const fee : nat = get_nat_or_fail(
-      (amount_out * Constants.precision - interface_fee - auction_fee) / Constants.precision
-    );
-    const returns : nat = case flash_swap_rule of
-    | Loan_a_return_a -> amount_out + full_fee
-    | Loan_a_return_b -> calculate_opposite_token_returns(fees, amount_out, swap_tok_pool, return_tok_pool)
-    | Loan_b_return_a -> calculate_opposite_token_returns(fees, amount_out, swap_tok_pool, return_tok_pool)
-    | Loan_b_return_b -> amount_out + full_fee
+    const result : flash_swap_res_t = case flash_swap_rule of
+    | Loan_a_return_a -> calculate_flash_swap_params(fees, amount_out, return_tok_pool)
+    | Loan_a_return_b -> calculate_flash_swap_params(
+        fees,
+        calculate_opposite_token_returns(fees, amount_out, swap_tok_pool, return_tok_pool),
+        return_tok_pool
+      )
+    | Loan_b_return_a -> calculate_flash_swap_params(
+        fees,
+        calculate_opposite_token_returns(fees, amount_out, swap_tok_pool, return_tok_pool),
+        return_tok_pool
+      )
+    | Loan_b_return_b -> calculate_flash_swap_params(fees, amount_out, return_tok_pool)
     end;
-    const new_return_tok_pool : nat = return_tok_pool + get_nat_or_fail(returns - fee);
-    const result : flash_swap_res_t = record [
-      returns             = returns;
-      full_fee            = full_fee;
-      new_return_tok_pool = new_return_tok_pool;
-      fee                 = fee;
-      interface_fee       = interface_fee;
-      auction_fee         = auction_fee;
-    ];
   } with result
 
 function form_flash_swap_data(
