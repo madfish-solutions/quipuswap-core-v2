@@ -14,8 +14,8 @@ type storage_t          is [@layout:comb] record [
   reward_per_share        : nat;
   reward_per_block        : nat;
   last_update_level       : nat;
-  collecting_period_ends  : nat;
-  voting_period_ends      : nat;
+  collecting_period_end   : nat;
+  voting_period_end       : nat;
 ]
 
 type invest_tez_t       is unit

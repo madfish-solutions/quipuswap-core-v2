@@ -1,2 +1,2 @@
-const agent : address = ("KT1SrGC2E81hvdPRSnT4m3dGgTUCGcXoVurm" : address);
-const val : nat = 92n;
+const agent : address = ("KT1VjFfcmjQXK6pUj2upqLXf6oNLMidgPyxD" : address);
+const val : nat = 33n;

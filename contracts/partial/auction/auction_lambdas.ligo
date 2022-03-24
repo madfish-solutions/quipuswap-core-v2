@@ -7,7 +7,7 @@ function receive_fee(
   block {
     var ops : list(operation) := nil;
 
-    case action of
+    case action of [
     | Receive_fee(params) -> {
         only_dex_core(s.dex_core);
 
@@ -18,7 +18,7 @@ function receive_fee(
           get_nat_or_fail((params.fee * Constants.precision) - dev_fee_f);
       }
     | _ -> skip
-    end
+    ]
   } with (ops, s)
 
 function launch_auction(
@@ -28,7 +28,7 @@ function launch_auction(
   block {
     var ops : list(operation) := nil;
 
-    case action of
+    case action of [
     | Launch_auction(params) -> {
         is_not_whitelisted_token(params.token, s.whitelist);
 
@@ -51,7 +51,7 @@ function launch_auction(
         ops := transfer_fa2(Tezos.sender, Tezos.self_address, params.bid, s.quipu_token, s.quipu_token_id) # ops;
       }
     | _ -> skip
-    end
+    ]
   } with (ops, s)
 
 function place_bid(
@@ -61,7 +61,7 @@ function place_bid(
   block {
     var ops : list(operation) := nil;
 
-    case action of
+    case action of [
     | Place_bid(params) -> {
         var auction : auction_t := unwrap(s.auctions[params.auction_id], Auction.err_auction_not_found);
 
@@ -82,7 +82,7 @@ function place_bid(
         ];
       }
     | _ -> skip
-    end
+    ]
   } with (ops, s)
 
 function claim(
@@ -92,7 +92,7 @@ function claim(
   block {
     var ops : list(operation) := nil;
 
-    case action of
+    case action of [
     | Claim(auction_id) -> {
         var auction : auction_t := unwrap(s.auctions[auction_id], Auction.err_auction_not_found);
 
@@ -111,7 +111,7 @@ function claim(
         s.auctions[auction_id] := auction with record[ status = Finished ];
       }
     | _ -> skip
-    end
+    ]
   } with (ops, s)
 
 (* ADMIN *)
@@ -121,14 +121,14 @@ function set_admin(
   var s                 : storage_t)
                         : return_t is
   block {
-    case action of
+    case action of [
     | Set_admin(admin) -> {
         only_admin(s.admin);
 
         s.pending_admin := admin;
       }
     | _ -> skip
-    end
+    ]
   } with ((nil : list(operation)), s)
 
 function confirm_admin(
@@ -136,7 +136,7 @@ function confirm_admin(
   var s                 : storage_t)
                         : return_t is
   block {
-    case action of
+    case action of [
     | Confirm_admin -> {
         only_pending_admin(s.pending_admin);
 
@@ -144,7 +144,7 @@ function confirm_admin(
         s.pending_admin := Constants.zero_address;
       }
     | _ -> skip
-    end
+    ]
   } with ((nil : list(operation)), s)
 
 function set_baker(
@@ -154,7 +154,7 @@ function set_baker(
   block {
     var ops : list(operation) := nil;
 
-    case action of
+    case action of [
     | Set_baker(baker) -> {
         only_admin(s.admin);
 
@@ -169,7 +169,7 @@ function set_baker(
         else skip;
       }
     | _ -> skip
-    end
+    ]
   } with (ops, s)
 
 function set_fees(
@@ -177,14 +177,14 @@ function set_fees(
   var s                 : storage_t)
                         : return_t is
   block {
-    case action of
+    case action of [
     | Set_fees(fees) -> {
         only_admin(s.admin);
 
         s.fees := fees;
       }
     | _ -> skip
-    end
+    ]
   } with ((nil : list(operation)), s)
 
 function set_auction_duration(
@@ -192,14 +192,14 @@ function set_auction_duration(
   var s                 : storage_t)
                         : return_t is
   block {
-    case action of
+    case action of [
     | Set_auction_duration(auction_duration) -> {
         only_admin(s.admin);
 
         s.auction_duration := auction_duration;
       }
     | _ -> skip
-    end
+    ]
   } with ((nil : list(operation)), s)
 
 function set_min_bid(
@@ -207,14 +207,14 @@ function set_min_bid(
   var s                 : storage_t)
                         : return_t is
   block {
-    case action of
+    case action of [
     | Set_min_bid(min_bid) -> {
         only_admin(s.admin);
 
         s.min_bid := min_bid;
       }
     | _ -> skip
-    end
+    ]
   } with ((nil : list(operation)), s)
 
 function update_whitelist(
@@ -222,14 +222,14 @@ function update_whitelist(
   var s                 : storage_t)
                         : return_t is
   block {
-    case action of
+    case action of [
     | Update_whitelist(params) -> {
         only_admin(s.admin);
 
         s.whitelist := Set.update(params.token, params.add, s.whitelist);
       }
     | _ -> skip
-    end
+    ]
   } with ((nil : list(operation)), s)
 
 function withdraw_dev_fee(
@@ -239,7 +239,7 @@ function withdraw_dev_fee(
   block {
     var ops : list(operation) := nil;
 
-    case action of
+    case action of [
     | Withdraw_dev_fee(params) -> {
         only_admin(s.admin);
 
@@ -257,7 +257,7 @@ function withdraw_dev_fee(
         else skip;
       }
     | _ -> skip
-    end
+    ]
   } with (ops, s)
 
 function withdraw_public_fee(
@@ -267,7 +267,7 @@ function withdraw_public_fee(
   block {
     var ops : list(operation) := nil;
 
-    case action of
+    case action of [
     | Withdraw_public_fee(params) -> {
         only_admin(s.admin);
         is_whitelisted_token(params.token, s.whitelist);
@@ -286,7 +286,7 @@ function withdraw_public_fee(
         else skip;
       }
     | _ -> skip
-    end
+    ]
   } with (ops, s)
 
 function burn_bid_fee(
@@ -296,7 +296,7 @@ function burn_bid_fee(
   block {
     var ops : list(operation) := nil;
 
-    case action of
+    case action of [
     | Burn_bid_fee -> {
         only_admin(s.admin);
 
@@ -315,5 +315,5 @@ function burn_bid_fee(
         else skip;
       }
     | _ -> skip
-    end
+    ]
   } with (ops, s)

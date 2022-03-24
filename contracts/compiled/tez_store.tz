@@ -3,31 +3,36 @@
             (or (pair %divest_tez (contract %receiver unit) (nat %amt)) (unit %invest_tez)))
         (or (pair %vote
                (address %voter)
-               (pair (key_hash %candidate)
-                     (pair (bool %execute_voting)
-                           (pair (nat %votes) (pair (nat %current_balance) (nat %new_balance))))))
+               (key_hash %candidate)
+               (bool %execute_voting)
+               (nat %votes)
+               (nat %current_balance)
+               (nat %new_balance))
             (pair %withdraw_rewards
                (contract %receiver unit)
-               (pair (address %user) (pair (nat %current_balance) (nat %new_balance)))))) ;
+               (address %user)
+               (nat %current_balance)
+               (nat %new_balance)))) ;
   storage
     (pair (big_map %users address (pair (option %candidate key_hash) (nat %votes)))
-          (pair (big_map %bakers
-                   key_hash
-                   (pair (timestamp %ban_start_time) (pair (nat %ban_period) (nat %votes))))
-                (pair (big_map %users_rewards address (pair (nat %reward_f) (nat %reward_paid_f)))
-                      (pair (key_hash %previous_delegated)
-                            (pair (key_hash %current_delegated)
-                                  (pair (key_hash %next_candidate)
-                                        (pair (address %baker_registry)
-                                              (pair (address %dex_core)
-                                                    (pair (nat %pair_id)
-                                                          (pair (nat %next_reward)
-                                                                (pair (nat %total_reward)
-                                                                      (pair (nat %reward_paid)
-                                                                            (pair (nat %reward_per_share)
-                                                                                  (pair (nat %reward_per_block)
-                                                                                        (pair (nat %last_update_level)
-                                                                                              (pair (nat %collecting_period_ends) (nat %voting_period_ends))))))))))))))))) ;
+          (big_map %bakers
+             key_hash
+             (pair (timestamp %ban_start_time) (nat %ban_period) (nat %votes)))
+          (big_map %users_rewards address (pair (nat %reward_f) (nat %reward_paid_f)))
+          (key_hash %previous_delegated)
+          (key_hash %current_delegated)
+          (key_hash %next_candidate)
+          (address %baker_registry)
+          (address %dex_core)
+          (nat %pair_id)
+          (nat %next_reward)
+          (nat %total_reward)
+          (nat %reward_paid)
+          (nat %reward_per_share)
+          (nat %reward_per_block)
+          (nat %last_update_level)
+          (nat %collecting_period_end)
+          (nat %voting_period_end)) ;
   code { PUSH key_hash "tz1ZZZZZZZZZZZZZZZZZZZZZZZZZZZZNkiRg" ;
          PUSH nat 1000000000000000000 ;
          PUSH nat 0 ;
@@ -57,15 +62,15 @@
            (pair nat nat)
            { UNPAIR ; IF_NONE {} { SWAP ; DROP } } ;
          LAMBDA
-           (pair (option (pair timestamp (pair nat nat))) (pair timestamp (pair nat nat)))
-           (pair timestamp (pair nat nat))
+           (pair (option (pair timestamp nat nat)) (pair timestamp nat nat))
+           (pair timestamp nat nat)
            { UNPAIR ; IF_NONE {} { SWAP ; DROP } } ;
          LAMBDA
            (pair (option nat) string)
            nat
            { UNPAIR ; IF_NONE { FAILWITH } { SWAP ; DROP } } ;
          LAMBDA
-           (pair timestamp (pair nat nat))
+           (pair timestamp nat nat)
            bool
            { NOW ;
              SWAP ;
@@ -103,23 +108,39 @@
            (pair (pair (lambda address nat)
                        (pair (lambda (pair (option nat) string) nat) (pair (lambda int nat) nat)))
                  (pair (big_map address (pair (option key_hash) nat))
-                       (pair (big_map key_hash (pair timestamp (pair nat nat)))
-                             (pair (big_map address (pair nat nat))
-                                   (pair key_hash
-                                         (pair key_hash
-                                               (pair key_hash
-                                                     (pair address
-                                                           (pair address
-                                                                 (pair nat (pair nat (pair nat (pair nat (pair nat (pair nat (pair nat (pair nat nat)))))))))))))))))
+                       (big_map key_hash (pair timestamp nat nat))
+                       (big_map address (pair nat nat))
+                       key_hash
+                       key_hash
+                       key_hash
+                       address
+                       address
+                       nat
+                       nat
+                       nat
+                       nat
+                       nat
+                       nat
+                       nat
+                       nat
+                       nat))
            (pair (big_map address (pair (option key_hash) nat))
-                 (pair (big_map key_hash (pair timestamp (pair nat nat)))
-                       (pair (big_map address (pair nat nat))
-                             (pair key_hash
-                                   (pair key_hash
-                                         (pair key_hash
-                                               (pair address
-                                                     (pair address
-                                                           (pair nat (pair nat (pair nat (pair nat (pair nat (pair nat (pair nat (pair nat nat))))))))))))))))
+                 (big_map key_hash (pair timestamp nat nat))
+                 (big_map address (pair nat nat))
+                 key_hash
+                 key_hash
+                 key_hash
+                 address
+                 address
+                 nat
+                 nat
+                 nat
+                 nat
+                 nat
+                 nat
+                 nat
+                 nat
+                 nat)
            { UNPAIR ;
              UNPAIR 4 ;
              DIG 4 ;
@@ -297,23 +318,39 @@
                  (pair (pair address nat)
                        (pair nat
                              (pair (big_map address (pair (option key_hash) nat))
-                                   (pair (big_map key_hash (pair timestamp (pair nat nat)))
-                                         (pair (big_map address (pair nat nat))
-                                               (pair key_hash
-                                                     (pair key_hash
-                                                           (pair key_hash
-                                                                 (pair address
-                                                                       (pair address
-                                                                             (pair nat (pair nat (pair nat (pair nat (pair nat (pair nat (pair nat (pair nat nat)))))))))))))))))))
+                                   (big_map key_hash (pair timestamp nat nat))
+                                   (big_map address (pair nat nat))
+                                   key_hash
+                                   key_hash
+                                   key_hash
+                                   address
+                                   address
+                                   nat
+                                   nat
+                                   nat
+                                   nat
+                                   nat
+                                   nat
+                                   nat
+                                   nat
+                                   nat))))
            (pair (big_map address (pair (option key_hash) nat))
-                 (pair (big_map key_hash (pair timestamp (pair nat nat)))
-                       (pair (big_map address (pair nat nat))
-                             (pair key_hash
-                                   (pair key_hash
-                                         (pair key_hash
-                                               (pair address
-                                                     (pair address
-                                                           (pair nat (pair nat (pair nat (pair nat (pair nat (pair nat (pair nat (pair nat nat))))))))))))))))
+                 (big_map key_hash (pair timestamp nat nat))
+                 (big_map address (pair nat nat))
+                 key_hash
+                 key_hash
+                 key_hash
+                 address
+                 address
+                 nat
+                 nat
+                 nat
+                 nat
+                 nat
+                 nat
+                 nat
+                 nat
+                 nat)
            { UNPAIR ;
              UNPAIR 3 ;
              DIG 3 ;
@@ -797,8 +834,14 @@
                       UPDATE 32 ;
                       SWAP ;
                       CAR ;
+                      SWAP ;
                       PAIR }
-                    { DIG 2 ; DIG 3 ; DIG 4 ; DIG 5 ; DIG 6 ; DIG 7 ; DROP 6 ; PAIR } }
+                    { DIG 2 ; DIG 3 ; DIG 4 ; DIG 5 ; DIG 6 ; DIG 7 ; DROP 6 ; SWAP ; PAIR } ;
+                 DUP ;
+                 CAR ;
+                 SWAP ;
+                 CDR ;
+                 PAIR }
                { DIG 4 ;
                  DIG 5 ;
                  DIG 6 ;
@@ -847,11 +890,9 @@
                  SWAP ;
                  EXEC ;
                  NIL operation ;
-                 SWAP ;
                  DUP ;
-                 DUG 2 ;
                  DUP 4 ;
-                 DUP 3 ;
+                 DUP 4 ;
                  PAIR ;
                  PAIR ;
                  DUP 8 ;
@@ -891,9 +932,13 @@
                       SWAP ;
                       EXEC ;
                       CONS ;
-                      DIG 2 ;
-                      DIG 3 ;
+                      DUP 4 ;
+                      CDR ;
+                      DIG 4 ;
                       CAR ;
+                      CDR ;
+                      DIG 4 ;
+                      PAIR ;
                       PAIR ;
                       DUP ;
                       CDR ;
@@ -902,9 +947,8 @@
                       CAR ;
                       CAR ;
                       PAIR ;
-                      CDR ;
-                      DIG 2 ;
                       PAIR ;
+                      CAR ;
                       PAIR }
                     { SWAP ; DIG 2 ; DIG 3 ; DIG 5 ; DIG 6 ; DIG 7 ; DROP 6 } ;
                  DUP ;
@@ -913,7 +957,8 @@
                  DUP ;
                  GET 5 ;
                  DUP 3 ;
-                 CDR ;
+                 CAR ;
+                 CAR ;
                  DIG 4 ;
                  GET 3 ;
                  SWAP ;
@@ -922,8 +967,7 @@
                  UPDATE ;
                  UPDATE 5 ;
                  SWAP ;
-                 CAR ;
-                 CAR ;
+                 CDR ;
                  PAIR } } } ;
   view "get_user_candidate"
        address

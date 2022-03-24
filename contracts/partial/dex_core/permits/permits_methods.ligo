@@ -4,13 +4,13 @@ function has_expired(
   const permit_info     : permit_info_t)
                         : bool is
   block {
-    const expiry : seconds_t = case permit_info.expiry of
+    const expiry : seconds_t = case permit_info.expiry of [
     | Some(expiry) -> expiry
-    | None         -> case user_expiry_opt of
+    | None         -> case user_expiry_opt of [
       | Some(user_expiry) -> user_expiry
       | None              -> default_expiry
-      end
-    end
+      ]
+    ]
   } with permit_info.created_at + int(expiry) < Tezos.now
 
 function delete_expired_permits(
@@ -18,25 +18,25 @@ function delete_expired_permits(
   const user            : address;
   const permits         : permits_t)
                         : permits_t is
-  case Big_map.find_opt(user, permits) of
+  case Big_map.find_opt(user, permits) of [
   | None               -> permits
   | Some(user_permits) -> block {
-    function delete_expired_permit(
-      const permits     : map(blake2b_hash_t, permit_info_t);
-      const key_value   : blake2b_hash_t * permit_info_t)
-                        : map(blake2b_hash_t, permit_info_t) is
-      if has_expired(default_expiry, user_permits.expiry, key_value.1)
-      then Map.remove(key_value.0, permits)
-      else permits;
+      function delete_expired_permit(
+        const permits     : map(blake2b_hash_t, permit_info_t);
+        const key_value   : blake2b_hash_t * permit_info_t)
+                          : map(blake2b_hash_t, permit_info_t) is
+        if has_expired(default_expiry, user_permits.expiry, key_value.1)
+        then Map.remove(key_value.0, permits)
+        else permits;
 
-    const updated_permits : map(blake2b_hash_t, permit_info_t) = Map.fold(
-      delete_expired_permit,
-      user_permits.permits,
-      user_permits.permits
-    );
-    const updated_user_permits: user_permits_t = user_permits with record [permits = updated_permits]
-  } with Big_map.update(user, Some(updated_user_permits), permits)
-  end
+      const updated_permits : map(blake2b_hash_t, permit_info_t) = Map.fold(
+        delete_expired_permit,
+        user_permits.permits,
+        user_permits.permits
+      );
+      const updated_user_permits: user_permits_t = user_permits with record [permits = updated_permits]
+    } with Big_map.update(user, Some(updated_user_permits), permits)
+  ]
 
 function check_duplicates(
   const default_expiry  : seconds_t;
@@ -44,13 +44,13 @@ function check_duplicates(
   const user_permits    : user_permits_t;
   const permit          : blake2b_hash_t)
                         : unit is
-  case Map.find_opt(permit, user_permits.permits) of
+  case Map.find_opt(permit, user_permits.permits) of [
   | None              -> unit
   | Some(permit_info) ->
     if not has_expired(default_expiry, user_expiry_opt, permit_info)
     then failwith("DUP_PERMIT")
     else unit
-  end
+  ]
 
 function insert_permit(
   const default_expiry  : seconds_t;
@@ -59,10 +59,10 @@ function insert_permit(
   const permits         : permits_t)
                         : permits_t is
   block {
-    const user_permits : user_permits_t = case Big_map.find_opt(user, permits) of
+    const user_permits : user_permits_t = case Big_map.find_opt(user, permits) of [
     | Some(user_permits) -> user_permits
     | None               -> new_user_permits
-    end;
+    ];
 
     check_duplicates(default_expiry, user_permits.expiry, user_permits, permit);
 
@@ -88,11 +88,11 @@ function sender_check(
   then s
   else block {
     const action_hash : blake2b_hash_t = Crypto.blake2b(Bytes.pack(Use(action)));
-    const user_permits : user_permits_t = case Big_map.find_opt(expected_user, s.permits) of
+    const user_permits : user_permits_t = case Big_map.find_opt(expected_user, s.permits) of [
     | Some(user_permits) -> user_permits
     | None               -> (failwith(err_message) : user_permits_t)
-    end;
-  } with case Map.find_opt(action_hash, user_permits.permits) of
+    ];
+  } with case Map.find_opt(action_hash, user_permits.permits) of [
     | None              -> (failwith(err_message) : storage_t)
     | Some(permit_info) ->
       if has_expired(s.default_expiry, user_permits.expiry, permit_info)
@@ -108,7 +108,7 @@ function sender_check(
           s.permits
         )
       ]
-    end
+    ]
 
 function set_user_default_expiry(
   const user            : address;
@@ -116,10 +116,10 @@ function set_user_default_expiry(
   const permits         : permits_t)
                         : permits_t is
   block {
-    const user_permits : user_permits_t = case Big_map.find_opt(user, permits) of
+    const user_permits : user_permits_t = case Big_map.find_opt(user, permits) of [
     | Some(user_permits) -> user_permits
     | None               -> new_user_permits
-    end;
+    ];
     const updated_user_permits : user_permits_t = user_permits with record [expiry = Some(new_expiry)];
   } with Big_map.update(user, Some(updated_user_permits), permits)
 
@@ -140,20 +140,20 @@ function set_permit_expiry(
   const permits         : permits_t;
   const default_expiry  : seconds_t)
                         : permits_t is
-  case Big_map.find_opt(user, permits) of
+  case Big_map.find_opt(user, permits) of [
   | None               -> permits
-  | Some(user_permits) -> case Map.find_opt(permit, user_permits.permits) of
+  | Some(user_permits) -> case Map.find_opt(permit, user_permits.permits) of [
     | None              -> permits
     | Some(permit_info) -> block {
-      const updated_user_permits : user_permits_t = if has_expired(default_expiry, user_permits.expiry, permit_info)
-        then user_permits
-        else user_permits with record [
-          permits = Map.update(
-            permit,
-            set_permit_expiry_with_check(permit_info, new_expiry),
-            user_permits.permits
-          )
-        ];
-    } with Big_map.update(user, Some(updated_user_permits), permits)
-    end
-  end
+        const updated_user_permits : user_permits_t = if has_expired(default_expiry, user_permits.expiry, permit_info)
+          then user_permits
+          else user_permits with record [
+            permits = Map.update(
+              permit,
+              set_permit_expiry_with_check(permit_info, new_expiry),
+              user_permits.permits
+            )
+          ];
+      } with Big_map.update(user, Some(updated_user_permits), permits)
+    ]
+  ]

@@ -7,7 +7,7 @@ export default {
   buildDir: "build",
   migrationsDir: "migrations",
   contractsDir: "contracts/main",
-  ligoVersion: "0.35.0",
+  ligoVersion: "next",
   network: "development",
   networks: {
     development: {

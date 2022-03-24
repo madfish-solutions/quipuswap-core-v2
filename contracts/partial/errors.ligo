@@ -40,6 +40,9 @@ module DexCore is {
   const err_not_entered                               : string = "138";
   const err_too_few_swaps                             : string = "139";
   const err_can_not_perform_voting                    : string = "140";
+  const err_tez_amount_mismatch                       : string = "141";
+  const err_wrong_reserves_state                      : string = "142";
+  const err_no_pair_id                                : string = "143";
 }
 
 module TezStore is {
@@ -77,4 +80,5 @@ module Common is {
   const err_fa2_balance_of_entrypoint_404  : string = "408";
   const err_wrong_token_type               : string = "409";
   const err_div_by_zero                    : string = "410";
+  const err_contract_404                   : string = "411";
 }
