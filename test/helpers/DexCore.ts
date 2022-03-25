@@ -32,10 +32,13 @@ import { PRECISION } from "./Constants";
 
 import { Utils } from "./Utils";
 
-import { BalanceResponse, Transfer, UpdateOperator } from "test/types/FA2";
 import { FA12Token, FA2Token, Token } from "test/types/Common";
+import { Transfer, UpdateOperator } from "test/types/FA2";
 import {
   UpdateTokenMetadata,
+  CalculateFlashSwap,
+  WithdrawAuctionFee,
+  FlashSwapCallback,
   CumulativePrices,
   InvestLiquidity,
   DivestLiquidity,
@@ -46,6 +49,8 @@ import {
   RequiredTokens,
   TokensPerShare,
   CalculateSwap,
+  FlashSwapRule,
+  ClaimTezFee,
   AddManager,
   FlashSwap,
   SetExpiry,
@@ -236,11 +241,13 @@ export class DexCore {
   async flashSwap(params: FlashSwap): Promise<TransactionOperation> {
     const ligo: string = getLigo(true);
     const stdout: string = execSync(
-      `${ligo} compile parameter $PWD/contracts/test/lambdas.ligo 'Use(Flash_swap(record [ lambda = lambda2; pair_id = ${params.pair_id.toFixed()}n; receiver = ("${
+      `${ligo} compile parameter $PWD/contracts/test/lambdas.ligo 'Use(Flash_swap(record [ lambda = lambda; flash_swap_rule = ${
+        params.flash_swap_rule
+      }; pair_id = ${params.pair_id.toFixed()}n; receiver = ("${
         params.receiver
       }" : address); referrer = ("${
         params.referrer
-      }" : address); amount_a_out = ${params.amount_a_out.toFixed()}n; amount_b_out = ${params.amount_b_out.toFixed()}n ] ))' -p hangzhou --michelson-format json`,
+      }" : address); amount_out = ${params.amount_out.toFixed()}n ] ))' -p hangzhou --michelson-format json`,
       { maxBuffer: 1024 * 500 }
     ).toString();
 
@@ -255,6 +262,8 @@ export class DexCore {
       gasLimit: 1040000,
       storageLimit: 20000,
     });
+
+    await confirmOperation(this.tezos, operation.hash);
 
     return operation;
   }
@@ -295,9 +304,23 @@ export class DexCore {
     return operation;
   }
 
-  async withdrawAuctionFee(token: Token): Promise<TransactionOperation> {
+  async claimInterfaceTezFee(
+    params: ClaimTezFee
+  ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
-      .withdraw_auction_fee(token)
+      .claim_interface_tez_fee(params)
+      .send();
+
+    await confirmOperation(this.tezos, operation.hash);
+
+    return operation;
+  }
+
+  async withdrawAuctionFee(
+    params: WithdrawAuctionFee
+  ): Promise<TransactionOperation> {
+    const operation: TransactionOperation = await this.contract.methodsObject
+      .withdraw_auction_fee(params)
       .send();
 
     await confirmOperation(this.tezos, operation.hash);
@@ -484,77 +507,11 @@ export class DexCore {
     return operation;
   }
 
-  async fa12BalanceCallback1(
-    balance: BigNumber
+  async flashSwapCallback(
+    params: FlashSwapCallback
   ): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methods
-      .fa12_balance_callback_1(balance.toString())
-      .send();
-
-    await confirmOperation(this.tezos, operation.hash);
-
-    return operation;
-  }
-
-  async fa2BalanceCallback1(
-    params: BalanceResponse[]
-  ): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methods
-      .fa2_balance_callback_1(params)
-      .send();
-
-    await confirmOperation(this.tezos, operation.hash);
-
-    return operation;
-  }
-
-  async fa12BalanceCallback2(
-    balance: BigNumber
-  ): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methods
-      .fa12_balance_callback_2(balance.toString())
-      .send();
-
-    await confirmOperation(this.tezos, operation.hash);
-
-    return operation;
-  }
-
-  async fa2BalanceCallback2(
-    params: BalanceResponse[]
-  ): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methods
-      .fa2_balance_callback_2(params)
-      .send();
-
-    await confirmOperation(this.tezos, operation.hash);
-
-    return operation;
-  }
-
-  async flashSwapCallback1(): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methods
-      .flash_swap_callback_1([])
-      .send();
-
-    await confirmOperation(this.tezos, operation.hash);
-
-    return operation;
-  }
-
-  async flashSwapCallback2(): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methods
-      .flash_swap_callback_2([])
-      .send();
-
-    await confirmOperation(this.tezos, operation.hash);
-
-    return operation;
-  }
-
-  async flashSwapCallback3(): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methods
-      .flash_swap_callback_3([])
+    const operation: TransactionOperation = await this.contract.methodsObject
+      .flash_swap_callback(params)
       .send();
 
     await confirmOperation(this.tezos, operation.hash);
@@ -806,5 +763,118 @@ export class DexCore {
       newFromPool,
       newToPool,
     };
+  }
+
+  static calculateOppositeTokenReturns(
+    fees: Fees,
+    amountOut: BigNumber,
+    swapTokPool: BigNumber,
+    returnTokPool: BigNumber
+  ): BigNumber {
+    const feeRate: BigNumber = fees.interface_fee
+      .plus(fees.swap_fee)
+      .plus(fees.auction_fee);
+    const rateWithoutFee: BigNumber = PRECISION.minus(feeRate);
+    const numerator: BigNumber = amountOut
+      .multipliedBy(swapTokPool)
+      .multipliedBy(PRECISION);
+    const demoninator: BigNumber = returnTokPool.minus(amountOut);
+    const fromIn: BigNumber = numerator
+      .dividedBy(demoninator)
+      .integerValue(BigNumber.ROUND_DOWN);
+    const fromInWithFee: BigNumber = fromIn
+      .dividedBy(rateWithoutFee)
+      .integerValue(BigNumber.ROUND_DOWN);
+
+    return fromInWithFee;
+  }
+
+  static calculateFlashSwapParams(
+    fees: Fees,
+    amountIn: BigNumber,
+    returnTokPool: BigNumber,
+    oppositeToken: boolean
+  ): CalculateFlashSwap {
+    const interfaceFee: BigNumber = amountIn.multipliedBy(fees.interface_fee);
+    const auctionFee: BigNumber = amountIn.multipliedBy(fees.auction_fee);
+    const swapFee: BigNumber = amountIn.multipliedBy(fees.swap_fee);
+    const fullFee: BigNumber = new BigNumber(
+      interfaceFee.plus(auctionFee).plus(swapFee)
+    )
+      .dividedBy(PRECISION)
+      .integerValue(BigNumber.ROUND_CEIL);
+    const returns: BigNumber = amountIn.plus(fullFee);
+    const amountToPool: BigNumber = oppositeToken
+      ? new BigNumber(
+          returns.multipliedBy(PRECISION).minus(interfaceFee).minus(auctionFee)
+        )
+          .dividedBy(PRECISION)
+          .integerValue(BigNumber.ROUND_DOWN)
+      : new BigNumber(
+          fullFee.multipliedBy(PRECISION).minus(interfaceFee).minus(auctionFee)
+        )
+          .dividedBy(PRECISION)
+          .integerValue(BigNumber.ROUND_DOWN);
+    const newReturnTokPool = returnTokPool.plus(amountToPool);
+
+    return {
+      interfaceFee: interfaceFee,
+      auctionFee: auctionFee,
+      swapFee: swapFee,
+      fullFee: fullFee,
+      returns: returns,
+      newReturnTokPool: newReturnTokPool,
+    };
+  }
+
+  static calculateFlashSwap(
+    flashSwapRule: FlashSwapRule,
+    fees: Fees,
+    amountOut: BigNumber,
+    swapTokPool: BigNumber,
+    returnTokPool: BigNumber
+  ): CalculateFlashSwap {
+    switch (flashSwapRule) {
+      case "Loan_a_return_a":
+        return DexCore.calculateFlashSwapParams(
+          fees,
+          amountOut,
+          returnTokPool,
+          false
+        );
+      case "Loan_a_return_b":
+        return DexCore.calculateFlashSwapParams(
+          fees,
+          DexCore.calculateOppositeTokenReturns(
+            fees,
+            amountOut,
+            swapTokPool,
+            returnTokPool
+          ),
+          returnTokPool,
+          true
+        );
+      case "Loan_b_return_a":
+        return DexCore.calculateFlashSwapParams(
+          fees,
+          DexCore.calculateOppositeTokenReturns(
+            fees,
+            amountOut,
+            swapTokPool,
+            returnTokPool
+          ),
+          returnTokPool,
+          true
+        );
+      case "Loan_b_return_b":
+        return DexCore.calculateFlashSwapParams(
+          fees,
+          amountOut,
+          returnTokPool,
+          false
+        );
+      default:
+        break;
+    }
   }
 }

@@ -29,110 +29,90 @@
   },
   {
     "index": 7,
-    "name": "withdraw_auction_fee"
+    "name": "claim_interface_tez_fee"
   },
   {
     "index": 8,
-    "name": "vote"
+    "name": "withdraw_auction_fee"
   },
   {
     "index": 9,
-    "name": "set_admin"
+    "name": "vote"
   },
   {
     "index": 10,
-    "name": "confirm_admin"
+    "name": "set_admin"
   },
   {
     "index": 11,
-    "name": "set_flash_swaps_proxy"
+    "name": "confirm_admin"
   },
   {
     "index": 12,
-    "name": "set_auction"
+    "name": "set_flash_swaps_proxy"
   },
   {
     "index": 13,
-    "name": "add_managers"
+    "name": "set_auction"
   },
   {
     "index": 14,
-    "name": "set_fees"
+    "name": "add_managers"
   },
   {
     "index": 15,
-    "name": "set_cycle_duration"
+    "name": "set_fees"
   },
   {
     "index": 16,
-    "name": "set_voting_period"
+    "name": "set_cycle_duration"
   },
   {
     "index": 17,
-    "name": "set_collecting_period"
+    "name": "set_voting_period"
   },
   {
     "index": 18,
-    "name": "update_token_metadata"
+    "name": "set_collecting_period"
   },
   {
     "index": 19,
-    "name": "ban"
+    "name": "update_token_metadata"
   },
   {
     "index": 20,
-    "name": "permit"
+    "name": "ban"
   },
   {
     "index": 21,
-    "name": "set_expiry"
+    "name": "permit"
   },
   {
     "index": 22,
-    "name": "transfer"
+    "name": "set_expiry"
   },
   {
     "index": 23,
-    "name": "update_operators"
+    "name": "transfer"
   },
   {
     "index": 24,
-    "name": "balance_of"
+    "name": "update_operators"
   },
   {
     "index": 25,
-    "name": "fa12_balance_callback_1"
+    "name": "balance_of"
   },
   {
     "index": 26,
-    "name": "fa2_balance_callback_1"
-  },
-  {
-    "index": 27,
-    "name": "fa12_balance_callback_2"
-  },
-  {
-    "index": 28,
-    "name": "fa2_balance_callback_2"
-  },
-  {
-    "index": 29,
-    "name": "flash_swap_callback_1"
-  },
-  {
-    "index": 30,
-    "name": "flash_swap_callback_2"
-  },
-  {
-    "index": 31,
-    "name": "flash_swap_callback_3"
-  },
-  {
-    "index": 32,
     "name": "launch_callback"
   },
   {
-    "index": 33,
+    "index": 27,
+    "name": "flash_swap_callback"
+  },
+  {
+    "index": 28,
     "name": "close"
   }
 ]

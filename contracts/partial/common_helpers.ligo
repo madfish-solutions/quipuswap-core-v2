@@ -29,18 +29,18 @@ function only_dex_core(
 function get_fa12_token_transfer_entrypoint(
   const token           : address)
                         : contract(fa12_transfer_t) is
-  case (Tezos.get_entrypoint_opt("%transfer", token) : option(contract(fa12_transfer_t))) of
+  case (Tezos.get_entrypoint_opt("%transfer", token) : option(contract(fa12_transfer_t))) of [
   | Some(contr) -> contr
   | None        -> (failwith(Common.err_fa12_transfer_entrypoint_404) : contract(fa12_transfer_t))
-  end
+  ]
 
 function get_fa2_token_transfer_entrypoint(
   const token           : address)
                         : contract(fa2_transfer_t) is
-  case (Tezos.get_entrypoint_opt("%transfer", token) : option(contract(fa2_transfer_t))) of
+  case (Tezos.get_entrypoint_opt("%transfer", token) : option(contract(fa2_transfer_t))) of [
   | Some(contr) -> contr
   | None        -> (failwith(Common.err_fa2_transfer_entrypoint_404) : contract(fa2_transfer_t))
-  end
+  ]
 
 function wrap_fa12_transfer_trx(
   const from_           : address;
@@ -107,23 +107,23 @@ function transfer_token(
   const amt             : nat;
   const token           : token_t)
                         : operation is
-  case token of
-  | Tez         -> transfer_tez((get_contract(to_) : contract(unit)), amt)
+  case token of [
+  | Tez         -> transfer_tez((Tezos.get_contract_with_error(to_, Common.err_contract_404) : contract(unit)), amt)
   | Fa12(token) -> transfer_fa12(from_, to_, amt, token)
   | Fa2(token)  -> transfer_fa2(from_, to_, amt, token.token, token.id)
-  end
+  ]
 
 function get_fa12_token_balance_of_entrypoint(const token : address) : contract(fa12_balance_of_t) is
-  case (Tezos.get_entrypoint_opt("%getBalance", token) : option(contract(fa12_balance_of_t))) of
+  case (Tezos.get_entrypoint_opt("%getBalance", token) : option(contract(fa12_balance_of_t))) of [
   | Some(contr) -> contr
   | None        -> (failwith(Common.err_fa12_balance_of_entrypoint_404) : contract(fa12_balance_of_t))
-  end
+  ]
 
 function get_fa2_token_balance_of_entrypoint(const token : address) : contract(fa2_balance_of_t) is
-  case (Tezos.get_entrypoint_opt("%balance_of", token) : option(contract(fa2_balance_of_t))) of
+  case (Tezos.get_entrypoint_opt("%balance_of", token) : option(contract(fa2_balance_of_t))) of [
   | Some(contr) -> contr
   | None        -> (failwith(Common.err_fa2_balance_of_entrypoint_404) : contract(fa2_balance_of_t))
-  end
+  ]
 
 function wrap_fa12_balance_of_trx(
   const user            : address;
@@ -176,31 +176,31 @@ function get_balance_op_or_fail(
   const token           : token_t;
   const callbacks       : contract(nat) * contract(list(balance_response_t)))
                         : operation is
-  case token of
+  case token of [
   | Tez         -> (failwith(Common.err_wrong_token_type) : operation)
   | Fa12(token) -> get_fa12_balance(user, token, callbacks.0)
   | Fa2(token)  -> get_fa2_balance(user, token.token, token.id, callbacks.1)
-  end
+  ]
 
-function div_ceil(
+function ceil_div(
   const numerator       : nat;
   const denominator     : nat)
                         : nat is
-  case ediv(numerator, denominator) of
+  case ediv(numerator, denominator) of [
   | Some(result) ->
       if result.1 > 0n
       then result.0 + 1n
       else result.0
-  | None         -> failwith(DexCore.err_no_liquidity)
-  end
+  | None         -> failwith(Common.err_div_by_zero)
+  ]
 
 function get_nat_or_fail(
   const number          : int)
                         : nat is
-  case is_nat(number) of
+  case is_nat(number) of [
   | Some(n) -> n
   | None    -> failwith(Common.err_not_a_nat)
-  end
+  ]
 
 function get_fa2_token_balance(
   const response        : list(balance_response_t);
@@ -228,47 +228,47 @@ function get_fa2_token_balance(
     bal := List.fold(get_fa2_balance, response, bal);
   } with bal
 
-function unwrap_or(
-  const param           : option(_a);
-  const default         : _a)
-                        : _a is
-  case param of
+function unwrap_or<t>(
+  const param           : option(t);
+  const default         : t)
+                        : t is
+  case param of [
   | Some(instance) -> instance
   | None           -> default
-  end
+  ]
 
-function unwrap(
-  const param           : option(_a);
+function unwrap<t>(
+  const param           : option(t);
   const error           : string)
-                        : _a is
-  case param of
+                        : t is
+  case param of [
   | Some(instance) -> instance
-  | None           -> (failwith(error) : _a)
-  end
+  | None           -> (failwith(error) : t)
+  ]
 
-function concat_lists(
-  const lst1            : list(_a);
-  const lst2            : list(_a))
-                        : list(_a) is
+function concat_lists<t>(
+  const lst1            : list(t);
+  const lst2            : list(t))
+                        : list(t) is
   List.fold_right(
     function(
-      const op          : _a;
-      const lst         : list(_a))
-                        : list(_a) is
+      const op          : t;
+      const lst         : list(t))
+                        : list(t) is
       op # lst,
     lst1,
     lst2
   )
 
-function reverse_list(
-  const lst             : list(_a))
-                        : list(_a) is
+function reverse_list<t>(
+  const lst             : list(t))
+                        : list(t) is
   List.fold(
     function(
-      const lst         : list(_a);
-      const op          : _a)
-                        : list(_a) is
+      const lst         : list(t);
+      const op          : t)
+                        : list(t) is
       op # lst,
     lst,
-    (nil : list(_a))
+    (nil : list(t))
   )

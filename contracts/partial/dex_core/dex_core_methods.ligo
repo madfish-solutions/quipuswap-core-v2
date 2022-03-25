@@ -3,7 +3,7 @@ function call_dex_core(
   var s                 : full_storage_t)
                         : full_return_t is
   block {
-    const id : nat = case action of
+    const id : nat = case action of [
     (* DEX *)
     | Launch_exchange(_)         -> 0n
     | Invest_liquidity(_)        -> 1n
@@ -12,45 +12,40 @@ function call_dex_core(
     | Swap(_)                    -> 4n
     | Withdraw_profit(_)         -> 5n
     | Claim_interface_fee(_)     -> 6n
-    | Withdraw_auction_fee(_)    -> 7n
-    | Vote(_)                    -> 8n
+    | Claim_interface_tez_fee(_) -> 7n
+    | Withdraw_auction_fee(_)    -> 8n
+    | Vote(_)                    -> 9n
     (* ADMIN *)
-    | Set_admin(_)               -> 9n
-    | Confirm_admin(_)           -> 10n
-    | Set_flash_swaps_proxy(_)   -> 11n
-    | Set_auction(_)             -> 12n
-    | Add_managers(_)            -> 13n
-    | Set_fees(_)                -> 14n
-    | Set_cycle_duration(_)      -> 15n
-    | Set_voting_period(_)       -> 16n
-    | Set_collecting_period(_)   -> 17n
-    | Update_token_metadata(_)   -> 18n
-    | Ban(_)                     -> 19n
+    | Set_admin(_)               -> 10n
+    | Confirm_admin(_)           -> 11n
+    | Set_flash_swaps_proxy(_)   -> 12n
+    | Set_auction(_)             -> 13n
+    | Add_managers(_)            -> 14n
+    | Set_fees(_)                -> 15n
+    | Set_cycle_duration(_)      -> 16n
+    | Set_voting_period(_)       -> 17n
+    | Set_collecting_period(_)   -> 18n
+    | Update_token_metadata(_)   -> 19n
+    | Ban(_)                     -> 20n
     (* PERMIT *)
-    | Permit(_)                  -> 20n
-    | Set_expiry(_)              -> 21n
+    | Permit(_)                  -> 21n
+    | Set_expiry(_)              -> 22n
     (* FA2 *)
-    | Transfer(_)                -> 22n
-    | Update_operators(_)        -> 23n
-    | Balance_of(_)              -> 24n
+    | Transfer(_)                -> 23n
+    | Update_operators(_)        -> 24n
+    | Balance_of(_)              -> 25n
     (* CALLBACKS *)
-    | Fa12_balance_callback_1(_) -> 25n
-    | Fa2_balance_callback_1(_)  -> 26n
-    | Fa12_balance_callback_2(_) -> 27n
-    | Fa2_balance_callback_2(_)  -> 28n
-    | Flash_swap_callback_1(_)   -> 29n
-    | Flash_swap_callback_2(_)   -> 30n
-    | Flash_swap_callback_3(_)   -> 31n
-    | Launch_callback(_)         -> 32n
-    | Close(_)                   -> 33n
-    end;
+    | Launch_callback(_)         -> 26n
+    | Flash_swap_callback(_)     -> 27n
+    | Close(_)                   -> 28n
+    ];
 
     const lambda_bytes : bytes = unwrap(s.dex_core_lambdas[id], DexCore.err_unknown_func);
 
-    const res : return_t = case (Bytes.unpack(lambda_bytes) : option(dex_core_func_t)) of
+    const res : return_t = case (Bytes.unpack(lambda_bytes) : option(dex_core_func_t)) of [
     | Some(f) -> f(action, s.storage)
     | None    -> failwith(DexCore.err_cant_unpack_lambda)
-    end;
+    ];
 
     s.storage := res.1;
   } with (res.0, s)
@@ -64,10 +59,10 @@ function setup_func(
 
     assert_with_error(params.idx <= dex_core_methods_max_index, DexCore.err_high_func_index);
 
-    case s.dex_core_lambdas[params.idx] of
+    case s.dex_core_lambdas[params.idx] of [
     | Some(_) -> failwith(DexCore.err_func_set)
     | None    -> s.dex_core_lambdas[params.idx] := params.func_bytes
-    end;
+    ];
   } with ((nil : list(operation)), s)
 
 function default(

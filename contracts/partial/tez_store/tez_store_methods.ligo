@@ -74,7 +74,7 @@ function vote(
 
     var user : user_t := unwrap_or(s.users[params.voter], Constants.default_user);
 
-    case user.candidate of
+    case user.candidate of [
       None                 -> skip
     | Some(user_candidate) -> {
       var candidate : baker_t := unwrap_or(s.bakers[user_candidate], Constants.default_baker);
@@ -82,7 +82,7 @@ function vote(
 
       s.bakers[user_candidate] := candidate with record [ votes = candidate_new_votes ];
     }
-    end;
+    ];
 
     var user_candidate : baker_t := unwrap_or(s.bakers[params.candidate], Constants.default_baker);
     const user_candidate_votes : nat = user_candidate.votes + params.votes;
@@ -120,7 +120,7 @@ function vote(
 
     var ops: list(operation) := nil;
 
-    if Tezos.level >= s.voting_period_ends and params.execute_voting
+    if Tezos.level >= s.voting_period_end and params.execute_voting
     then {
       if check_is_banned_baker(unwrap_or(s.bakers[s.next_candidate], Constants.default_baker))
       then s.next_candidate := Constants.zero_key_hash
@@ -148,7 +148,7 @@ function vote(
         else skip;
       };
 
-      s.voting_period_ends := Tezos.level + (get_cycle_duration(s.dex_core) * get_voting_period(s.dex_core));
+      s.voting_period_end := Tezos.level + (get_cycle_duration(s.dex_core) * get_voting_period(s.dex_core));
     }
     else skip;
   } with (ops, s)

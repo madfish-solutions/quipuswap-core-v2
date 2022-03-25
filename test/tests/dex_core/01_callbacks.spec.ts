@@ -1,6 +1,6 @@
-import { Common, DexCore as DexCoreErrors } from "../../helpers/Errors";
+import { Utils, zeroAddress } from "../../helpers/Utils";
 import { DexCore } from "../../helpers/DexCore";
-import { Utils } from "../../helpers/Utils";
+import { Common } from "../../helpers/Errors";
 
 import { rejects } from "assert";
 
@@ -14,10 +14,14 @@ import { bakerRegistryStorage } from "../../../storage/BakerRegistry";
 import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa12Storage } from "../../../storage/test/FA12";
 
-import { LaunchCallback, LaunchExchange } from "../../types/DexCore";
 import { BakerRegistry } from "../../helpers/BakerRegistry";
 import { SBAccount } from "../../types/Common";
 import { FA12 } from "../../helpers/FA12";
+import {
+  LaunchCallback,
+  LaunchExchange,
+  FlashSwapCallback,
+} from "../../types/DexCore";
 
 chai.use(require("chai-bignumber")(BigNumber));
 
@@ -49,158 +53,20 @@ describe("DexCore (callbacks)", async () => {
     fa12Token1 = await FA12.originate(utils.tezos, fa12Storage);
   });
 
-  it("should fail if not entered", async () => {
-    await rejects(
-      dexCore.fa12BalanceCallback1(new BigNumber(0)),
-      (err: Error) => {
-        expect(err.message).to.equal(DexCoreErrors.ERR_NOT_ENTERED);
-
-        return true;
-      }
-    );
-  });
-
-  it("should fail if pair not listed", async () => {
-    dexCoreStorage.storage.tmp = {
-      pair_id: new BigNumber(666),
-      amount_a_out: new BigNumber(0),
-      amount_b_out: new BigNumber(0),
-      referrer: alice.pkh,
-      token_a_balance_1: new BigNumber(0),
-      token_b_balance_1: new BigNumber(0),
-      token_a_balance_2: new BigNumber(0),
-      token_b_balance_2: new BigNumber(0),
-      prev_tez_balance: new BigNumber(0),
-    };
-    dexCoreStorage.storage.entered = true;
-
-    const dex: DexCore = await DexCore.originate(utils.tezos, dexCoreStorage);
-
-    await dex.setLambdas();
-    await rejects(dex.fa12BalanceCallback1(new BigNumber(0)), (err: Error) => {
-      expect(err.message).to.equal(DexCoreErrors.ERR_PAIR_NOT_LISTED);
-
-      return true;
-    });
-  });
-
-  it("should fail if not entered", async () => {
-    await rejects(dexCore.fa2BalanceCallback1([]), (err: Error) => {
-      expect(err.message).to.equal(DexCoreErrors.ERR_NOT_ENTERED);
-
-      return true;
-    });
-  });
-
-  it("should fail if pair not listed", async () => {
-    dexCoreStorage.storage.tmp = {
-      pair_id: new BigNumber(666),
-      amount_a_out: new BigNumber(0),
-      amount_b_out: new BigNumber(0),
-      referrer: alice.pkh,
-      token_a_balance_1: new BigNumber(0),
-      token_b_balance_1: new BigNumber(0),
-      token_a_balance_2: new BigNumber(0),
-      token_b_balance_2: new BigNumber(0),
-      prev_tez_balance: new BigNumber(0),
-    };
-    dexCoreStorage.storage.entered = true;
-
-    const dex: DexCore = await DexCore.originate(utils.tezos, dexCoreStorage);
-
-    await dex.setLambdas();
-    await rejects(dex.fa2BalanceCallback1([]), (err: Error) => {
-      expect(err.message).to.equal(DexCoreErrors.ERR_PAIR_NOT_LISTED);
-
-      return true;
-    });
-  });
-
-  it("should fail if not entered", async () => {
-    await rejects(
-      dexCore.fa12BalanceCallback2(new BigNumber(0)),
-      (err: Error) => {
-        expect(err.message).to.equal(DexCoreErrors.ERR_NOT_ENTERED);
-
-        return true;
-      }
-    );
-  });
-
-  it("should fail if pair not listed", async () => {
-    dexCoreStorage.storage.tmp = {
-      pair_id: new BigNumber(666),
-      amount_a_out: new BigNumber(0),
-      amount_b_out: new BigNumber(0),
-      referrer: alice.pkh,
-      token_a_balance_1: new BigNumber(0),
-      token_b_balance_1: new BigNumber(0),
-      token_a_balance_2: new BigNumber(0),
-      token_b_balance_2: new BigNumber(0),
-      prev_tez_balance: new BigNumber(0),
-    };
-    dexCoreStorage.storage.entered = true;
-
-    const dex: DexCore = await DexCore.originate(utils.tezos, dexCoreStorage);
-
-    await dex.setLambdas();
-    await rejects(dex.fa12BalanceCallback2(new BigNumber(0)), (err: Error) => {
-      expect(err.message).to.equal(DexCoreErrors.ERR_PAIR_NOT_LISTED);
-
-      return true;
-    });
-  });
-
-  it("should fail if not entered", async () => {
-    await rejects(dexCore.fa2BalanceCallback2([]), (err: Error) => {
-      expect(err.message).to.equal(DexCoreErrors.ERR_NOT_ENTERED);
-
-      return true;
-    });
-  });
-
-  it("should fail if pair not listed", async () => {
-    dexCoreStorage.storage.tmp = {
-      pair_id: new BigNumber(666),
-      amount_a_out: new BigNumber(0),
-      amount_b_out: new BigNumber(0),
-      referrer: alice.pkh,
-      token_a_balance_1: new BigNumber(0),
-      token_b_balance_1: new BigNumber(0),
-      token_a_balance_2: new BigNumber(0),
-      token_b_balance_2: new BigNumber(0),
-      prev_tez_balance: new BigNumber(0),
-    };
-    dexCoreStorage.storage.entered = true;
-
-    const dex: DexCore = await DexCore.originate(utils.tezos, dexCoreStorage);
-
-    await dex.setLambdas();
-    await rejects(dex.fa2BalanceCallback2([]), (err: Error) => {
-      expect(err.message).to.equal(DexCoreErrors.ERR_PAIR_NOT_LISTED);
-
-      return true;
-    });
-  });
-
   it("should fail if not dex core is trying to call it", async () => {
-    await rejects(dexCore.flashSwapCallback1(), (err: Error) => {
-      expect(err.message).to.equal(Common.ERR_NOT_DEX_CORE);
+    const params: FlashSwapCallback = {
+      flash_swap_rule: { loan_a_return_a: undefined },
+      pair_id: new BigNumber(0),
+      return_token: { fa12: zeroAddress },
+      referrer: zeroAddress,
+      sender: zeroAddress,
+      swap_token_pool: new BigNumber(0),
+      return_token_pool: new BigNumber(0),
+      amount_out: new BigNumber(0),
+      prev_tez_balance: new BigNumber(0),
+    };
 
-      return true;
-    });
-  });
-
-  it("should fail if not dex core is trying to call it", async () => {
-    await rejects(dexCore.flashSwapCallback2(), (err: Error) => {
-      expect(err.message).to.equal(Common.ERR_NOT_DEX_CORE);
-
-      return true;
-    });
-  });
-
-  it("should fail if not dex core is trying to call it", async () => {
-    await rejects(dexCore.flashSwapCallback3(), (err: Error) => {
+    await rejects(dexCore.flashSwapCallback(params), (err: Error) => {
       expect(err.message).to.equal(Common.ERR_NOT_DEX_CORE);
 
       return true;

@@ -5,27 +5,54 @@ type tokens_t           is [@layout:comb] record [
   token_b                 : token_t;
 ]
 
+type flash_swap_rule_t  is
+| Loan_a_return_a
+| Loan_a_return_b
+| Loan_b_return_a
+| Loan_b_return_b
+
+type flash_swap_t       is [@layout:comb] record [
+  lambda                  : unit -> list(operation);
+  flash_swap_rule         : flash_swap_rule_t;
+  pair_id                 : token_id_t;
+  receiver                : address;
+  referrer                : address;
+  amount_out              : nat;
+]
+
+type flash_swap_1_t     is [@layout:comb] record [
+  flash_swap_rule         : flash_swap_rule_t;
+  pair_id                 : token_id_t;
+  return_token            : token_t;
+  referrer                : address;
+  sender                  : address;
+  swap_token_pool         : nat;
+  return_token_pool       : nat;
+  amount_out              : nat;
+  prev_tez_balance        : nat;
+]
+
+type flash_swap_data_t  is [@layout:comb] record [
+  swap_token              : token_t;
+  return_token            : token_t;
+  swap_token_pool         : nat;
+  return_token_pool       : nat;
+]
+
+type flash_swap_res_t   is [@layout:comb] record [
+  returns                 : nat;
+  full_fee                : nat;
+  new_return_tok_pool     : nat;
+  interface_fee           : nat;
+  auction_fee             : nat;
+]
+
 type fees_t             is [@layout:comb] record [
   interface_fee           : nat;
   swap_fee                : nat;
   auction_fee             : nat;
   withdraw_fee_reward     : nat;
 ]
-
-type flash_swap_t       is [@layout:comb] record [
-  lambda                  : unit -> list(operation);
-  pair_id                 : token_id_t;
-  receiver                : address;
-  referrer                : address;
-  amount_a_out            : nat;
-  amount_b_out            : nat;
-]
-
-type flash_swap_2_t     is unit
-
-type flash_swap_3_t     is unit
-
-type flash_swap_4_t     is unit
 
 type storage_t          is [@layout:comb] record [
   token_metadata          : big_map(token_id_t, token_metadata_t);
@@ -41,7 +68,6 @@ type storage_t          is [@layout:comb] record [
   auction_tez_fee         : big_map(token_id_t, nat);
   managers                : set(address);
   fees                    : fees_t;
-  tmp                     : tmp_t;
   admin                   : address;
   pending_admin           : address;
   baker_registry          : address;
@@ -134,10 +160,17 @@ type withdraw_profit_t  is [@layout:comb] record [
 type claim_fee_t        is [@layout:comb] record [
   token                   : token_t;
   receiver                : address;
-  amount                  : nat;
 ]
 
-type withdraw_fee_t     is token_t
+type claim_tez_fee_t    is [@layout:comb] record [
+  pair_id                 : token_id_t;
+  receiver                : address;
+]
+
+type withdraw_fee_t     is [@layout:comb] record [
+  pair_id                 : option(token_id_t);
+  token                   : token_t;
+]
 
 type dex_vote_t         is [@layout:comb] record [
   pair_id                 : token_id_t;
@@ -181,10 +214,6 @@ type ban_t              is [@layout:comb] record [
   pair_id                 : token_id_t;
   ban_params              : ban_baker_t;
 ]
-
-type fa12_balance_res_t is nat
-
-type fa2_balance_res_t  is list(balance_response_t)
 
 type close_t            is unit
 
@@ -249,6 +278,7 @@ type action_t           is
 | Swap                    of swap_t
 | Withdraw_profit         of withdraw_profit_t
 | Claim_interface_fee     of claim_fee_t
+| Claim_interface_tez_fee of claim_tez_fee_t
 | Withdraw_auction_fee    of withdraw_fee_t
 | Vote                    of dex_vote_t
 (* ADMIN *)
@@ -271,14 +301,8 @@ type action_t           is
 | Update_operators        of update_operators_t
 | Balance_of              of balance_of_t
 (* CALLBACKS *)
-| Fa12_balance_callback_1 of fa12_balance_res_t
-| Fa2_balance_callback_1  of fa2_balance_res_t
-| Fa12_balance_callback_2 of fa12_balance_res_t
-| Fa2_balance_callback_2  of fa2_balance_res_t
-| Flash_swap_callback_1   of flash_swap_2_t
-| Flash_swap_callback_2   of flash_swap_3_t
-| Flash_swap_callback_3   of flash_swap_4_t
 | Launch_callback         of launch_callback_t
+| Flash_swap_callback     of flash_swap_1_t
 | Close                   of close_t
 
 type return_t           is list(operation) * storage_t
@@ -300,4 +324,4 @@ type full_action_t      is
 
 type deploy_tez_store_t is (option(key_hash) * tez * tez_store_t) -> (operation * address)
 
-const dex_core_methods_max_index : nat = 33n;
+const dex_core_methods_max_index : nat = 28n;

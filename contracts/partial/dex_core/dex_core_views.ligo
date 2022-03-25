@@ -64,10 +64,10 @@
   block {
     const first_swap : swap_slice_t = unwrap(List.head_opt(params.swaps), DexCore.err_empty_route);
     const tokens : tokens_t = unwrap(s.storage.tokens[first_swap.pair_id], DexCore.err_pair_not_listed);
-    const token : token_t = case first_swap.direction of
+    const token : token_t = case first_swap.direction of [
     | A_to_b -> tokens.token_a
     | B_to_a -> tokens.token_b
-    end;
+    ];
     const tmp : tmp_swap_t = List.fold(
       swap_internal,
       params.swaps,
