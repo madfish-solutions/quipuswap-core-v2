@@ -133,6 +133,8 @@ export type FlashSwapCallback = {
   return_token: Token;
   referrer: string;
   sender: string;
+  swap_token_pool: BigNumber;
+  return_token_pool: BigNumber;
   amount_out: BigNumber;
   prev_tez_balance: BigNumber;
 };

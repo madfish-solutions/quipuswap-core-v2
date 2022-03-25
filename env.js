@@ -21,11 +21,11 @@ export default {
       network_id: "*",
       secretKey: accounts.dev.sk,
     },
-    idiazabalnet: {
-      rpc: "https://idiazabalnet.ecadinfra.com/",
+    ithacanet: {
+      rpc: "https://rpc.ithacanet.teztnets.xyz",
       port: 443,
       network_id: "*",
-      secretKey: accounts.dev.sk,
+      secretKey: accounts.ithacanet_dev.sk,
     },
     mainnet: {
       rpc: "https://mainnet.api.tez.ie",

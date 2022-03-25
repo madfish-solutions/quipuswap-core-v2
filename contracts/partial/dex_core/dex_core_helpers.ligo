@@ -185,7 +185,7 @@ function calculate_flash_swap_params(
     const auction_fee : nat = amount_in * fees.auction_fee;
     const swap_fee : nat = amount_in * fees.swap_fee;
     const full_fee : nat = ceil_div(interface_fee + auction_fee + swap_fee, Constants.precision);
-    const returns : nat = amount_in  + ceil_div(full_fee, Constants.precision);
+    const returns : nat = amount_in + ceil_div(full_fee, Constants.precision);
     const amount_to_pool : nat = get_nat_or_fail(
       (returns * Constants.precision - interface_fee - auction_fee) / Constants.precision
     );
@@ -197,7 +197,6 @@ function calculate_flash_swap_params(
       auction_fee         = auction_fee;
       returns             = returns;
     ];
-
   } with result
 
 function calculate_flash_swap_result(
@@ -208,7 +207,7 @@ function calculate_flash_swap_result(
   const return_tok_pool : nat)
                         : flash_swap_res_t is
   block {
-    const result : flash_swap_res_t = case flash_swap_rule of
+    const result : flash_swap_res_t = case flash_swap_rule of [
     | Loan_a_return_a -> calculate_flash_swap_params(fees, amount_out, return_tok_pool)
     | Loan_a_return_b -> calculate_flash_swap_params(
         fees,
@@ -221,7 +220,7 @@ function calculate_flash_swap_result(
         return_tok_pool
       )
     | Loan_b_return_b -> calculate_flash_swap_params(fees, amount_out, return_tok_pool)
-    end;
+    ];
   } with result
 
 function form_flash_swap_data(

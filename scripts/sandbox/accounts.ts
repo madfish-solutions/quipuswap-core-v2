@@ -19,4 +19,9 @@ export default {
     sk: "edskRjfbs8cMbqBpJBqAMS1SGbNsDytawj6xfxBC5PZZ4pUXfEYfJQEn6GVu1HWsLC5BgN8Qc3HReqkyAq5oM1jRcPQgyh2rvL",
     pk: "",
   },
+  ithacanet_dev: {
+    pkh: "tz1LnrQ9ebos2LF2MUpAitJL6uUHX1uQhjzj",
+    sk: "edskRgqqDmwpVgfUq2Eai8LXGkpWx8MN1MR6EaoZFYAxtsXnUP5eE2xy8NaPSMYUBAySEdCKiJjc1DHxV9wb4RM8qxubqXghp4",
+    pk: "",
+  },
 };

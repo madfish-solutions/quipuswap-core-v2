@@ -24,7 +24,7 @@ function flash_swap_callback(
           const curr_tez_balance : nat = Tezos.balance / 1mutez;
           const tez_amount_to_invest : nat = get_nat_or_fail(curr_tez_balance - params.prev_tez_balance);
 
-          case params.flash_swap_rule of
+          case params.flash_swap_rule of [
           | Loan_a_return_a -> failwith(DexCore.err_wrong_flash_swap_returns)
           | Loan_a_return_b -> {
             assert_with_error(
@@ -45,13 +45,12 @@ function flash_swap_callback(
               DexCore.err_wrong_flash_swap_returns
             );
           }
-          end;
+          ];
 
           ops := get_invest_tez_op(
             tez_amount_to_invest * 1mutez,
             unwrap(pair.tez_store, DexCore.err_tez_store_404)
           ) # ops;
-
         }
         else {
           ops := transfer_token(
@@ -62,7 +61,7 @@ function flash_swap_callback(
           ) # ops;
         };
 
-        case params.flash_swap_rule of
+        case params.flash_swap_rule of [
         | Loan_a_return_a -> {
           pair := calc_cumulative_prices(pair, flash_swap_result.new_return_tok_pool, pair.token_b_pool);
         }
@@ -87,11 +86,18 @@ function flash_swap_callback(
             flash_swap_result.new_return_tok_pool
           );
         }
-        end;
+        ];
 
         s.pairs[params.pair_id] := pair;
 
-        s := update_fees(s, params.pair_id, params.return_token, params.referrer, interface_fee, auction_fee);
+        s := update_fees(
+          s,
+          params.pair_id,
+          params.return_token,
+          params.referrer,
+          flash_swap_result.interface_fee,
+          flash_swap_result.auction_fee
+        );
 
         ops := reverse_list(ops);
       }

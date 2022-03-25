@@ -1,11 +1,4 @@
-import { ListValidationError } from "@taquito/michelson-encoder";
-import {
-  OriginationOperation,
-  TransactionOperation,
-  ContractAbstraction,
-  ContractProvider,
-  VIEW_LAMBDA,
-} from "@taquito/taquito";
+import { TransactionOperation } from "@taquito/taquito";
 
 import { DexCore as DexCoreErrors } from "../../helpers/Errors";
 import { BakerRegistry } from "../../helpers/BakerRegistry";
@@ -47,7 +40,6 @@ import { SBAccount } from "../../types/Common";
 chai.use(require("chai-bignumber")(BigNumber));
 
 describe("DexCore (FA2 methods)", async () => {
-  var lambdaContract: ContractAbstraction<ContractProvider>;
   var bakerRegistry: BakerRegistry;
   var dexCore2: DexCore;
   var auction: Auction;
@@ -67,14 +59,6 @@ describe("DexCore (FA2 methods)", async () => {
     utils = new Utils();
 
     await utils.init(alice.sk);
-
-    const operation: OriginationOperation =
-      await utils.tezos.contract.originate({
-        code: VIEW_LAMBDA.code,
-        storage: VIEW_LAMBDA.storage,
-      });
-
-    lambdaContract = await operation.contract();
 
     bakerRegistry = await BakerRegistry.originate(
       utils.tezos,
@@ -212,9 +196,11 @@ describe("DexCore (FA2 methods)", async () => {
     ];
 
     await rejects(
-      dexCore.contract.views.balance_of(params).read(lambdaContract.address),
-      (err: ListValidationError) => {
-        expect(err.value["string"]).to.equal(FA2Errors.FA2_TOKEN_UNDEFINED);
+      dexCore.contract.views.balance_of(params).read(),
+      (err: any) => {
+        expect(Utils.parseLambdaViewError(err)).to.equal(
+          FA2Errors.FA2_TOKEN_UNDEFINED
+        );
 
         return true;
       }
@@ -229,9 +215,11 @@ describe("DexCore (FA2 methods)", async () => {
     ];
 
     await rejects(
-      dexCore.contract.views.balance_of(params).read(lambdaContract.address),
-      (err: ListValidationError) => {
-        expect(err.value["string"]).to.equal(FA2Errors.FA2_TOKEN_UNDEFINED);
+      dexCore.contract.views.balance_of(params).read(),
+      (err: any) => {
+        expect(Utils.parseLambdaViewError(err)).to.equal(
+          FA2Errors.FA2_TOKEN_UNDEFINED
+        );
 
         return true;
       }
@@ -244,7 +232,7 @@ describe("DexCore (FA2 methods)", async () => {
     ];
     const result: Promise<any> = await dexCore.contract.views
       .balance_of(params)
-      .read(lambdaContract.address);
+      .read();
 
     await dexCore.updateStorage({
       ledger: [[params[0].owner, params[0].token_id]],
@@ -263,7 +251,7 @@ describe("DexCore (FA2 methods)", async () => {
     ];
     const result: Promise<any> = await dexCore.contract.views
       .balance_of(params)
-      .read(lambdaContract.address);
+      .read();
 
     await dexCore.updateStorage({
       ledger: [
@@ -293,7 +281,7 @@ describe("DexCore (FA2 methods)", async () => {
     ];
     const result: Promise<any> = await dexCore.contract.views
       .balance_of(params)
-      .read(lambdaContract.address);
+      .read();
 
     await dexCore.updateStorage({
       ledger: [[params[0].owner, params[0].token_id]],
@@ -314,7 +302,7 @@ describe("DexCore (FA2 methods)", async () => {
     ];
     const result: Promise<any> = await dexCore.contract.views
       .balance_of(params)
-      .read(lambdaContract.address);
+      .read();
 
     expect(result[0].balance).to.be.bignumber.equal(new BigNumber(0));
   });

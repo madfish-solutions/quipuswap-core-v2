@@ -52,7 +52,7 @@ function updateParameters(
   );
 }
 
-describe("DexCore (flash swap)", async () => {
+describe.skip("DexCore (flash swap)", async () => {
   var flashSwapsProxy: FlashSwapsProxy;
   var flashSwapAgent: FlashSwapAgent;
   var bakerRegistry: BakerRegistry;

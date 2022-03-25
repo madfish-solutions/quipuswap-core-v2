@@ -60,6 +60,8 @@ describe("DexCore (callbacks)", async () => {
       return_token: { fa12: zeroAddress },
       referrer: zeroAddress,
       sender: zeroAddress,
+      swap_token_pool: new BigNumber(0),
+      return_token_pool: new BigNumber(0),
       amount_out: new BigNumber(0),
       prev_tez_balance: new BigNumber(0),
     };
