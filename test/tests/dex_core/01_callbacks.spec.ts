@@ -81,7 +81,6 @@ describe("DexCore (callbacks)", async () => {
         execute_voting: true,
         votes: new BigNumber(0),
         current_balance: new BigNumber(0),
-        new_balance: new BigNumber(0),
       },
       tez_store: alice.pkh,
     };

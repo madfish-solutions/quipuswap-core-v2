@@ -36,7 +36,6 @@ export type Vote = {
   execute_voting: boolean;
   votes: BigNumber;
   current_balance: BigNumber;
-  new_balance: BigNumber;
 };
 
 export type TezStoreStorage = {

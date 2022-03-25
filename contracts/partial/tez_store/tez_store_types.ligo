@@ -43,7 +43,6 @@ type vote_t             is [@layout:comb] record [
   execute_voting          : bool;
   votes                   : nat;
   current_balance         : nat;
-  new_balance             : nat;
 ]
 
 type is_banned_baker_t  is key_hash

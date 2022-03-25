@@ -103,7 +103,6 @@ function iterate_transfer(
               execute_voting  = True;
               votes           = new_receiver_balance;
               current_balance = receiver_balance;
-              new_balance     = new_receiver_balance;
             ],
             unwrap(pair.tez_store, DexCore.err_tez_store_404)
           ) # ops;
@@ -114,7 +113,6 @@ function iterate_transfer(
               execute_voting  = False;
               votes           = new_sender_balance;
               current_balance = sender_balance;
-              new_balance     = new_sender_balance;
             ],
             unwrap(pair.tez_store, DexCore.err_tez_store_404)
           ) # ops;

@@ -83,7 +83,6 @@ function launch_exchange(
                 execute_voting  = True;
                 votes           = init_shares;
                 current_balance = 0n;
-                new_balance     = init_shares;
               ];
               tez_store   = deploy_res.1;
             ];
@@ -103,7 +102,6 @@ function launch_exchange(
                 execute_voting  = True;
                 votes           = init_shares;
                 current_balance = 0n;
-                new_balance     = init_shares;
               ],
               unwrap(updated_pair.tez_store, DexCore.err_tez_store_404)
             ) # ops;
@@ -178,7 +176,6 @@ function invest_liquidity(
               execute_voting  = True;
               votes           = receiver_balance + params.shares;
               current_balance = receiver_balance;
-              new_balance     = unwrap_or(s.ledger[(params.shares_receiver, params.pair_id)], 0n);
             ],
             unwrap(updated_pair.tez_store, DexCore.err_tez_store_404)
           ) # ops;
@@ -260,7 +257,6 @@ function divest_liquidity(
               execute_voting  = True;
               votes           = get_nat_or_fail(sender_balance - params.shares);
               current_balance = sender_balance;
-              new_balance     = unwrap_or(s.ledger[(Tezos.sender, params.pair_id)], 0n);
             ],
             unwrap(updated_pair.tez_store, DexCore.err_tez_store_404)
           ) # ops;
@@ -552,7 +548,6 @@ function vote(
             execute_voting  = True;
             votes           = voter_balance;
             current_balance = voter_balance;
-            new_balance     = voter_balance;
           ],
           unwrap(pair.tez_store, DexCore.err_tez_store_404)
         ) # ops;

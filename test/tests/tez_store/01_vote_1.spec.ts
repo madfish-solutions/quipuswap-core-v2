@@ -139,7 +139,6 @@ describe("TezStore (vote - 1)", async () => {
       execute_voting: true,
       votes: new BigNumber(0),
       current_balance: new BigNumber(0),
-      new_balance: new BigNumber(0),
     };
 
     await rejects(tezStore.vote(params), (err: Error) => {

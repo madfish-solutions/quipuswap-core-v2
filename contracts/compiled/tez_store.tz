@@ -6,8 +6,7 @@
                (key_hash %candidate)
                (bool %execute_voting)
                (nat %votes)
-               (nat %current_balance)
-               (nat %new_balance))
+               (nat %current_balance))
             (pair %withdraw_rewards
                (contract %receiver unit)
                (address %user)
@@ -543,12 +542,12 @@
                  SWAP ;
                  DUP ;
                  DUG 2 ;
-                 GET 10 ;
+                 GET 7 ;
                  PAIR ;
                  SWAP ;
                  DUP ;
                  DUG 2 ;
-                 GET 9 ;
+                 GET 8 ;
                  DUP 3 ;
                  CAR ;
                  PAIR ;

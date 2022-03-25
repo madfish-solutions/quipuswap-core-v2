@@ -70,7 +70,7 @@ function vote(
     only_dex_core(s.dex_core);
 
     s := update_rewards(s);
-    s := update_user_reward(params.voter, params.current_balance, params.new_balance, s);
+    s := update_user_reward(params.voter, params.current_balance, params.votes, s);
 
     var user : user_t := unwrap_or(s.users[params.voter], Constants.default_user);
 
