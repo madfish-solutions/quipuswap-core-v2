@@ -765,53 +765,116 @@ export class DexCore {
     };
   }
 
-  static calculateFlashSwap(
+  static calculateOppositeTokenReturns(
     fees: Fees,
     amountOut: BigNumber,
-    tokenAPool: BigNumber,
-    tokenBPool: BigNumber,
-    flashSwapRule: FlashSwapRule
-  ): CalculateFlashSwap {
-    const interfaceFee: BigNumber = amountOut.multipliedBy(fees.interface_fee);
-    const auctionFee: BigNumber = amountOut.multipliedBy(fees.auction_fee);
-    const swapFee: BigNumber = amountOut.multipliedBy(fees.swap_fee);
-    const fullFee: BigNumber = interfaceFee.plus(auctionFee).plus(swapFee);
-    const fee: BigNumber = amountOut
-      .multipliedBy(PRECISION)
-      .minus(interfaceFee)
-      .minus(auctionFee)
-      .dividedBy(PRECISION)
+    swapTokPool: BigNumber,
+    returnTokPool: BigNumber
+  ): BigNumber {
+    const feeRate: BigNumber = fees.interface_fee
+      .plus(fees.swap_fee)
+      .plus(fees.auction_fee);
+    const rateWithoutFee: BigNumber = PRECISION.minus(feeRate);
+    const numerator: BigNumber = amountOut
+      .multipliedBy(swapTokPool)
+      .multipliedBy(PRECISION);
+    const demoninator: BigNumber = returnTokPool.minus(amountOut);
+    const fromIn: BigNumber = numerator
+      .dividedBy(demoninator)
       .integerValue(BigNumber.ROUND_DOWN);
-    let newTokenAPool: BigNumber = tokenAPool;
-    let newTokenBPool: BigNumber = tokenBPool;
+    const fromInWithFee: BigNumber = fromIn
+      .dividedBy(rateWithoutFee)
+      .integerValue(BigNumber.ROUND_DOWN);
 
-    switch (flashSwapRule) {
-      case "Loan_a_return_a":
-        newTokenAPool = tokenAPool.plus(fee);
-        break;
-      case "Loan_a_return_b":
-        newTokenAPool = tokenAPool.minus(amountOut);
-        newTokenBPool = tokenBPool.plus(amountOut).plus(fee);
-        break;
-      case "Loan_b_return_a":
-        newTokenAPool = tokenAPool.plus(amountOut).plus(fee);
-        newTokenBPool = tokenBPool.minus(amountOut);
-        break;
-      case "Loan_b_return_b":
-        newTokenBPool = tokenBPool.plus(fee);
-        break;
-      default:
-        break;
-    }
+    return fromInWithFee;
+  }
+
+  static calculateFlashSwapParams(
+    fees: Fees,
+    amountIn: BigNumber,
+    returnTokPool: BigNumber,
+    oppositeToken: boolean
+  ): CalculateFlashSwap {
+    const interfaceFee: BigNumber = amountIn.multipliedBy(fees.interface_fee);
+    const auctionFee: BigNumber = amountIn.multipliedBy(fees.auction_fee);
+    const swapFee: BigNumber = amountIn.multipliedBy(fees.swap_fee);
+    const fullFee: BigNumber = new BigNumber(
+      interfaceFee.plus(auctionFee).plus(swapFee)
+    )
+      .dividedBy(PRECISION)
+      .integerValue(BigNumber.ROUND_CEIL);
+    const returns: BigNumber = amountIn.plus(fullFee);
+    const amountToPool: BigNumber = oppositeToken
+      ? new BigNumber(
+          returns.multipliedBy(PRECISION).minus(interfaceFee).minus(auctionFee)
+        )
+          .dividedBy(PRECISION)
+          .integerValue(BigNumber.ROUND_DOWN)
+      : new BigNumber(
+          fullFee.multipliedBy(PRECISION).minus(interfaceFee).minus(auctionFee)
+        )
+          .dividedBy(PRECISION)
+          .integerValue(BigNumber.ROUND_DOWN);
+    const newReturnTokPool = returnTokPool.plus(amountToPool);
 
     return {
       interfaceFee: interfaceFee,
       auctionFee: auctionFee,
       swapFee: swapFee,
       fullFee: fullFee,
-      fee: fee,
-      newTokenAPool: newTokenAPool,
-      newTokenBPool: newTokenBPool,
+      returns: returns,
+      newReturnTokPool: newReturnTokPool,
     };
+  }
+
+  static calculateFlashSwap(
+    flashSwapRule: FlashSwapRule,
+    fees: Fees,
+    amountOut: BigNumber,
+    swapTokPool: BigNumber,
+    returnTokPool: BigNumber
+  ): CalculateFlashSwap {
+    switch (flashSwapRule) {
+      case "Loan_a_return_a":
+        return DexCore.calculateFlashSwapParams(
+          fees,
+          amountOut,
+          returnTokPool,
+          false
+        );
+      case "Loan_a_return_b":
+        return DexCore.calculateFlashSwapParams(
+          fees,
+          DexCore.calculateOppositeTokenReturns(
+            fees,
+            amountOut,
+            swapTokPool,
+            returnTokPool
+          ),
+          returnTokPool,
+          true
+        );
+      case "Loan_b_return_a":
+        return DexCore.calculateFlashSwapParams(
+          fees,
+          DexCore.calculateOppositeTokenReturns(
+            fees,
+            amountOut,
+            swapTokPool,
+            returnTokPool
+          ),
+          returnTokPool,
+          true
+        );
+      case "Loan_b_return_b":
+        return DexCore.calculateFlashSwapParams(
+          fees,
+          amountOut,
+          returnTokPool,
+          false
+        );
+      default:
+        break;
+    }
   }
 }

@@ -39,8 +39,8 @@ function launch_exchange(
 
         assert_with_error(params.token_a_in > 0n, DexCore.err_zero_a_in);
         assert_with_error(
-          (params.pair.token_b = Tez and Tezos.amount =/= 0mutez and Tezos.amount / 1mutez = params.token_b_in)
-            or params.token_b_in > 0n,
+          (params.pair.token_b = Tez and Tezos.amount > 0mutez and Tezos.amount / 1mutez = params.token_b_in)
+            or (params.pair.token_b =/= Tez and params.token_b_in > 0n),
           DexCore.err_zero_b_in
         );
         assert_with_error(pair.total_supply = 0n, DexCore.err_pair_listed);

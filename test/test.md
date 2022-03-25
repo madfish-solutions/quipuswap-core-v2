@@ -108,6 +108,7 @@
    - ✅ should fail if wrong pair order was passed with FA1.2 token and FA2 token;
    - ✅ should fail if token A zero amount in was passed;
    - ✅ should fail if TEZ token B zero amount in was passed;
+   - ✅ should fail if TEZ token B wrong amount in was passed;
    - ✅ should fail if token B zero amount in was passed;
    - ✅ should launch FA1.2/TEZ exchange;
    - ✅ should fail if pair already listed;

@@ -289,6 +289,28 @@ describe("DexCore (launch exchange)", async () => {
     );
   });
 
+  it("should fail if TEZ token B wrong amount in was passed", async () => {
+    const params: LaunchExchange = {
+      pair: {
+        token_a: { fa12: fa12Token1.contract.address },
+        token_b: { tez: undefined },
+      },
+      token_a_in: new BigNumber(100),
+      token_b_in: new BigNumber(100),
+      shares_receiver: alice.pkh,
+      candidate: alice.pkh,
+    };
+
+    await rejects(
+      dexCore.launchExchange(params, params.token_b_in.toNumber() - 50),
+      (err: Error) => {
+        expect(err.message).to.equal(DexCoreErrors.ERR_ZERO_B_IN);
+
+        return true;
+      }
+    );
+  });
+
   it("should fail if token B zero amount in was passed", async () => {
     const params: LaunchExchange = {
       pair: {
@@ -375,11 +397,14 @@ describe("DexCore (launch exchange)", async () => {
       candidate: alice.pkh,
     };
 
-    await rejects(dexCore.launchExchange(params), (err: Error) => {
-      expect(err.message).to.equal(DexCoreErrors.ERR_PAIR_LISTED);
+    await rejects(
+      dexCore.launchExchange(params, params.token_b_in.toNumber()),
+      (err: Error) => {
+        expect(err.message).to.equal(DexCoreErrors.ERR_PAIR_LISTED);
 
-      return true;
-    });
+        return true;
+      }
+    );
   });
 
   it("should launch FA2/TEZ exchange", async () => {

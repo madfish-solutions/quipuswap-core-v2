@@ -52,7 +52,7 @@ function updateParameters(
   );
 }
 
-describe.skip("DexCore (flash swap)", async () => {
+describe("DexCore (flash swap)", async () => {
   var flashSwapsProxy: FlashSwapsProxy;
   var flashSwapAgent: FlashSwapAgent;
   var bakerRegistry: BakerRegistry;
@@ -85,9 +85,9 @@ describe.skip("DexCore (flash swap)", async () => {
     dexCoreStorage.storage.voting_period = defaultVotingPeriod;
     dexCoreStorage.storage.baker_registry = bakerRegistry.contract.address;
     dexCoreStorage.storage.fees = {
-      interface_fee: new BigNumber(0.25).multipliedBy(PRECISION),
+      interface_fee: new BigNumber(0.0025).multipliedBy(PRECISION),
       swap_fee: new BigNumber(0.0005).multipliedBy(PRECISION),
-      auction_fee: new BigNumber(0.25).multipliedBy(PRECISION),
+      auction_fee: new BigNumber(0.0025).multipliedBy(PRECISION),
       withdraw_fee_reward: new BigNumber(0.05).multipliedBy(PRECISION),
     };
 
@@ -355,11 +355,11 @@ describe.skip("DexCore (flash swap)", async () => {
     const prevTokenBPool: BigNumber =
       dexCore.storage.storage.pairs[params.pair_id.toFixed()].token_b_pool;
     const flashSwapResults: CalculateFlashSwap = DexCore.calculateFlashSwap(
+      params.flash_swap_rule,
       dexCore.storage.storage.fees,
       params.amount_out,
       prevTokenAPool,
-      prevTokenBPool,
-      params.flash_swap_rule
+      prevTokenAPool
     );
     const prevAliceTokABalance: BigNumber = tokenA.getBalance(alice.pkh);
     const prevDexCoreTokABalance: BigNumber = tokenA.getBalance(
@@ -371,14 +371,7 @@ describe.skip("DexCore (flash swap)", async () => {
     const value: number = Math.round(Math.random() * 100 + 1);
 
     await updateParameters(flashSwapAgent.contract.address, value);
-    await tokenA.approve(
-      dexCore.contract.address,
-      params.amount_out.plus(
-        flashSwapResults.fullFee
-          .dividedBy(PRECISION)
-          .integerValue(BigNumber.ROUND_CEIL)
-      )
-    );
+    await tokenA.approve(dexCore.contract.address, flashSwapResults.returns);
     await dexCore.flashSwap(params);
     await dexCore.updateStorage({
       pairs: [params.pair_id],
@@ -405,30 +398,18 @@ describe.skip("DexCore (flash swap)", async () => {
     );
 
     expect(currDexCoreTokABalance).to.be.bignumber.equal(
-      prevDexCoreTokABalance.plus(
-        flashSwapResults.fullFee
-          .dividedBy(PRECISION)
-          .integerValue(BigNumber.ROUND_CEIL)
-      )
+      prevDexCoreTokABalance.plus(flashSwapResults.fullFee)
     );
     expect(currAliceTokABalance).to.be.bignumber.equal(
-      prevAliceTokABalance
-        .minus(params.amount_out)
-        .minus(
-          flashSwapResults.fullFee
-            .dividedBy(PRECISION)
-            .integerValue(BigNumber.ROUND_CEIL)
-        )
+      prevAliceTokABalance.minus(flashSwapResults.returns)
     );
     expect(currFlashSwapAgentTokABalance).to.be.bignumber.equal(
       prevFlashSwapAgentTokABalance.plus(params.amount_out)
     );
     expect(currTokenAPool).to.be.bignumber.equal(
-      flashSwapResults.newTokenAPool
+      flashSwapResults.newReturnTokPool
     );
-    expect(currTokenBPool).to.be.bignumber.equal(
-      flashSwapResults.newTokenBPool
-    );
+    expect(currTokenBPool).to.be.bignumber.equal(prevTokenBPool);
     expect(flashSwapAgent.storage.val).to.be.bignumber.equal(
       new BigNumber(value)
     );
@@ -484,11 +465,11 @@ describe.skip("DexCore (flash swap)", async () => {
     const prevTokenBPool: BigNumber =
       dexCore.storage.storage.pairs[params.pair_id.toFixed()].token_b_pool;
     const flashSwapResults: CalculateFlashSwap = DexCore.calculateFlashSwap(
+      params.flash_swap_rule,
       dexCore.storage.storage.fees,
       params.amount_out,
-      prevTokenAPool,
       prevTokenBPool,
-      params.flash_swap_rule
+      prevTokenAPool
     );
     const prevAliceTokABalance: BigNumber = tokenA.getBalance(alice.pkh);
     const prevDexCoreTokABalance: BigNumber = tokenA.getBalance(
@@ -507,14 +488,7 @@ describe.skip("DexCore (flash swap)", async () => {
     const value: number = Math.round(Math.random() * 100 + 1);
 
     await updateParameters(flashSwapAgent.contract.address, value);
-    await tokenA.approve(
-      dexCore.contract.address,
-      params.amount_out.plus(
-        flashSwapResults.fullFee
-          .dividedBy(PRECISION)
-          .integerValue(BigNumber.ROUND_CEIL)
-      )
-    );
+    await tokenA.approve(dexCore.contract.address, flashSwapResults.returns);
     await dexCore.flashSwap(params);
     await dexCore.updateStorage({
       pairs: [params.pair_id],
@@ -555,25 +529,13 @@ describe.skip("DexCore (flash swap)", async () => {
     );
 
     expect(currDexCoreTokABalance).to.be.bignumber.equal(
-      prevDexCoreTokABalance
-        .plus(params.amount_out)
-        .plus(
-          flashSwapResults.fullFee
-            .dividedBy(PRECISION)
-            .integerValue(BigNumber.ROUND_CEIL)
-        )
+      prevDexCoreTokABalance.plus(flashSwapResults.returns)
     );
     expect(currDexCoreTokBBalance).to.be.bignumber.equal(
       prevDexCoreTokBBalance.minus(params.amount_out)
     );
     expect(currAliceTokABalance).to.be.bignumber.equal(
-      prevAliceTokABalance
-        .minus(params.amount_out)
-        .minus(
-          flashSwapResults.fullFee
-            .dividedBy(PRECISION)
-            .integerValue(BigNumber.ROUND_CEIL)
-        )
+      prevAliceTokABalance.minus(flashSwapResults.returns)
     );
     expect(currAliceTokBBalance).to.be.bignumber.equal(prevAliceTokBBalance);
     expect(currFlashSwapAgentTokABalance).to.be.bignumber.equal(
@@ -583,10 +545,10 @@ describe.skip("DexCore (flash swap)", async () => {
       prevFlashSwapAgentTokBBalance.plus(params.amount_out)
     );
     expect(currTokenAPool).to.be.bignumber.equal(
-      flashSwapResults.newTokenAPool
+      flashSwapResults.newReturnTokPool
     );
     expect(currTokenBPool).to.be.bignumber.equal(
-      flashSwapResults.newTokenBPool
+      prevTokenBPool.minus(params.amount_out)
     );
     expect(flashSwapAgent.storage.val).to.be.bignumber.equal(
       new BigNumber(value)
@@ -634,11 +596,11 @@ describe.skip("DexCore (flash swap)", async () => {
     const prevTokenBPool: BigNumber =
       dexCore.storage.storage.pairs[params.pair_id.toFixed()].token_b_pool;
     const flashSwapResults: CalculateFlashSwap = DexCore.calculateFlashSwap(
+      params.flash_swap_rule,
       dexCore.storage.storage.fees,
       params.amount_out,
       prevTokenAPool,
-      prevTokenBPool,
-      params.flash_swap_rule
+      prevTokenBPool
     );
     const prevAliceTokABalance: BigNumber = tokenA.getBalance(alice.pkh);
     const prevDexCoreTokABalance: BigNumber = tokenA.getBalance(
@@ -700,23 +662,11 @@ describe.skip("DexCore (flash swap)", async () => {
       prevDexCoreTokABalance.minus(params.amount_out)
     );
     expect(currDexCoreTokBBalance).to.be.bignumber.equal(
-      prevDexCoreTokBBalance
-        .plus(params.amount_out)
-        .plus(
-          flashSwapResults.fullFee
-            .dividedBy(PRECISION)
-            .integerValue(BigNumber.ROUND_CEIL)
-        )
+      prevDexCoreTokBBalance.plus(flashSwapResults.returns)
     );
     expect(currAliceTokABalance).to.be.bignumber.equal(prevAliceTokABalance);
     expect(currAliceTokBBalance).to.be.bignumber.equal(
-      prevAliceTokBBalance
-        .minus(params.amount_out)
-        .minus(
-          flashSwapResults.fullFee
-            .dividedBy(PRECISION)
-            .integerValue(BigNumber.ROUND_CEIL)
-        )
+      prevAliceTokBBalance.minus(flashSwapResults.returns)
     );
     expect(currFlashSwapAgentTokABalance).to.be.bignumber.equal(
       prevFlashSwapAgentTokABalance.plus(params.amount_out)
@@ -725,10 +675,10 @@ describe.skip("DexCore (flash swap)", async () => {
       prevFlashSwapAgentTokBBalance
     );
     expect(currTokenAPool).to.be.bignumber.equal(
-      flashSwapResults.newTokenAPool
+      prevTokenAPool.minus(params.amount_out)
     );
     expect(currTokenBPool).to.be.bignumber.equal(
-      flashSwapResults.newTokenBPool
+      flashSwapResults.newReturnTokPool
     );
     expect(flashSwapAgent.storage.val).to.be.bignumber.equal(
       new BigNumber(value)
@@ -768,11 +718,11 @@ describe.skip("DexCore (flash swap)", async () => {
     const prevTokenBPool: BigNumber =
       dexCore.storage.storage.pairs[params.pair_id.toFixed()].token_b_pool;
     const flashSwapResults: CalculateFlashSwap = DexCore.calculateFlashSwap(
+      params.flash_swap_rule,
       dexCore.storage.storage.fees,
       params.amount_out,
       prevTokenAPool,
-      prevTokenBPool,
-      params.flash_swap_rule
+      prevTokenBPool
     );
     const prevDexCoreTokABalance: BigNumber = tokenA.getBalance(
       dexCore.contract.address
@@ -835,10 +785,10 @@ describe.skip("DexCore (flash swap)", async () => {
       prevFlashSwapAgentTokBBalance.minus(new BigNumber(2000))
     );
     expect(currTokenAPool).to.be.bignumber.equal(
-      flashSwapResults.newTokenAPool
+      prevTokenAPool.minus(params.amount_out)
     );
     expect(currTokenBPool).to.be.bignumber.equal(
-      prevTokenBPool.plus(new BigNumber(2000))
+      flashSwapResults.newReturnTokPool
     );
     expect(flashSwapAgent.storage.val).to.be.bignumber.equal(
       new BigNumber(value)
@@ -875,11 +825,11 @@ describe.skip("DexCore (flash swap)", async () => {
     const prevTokenBPool: BigNumber =
       dexCore.storage.storage.pairs[params.pair_id.toFixed()].token_b_pool;
     const flashSwapResults: CalculateFlashSwap = DexCore.calculateFlashSwap(
+      params.flash_swap_rule,
       dexCore.storage.storage.fees,
       params.amount_out,
       prevTokenAPool,
-      prevTokenBPool,
-      params.flash_swap_rule
+      prevTokenAPool
     );
     const prevAliceTokABalance: BigNumber = await tokenA.getBalance(alice.pkh);
     const prevDexCoreTokABalance: BigNumber = await tokenA.getBalance(
@@ -917,30 +867,18 @@ describe.skip("DexCore (flash swap)", async () => {
     );
 
     expect(currDexCoreTokABalance).to.be.bignumber.equal(
-      prevDexCoreTokABalance.plus(
-        flashSwapResults.fullFee
-          .dividedBy(PRECISION)
-          .integerValue(BigNumber.ROUND_CEIL)
-      )
+      prevDexCoreTokABalance.plus(flashSwapResults.fullFee)
     );
     expect(currAliceTokABalance).to.be.bignumber.equal(
-      prevAliceTokABalance
-        .minus(params.amount_out)
-        .minus(
-          flashSwapResults.fullFee
-            .dividedBy(PRECISION)
-            .integerValue(BigNumber.ROUND_CEIL)
-        )
+      prevAliceTokABalance.minus(flashSwapResults.returns)
     );
     expect(currFlashSwapAgentTokABalance).to.be.bignumber.equal(
       prevFlashSwapAgentTokABalance.plus(params.amount_out)
     );
     expect(currTokenAPool).to.be.bignumber.equal(
-      flashSwapResults.newTokenAPool
+      flashSwapResults.newReturnTokPool
     );
-    expect(currTokenBPool).to.be.bignumber.equal(
-      flashSwapResults.newTokenBPool
-    );
+    expect(currTokenBPool).to.be.bignumber.equal(prevTokenBPool);
     expect(flashSwapAgent.storage.val).to.be.bignumber.equal(
       new BigNumber(value)
     );
@@ -987,11 +925,11 @@ describe.skip("DexCore (flash swap)", async () => {
     const prevTokenBPool: BigNumber =
       dexCore.storage.storage.pairs[params.pair_id.toFixed()].token_b_pool;
     const flashSwapResults: CalculateFlashSwap = DexCore.calculateFlashSwap(
+      params.flash_swap_rule,
       dexCore.storage.storage.fees,
       params.amount_out,
-      prevTokenAPool,
       prevTokenBPool,
-      params.flash_swap_rule
+      prevTokenAPool
     );
     const prevAliceTokABalance: BigNumber = tokenA.getBalance(alice.pkh);
     const prevDexCoreTokABalance: BigNumber = tokenA.getBalance(
@@ -1010,14 +948,7 @@ describe.skip("DexCore (flash swap)", async () => {
     const value: number = Math.round(Math.random() * 100 + 1);
 
     await updateParameters(flashSwapAgent.contract.address, value);
-    await tokenA.approve(
-      dexCore.contract.address,
-      params.amount_out.plus(
-        flashSwapResults.fullFee
-          .dividedBy(PRECISION)
-          .integerValue(BigNumber.ROUND_CEIL)
-      )
-    );
+    await tokenA.approve(dexCore.contract.address, flashSwapResults.returns);
     await dexCore.flashSwap(params);
     await dexCore.updateStorage({
       pairs: [params.pair_id],
@@ -1058,25 +989,13 @@ describe.skip("DexCore (flash swap)", async () => {
     );
 
     expect(currDexCoreTokABalance).to.be.bignumber.equal(
-      prevDexCoreTokABalance
-        .plus(params.amount_out)
-        .plus(
-          flashSwapResults.fullFee
-            .dividedBy(PRECISION)
-            .integerValue(BigNumber.ROUND_CEIL)
-        )
+      prevDexCoreTokABalance.plus(flashSwapResults.returns)
     );
     expect(currDexCoreTokBBalance).to.be.bignumber.equal(
       prevDexCoreTokBBalance.minus(params.amount_out)
     );
     expect(currAliceTokABalance).to.be.bignumber.equal(
-      prevAliceTokABalance
-        .minus(params.amount_out)
-        .minus(
-          flashSwapResults.fullFee
-            .dividedBy(PRECISION)
-            .integerValue(BigNumber.ROUND_CEIL)
-        )
+      prevAliceTokABalance.minus(flashSwapResults.returns)
     );
     expect(currAliceTokBBalance).to.be.bignumber.equal(prevAliceTokBBalance);
     expect(currFlashSwapAgentTokABalance).to.be.bignumber.equal(
@@ -1086,10 +1005,10 @@ describe.skip("DexCore (flash swap)", async () => {
       prevFlashSwapAgentTokBBalance.plus(params.amount_out)
     );
     expect(currTokenAPool).to.be.bignumber.equal(
-      flashSwapResults.newTokenAPool
+      flashSwapResults.newReturnTokPool
     );
     expect(currTokenBPool).to.be.bignumber.equal(
-      flashSwapResults.newTokenBPool
+      prevTokenBPool.minus(params.amount_out)
     );
     expect(flashSwapAgent.storage.val).to.be.bignumber.equal(
       new BigNumber(value)
@@ -1146,11 +1065,11 @@ describe.skip("DexCore (flash swap)", async () => {
     const prevTokenBPool: BigNumber =
       dexCore.storage.storage.pairs[params.pair_id.toFixed()].token_b_pool;
     const flashSwapResults: CalculateFlashSwap = DexCore.calculateFlashSwap(
+      params.flash_swap_rule,
       dexCore.storage.storage.fees,
       params.amount_out,
       prevTokenAPool,
-      prevTokenBPool,
-      params.flash_swap_rule
+      prevTokenBPool
     );
     const prevAliceTokABalance: BigNumber = await tokenA.getBalance(alice.pkh);
     const prevDexCoreTokABalance: BigNumber = await tokenA.getBalance(
@@ -1212,23 +1131,11 @@ describe.skip("DexCore (flash swap)", async () => {
       prevDexCoreTokABalance.minus(params.amount_out)
     );
     expect(currDexCoreTokBBalance).to.be.bignumber.equal(
-      prevDexCoreTokBBalance
-        .plus(params.amount_out)
-        .plus(
-          flashSwapResults.fullFee
-            .dividedBy(PRECISION)
-            .integerValue(BigNumber.ROUND_CEIL)
-        )
+      prevDexCoreTokBBalance.plus(flashSwapResults.returns)
     );
     expect(currAliceTokABalance).to.be.bignumber.equal(prevAliceTokABalance);
     expect(currAliceTokBBalance).to.be.bignumber.equal(
-      prevAliceTokBBalance
-        .minus(params.amount_out)
-        .minus(
-          flashSwapResults.fullFee
-            .dividedBy(PRECISION)
-            .integerValue(BigNumber.ROUND_CEIL)
-        )
+      prevAliceTokBBalance.minus(flashSwapResults.returns)
     );
     expect(currFlashSwapAgentTokABalance).to.be.bignumber.equal(
       prevFlashSwapAgentTokABalance.plus(params.amount_out)
@@ -1237,10 +1144,10 @@ describe.skip("DexCore (flash swap)", async () => {
       prevFlashSwapAgentTokBBalance
     );
     expect(currTokenAPool).to.be.bignumber.equal(
-      flashSwapResults.newTokenAPool
+      prevTokenAPool.minus(params.amount_out)
     );
     expect(currTokenBPool).to.be.bignumber.equal(
-      flashSwapResults.newTokenBPool
+      flashSwapResults.newReturnTokPool
     );
     expect(flashSwapAgent.storage.val).to.be.bignumber.equal(
       new BigNumber(value)
@@ -1277,11 +1184,11 @@ describe.skip("DexCore (flash swap)", async () => {
     const prevTokenBPool: BigNumber =
       dexCore.storage.storage.pairs[params.pair_id.toFixed()].token_b_pool;
     const flashSwapResults: CalculateFlashSwap = DexCore.calculateFlashSwap(
+      params.flash_swap_rule,
       dexCore.storage.storage.fees,
       params.amount_out,
       prevTokenAPool,
-      prevTokenBPool,
-      params.flash_swap_rule
+      prevTokenBPool
     );
     const prevDexCoreTokABalance: BigNumber = await tokenA.getBalance(
       dexCore.contract.address
@@ -1344,10 +1251,10 @@ describe.skip("DexCore (flash swap)", async () => {
       prevFlashSwapAgentTokBBalance.minus(new BigNumber(2000))
     );
     expect(currTokenAPool).to.be.bignumber.equal(
-      flashSwapResults.newTokenAPool
+      prevTokenAPool.minus(params.amount_out)
     );
     expect(currTokenBPool).to.be.bignumber.equal(
-      prevTokenBPool.plus(new BigNumber(2000))
+      flashSwapResults.newReturnTokPool
     );
     expect(flashSwapAgent.storage.val).to.be.bignumber.equal(
       new BigNumber(value)
@@ -1379,6 +1286,13 @@ describe.skip("DexCore (flash swap)", async () => {
       dexCore.storage.storage.pairs[params.pair_id.toFixed()].token_a_pool;
     const prevTokenBPool: BigNumber =
       dexCore.storage.storage.pairs[params.pair_id.toFixed()].token_b_pool;
+    const flashSwapResults: CalculateFlashSwap = DexCore.calculateFlashSwap(
+      params.flash_swap_rule,
+      dexCore.storage.storage.fees,
+      params.amount_out,
+      prevTokenBPool,
+      prevTokenBPool
+    );
     const prevDexCoreTokBalance: BigNumber = await utils.tezos.tz.getBalance(
       dexCore.contract.address
     );
@@ -1420,7 +1334,7 @@ describe.skip("DexCore (flash swap)", async () => {
     );
     expect(currTokenAPool).to.be.bignumber.equal(prevTokenAPool);
     expect(currTokenBPool).to.be.bignumber.equal(
-      prevTokenBPool.plus(new BigNumber(1000))
+      flashSwapResults.newReturnTokPool
     );
     expect(flashSwapAgent.storage.val).to.be.bignumber.equal(
       new BigNumber(value)
@@ -1460,11 +1374,11 @@ describe.skip("DexCore (flash swap)", async () => {
     const prevTokenBPool: BigNumber =
       dexCore.storage.storage.pairs[params.pair_id.toFixed()].token_b_pool;
     const flashSwapResults: CalculateFlashSwap = DexCore.calculateFlashSwap(
+      params.flash_swap_rule,
       dexCore.storage.storage.fees,
       params.amount_out,
-      prevTokenAPool,
       prevTokenBPool,
-      params.flash_swap_rule
+      prevTokenAPool
     );
     const prevAliceTokABalance: BigNumber = tokenA.getBalance(alice.pkh);
     const prevDexCoreTokABalance: BigNumber = tokenA.getBalance(
@@ -1481,14 +1395,7 @@ describe.skip("DexCore (flash swap)", async () => {
     const value: number = Math.round(Math.random() * 100 + 1);
 
     await updateParameters(flashSwapAgent.contract.address, value);
-    await tokenA.approve(
-      dexCore.contract.address,
-      params.amount_out.plus(
-        flashSwapResults.fullFee
-          .dividedBy(PRECISION)
-          .integerValue(BigNumber.ROUND_CEIL)
-      )
-    );
+    await tokenA.approve(dexCore.contract.address, flashSwapResults.returns);
     await dexCore.flashSwap(params);
     await dexCore.updateStorage({
       pairs: [params.pair_id],
@@ -1516,13 +1423,7 @@ describe.skip("DexCore (flash swap)", async () => {
       await utils.tezos.tz.getBalance(flashSwapAgent.contract.address);
 
     expect(currDexCoreTokABalance).to.be.bignumber.equal(
-      prevDexCoreTokABalance
-        .plus(params.amount_out)
-        .plus(
-          flashSwapResults.fullFee
-            .dividedBy(PRECISION)
-            .integerValue(BigNumber.ROUND_CEIL)
-        )
+      prevDexCoreTokABalance.plus(flashSwapResults.returns)
     );
     expect(currDexCoreTokBBalance).to.be.bignumber.equal(
       prevDexCoreTokBBalance.plus(new BigNumber(2000))
@@ -1534,19 +1435,13 @@ describe.skip("DexCore (flash swap)", async () => {
       prevFlashSwapAgentTokBBalance.minus(new BigNumber(2000))
     );
     expect(currAliceTokABalance).to.be.bignumber.equal(
-      prevAliceTokABalance
-        .minus(params.amount_out)
-        .minus(
-          flashSwapResults.fullFee
-            .dividedBy(PRECISION)
-            .integerValue(BigNumber.ROUND_CEIL)
-        )
+      prevAliceTokABalance.minus(flashSwapResults.returns)
     );
     expect(currTokenAPool).to.be.bignumber.equal(
-      flashSwapResults.newTokenAPool
+      flashSwapResults.newReturnTokPool
     );
     expect(currTokenBPool).to.be.bignumber.equal(
-      flashSwapResults.newTokenBPool
+      prevTokenBPool.minus(params.amount_out)
     );
     expect(flashSwapAgent.storage.val).to.be.bignumber.equal(
       new BigNumber(value)
@@ -1583,11 +1478,11 @@ describe.skip("DexCore (flash swap)", async () => {
     const prevTokenBPool: BigNumber =
       dexCore.storage.storage.pairs[params.pair_id.toFixed()].token_b_pool;
     const flashSwapResults: CalculateFlashSwap = DexCore.calculateFlashSwap(
+      params.flash_swap_rule,
       dexCore.storage.storage.fees,
       params.amount_out,
-      prevTokenAPool,
       prevTokenBPool,
-      params.flash_swap_rule
+      prevTokenAPool
     );
     const prevAliceTokABalance: BigNumber = await tokenA.getBalance(alice.pkh);
     const prevDexCoreTokABalance: BigNumber = await tokenA.getBalance(
@@ -1631,13 +1526,7 @@ describe.skip("DexCore (flash swap)", async () => {
       await utils.tezos.tz.getBalance(flashSwapAgent.contract.address);
 
     expect(currDexCoreTokABalance).to.be.bignumber.equal(
-      prevDexCoreTokABalance
-        .plus(params.amount_out)
-        .plus(
-          flashSwapResults.fullFee
-            .dividedBy(PRECISION)
-            .integerValue(BigNumber.ROUND_CEIL)
-        )
+      prevDexCoreTokABalance.plus(flashSwapResults.returns)
     );
     expect(currDexCoreTokBBalance).to.be.bignumber.equal(
       prevDexCoreTokBBalance.plus(new BigNumber(2000))
@@ -1649,19 +1538,13 @@ describe.skip("DexCore (flash swap)", async () => {
       prevFlashSwapAgentTokBBalance.minus(new BigNumber(2000))
     );
     expect(currAliceTokABalance).to.be.bignumber.equal(
-      prevAliceTokABalance
-        .minus(params.amount_out)
-        .minus(
-          flashSwapResults.fullFee
-            .dividedBy(PRECISION)
-            .integerValue(BigNumber.ROUND_CEIL)
-        )
+      prevAliceTokABalance.minus(flashSwapResults.returns)
     );
     expect(currTokenAPool).to.be.bignumber.equal(
-      flashSwapResults.newTokenAPool
+      flashSwapResults.newReturnTokPool
     );
     expect(currTokenBPool).to.be.bignumber.equal(
-      flashSwapResults.newTokenBPool
+      prevTokenBPool.minus(params.amount_out)
     );
     expect(flashSwapAgent.storage.val).to.be.bignumber.equal(
       new BigNumber(value)

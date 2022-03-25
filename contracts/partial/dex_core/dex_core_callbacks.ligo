@@ -25,7 +25,7 @@ function flash_swap_callback(
           const tez_amount_to_invest : nat = get_nat_or_fail(curr_tez_balance - params.prev_tez_balance);
 
           case params.flash_swap_rule of [
-          | Loan_a_return_a -> failwith(DexCore.err_wrong_flash_swap_returns)
+          | Loan_a_return_a -> skip
           | Loan_a_return_b -> {
             assert_with_error(
               curr_tez_balance >= params.prev_tez_balance + flash_swap_result.returns,
