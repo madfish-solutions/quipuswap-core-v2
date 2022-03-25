@@ -651,13 +651,13 @@ export class DexCore {
       pair.token_b_pool.isGreaterThan(0)
     ) {
       return {
-        tokenACumulativePrice: pair.token_a_price_cum.plus(
+        tokenACumulativePrice: pair.token_a_price_cml.plus(
           pair.token_b_pool
             .dividedBy(pair.token_a_pool)
             .integerValue(BigNumber.ROUND_DOWN)
             .multipliedBy(timeElasped)
         ),
-        tokenBCumulativePrice: pair.token_b_price_cum.plus(
+        tokenBCumulativePrice: pair.token_b_price_cml.plus(
           pair.token_a_pool
             .dividedBy(pair.token_b_pool)
             .integerValue(BigNumber.ROUND_DOWN)
@@ -667,8 +667,8 @@ export class DexCore {
     }
 
     return {
-      tokenACumulativePrice: pair.token_a_price_cum,
-      tokenBCumulativePrice: pair.token_b_price_cum,
+      tokenACumulativePrice: pair.token_a_price_cml,
+      tokenBCumulativePrice: pair.token_b_price_cml,
     };
   }
 

@@ -253,8 +253,8 @@ type toks_per_shr_res_t is [@layout:comb] record [
 
 type cum_prices_t       is [@layout:comb] record [
   last_block_timestamp    : timestamp;
-  token_a_price_cum       : nat;
-  token_b_price_cum       : nat;
+  token_a_price_cml       : nat;
+  token_b_price_cml       : nat;
 ]
 
 type cum_prices_req_t   is token_id_t

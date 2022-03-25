@@ -127,10 +127,10 @@ describe("DexCore (oracle part)", async () => {
     });
 
     expect(
-      dexCore.storage.storage.pairs[expectedPairId.toFixed()].token_a_price_cum
+      dexCore.storage.storage.pairs[expectedPairId.toFixed()].token_a_price_cml
     ).to.be.bignumber.equal(new BigNumber(0));
     expect(
-      dexCore.storage.storage.pairs[expectedPairId.toFixed()].token_b_price_cum
+      dexCore.storage.storage.pairs[expectedPairId.toFixed()].token_b_price_cml
     ).to.be.bignumber.equal(new BigNumber(0));
     expect(
       Date.parse(
@@ -171,10 +171,10 @@ describe("DexCore (oracle part)", async () => {
       await DexCore.calculateCumulativePrices(prevPair, utils);
 
     expect(
-      dexCore.storage.storage.pairs[pairId.toFixed()].token_a_price_cum
+      dexCore.storage.storage.pairs[pairId.toFixed()].token_a_price_cml
     ).to.be.bignumber.equal(cumulativePrices.tokenACumulativePrice);
     expect(
-      dexCore.storage.storage.pairs[pairId.toFixed()].token_b_price_cum
+      dexCore.storage.storage.pairs[pairId.toFixed()].token_b_price_cml
     ).to.be.bignumber.equal(cumulativePrices.tokenBCumulativePrice);
     expect(
       Date.parse(
@@ -208,10 +208,10 @@ describe("DexCore (oracle part)", async () => {
       await DexCore.calculateCumulativePrices(prevPair, utils);
 
     expect(
-      dexCore.storage.storage.pairs[pairId.toFixed()].token_a_price_cum
+      dexCore.storage.storage.pairs[pairId.toFixed()].token_a_price_cml
     ).to.be.bignumber.equal(cumulativePrices.tokenACumulativePrice);
     expect(
-      dexCore.storage.storage.pairs[pairId.toFixed()].token_b_price_cum
+      dexCore.storage.storage.pairs[pairId.toFixed()].token_b_price_cml
     ).to.be.bignumber.equal(cumulativePrices.tokenBCumulativePrice);
     expect(
       Date.parse(
@@ -251,10 +251,10 @@ describe("DexCore (oracle part)", async () => {
       await DexCore.calculateCumulativePrices(prevPair, utils);
 
     expect(
-      dexCore.storage.storage.pairs[pairId.toFixed()].token_a_price_cum
+      dexCore.storage.storage.pairs[pairId.toFixed()].token_a_price_cml
     ).to.be.bignumber.equal(cumulativePrices.tokenACumulativePrice);
     expect(
-      dexCore.storage.storage.pairs[pairId.toFixed()].token_b_price_cum
+      dexCore.storage.storage.pairs[pairId.toFixed()].token_b_price_cml
     ).to.be.bignumber.equal(cumulativePrices.tokenBCumulativePrice);
     expect(
       Date.parse(
@@ -288,10 +288,10 @@ describe("DexCore (oracle part)", async () => {
       await DexCore.calculateCumulativePrices(prevPair, utils);
 
     expect(
-      dexCore.storage.storage.pairs[pairId.toFixed()].token_a_price_cum
+      dexCore.storage.storage.pairs[pairId.toFixed()].token_a_price_cml
     ).to.be.bignumber.equal(cumulativePrices.tokenACumulativePrice);
     expect(
-      dexCore.storage.storage.pairs[pairId.toFixed()].token_b_price_cum
+      dexCore.storage.storage.pairs[pairId.toFixed()].token_b_price_cml
     ).to.be.bignumber.equal(cumulativePrices.tokenBCumulativePrice);
     expect(
       Date.parse(

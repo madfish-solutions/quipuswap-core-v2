@@ -184,8 +184,8 @@ export type CumulativePrices = {
 export type Pair = {
   token_a_pool: BigNumber;
   token_b_pool: BigNumber;
-  token_a_price_cum: BigNumber;
-  token_b_price_cum: BigNumber;
+  token_a_price_cml: BigNumber;
+  token_b_price_cml: BigNumber;
   total_supply: BigNumber;
   last_block_timestamp: string;
   tez_store: string | undefined | null;

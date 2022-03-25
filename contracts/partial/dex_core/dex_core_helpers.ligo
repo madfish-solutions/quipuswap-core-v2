@@ -128,9 +128,9 @@ function calc_cumulative_prices(
     if (time_elasped > 0n and pair.token_a_pool > 0n and pair.token_b_pool > 0n)
     then {
       (* price_cumulative = price_cumulative + (price_a * time_elasped) *)
-      pair.token_a_price_cum := pair.token_a_price_cum + ((pair.token_b_pool / pair.token_a_pool) * time_elasped);
+      pair.token_a_price_cml := pair.token_a_price_cml + ((pair.token_b_pool / pair.token_a_pool) * time_elasped);
       (* price_cumulative = price_cumulative + (price_b * time_elasped) *)
-      pair.token_b_price_cum := pair.token_b_price_cum + ((pair.token_a_pool / pair.token_b_pool) * time_elasped);
+      pair.token_b_price_cml := pair.token_b_price_cml + ((pair.token_a_pool / pair.token_b_pool) * time_elasped);
     }
     else skip;
 

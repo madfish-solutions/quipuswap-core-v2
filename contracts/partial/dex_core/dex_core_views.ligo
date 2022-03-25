@@ -130,8 +130,8 @@
           request           = pair_id;
           cumulative_prices = record [
             last_block_timestamp = pair.last_block_timestamp;
-            token_a_price_cum    = pair.token_a_price_cum;
-            token_b_price_cum    = pair.token_b_price_cum;
+            token_a_price_cml    = pair.token_a_price_cml;
+            token_b_price_cml    = pair.token_b_price_cml;
           ];
         ];
       } with response # l;
