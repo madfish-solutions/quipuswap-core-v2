@@ -17,7 +17,7 @@ function get_baker_registry_validate_op(
                         : operation is
   Tezos.transaction(baker, 0mutez, get_baker_registry_validate_entrypoint(baker_registry))
 
-function get_pair_total_supply(
+[@inline] function get_pair_total_supply(
   const dex_core        : address;
   const pair_id         : token_id_t)
                         : nat is
@@ -38,7 +38,7 @@ function get_pair_total_supply(
       } with total_supply;
   } with List.fold(get_total_supply, total_supply_response, 0n)
 
-function get_voting_period(
+[@inline] function get_voting_period(
   const dex_core        : address)
                         : nat is
   unwrap(
@@ -46,7 +46,7 @@ function get_voting_period(
     TezStore.err_dex_core_get_voting_period_view_404
   )
 
-function get_collecting_period(
+[@inline] function get_collecting_period(
   const dex_core        : address)
                         : nat is
   unwrap(
@@ -54,7 +54,7 @@ function get_collecting_period(
     TezStore.err_dex_core_get_collecting_period_view_404
   )
 
-function get_cycle_duration(
+[@inline] function get_cycle_duration(
   const dex_core        : address)
                         : nat is
   unwrap(

@@ -304,7 +304,7 @@ describe("DexCore (launch exchange)", async () => {
     await rejects(
       dexCore.launchExchange(params, params.token_b_in.toNumber() - 50),
       (err: Error) => {
-        expect(err.message).to.equal(DexCoreErrors.ERR_ZERO_B_IN);
+        expect(err.message).to.equal(DexCoreErrors.ERR_WRONG_TEZ_AMOUNT);
 
         return true;
       }
