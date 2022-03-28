@@ -17,7 +17,6 @@
 
 1. `fill`:
 
-   - ✅ should fail if not dex core is trying to fill;
    - ✅ should fill - 1;
    - ✅ should fill - 2.
 
@@ -28,7 +27,15 @@
    - ✅ should pour out - 1;
    - ✅ should pour out - 2.
 
-3. `withdraw_rewards`:
+3. `pour_over`:
+
+   - ✅ should fail if not dex core is trying to pour over;
+   - ✅ should fail if `fill` entrypoint of a receiver not found;
+   - ✅ should fail if bucket have not enough TEZ on contract's balance;
+   - ✅ should pour over - 1;
+   - ✅ should pour over - 2.
+
+4. `withdraw_rewards`:
 
    - ✅ should fail if not dex core is trying to withdraw rewards;
    - ✅ should withdraw user's rewards - 1;
@@ -36,13 +43,13 @@
    - ✅ should update user rewards;
    - ✅ should update global rewards.
 
-4. `ban_baker`:
+5. `ban_baker`:
 
    - ✅ should fail if not dex core is trying to ban baker;
    - ✅ should ban baker;
    - ✅ should unban baker.
 
-5. `vote`:
+6. `vote`:
 
    - ✅ should vote for bob, bob must become first current delegated;
    - ✅ should fail if not dex core is trying to vote;
@@ -63,7 +70,7 @@
    - ✅ should update end of voting period if voting can be done;
    - ✅ should remove delegate and set current delegated to the `zero_address` if voting can be done and current delegated is banned.
 
-6. `default`:
+7. `default`:
 
    - ✅ should update global rewards - 1;
    - ✅ should update global rewards - 2;
@@ -71,23 +78,23 @@
    - ✅ should update global rewards - 4;
    - ✅ should not update global rewards if pair total supply is 0.
 
-7. `is_banned_baker` [VIEW]:
+8. `is_banned_baker` [VIEW]:
 
    - ✅ should return true if baker is banned;
    - ✅ should return false if baker is not banned;
    - ✅ should return false if baker's banning period is finished.
 
-8. `get_tez_balance` [VIEW]:
+9. `get_tez_balance` [VIEW]:
 
    - ✅ should return zero balance;
    - ✅ should return positive balance - 1;
    - ✅ should return positive balance - 2.
 
-9. `get_user_candidate` [VIEW]:
+10. `get_user_candidate` [VIEW]:
 
-   - ✅ should return user's candidate is user have a candidate;
-   - ✅ should return current delegated if user does not have a candidate;
-   - ✅ should return `zero_key_hash` if contract does not have a delegate.
+    - ✅ should return user's candidate is user have a candidate;
+    - ✅ should return current delegated if user does not have a candidate;
+    - ✅ should return `zero_key_hash` if contract does not have a delegate.
 
 ## FlashSwapsProxy
 

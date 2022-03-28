@@ -18,10 +18,13 @@ type storage_t          is [@layout:comb] record [
   voting_period_end       : nat;
 ]
 
-type fill_t             is unit
-
 type pour_out_t         is [@layout:comb] record [
   receiver                : contract(unit);
+  amt                     : nat;
+]
+
+type pour_over_t        is [@layout:comb] record [
+  bucket                  : address;
   amt                     : nat;
 ]
 

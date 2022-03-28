@@ -1,10 +1,8 @@
+(* An alternative to `default` entrypoint, which doesn't affect rewards *)
 function fill(
-  const _               : fill_t;
   const s               : storage_t)
                         : return_t is
-  block {
-    only_dex_core(s.dex_core);
-  } with ((nil : list(operation)), s)
+  ((nil : list(operation)), s)
 
 function pour_out(
   const params          : pour_out_t;
@@ -12,9 +10,15 @@ function pour_out(
                         : return_t is
   block {
     only_dex_core(s.dex_core);
-
-    assert_with_error(params.amt <= Tezos.balance / 1mutez, Bucket.err_insufficient_tez_balance);
   } with (list [transfer_tez(params.receiver, params.amt)], s)
+
+function pour_over(
+  const params          : pour_over_t;
+  const s               : storage_t)
+                        : return_t is
+  block {
+    only_dex_core(s.dex_core);
+  } with (list [Tezos.transaction(Unit, params.amt * 1mutez, get_bucket_fill_entrypoint(params.bucket))], s)
 
 function withdraw_rewards(
   const params          : withdraw_rewards_t;

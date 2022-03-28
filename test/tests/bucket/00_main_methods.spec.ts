@@ -1,5 +1,5 @@
-import { Common, Bucket as BucketErrors } from "../../helpers/Errors";
 import { BakerRegistry } from "../../helpers/BakerRegistry";
+import { Common } from "../../helpers/Errors";
 import { Bucket } from "../../helpers/Bucket";
 import { Utils } from "../../helpers/Utils";
 
@@ -14,19 +14,19 @@ import accounts from "../../../scripts/sandbox/accounts";
 import { bakerRegistryStorage } from "../../../storage/BakerRegistry";
 import { bucketStorage } from "../../../storage/test/Bucket";
 
-import { BanBaker, PourOut } from "../../types/Bucket";
+import { BanBaker, PourOut, PourOver } from "../../types/Bucket";
 import { SBAccount } from "../../types/Common";
 
 chai.use(require("chai-bignumber")(BigNumber));
 
-describe("Bucket (fill, pour out, ban baker)", async () => {
+describe("Bucket (fill, pour out, pour over, ban baker)", async () => {
   var bakerRegistry: BakerRegistry;
   var bucket: Bucket;
+  var bucket2: Bucket;
   var utils: Utils;
 
   var alice: SBAccount = accounts.alice;
   var bob: SBAccount = accounts.bob;
-  var carol: SBAccount = accounts.carol;
   var dev: SBAccount = accounts.dev;
 
   before("setup", async () => {
@@ -43,22 +43,14 @@ describe("Bucket (fill, pour out, ban baker)", async () => {
     bucketStorage.dex_core = bob.pkh;
 
     bucket = await Bucket.originate(utils.tezos, bucketStorage);
-  });
-
-  it("should fail if not dex core is trying to fill", async () => {
-    await rejects(bucket.fill(alice.pkh, 1), (err: Error) => {
-      expect(err.message).to.equal(Common.ERR_NOT_DEX_CORE);
-
-      return true;
-    });
+    bucket2 = await Bucket.originate(utils.tezos, bucketStorage);
   });
 
   it("should fill - 1", async () => {
-    const user: string = alice.pkh;
     const amt: number = 100;
 
     await utils.setProvider(bob.sk);
-    await bucket.fill(user, amt);
+    await bucket.fill(amt);
 
     expect(
       await utils.tezos.tz.getBalance(bucket.contract.address)
@@ -66,13 +58,12 @@ describe("Bucket (fill, pour out, ban baker)", async () => {
   });
 
   it("should fill - 2", async () => {
-    const user: string = carol.pkh;
     const amt: number = 666;
     const prevBucketTezBalance: BigNumber = await utils.tezos.tz.getBalance(
       bucket.contract.address
     );
 
-    await bucket.fill(user, amt);
+    await bucket.fill(amt);
 
     expect(
       await utils.tezos.tz.getBalance(bucket.contract.address)
@@ -101,7 +92,9 @@ describe("Bucket (fill, pour out, ban baker)", async () => {
 
     await utils.setProvider(bob.sk);
     await rejects(bucket.pourOut(pourOut), (err: Error) => {
-      expect(err.message).to.equal(BucketErrors.ERR_INSUFFICIENT_TEZ_BALANCE);
+      expect(err.message).to.equal(
+        "(temporary) proto.011-PtHangz2.contract.balance_too_low"
+      );
 
       return true;
     });
@@ -150,6 +143,97 @@ describe("Bucket (fill, pour out, ban baker)", async () => {
     expect(
       await utils.tezos.tz.getBalance(pourOut.receiver)
     ).to.be.bignumber.equal(prevRecipientTezBalance.plus(pourOut.amt));
+  });
+
+  it("should fail if not dex core is trying to pour over", async () => {
+    const pourOver: PourOver = {
+      bucket: alice.pkh,
+      amt: new BigNumber(100),
+    };
+
+    await utils.setProvider(alice.sk);
+    await rejects(bucket.pourOver(pourOver), (err: Error) => {
+      expect(err.message).to.equal(Common.ERR_NOT_DEX_CORE);
+
+      return true;
+    });
+  });
+
+  it("should fail if `fill` entrypoint of a receiver not found", async () => {
+    const pourOver: PourOver = {
+      bucket: alice.pkh,
+      amt: new BigNumber(100),
+    };
+
+    await utils.setProvider(bob.sk);
+    await rejects(bucket.pourOver(pourOver), (err: Error) => {
+      expect(err.message).to.equal(Common.ERR_BUCKET_FILL_ENTRYPOINT_404);
+
+      return true;
+    });
+  });
+
+  it("should fail if bucket have not enough TEZ on contract's balance", async () => {
+    const pourOver: PourOver = {
+      bucket: bucket2.contract.address,
+      amt: new BigNumber(100_000),
+    };
+
+    await rejects(bucket.pourOver(pourOver), (err: Error) => {
+      expect(err.message).to.equal(
+        "(temporary) proto.011-PtHangz2.contract.balance_too_low"
+      );
+
+      return true;
+    });
+  });
+
+  it("should pour over - 1", async () => {
+    const pourOver: PourOver = {
+      bucket: bucket2.contract.address,
+      amt: new BigNumber(100),
+    };
+
+    await bucket.fill(1000);
+
+    const prevBucket1TezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      bucket.contract.address
+    );
+    const prevBucket2TezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      pourOver.bucket
+    );
+
+    await bucket.pourOver(pourOver);
+
+    expect(
+      await utils.tezos.tz.getBalance(bucket.contract.address)
+    ).to.be.bignumber.equal(prevBucket1TezBalance.minus(pourOver.amt));
+    expect(
+      await utils.tezos.tz.getBalance(pourOver.bucket)
+    ).to.be.bignumber.equal(prevBucket2TezBalance.plus(pourOver.amt));
+  });
+
+  it("should pour over - 2", async () => {
+    const pourOver: PourOver = {
+      bucket: bucket2.contract.address,
+      amt: new BigNumber(900),
+    };
+
+    const prevBucket1TezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      bucket.contract.address
+    );
+    const prevBucket2TezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      pourOver.bucket
+    );
+
+    await bucket.pourOver(pourOver);
+
+    expect(
+      await utils.tezos.tz.getBalance(bucket.contract.address)
+    ).to.be.bignumber.equal(prevBucket1TezBalance.minus(pourOver.amt));
+    expect(
+      await utils.tezos.tz.getBalance(pourOver.bucket)
+    ).to.be.bignumber.equal(prevBucket2TezBalance.plus(pourOver.amt));
   });
 
   it("should fail if not dex core is trying to ban baker", async () => {

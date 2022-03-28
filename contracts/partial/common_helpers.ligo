@@ -26,6 +26,32 @@
     assert_with_error(Tezos.sender = dex_core, Common.err_not_dex_core);
   } with unit
 
+[@inline] function unwrap_or<t>(
+  const param           : option(t);
+  const default         : t)
+                        : t is
+  case param of [
+  | Some(instance) -> instance
+  | None           -> default
+  ]
+
+[@inline] function unwrap<t>(
+  const param           : option(t);
+  const error           : string)
+                        : t is
+  case param of [
+  | Some(instance) -> instance
+  | None           -> (failwith(error) : t)
+  ]
+
+function get_bucket_fill_entrypoint(
+  const bucket          : address)
+                        : contract(fill_t) is
+  unwrap(
+    (Tezos.get_entrypoint_opt("%fill", bucket) : option(contract(fill_t))),
+    Common.err_bucket_fill_entrypoint_404
+  )
+
 function get_fa12_token_transfer_entrypoint(
   const token           : address)
                         : contract(fa12_transfer_t) is
@@ -131,24 +157,6 @@ function ceil_div(
   case is_nat(number) of [
   | Some(n) -> n
   | None    -> failwith(Common.err_not_a_nat)
-  ]
-
-[@inline] function unwrap_or<t>(
-  const param           : option(t);
-  const default         : t)
-                        : t is
-  case param of [
-  | Some(instance) -> instance
-  | None           -> default
-  ]
-
-[@inline] function unwrap<t>(
-  const param           : option(t);
-  const error           : string)
-                        : t is
-  case param of [
-  | Some(instance) -> instance
-  | None           -> (failwith(error) : t)
   ]
 
 function concat_lists<t>(

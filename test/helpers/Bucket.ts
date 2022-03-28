@@ -22,6 +22,7 @@ import {
   BucketStorage,
   UpdateRewards,
   BanBaker,
+  PourOver,
   PourOut,
   Vote,
 } from "../types/Bucket";
@@ -101,12 +102,9 @@ export class Bucket {
     }
   }
 
-  async fill(
-    user: string,
-    mutezAmount: number = 0
-  ): Promise<TransactionOperation> {
+  async fill(mutezAmount: number = 0): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
-      .fill(user)
+      .fill([])
       .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
@@ -117,6 +115,16 @@ export class Bucket {
   async pourOut(params: PourOut): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .pour_out(params)
+      .send();
+
+    await confirmOperation(this.tezos, operation.hash);
+
+    return operation;
+  }
+
+  async pourOver(params: PourOver): Promise<TransactionOperation> {
+    const operation: TransactionOperation = await this.contract.methodsObject
+      .pour_over(params)
       .send();
 
     await confirmOperation(this.tezos, operation.hash);

@@ -105,7 +105,7 @@ describe("Bucket (views)", async () => {
     const user: string = bob.pkh;
     const mutezAmount: number = 500;
 
-    await bucket.fill(user, mutezAmount);
+    await bucket.fill(mutezAmount);
 
     bucket = await Bucket.updateContractInstance(
       bucket.contract.address,

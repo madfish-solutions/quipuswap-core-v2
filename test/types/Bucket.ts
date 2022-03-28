@@ -18,6 +18,11 @@ export type PourOut = {
   amt: BigNumber;
 };
 
+export type PourOver = {
+  bucket: string;
+  amt: BigNumber;
+};
+
 export type WithdrawRewards = {
   receiver: string;
   user: string;

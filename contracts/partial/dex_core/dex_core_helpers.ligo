@@ -10,14 +10,6 @@ function get_pair_info_or_default(
     const pair : pair_t = unwrap_or(pairs[token_id], Constants.default_pair);
   } with (pair, token_id)
 
-function get_bucket_fill_entrypoint(
-  const bucket          : address)
-                        : contract(fill_t) is
-  unwrap(
-    (Tezos.get_entrypoint_opt("%fill", bucket) : option(contract(fill_t))),
-    DexCore.err_bucket_fill_entrypoint_404
-  )
-
 function get_bucket_pour_out_entrypoint(
   const bucket          : address)
                         : contract(pour_out_t) is

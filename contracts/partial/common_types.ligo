@@ -60,3 +60,5 @@ type setup_func_t       is [@layout:comb] record [
 ]
 
 type default_t          is unit
+
+type fill_t             is unit
