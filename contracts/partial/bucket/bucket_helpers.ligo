@@ -8,7 +8,7 @@ function get_baker_registry_validate_entrypoint(
                         : contract(key_hash) is
   unwrap(
     (Tezos.get_entrypoint_opt("%validate", baker_registry) : option(contract(key_hash))),
-    TezStore.err_baker_registry_validate_entrypoint_404
+    Bucket.err_baker_registry_validate_entrypoint_404
   )
 
 function get_baker_registry_validate_op(
@@ -24,7 +24,7 @@ function get_baker_registry_validate_op(
   block {
     const total_supply_response : list(total_supply_res_t) = unwrap(
       (Tezos.call_view("get_total_supply", list [pair_id], dex_core) : option(list(total_supply_res_t))),
-      TezStore.err_dex_core_get_total_supply_view_404
+      Bucket.err_dex_core_get_total_supply_view_404
     );
 
     function get_total_supply(
@@ -43,7 +43,7 @@ function get_baker_registry_validate_op(
                         : nat is
   unwrap(
     (Tezos.call_view("get_voting_period", Unit, dex_core) : option(nat)),
-    TezStore.err_dex_core_get_voting_period_view_404
+    Bucket.err_dex_core_get_voting_period_view_404
   )
 
 [@inline] function get_collecting_period(
@@ -51,7 +51,7 @@ function get_baker_registry_validate_op(
                         : nat is
   unwrap(
     (Tezos.call_view("get_collecting_period", Unit, dex_core) : option(nat)),
-    TezStore.err_dex_core_get_collecting_period_view_404
+    Bucket.err_dex_core_get_collecting_period_view_404
   )
 
 [@inline] function get_cycle_duration(
@@ -59,7 +59,7 @@ function get_baker_registry_validate_op(
                         : nat is
   unwrap(
     (Tezos.call_view("get_cycle_duration", Unit, dex_core) : option(nat)),
-    TezStore.err_dex_core_get_cycle_duration_view_404
+    Bucket.err_dex_core_get_cycle_duration_view_404
   )
 
 function update_rewards(

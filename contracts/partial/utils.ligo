@@ -41,7 +41,7 @@ module Constants is {
     token_b_price_cml    = 0n;
     total_supply         = 0n;
     last_block_timestamp = (0 : timestamp);
-    tez_store            = (None : option(address));
+    bucket               = (None : option(address));
   ];
 }
 

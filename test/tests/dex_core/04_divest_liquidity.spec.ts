@@ -2,6 +2,7 @@ import { DexCore as DexCoreErrors } from "../../helpers/Errors";
 import { BakerRegistry } from "../../helpers/BakerRegistry";
 import { Auction } from "../../helpers/Auction";
 import { DexCore } from "../../helpers/DexCore";
+import { Bucket } from "../../helpers/Bucket";
 import { FA12 } from "../../helpers/FA12";
 import { FA2 } from "../../helpers/FA2";
 import {
@@ -26,9 +27,8 @@ import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa12Storage } from "../../../storage/test/FA12";
 import { fa2Storage } from "../../../storage/test/FA2";
 
-import { TezStore } from "../../helpers/TezStore";
 import { SBAccount } from "../../types/Common";
-import { User } from "../../types/TezStore";
+import { User } from "../../types/Bucket";
 import {
   DivestLiquidity,
   TokensPerShare,
@@ -981,40 +981,40 @@ describe("DexCore (divest liquidity)", async () => {
       liquidity_receiver: liquidityReceiver,
       candidate: bob.pkh,
     };
-    const tezStore: TezStore = await TezStore.init(
-      dexCore.storage.storage.pairs[pairId.toFixed()].tez_store,
+    const bucket: Bucket = await Bucket.init(
+      dexCore.storage.storage.pairs[pairId.toFixed()].bucket,
       dexCore.tezos
     );
 
-    await tezStore.updateStorage({
+    await bucket.updateStorage({
       users: [liquidityReceiver],
       bakers: [alice.pkh],
     });
 
-    const initialVoterAliceInfo: User = tezStore.storage.users[alice.pkh];
-    const initialBakerAliceInfo: User = tezStore.storage.bakers[alice.pkh];
+    const initialVoterAliceInfo: User = bucket.storage.users[alice.pkh];
+    const initialBakerAliceInfo: User = bucket.storage.bakers[alice.pkh];
 
     await dexCore.divestLiquidity(divestParams);
-    await tezStore.updateStorage({
+    await bucket.updateStorage({
       users: [liquidityReceiver],
       bakers: [divestParams.candidate],
     });
 
-    expect(tezStore.storage.users[liquidityReceiver].candidate).to.be.equal(
+    expect(bucket.storage.users[liquidityReceiver].candidate).to.be.equal(
       divestParams.candidate
     );
+    expect(bucket.storage.users[liquidityReceiver].votes).to.be.bignumber.equal(
+      initialVoterAliceInfo.votes.minus(shares)
+    );
     expect(
-      tezStore.storage.users[liquidityReceiver].votes
-    ).to.be.bignumber.equal(initialVoterAliceInfo.votes.minus(shares));
-    expect(
-      tezStore.storage.bakers[divestParams.candidate].votes
+      bucket.storage.bakers[divestParams.candidate].votes
     ).to.be.bignumber.equal(initialBakerAliceInfo.votes.minus(shares));
-    expect(tezStore.storage.previous_delegated).to.be.equal(zeroAddress);
-    expect(tezStore.storage.current_delegated).to.be.equal(bob.pkh);
-    expect(tezStore.storage.next_candidate).to.be.equal(alice.pkh);
-    expect(
-      await utils.tezos.rpc.getDelegate(tezStore.contract.address)
-    ).to.equal(null);
+    expect(bucket.storage.previous_delegated).to.be.equal(zeroAddress);
+    expect(bucket.storage.current_delegated).to.be.equal(bob.pkh);
+    expect(bucket.storage.next_candidate).to.be.equal(alice.pkh);
+    expect(await utils.tezos.rpc.getDelegate(bucket.contract.address)).to.equal(
+      null
+    );
   });
 
   it("should vote for the baker on TEZ store contract in time of FA2/TEZ liquidity divestment", async () => {
@@ -1038,39 +1038,39 @@ describe("DexCore (divest liquidity)", async () => {
       liquidity_receiver: liquidityReceiver,
       candidate: bob.pkh,
     };
-    const tezStore: TezStore = await TezStore.init(
-      dexCore.storage.storage.pairs[pairId.toFixed()].tez_store,
+    const bucket: Bucket = await Bucket.init(
+      dexCore.storage.storage.pairs[pairId.toFixed()].bucket,
       dexCore.tezos
     );
 
-    await tezStore.updateStorage({
+    await bucket.updateStorage({
       users: [liquidityReceiver],
       bakers: [alice.pkh],
     });
 
-    const initialVoterAliceInfo: User = tezStore.storage.users[alice.pkh];
-    const initialBakerAliceInfo: User = tezStore.storage.bakers[alice.pkh];
+    const initialVoterAliceInfo: User = bucket.storage.users[alice.pkh];
+    const initialBakerAliceInfo: User = bucket.storage.bakers[alice.pkh];
 
     await dexCore.divestLiquidity(divestParams);
-    await tezStore.updateStorage({
+    await bucket.updateStorage({
       users: [liquidityReceiver],
       bakers: [divestParams.candidate],
     });
 
-    expect(tezStore.storage.users[liquidityReceiver].candidate).to.be.equal(
+    expect(bucket.storage.users[liquidityReceiver].candidate).to.be.equal(
       divestParams.candidate
     );
+    expect(bucket.storage.users[liquidityReceiver].votes).to.be.bignumber.equal(
+      initialVoterAliceInfo.votes.minus(shares)
+    );
     expect(
-      tezStore.storage.users[liquidityReceiver].votes
-    ).to.be.bignumber.equal(initialVoterAliceInfo.votes.minus(shares));
-    expect(
-      tezStore.storage.bakers[divestParams.candidate].votes
+      bucket.storage.bakers[divestParams.candidate].votes
     ).to.be.bignumber.equal(initialBakerAliceInfo.votes.minus(shares));
-    expect(tezStore.storage.previous_delegated).to.be.equal(zeroAddress);
-    expect(tezStore.storage.current_delegated).to.be.equal(bob.pkh);
-    expect(tezStore.storage.next_candidate).to.be.equal(alice.pkh);
-    expect(
-      await utils.tezos.rpc.getDelegate(tezStore.contract.address)
-    ).to.equal(null);
+    expect(bucket.storage.previous_delegated).to.be.equal(zeroAddress);
+    expect(bucket.storage.current_delegated).to.be.equal(bob.pkh);
+    expect(bucket.storage.next_candidate).to.be.equal(alice.pkh);
+    expect(await utils.tezos.rpc.getDelegate(bucket.contract.address)).to.equal(
+      null
+    );
   });
 });

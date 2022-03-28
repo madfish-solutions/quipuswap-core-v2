@@ -1,4 +1,4 @@
-type tez_store_t        is storage_t
+type bucket_t           is storage_t
 
 type tokens_t           is [@layout:comb] record [
   token_a                 : token_t;
@@ -92,7 +92,7 @@ type launch_exchange_t  is [@layout:comb] record [
 
 type launch_callback_t  is [@layout:comb] record [
   vote_params             : vote_t;
-  tez_store               : address;
+  bucket                  : address;
 ]
 
 type invest_liquidity_t is [@layout:comb] record [
@@ -322,6 +322,6 @@ type full_action_t      is
 | Setup_func              of setup_func_t
 | Default                 of default_t
 
-type deploy_tez_store_t is (option(key_hash) * tez * tez_store_t) -> (operation * address)
+type deploy_bucket_t    is (option(key_hash) * tez * bucket_t) -> (operation * address)
 
 const dex_core_methods_max_index : nat = 28n;

@@ -38,7 +38,7 @@ export type Vote = {
   current_balance: BigNumber;
 };
 
-export type TezStoreStorage = {
+export type BucketStorage = {
   users: MichelsonMap<MichelsonMapKey, unknown>;
   bakers: MichelsonMap<MichelsonMapKey, unknown>;
   users_rewards: MichelsonMap<MichelsonMapKey, unknown>;

@@ -5,6 +5,7 @@ import { BakerRegistry } from "../../helpers/BakerRegistry";
 import { PRECISION } from "../../helpers/Constants";
 import { Auction } from "../../helpers/Auction";
 import { DexCore } from "../../helpers/DexCore";
+import { Bucket } from "../../helpers/Bucket";
 import { FA12 } from "../../helpers/FA12";
 import { FA2 } from "../../helpers/FA2";
 import {
@@ -30,7 +31,6 @@ import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa12Storage } from "../../../storage/test/FA12";
 import { fa2Storage } from "../../../storage/test/FA2";
 
-import { TezStore } from "../../helpers/TezStore";
 import { SBAccount } from "../../types/Common";
 import {
   CalculateFlashSwap,
@@ -709,8 +709,8 @@ describe("DexCore (flash swap)", async () => {
     });
     await flashSwapAgent.updateStorage();
 
-    const tezStore: TezStore = await TezStore.init(
-      dexCore.storage.storage.pairs[params.pair_id.toFixed()].tez_store,
+    const bucket: Bucket = await Bucket.init(
+      dexCore.storage.storage.pairs[params.pair_id.toFixed()].bucket,
       dexCore.tezos
     );
     const prevTokenAPool: BigNumber =
@@ -733,8 +733,8 @@ describe("DexCore (flash swap)", async () => {
     const prevDexCoreTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
       dexCore.contract.address
     );
-    const prevTezStoreTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
-      tezStore.contract.address
+    const prevBucketTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
+      bucket.contract.address
     );
     const prevFlashSwapAgentTokBBalance: BigNumber =
       await utils.tezos.tz.getBalance(flashSwapAgent.contract.address);
@@ -763,8 +763,8 @@ describe("DexCore (flash swap)", async () => {
     const currDexCoreTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
       dexCore.contract.address
     );
-    const currTezStoreTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
-      tezStore.contract.address
+    const currBucketTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
+      bucket.contract.address
     );
     const currFlashSwapAgentTokBBalance: BigNumber =
       await utils.tezos.tz.getBalance(flashSwapAgent.contract.address);
@@ -775,8 +775,8 @@ describe("DexCore (flash swap)", async () => {
     expect(currDexCoreTokBBalance).to.be.bignumber.equal(
       prevDexCoreTokBBalance
     );
-    expect(currTezStoreTokBBalance).to.be.bignumber.equal(
-      prevTezStoreTokBBalance.plus(new BigNumber(2000))
+    expect(currBucketTokBBalance).to.be.bignumber.equal(
+      prevBucketTokBBalance.plus(new BigNumber(2000))
     );
     expect(currFlashSwapAgentTokABalance).to.be.bignumber.equal(
       prevFlashSwapAgentTokABalance.plus(params.amount_out)
@@ -1175,8 +1175,8 @@ describe("DexCore (flash swap)", async () => {
     });
     await flashSwapAgent.updateStorage();
 
-    const tezStore: TezStore = await TezStore.init(
-      dexCore.storage.storage.pairs[params.pair_id.toFixed()].tez_store,
+    const bucket: Bucket = await Bucket.init(
+      dexCore.storage.storage.pairs[params.pair_id.toFixed()].bucket,
       dexCore.tezos
     );
     const prevTokenAPool: BigNumber =
@@ -1199,8 +1199,8 @@ describe("DexCore (flash swap)", async () => {
     const prevDexCoreTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
       dexCore.contract.address
     );
-    const prevTezStoreTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
-      tezStore.contract.address
+    const prevBucketTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
+      bucket.contract.address
     );
     const prevFlashSwapAgentTokBBalance: BigNumber =
       await utils.tezos.tz.getBalance(flashSwapAgent.contract.address);
@@ -1229,8 +1229,8 @@ describe("DexCore (flash swap)", async () => {
     const currDexCoreTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
       dexCore.contract.address
     );
-    const currTezStoreTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
-      tezStore.contract.address
+    const currBucketTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
+      bucket.contract.address
     );
     const currFlashSwapAgentTokBBalance: BigNumber =
       await utils.tezos.tz.getBalance(flashSwapAgent.contract.address);
@@ -1241,8 +1241,8 @@ describe("DexCore (flash swap)", async () => {
     expect(currDexCoreTokBBalance).to.be.bignumber.equal(
       prevDexCoreTokBBalance
     );
-    expect(currTezStoreTokBBalance).to.be.bignumber.equal(
-      prevTezStoreTokBBalance.plus(new BigNumber(2000))
+    expect(currBucketTokBBalance).to.be.bignumber.equal(
+      prevBucketTokBBalance.plus(new BigNumber(2000))
     );
     expect(currFlashSwapAgentTokABalance).to.be.bignumber.equal(
       prevFlashSwapAgentTokABalance.plus(params.amount_out)
@@ -1278,8 +1278,8 @@ describe("DexCore (flash swap)", async () => {
     });
     await flashSwapAgent.updateStorage();
 
-    const tezStore: TezStore = await TezStore.init(
-      dexCore.storage.storage.pairs[params.pair_id.toFixed()].tez_store,
+    const bucket: Bucket = await Bucket.init(
+      dexCore.storage.storage.pairs[params.pair_id.toFixed()].bucket,
       dexCore.tezos
     );
     const prevTokenAPool: BigNumber =
@@ -1296,8 +1296,8 @@ describe("DexCore (flash swap)", async () => {
     const prevDexCoreTokBalance: BigNumber = await utils.tezos.tz.getBalance(
       dexCore.contract.address
     );
-    const prevTezStoreTokBalance: BigNumber = await utils.tezos.tz.getBalance(
-      tezStore.contract.address
+    const prevBucketTokBalance: BigNumber = await utils.tezos.tz.getBalance(
+      bucket.contract.address
     );
     const prevBobTokBalance: BigNumber = await utils.tezos.tz.getBalance(
       bob.pkh
@@ -1318,16 +1318,16 @@ describe("DexCore (flash swap)", async () => {
     const currDexCoreTokBalance: BigNumber = await utils.tezos.tz.getBalance(
       dexCore.contract.address
     );
-    const currTezStoreTokBalance: BigNumber = await utils.tezos.tz.getBalance(
-      tezStore.contract.address
+    const currBucketTokBalance: BigNumber = await utils.tezos.tz.getBalance(
+      bucket.contract.address
     );
     const currBobTokBalance: BigNumber = await utils.tezos.tz.getBalance(
       bob.pkh
     );
 
     expect(currDexCoreTokBalance).to.be.bignumber.equal(prevDexCoreTokBalance);
-    expect(currTezStoreTokBalance).to.be.bignumber.equal(
-      prevTezStoreTokBalance.plus(new BigNumber(1000))
+    expect(currBucketTokBalance).to.be.bignumber.equal(
+      prevBucketTokBalance.plus(new BigNumber(1000))
     );
     expect(currBobTokBalance).to.be.bignumber.equal(
       prevBobTokBalance.plus(params.amount_out)
@@ -1365,8 +1365,8 @@ describe("DexCore (flash swap)", async () => {
     });
     await flashSwapAgent.updateStorage();
 
-    const tezStore: TezStore = await TezStore.init(
-      dexCore.storage.storage.pairs[params.pair_id.toFixed()].tez_store,
+    const bucket: Bucket = await Bucket.init(
+      dexCore.storage.storage.pairs[params.pair_id.toFixed()].bucket,
       dexCore.tezos
     );
     const prevTokenAPool: BigNumber =
@@ -1387,8 +1387,8 @@ describe("DexCore (flash swap)", async () => {
     const prevDexCoreTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
       dexCore.contract.address
     );
-    const prevTezStoreTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
-      tezStore.contract.address
+    const prevBucketTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
+      bucket.contract.address
     );
     const prevFlashSwapAgentTokBBalance: BigNumber =
       await utils.tezos.tz.getBalance(flashSwapAgent.contract.address);
@@ -1416,8 +1416,8 @@ describe("DexCore (flash swap)", async () => {
     const currDexCoreTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
       dexCore.contract.address
     );
-    const currTezStoreTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
-      tezStore.contract.address
+    const currBucketTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
+      bucket.contract.address
     );
     const currFlashSwapAgentTokBBalance: BigNumber =
       await utils.tezos.tz.getBalance(flashSwapAgent.contract.address);
@@ -1428,8 +1428,8 @@ describe("DexCore (flash swap)", async () => {
     expect(currDexCoreTokBBalance).to.be.bignumber.equal(
       prevDexCoreTokBBalance.plus(new BigNumber(2000))
     );
-    expect(currTezStoreTokBBalance).to.be.bignumber.equal(
-      prevTezStoreTokBBalance.minus(params.amount_out)
+    expect(currBucketTokBBalance).to.be.bignumber.equal(
+      prevBucketTokBBalance.minus(params.amount_out)
     );
     expect(currFlashSwapAgentTokBBalance).to.be.bignumber.equal(
       prevFlashSwapAgentTokBBalance.minus(new BigNumber(2000))
@@ -1469,8 +1469,8 @@ describe("DexCore (flash swap)", async () => {
     });
     await flashSwapAgent.updateStorage();
 
-    const tezStore: TezStore = await TezStore.init(
-      dexCore.storage.storage.pairs[params.pair_id.toFixed()].tez_store,
+    const bucket: Bucket = await Bucket.init(
+      dexCore.storage.storage.pairs[params.pair_id.toFixed()].bucket,
       dexCore.tezos
     );
     const prevTokenAPool: BigNumber =
@@ -1491,8 +1491,8 @@ describe("DexCore (flash swap)", async () => {
     const prevDexCoreTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
       dexCore.contract.address
     );
-    const prevTezStoreTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
-      tezStore.contract.address
+    const prevBucketTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
+      bucket.contract.address
     );
     const prevFlashSwapAgentTokBBalance: BigNumber =
       await utils.tezos.tz.getBalance(flashSwapAgent.contract.address);
@@ -1519,8 +1519,8 @@ describe("DexCore (flash swap)", async () => {
     const currDexCoreTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
       dexCore.contract.address
     );
-    const currTezStoreTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
-      tezStore.contract.address
+    const currBucketTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
+      bucket.contract.address
     );
     const currFlashSwapAgentTokBBalance: BigNumber =
       await utils.tezos.tz.getBalance(flashSwapAgent.contract.address);
@@ -1531,8 +1531,8 @@ describe("DexCore (flash swap)", async () => {
     expect(currDexCoreTokBBalance).to.be.bignumber.equal(
       prevDexCoreTokBBalance.plus(new BigNumber(2000))
     );
-    expect(currTezStoreTokBBalance).to.be.bignumber.equal(
-      prevTezStoreTokBBalance.minus(params.amount_out)
+    expect(currBucketTokBBalance).to.be.bignumber.equal(
+      prevBucketTokBBalance.minus(params.amount_out)
     );
     expect(currFlashSwapAgentTokBBalance).to.be.bignumber.equal(
       prevFlashSwapAgentTokBBalance.minus(new BigNumber(2000))

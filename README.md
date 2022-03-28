@@ -41,7 +41,7 @@ yarn compile-dex-core-lambdas
 yarn compile-auction-lambdas
 ```
 
-Also, you can pre compile `TezStore` contract separately (in `.tz` format, needed
+Also, you can pre compile `Bucket` contract separately (in `.tz` format, needed
 for deploying from the `DexCore`). For this purpose run the next command:
 
 ```shell

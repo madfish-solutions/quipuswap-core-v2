@@ -231,7 +231,7 @@ describe("DexCore (views)", async () => {
       expect(err).to.be.instanceof(ViewSimulationError);
       expect(
         Utils.parseOnChainViewError(JSON.parse(err.originalError.body))
-      ).to.be.equal(DexCoreErrors.ERR_TEZ_STORE_404);
+      ).to.be.equal(DexCoreErrors.ERR_BUCKET_404);
     }
   });
 

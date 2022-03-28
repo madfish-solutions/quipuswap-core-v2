@@ -2,7 +2,7 @@ import { MichelsonMap, MichelsonMapKey } from "@taquito/michelson-encoder";
 
 import { BigNumber } from "bignumber.js";
 
-import { BanBaker, Vote } from "./TezStore";
+import { BanBaker, Vote } from "./Bucket";
 
 import { Token } from "./Common";
 
@@ -124,7 +124,7 @@ export type SetExpiry = {
 
 export type LaunchCallback = {
   vote_params: Vote;
-  tez_store: string;
+  bucket: string;
 };
 
 export type FlashSwapCallback = {
@@ -188,7 +188,7 @@ export type Pair = {
   token_b_price_cml: BigNumber;
   total_supply: BigNumber;
   last_block_timestamp: string;
-  tez_store: string | undefined | null;
+  bucket: string | undefined | null;
 };
 
 export type RequiredTokens = {

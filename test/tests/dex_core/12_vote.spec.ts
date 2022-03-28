@@ -1,8 +1,8 @@
 import { DexCore as DexCoreErrors } from "../../helpers/Errors";
 import { BakerRegistry } from "../../helpers/BakerRegistry";
-import { TezStore } from "../../helpers/TezStore";
 import { Auction } from "../../helpers/Auction";
 import { DexCore } from "../../helpers/DexCore";
+import { Bucket } from "../../helpers/Bucket";
 import { FA12 } from "../../helpers/FA12";
 import { FA2 } from "../../helpers/FA2";
 import {
@@ -29,7 +29,7 @@ import { fa2Storage } from "../../../storage/test/FA2";
 
 import { LaunchExchange, DexVote } from "../../types/DexCore";
 import { SBAccount } from "../../types/Common";
-import { User } from "../../types/TezStore";
+import { User } from "../../types/Bucket";
 
 chai.use(require("chai-bignumber")(BigNumber));
 
@@ -186,7 +186,7 @@ describe("DexCore (vote)", async () => {
 
     await utils.setProvider(alice.sk);
     await rejects(dexCore.vote(voteParams), (err: Error) => {
-      expect(err.message).to.equal(DexCoreErrors.ERR_TEZ_STORE_404);
+      expect(err.message).to.equal(DexCoreErrors.ERR_BUCKET_404);
 
       return true;
     });
@@ -202,37 +202,37 @@ describe("DexCore (vote)", async () => {
       pairs: [voteParams.pair_id],
     });
 
-    const tezStore: TezStore = await TezStore.init(
-      dexCore.storage.storage.pairs[voteParams.pair_id.toFixed()].tez_store,
+    const bucket: Bucket = await Bucket.init(
+      dexCore.storage.storage.pairs[voteParams.pair_id.toFixed()].bucket,
       dexCore.tezos
     );
 
-    await tezStore.updateStorage({
+    await bucket.updateStorage({
       users: [alice.pkh],
     });
 
-    const initialVoterAliceInfo: User = tezStore.storage.users[alice.pkh];
+    const initialVoterAliceInfo: User = bucket.storage.users[alice.pkh];
 
     await dexCore.vote(voteParams);
-    await tezStore.updateStorage({
+    await bucket.updateStorage({
       users: [alice.pkh],
       bakers: [bob.pkh],
     });
 
-    expect(tezStore.storage.users[alice.pkh].candidate).to.be.equal(
+    expect(bucket.storage.users[alice.pkh].candidate).to.be.equal(
       voteParams.candidate
     );
-    expect(tezStore.storage.users[alice.pkh].votes).to.be.bignumber.equal(
+    expect(bucket.storage.users[alice.pkh].votes).to.be.bignumber.equal(
       initialVoterAliceInfo.votes
     );
     expect(
-      tezStore.storage.bakers[voteParams.candidate].votes
+      bucket.storage.bakers[voteParams.candidate].votes
     ).to.be.bignumber.equal(100_000);
-    expect(tezStore.storage.previous_delegated).to.be.equal(zeroAddress);
-    expect(tezStore.storage.current_delegated).to.be.equal(bob.pkh);
-    expect(tezStore.storage.next_candidate).to.be.equal(alice.pkh);
-    expect(
-      await utils.tezos.rpc.getDelegate(tezStore.contract.address)
-    ).to.equal(null);
+    expect(bucket.storage.previous_delegated).to.be.equal(zeroAddress);
+    expect(bucket.storage.current_delegated).to.be.equal(bob.pkh);
+    expect(bucket.storage.next_candidate).to.be.equal(alice.pkh);
+    expect(await utils.tezos.rpc.getDelegate(bucket.contract.address)).to.equal(
+      null
+    );
   });
 });

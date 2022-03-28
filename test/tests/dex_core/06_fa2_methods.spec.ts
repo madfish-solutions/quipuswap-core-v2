@@ -5,6 +5,7 @@ import { BakerRegistry } from "../../helpers/BakerRegistry";
 import { FA2 as FA2Errors } from "../../helpers/Errors";
 import { Auction } from "../../helpers/Auction";
 import { DexCore } from "../../helpers/DexCore";
+import { Bucket } from "../../helpers/Bucket";
 import { FA12 } from "../../helpers/FA12";
 import { FA2 } from "../../helpers/FA2";
 import {
@@ -33,8 +34,7 @@ import { fa2Storage } from "../../../storage/test/FA2";
 
 import { BalanceRequest, Transfer, UpdateOperator } from "../../types/FA2";
 import { LaunchExchange, Swap } from "../../types/DexCore";
-import { Baker, User } from "../../types/TezStore";
-import { TezStore } from "../../helpers/TezStore";
+import { Baker, User } from "../../types/Bucket";
 import { SBAccount } from "../../types/Common";
 
 chai.use(require("chai-bignumber")(BigNumber));
@@ -1154,42 +1154,42 @@ describe("DexCore (FA2 methods)", async () => {
       pairs: [tokenId.toFixed()],
     });
 
-    const tezStore: TezStore = await TezStore.init(
-      dexCore.storage.storage.pairs[tokenId.toFixed()].tez_store,
+    const bucket: Bucket = await Bucket.init(
+      dexCore.storage.storage.pairs[tokenId.toFixed()].bucket,
       dexCore.tezos
     );
 
-    await tezStore.updateStorage({
+    await bucket.updateStorage({
       users: [alice.pkh],
       bakers: [alice.pkh],
     });
 
-    const initialVoterAliceInfo: User = tezStore.storage.users[alice.pkh];
-    const initialBakerAliceInfo: Baker = tezStore.storage.bakers[alice.pkh];
+    const initialVoterAliceInfo: User = bucket.storage.users[alice.pkh];
+    const initialBakerAliceInfo: Baker = bucket.storage.bakers[alice.pkh];
 
     await utils.setProvider(alice.sk);
     await dexCore.transfer(transferParams);
-    await tezStore.updateStorage({
+    await bucket.updateStorage({
       users: [alice.pkh, bob.pkh],
       bakers: [alice.pkh],
     });
 
-    expect(tezStore.storage.users[alice.pkh].candidate).to.be.equal(alice.pkh);
-    expect(tezStore.storage.users[bob.pkh].candidate).to.be.equal(alice.pkh);
-    expect(tezStore.storage.users[alice.pkh].votes).to.be.bignumber.equal(
+    expect(bucket.storage.users[alice.pkh].candidate).to.be.equal(alice.pkh);
+    expect(bucket.storage.users[bob.pkh].candidate).to.be.equal(alice.pkh);
+    expect(bucket.storage.users[alice.pkh].votes).to.be.bignumber.equal(
       initialVoterAliceInfo.votes.minus(transferParams[0].txs[0].amount)
     );
-    expect(tezStore.storage.users[bob.pkh].votes).to.be.bignumber.equal(
+    expect(bucket.storage.users[bob.pkh].votes).to.be.bignumber.equal(
       transferParams[0].txs[0].amount
     );
-    expect(tezStore.storage.bakers[alice.pkh].votes).to.be.bignumber.equal(
+    expect(bucket.storage.bakers[alice.pkh].votes).to.be.bignumber.equal(
       initialBakerAliceInfo.votes
     );
-    expect(tezStore.storage.previous_delegated).to.be.equal(zeroAddress);
-    expect(tezStore.storage.current_delegated).to.be.equal(alice.pkh);
-    expect(tezStore.storage.next_candidate).to.be.equal(zeroAddress);
-    expect(
-      await utils.tezos.rpc.getDelegate(tezStore.contract.address)
-    ).to.equal(null);
+    expect(bucket.storage.previous_delegated).to.be.equal(zeroAddress);
+    expect(bucket.storage.current_delegated).to.be.equal(alice.pkh);
+    expect(bucket.storage.next_candidate).to.be.equal(zeroAddress);
+    expect(await utils.tezos.rpc.getDelegate(bucket.contract.address)).to.equal(
+      null
+    );
   });
 });

@@ -1,6 +1,6 @@
 import { BakerRegistry } from "../../helpers/BakerRegistry";
-import { TezStore } from "../../helpers/TezStore";
 import { DexCore } from "../../helpers/DexCore";
+import { Bucket } from "../../helpers/Bucket";
 import { Utils } from "../../helpers/Utils";
 import { FA2 } from "../../helpers/FA2";
 
@@ -22,9 +22,9 @@ import { Common } from "../../helpers/Errors";
 import {
   UpdateUserRewards,
   WithdrawRewards,
-  TezStoreStorage,
+  BucketStorage,
   UpdateRewards,
-} from "../../types/TezStore";
+} from "../../types/Bucket";
 import {
   DexCoreStorage,
   LaunchExchange,
@@ -34,11 +34,11 @@ import {
 
 chai.use(require("chai-bignumber")(BigNumber));
 
-describe.skip("TezStore (withdraw rewards)", async () => {
+describe.skip("Bucket (withdraw rewards)", async () => {
   var bakerRegistry: BakerRegistry;
-  var tezStore: TezStore;
   var dexCore: DexCore;
   var fa2Token1: FA2;
+  var bucket: Bucket;
   var utils: Utils;
 
   var alice: SBAccount = accounts.alice;
@@ -99,8 +99,8 @@ describe.skip("TezStore (withdraw rewards)", async () => {
       pairs: [pairId],
     });
 
-    tezStore = await TezStore.init(
-      dexCore.storage.storage.pairs[pairId.toFixed()].tez_store,
+    bucket = await Bucket.init(
+      dexCore.storage.storage.pairs[pairId.toFixed()].bucket,
       dexCore.tezos
     );
   });
@@ -113,7 +113,7 @@ describe.skip("TezStore (withdraw rewards)", async () => {
       new_balance: new BigNumber(0),
     };
 
-    await rejects(tezStore.withdrawRewards(params), (err: Error) => {
+    await rejects(bucket.withdrawRewards(params), (err: Error) => {
       expect(err.message).to.equal(Common.ERR_NOT_DEX_CORE);
 
       return true;
@@ -125,13 +125,13 @@ describe.skip("TezStore (withdraw rewards)", async () => {
     const receiver: string = bob.pkh;
     const user: string = alice.pkh;
 
-    await tezStore.default(amount.toNumber());
+    await bucket.default(amount.toNumber());
     await utils.bakeBlocks(4);
     await dexCore.updateStorage({
       pairs: [pairId],
       ledger: [[user, pairId]],
     });
-    await tezStore.updateStorage({
+    await bucket.updateStorage({
       users_rewards: [user],
     });
 
@@ -142,15 +142,15 @@ describe.skip("TezStore (withdraw rewards)", async () => {
 
     await dexCore.withdrawProfit(withdrawProfitParams);
 
-    const expectedRewardsInfo: UpdateRewards = await TezStore.updateRewards(
-      tezStore.storage,
+    const expectedRewardsInfo: UpdateRewards = await Bucket.updateRewards(
+      bucket.storage,
       dexCore.storage,
       dexCore.storage.storage.pairs[pairId.toFixed()].total_supply,
       utils
     );
     const expectedUserRewardsInfo: UpdateUserRewards =
-      await TezStore.updateUserRewards(
-        tezStore.storage,
+      await Bucket.updateUserRewards(
+        bucket.storage,
         user,
         dexCore.storage.storage.ledger[`${user},${pairId}`],
         dexCore.storage.storage.ledger[`${user},${pairId}`],
@@ -160,18 +160,18 @@ describe.skip("TezStore (withdraw rewards)", async () => {
       .dividedBy(PRECISION)
       .integerValue(BigNumber.ROUND_DOWN);
 
-    await tezStore.updateStorage({
+    await bucket.updateStorage({
       users_rewards: [user],
     });
 
-    expect(tezStore.storage.reward_paid).to.be.bignumber.equal(actualReward);
-    expect(tezStore.storage.users_rewards[user].reward_f).to.be.bignumber.equal(
+    expect(bucket.storage.reward_paid).to.be.bignumber.equal(actualReward);
+    expect(bucket.storage.users_rewards[user].reward_f).to.be.bignumber.equal(
       expectedUserRewardsInfo.reward_f.minus(
         actualReward.multipliedBy(PRECISION)
       )
     );
     expect(
-      tezStore.storage.users_rewards[user].reward_paid_f
+      bucket.storage.users_rewards[user].reward_paid_f
     ).to.be.bignumber.equal(expectedUserRewardsInfo.rewardPaid_f);
   });
 
@@ -179,17 +179,17 @@ describe.skip("TezStore (withdraw rewards)", async () => {
     const receiver: string = bob.pkh;
     const user: string = alice.pkh;
 
-    await tezStore.default(400);
+    await bucket.default(400);
     await utils.bakeBlocks(5);
     await dexCore.updateStorage({
       pairs: [pairId],
       ledger: [[user, pairId]],
     });
-    await tezStore.updateStorage({
+    await bucket.updateStorage({
       users_rewards: [user],
     });
 
-    const prevTezStoreStorage: TezStoreStorage = tezStore.storage;
+    const prevBucketStorage: BucketStorage = bucket.storage;
     const withdrawProfitParams: WithdrawProfit = {
       receiver: receiver,
       pair_id: pairId,
@@ -197,15 +197,15 @@ describe.skip("TezStore (withdraw rewards)", async () => {
 
     await dexCore.withdrawProfit(withdrawProfitParams);
 
-    const expectedRewardsInfo: UpdateRewards = await TezStore.updateRewards(
-      prevTezStoreStorage,
+    const expectedRewardsInfo: UpdateRewards = await Bucket.updateRewards(
+      prevBucketStorage,
       dexCore.storage,
       dexCore.storage.storage.pairs[pairId.toFixed()].total_supply,
       utils
     );
     const expectedUserRewardsInfo: UpdateUserRewards =
-      await TezStore.updateUserRewards(
-        prevTezStoreStorage,
+      await Bucket.updateUserRewards(
+        prevBucketStorage,
         user,
         dexCore.storage.storage.ledger[`${user},${pairId}`],
         dexCore.storage.storage.ledger[`${user},${pairId}`],
@@ -215,32 +215,32 @@ describe.skip("TezStore (withdraw rewards)", async () => {
       .dividedBy(PRECISION)
       .integerValue(BigNumber.ROUND_DOWN);
 
-    await tezStore.updateStorage({
+    await bucket.updateStorage({
       users_rewards: [user],
     });
 
-    expect(tezStore.storage.reward_paid).to.be.bignumber.equal(
-      prevTezStoreStorage.reward_paid.plus(actualReward)
+    expect(bucket.storage.reward_paid).to.be.bignumber.equal(
+      prevBucketStorage.reward_paid.plus(actualReward)
     );
-    expect(tezStore.storage.users_rewards[user].reward_f).to.be.bignumber.equal(
+    expect(bucket.storage.users_rewards[user].reward_f).to.be.bignumber.equal(
       expectedUserRewardsInfo.reward_f.minus(
         actualReward.multipliedBy(PRECISION)
       )
     );
     expect(
-      tezStore.storage.users_rewards[user].reward_paid_f
+      bucket.storage.users_rewards[user].reward_paid_f
     ).to.be.bignumber.equal(expectedUserRewardsInfo.rewardPaid_f);
   });
 
   it("should update global rewards", async () => {
-    await tezStore.default(200);
+    await bucket.default(200);
     await utils.bakeBlocks(3);
     await dexCore.updateStorage({
       pairs: [pairId],
     });
-    await tezStore.updateStorage();
+    await bucket.updateStorage();
 
-    const prevTezStoreStorage: TezStoreStorage = tezStore.storage;
+    const prevBucketStorage: BucketStorage = bucket.storage;
     const prevDexCoreStorage: DexCoreStorage = dexCore.storage;
     const prevPair: Pair = dexCore.storage.storage.pairs[pairId.toFixed()];
     const withdrawProfitParams: WithdrawProfit = {
@@ -249,28 +249,28 @@ describe.skip("TezStore (withdraw rewards)", async () => {
     };
 
     await dexCore.withdrawProfit(withdrawProfitParams);
-    await tezStore.updateStorage();
+    await bucket.updateStorage();
 
-    const expectedRewardsInfo: UpdateRewards = await TezStore.updateRewards(
-      prevTezStoreStorage,
+    const expectedRewardsInfo: UpdateRewards = await Bucket.updateRewards(
+      prevBucketStorage,
       prevDexCoreStorage,
       prevPair.total_supply,
       utils
     );
 
-    expect(tezStore.storage.reward_per_share).to.be.bignumber.equal(
+    expect(bucket.storage.reward_per_share).to.be.bignumber.equal(
       expectedRewardsInfo.rewardPerShare
     );
-    expect(tezStore.storage.reward_per_block).to.be.bignumber.equal(
+    expect(bucket.storage.reward_per_block).to.be.bignumber.equal(
       expectedRewardsInfo.rewardPerBlock
     );
-    expect(tezStore.storage.next_reward).to.be.bignumber.equal(
-      prevTezStoreStorage.next_reward
+    expect(bucket.storage.next_reward).to.be.bignumber.equal(
+      prevBucketStorage.next_reward
     );
-    expect(tezStore.storage.last_update_level).to.be.bignumber.equal(
+    expect(bucket.storage.last_update_level).to.be.bignumber.equal(
       expectedRewardsInfo.lastUpdateLevel
     );
-    expect(tezStore.storage.collecting_period_end).to.be.bignumber.equal(
+    expect(bucket.storage.collecting_period_end).to.be.bignumber.equal(
       expectedRewardsInfo.collectingPeriodEnd
     );
   });
@@ -278,17 +278,17 @@ describe.skip("TezStore (withdraw rewards)", async () => {
   it("should update user rewards", async () => {
     const user: string = alice.pkh;
 
-    await tezStore.default(200);
+    await bucket.default(200);
     await utils.bakeBlocks(5);
     await dexCore.updateStorage({
       pairs: [pairId],
       ledger: [[user, pairId]],
     });
-    await tezStore.updateStorage({
+    await bucket.updateStorage({
       users_rewards: [user],
     });
 
-    const prevTezStoreStorage: TezStoreStorage = tezStore.storage;
+    const prevBucketStorage: BucketStorage = bucket.storage;
     const prevDexCoreStorage: DexCoreStorage = dexCore.storage;
     const prevPair: Pair = dexCore.storage.storage.pairs[pairId.toFixed()];
     const withdrawProfitParams: WithdrawProfit = {
@@ -298,15 +298,15 @@ describe.skip("TezStore (withdraw rewards)", async () => {
 
     await dexCore.withdrawProfit(withdrawProfitParams);
 
-    const expectedRewardsInfo: UpdateRewards = await TezStore.updateRewards(
-      prevTezStoreStorage,
+    const expectedRewardsInfo: UpdateRewards = await Bucket.updateRewards(
+      prevBucketStorage,
       prevDexCoreStorage,
       prevPair.total_supply,
       utils
     );
     const expectedUserRewardsInfo: UpdateUserRewards =
-      await TezStore.updateUserRewards(
-        prevTezStoreStorage,
+      await Bucket.updateUserRewards(
+        prevBucketStorage,
         user,
         dexCore.storage.storage.ledger[`${user},${pairId}`],
         dexCore.storage.storage.ledger[`${user},${pairId}`],
@@ -316,17 +316,17 @@ describe.skip("TezStore (withdraw rewards)", async () => {
       .dividedBy(PRECISION)
       .integerValue(BigNumber.ROUND_DOWN);
 
-    await tezStore.updateStorage({
+    await bucket.updateStorage({
       users_rewards: [user],
     });
 
-    expect(tezStore.storage.users_rewards[user].reward_f).to.be.bignumber.equal(
+    expect(bucket.storage.users_rewards[user].reward_f).to.be.bignumber.equal(
       expectedUserRewardsInfo.reward_f.minus(
         actualReward.multipliedBy(PRECISION)
       )
     );
     expect(
-      tezStore.storage.users_rewards[user].reward_paid_f
+      bucket.storage.users_rewards[user].reward_paid_f
     ).to.be.bignumber.equal(expectedUserRewardsInfo.rewardPaid_f);
   });
 });

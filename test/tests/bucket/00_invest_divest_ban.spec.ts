@@ -1,6 +1,6 @@
-import { Common, TezStore as TezStoreErrors } from "../../helpers/Errors";
+import { Common, Bucket as BucketErrors } from "../../helpers/Errors";
 import { BakerRegistry } from "../../helpers/BakerRegistry";
-import { TezStore } from "../../helpers/TezStore";
+import { Bucket } from "../../helpers/Bucket";
 import { Utils } from "../../helpers/Utils";
 
 import { rejects } from "assert";
@@ -12,16 +12,16 @@ import { BigNumber } from "bignumber.js";
 import accounts from "../../../scripts/sandbox/accounts";
 
 import { bakerRegistryStorage } from "../../../storage/BakerRegistry";
-import { tezStoreStorage } from "../../../storage/test/TezStore";
+import { bucketStorage } from "../../../storage/test/Bucket";
 
-import { BanBaker, DivestTez } from "../../types/TezStore";
+import { BanBaker, DivestTez } from "../../types/Bucket";
 import { SBAccount } from "../../types/Common";
 
 chai.use(require("chai-bignumber")(BigNumber));
 
-describe("TezStore (invest TEZ, divest TEZ, ban baker)", async () => {
+describe("Bucket (invest TEZ, divest TEZ, ban baker)", async () => {
   var bakerRegistry: BakerRegistry;
-  var tezStore: TezStore;
+  var bucket: Bucket;
   var utils: Utils;
 
   var alice: SBAccount = accounts.alice;
@@ -39,14 +39,14 @@ describe("TezStore (invest TEZ, divest TEZ, ban baker)", async () => {
       bakerRegistryStorage
     );
 
-    tezStoreStorage.baker_registry = bakerRegistry.contract.address;
-    tezStoreStorage.dex_core = bob.pkh;
+    bucketStorage.baker_registry = bakerRegistry.contract.address;
+    bucketStorage.dex_core = bob.pkh;
 
-    tezStore = await TezStore.originate(utils.tezos, tezStoreStorage);
+    bucket = await Bucket.originate(utils.tezos, bucketStorage);
   });
 
   it("should fail if not dex core is trying to invest tez", async () => {
-    await rejects(tezStore.investTez(alice.pkh, 1), (err: Error) => {
+    await rejects(bucket.investTez(alice.pkh, 1), (err: Error) => {
       expect(err.message).to.equal(Common.ERR_NOT_DEX_CORE);
 
       return true;
@@ -58,25 +58,25 @@ describe("TezStore (invest TEZ, divest TEZ, ban baker)", async () => {
     const amt: number = 100;
 
     await utils.setProvider(bob.sk);
-    await tezStore.investTez(user, amt);
+    await bucket.investTez(user, amt);
 
     expect(
-      await utils.tezos.tz.getBalance(tezStore.contract.address)
+      await utils.tezos.tz.getBalance(bucket.contract.address)
     ).to.be.bignumber.equal(new BigNumber(amt));
   });
 
   it("should invest tez - 2", async () => {
     const user: string = carol.pkh;
     const amt: number = 666;
-    const prevTezStoreTezBalance: BigNumber = await utils.tezos.tz.getBalance(
-      tezStore.contract.address
+    const prevBucketTezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      bucket.contract.address
     );
 
-    await tezStore.investTez(user, amt);
+    await bucket.investTez(user, amt);
 
     expect(
-      await utils.tezos.tz.getBalance(tezStore.contract.address)
-    ).to.be.bignumber.equal(prevTezStoreTezBalance.plus(amt));
+      await utils.tezos.tz.getBalance(bucket.contract.address)
+    ).to.be.bignumber.equal(prevBucketTezBalance.plus(amt));
   });
 
   it("should fail if not dex core is trying to divest tez", async () => {
@@ -86,7 +86,7 @@ describe("TezStore (invest TEZ, divest TEZ, ban baker)", async () => {
     };
 
     await utils.setProvider(alice.sk);
-    await rejects(tezStore.divestTez(divestTez), (err: Error) => {
+    await rejects(bucket.divestTez(divestTez), (err: Error) => {
       expect(err.message).to.equal(Common.ERR_NOT_DEX_CORE);
 
       return true;
@@ -100,8 +100,8 @@ describe("TezStore (invest TEZ, divest TEZ, ban baker)", async () => {
     };
 
     await utils.setProvider(bob.sk);
-    await rejects(tezStore.divestTez(divestTez), (err: Error) => {
-      expect(err.message).to.equal(TezStoreErrors.ERR_INSUFFICIENT_TEZ_BALANCE);
+    await rejects(bucket.divestTez(divestTez), (err: Error) => {
+      expect(err.message).to.equal(BucketErrors.ERR_INSUFFICIENT_TEZ_BALANCE);
 
       return true;
     });
@@ -112,18 +112,18 @@ describe("TezStore (invest TEZ, divest TEZ, ban baker)", async () => {
       receiver: alice.pkh,
       amt: new BigNumber(100),
     };
-    const prevTezStoreTezBalance: BigNumber = await utils.tezos.tz.getBalance(
-      tezStore.contract.address
+    const prevBucketTezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      bucket.contract.address
     );
     const prevRecipientTezBalance: BigNumber = await utils.tezos.tz.getBalance(
       divestTez.receiver
     );
 
-    await tezStore.divestTez(divestTez);
+    await bucket.divestTez(divestTez);
 
     expect(
-      await utils.tezos.tz.getBalance(tezStore.contract.address)
-    ).to.be.bignumber.equal(prevTezStoreTezBalance.minus(divestTez.amt));
+      await utils.tezos.tz.getBalance(bucket.contract.address)
+    ).to.be.bignumber.equal(prevBucketTezBalance.minus(divestTez.amt));
     expect(
       await utils.tezos.tz.getBalance(divestTez.receiver)
     ).to.be.bignumber.equal(prevRecipientTezBalance.plus(divestTez.amt));
@@ -135,18 +135,18 @@ describe("TezStore (invest TEZ, divest TEZ, ban baker)", async () => {
       amt: new BigNumber(666),
     };
 
-    const prevTezStoreTezBalance: BigNumber = await utils.tezos.tz.getBalance(
-      tezStore.contract.address
+    const prevBucketTezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      bucket.contract.address
     );
     const prevRecipientTezBalance: BigNumber = await utils.tezos.tz.getBalance(
       divestTez.receiver
     );
 
-    await tezStore.divestTez(divestTez);
+    await bucket.divestTez(divestTez);
 
     expect(
-      await utils.tezos.tz.getBalance(tezStore.contract.address)
-    ).to.be.bignumber.equal(prevTezStoreTezBalance.minus(divestTez.amt));
+      await utils.tezos.tz.getBalance(bucket.contract.address)
+    ).to.be.bignumber.equal(prevBucketTezBalance.minus(divestTez.amt));
     expect(
       await utils.tezos.tz.getBalance(divestTez.receiver)
     ).to.be.bignumber.equal(prevRecipientTezBalance.plus(divestTez.amt));
@@ -159,7 +159,7 @@ describe("TezStore (invest TEZ, divest TEZ, ban baker)", async () => {
     };
 
     await utils.setProvider(alice.sk);
-    await rejects(tezStore.banBaker(banBaker), (err: Error) => {
+    await rejects(bucket.banBaker(banBaker), (err: Error) => {
       expect(err.message).to.equal(Common.ERR_NOT_DEX_CORE);
 
       return true;
@@ -173,14 +173,14 @@ describe("TezStore (invest TEZ, divest TEZ, ban baker)", async () => {
     };
 
     await utils.setProvider(bob.sk);
-    await tezStore.banBaker(banBaker);
-    await tezStore.updateStorage({ bakers: [alice.pkh] });
+    await bucket.banBaker(banBaker);
+    await bucket.updateStorage({ bakers: [alice.pkh] });
 
-    expect(tezStore.storage.bakers[alice.pkh].ban_period).to.be.bignumber.equal(
+    expect(bucket.storage.bakers[alice.pkh].ban_period).to.be.bignumber.equal(
       banBaker.ban_period
     );
     expect(
-      Date.parse(tezStore.storage.bakers[alice.pkh].ban_start_time)
+      Date.parse(bucket.storage.bakers[alice.pkh].ban_start_time)
     ).to.be.lte(await utils.getLastBlockTimestamp());
   });
 
@@ -190,14 +190,14 @@ describe("TezStore (invest TEZ, divest TEZ, ban baker)", async () => {
       ban_period: new BigNumber(0),
     };
 
-    await tezStore.banBaker(banBaker);
-    await tezStore.updateStorage({ bakers: [alice.pkh] });
+    await bucket.banBaker(banBaker);
+    await bucket.updateStorage({ bakers: [alice.pkh] });
 
-    expect(tezStore.storage.bakers[alice.pkh].ban_period).to.be.bignumber.equal(
+    expect(bucket.storage.bakers[alice.pkh].ban_period).to.be.bignumber.equal(
       banBaker.ban_period
     );
     expect(
-      Date.parse(tezStore.storage.bakers[alice.pkh].ban_start_time)
+      Date.parse(bucket.storage.bakers[alice.pkh].ban_start_time)
     ).to.be.lte(await utils.getLastBlockTimestamp());
   });
 });

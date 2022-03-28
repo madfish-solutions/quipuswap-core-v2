@@ -18,16 +18,16 @@ import { PRECISION } from "./Constants";
 import { Utils } from "./Utils";
 import {
   UpdateUserRewards,
-  TezStoreStorage,
   WithdrawRewards,
+  BucketStorage,
   UpdateRewards,
   DivestTez,
   BanBaker,
   Vote,
-} from "../types/TezStore";
+} from "../types/Bucket";
 
-export class TezStore {
-  storage: TezStoreStorage;
+export class Bucket {
+  storage: BucketStorage;
   tezos: TezosToolkit;
   contract: Contract;
 
@@ -37,25 +37,25 @@ export class TezStore {
   }
 
   static async init(
-    tezStoreAddress: string,
+    bucketAddress: string,
     tezos: TezosToolkit
-  ): Promise<TezStore> {
-    return new TezStore(await tezos.contract.at(tezStoreAddress), tezos);
+  ): Promise<Bucket> {
+    return new Bucket(await tezos.contract.at(bucketAddress), tezos);
   }
 
   static async updateContractInstance(
-    tezStoreAddress: string,
+    bucketAddress: string,
     tezos: TezosToolkit
   ) {
-    return await TezStore.init(tezStoreAddress, tezos);
+    return await Bucket.init(bucketAddress, tezos);
   }
 
   static async originate(
     tezos: TezosToolkit,
-    storage: TezStoreStorage
-  ): Promise<TezStore> {
+    storage: BucketStorage
+  ): Promise<Bucket> {
     const artifacts: any = JSON.parse(
-      fs.readFileSync(`${env.buildDir}/tez_store.json`).toString()
+      fs.readFileSync(`${env.buildDir}/bucket.json`).toString()
     );
     const operation: OriginationOperation = await tezos.contract
       .originate({
@@ -70,14 +70,14 @@ export class TezStore {
 
     await confirmOperation(tezos, operation.hash);
 
-    return new TezStore(
+    return new Bucket(
       await tezos.contract.at(operation.contractAddress),
       tezos
     );
   }
 
   async updateStorage(maps = {}): Promise<void> {
-    const storage: TezStoreStorage = await this.contract.storage();
+    const storage: BucketStorage = await this.contract.storage();
 
     this.storage = storage;
 
@@ -172,22 +172,22 @@ export class TezStore {
   }
 
   static async updateRewards(
-    tezStoreStorage: TezStoreStorage,
+    bucketStorage: BucketStorage,
     dexCoreStorage: DexCoreStorage,
     totalSupply: BigNumber,
     utils: Utils
   ): Promise<UpdateRewards> {
     const level: BigNumber = await utils.getLastBlock();
-    let collectingPeriodEnd: BigNumber = tezStoreStorage.collecting_period_end;
+    let collectingPeriodEnd: BigNumber = bucketStorage.collecting_period_end;
 
     if (totalSupply.isGreaterThan(0)) {
       const rewardsLevel: BigNumber = level.isGreaterThan(collectingPeriodEnd)
         ? collectingPeriodEnd
         : level;
       const newReward: BigNumber = rewardsLevel
-        .minus(tezStoreStorage.last_update_level)
-        .multipliedBy(tezStoreStorage.reward_per_block);
-      let rewardPerShare: BigNumber = tezStoreStorage.reward_per_share.plus(
+        .minus(bucketStorage.last_update_level)
+        .multipliedBy(bucketStorage.reward_per_block);
+      let rewardPerShare: BigNumber = bucketStorage.reward_per_share.plus(
         newReward.dividedBy(totalSupply).integerValue(BigNumber.ROUND_DOWN)
       );
 
@@ -201,7 +201,7 @@ export class TezStore {
           .plus(1)
           .multipliedBy(collectingPeriod)
           .multipliedBy(dexCoreStorage.storage.cycle_duration);
-        const rewardPerBlock: BigNumber = tezStoreStorage.next_reward
+        const rewardPerBlock: BigNumber = bucketStorage.next_reward
           .multipliedBy(PRECISION)
           .dividedBy(periodDuration)
           .integerValue(BigNumber.ROUND_DOWN);
@@ -214,7 +214,7 @@ export class TezStore {
           newReward.dividedBy(totalSupply).integerValue(BigNumber.ROUND_DOWN)
         );
 
-        const totalReward: BigNumber = tezStoreStorage.total_reward.plus(
+        const totalReward: BigNumber = bucketStorage.total_reward.plus(
           rewardPerBlock
             .multipliedBy(periodDuration)
             .dividedBy(PRECISION)
@@ -232,24 +232,24 @@ export class TezStore {
 
       return {
         rewardPerShare: rewardPerShare,
-        rewardPerBlock: tezStoreStorage.reward_per_block,
-        totalReward: tezStoreStorage.total_reward,
+        rewardPerBlock: bucketStorage.reward_per_block,
+        totalReward: bucketStorage.total_reward,
         lastUpdateLevel: level,
-        collectingPeriodEnd: tezStoreStorage.collecting_period_end,
+        collectingPeriodEnd: bucketStorage.collecting_period_end,
       };
     }
 
     return {
-      rewardPerShare: tezStoreStorage.reward_per_share,
-      rewardPerBlock: tezStoreStorage.reward_per_block,
-      totalReward: tezStoreStorage.total_reward,
-      lastUpdateLevel: tezStoreStorage.last_update_level,
-      collectingPeriodEnd: tezStoreStorage.collecting_period_end,
+      rewardPerShare: bucketStorage.reward_per_share,
+      rewardPerBlock: bucketStorage.reward_per_block,
+      totalReward: bucketStorage.total_reward,
+      lastUpdateLevel: bucketStorage.last_update_level,
+      collectingPeriodEnd: bucketStorage.collecting_period_end,
     };
   }
 
   static async updateUserRewards(
-    tezStoreStorage: TezStoreStorage,
+    bucketStorage: BucketStorage,
     user: string,
     currentBalance: BigNumber,
     newBalance: BigNumber,
@@ -259,8 +259,8 @@ export class TezStore {
       currentBalance.multipliedBy(rewardPerShare);
 
     return {
-      reward_f: tezStoreStorage.users_rewards[user].reward_f.plus(
-        currentReward.minus(tezStoreStorage.users_rewards[user].reward_paid_f)
+      reward_f: bucketStorage.users_rewards[user].reward_f.plus(
+        currentReward.minus(bucketStorage.users_rewards[user].reward_paid_f)
       ),
       rewardPaid_f: newBalance.multipliedBy(rewardPerShare),
     };

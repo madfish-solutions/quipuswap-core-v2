@@ -4,10 +4,10 @@
                         : bool is
   block {
     const pair : pair_t = unwrap(s.storage.pairs[params.pair_id], DexCore.err_pair_not_listed);
-    const tez_store : address = unwrap(pair.tez_store, DexCore.err_tez_store_404);
+    const bucket : address = unwrap(pair.bucket, DexCore.err_bucket_404);
   } with unwrap(
-    (Tezos.call_view("is_banned_baker", params.baker, tez_store) : option(bool)),
-    DexCore.err_tez_store_is_banned_baker_view_404
+    (Tezos.call_view("is_banned_baker", params.baker, bucket) : option(bool)),
+    DexCore.err_bucket_is_banned_baker_view_404
   )
 
 [@view] function get_reserves(

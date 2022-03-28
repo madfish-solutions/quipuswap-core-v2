@@ -13,7 +13,7 @@
     - ✅ should register a new baker;
     - ✅ should fail if address to register is not a baker.
 
-## TezStore
+## Bucket
 
 1. `invest_tez`:
 

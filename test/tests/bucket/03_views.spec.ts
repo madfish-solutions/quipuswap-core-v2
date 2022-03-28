@@ -2,8 +2,8 @@ import { MichelsonMap } from "@taquito/michelson-encoder";
 
 import { BakerRegistry } from "../../helpers/BakerRegistry";
 import { Utils, zeroAddress } from "../../helpers/Utils";
-import { TezStore } from "../../helpers/TezStore";
 import { DexCore } from "../../helpers/DexCore";
+import { Bucket } from "../../helpers/Bucket";
 
 import chai, { expect } from "chai";
 
@@ -12,18 +12,18 @@ import { BigNumber } from "bignumber.js";
 import accounts from "../../../scripts/sandbox/accounts";
 
 import { bakerRegistryStorage } from "../../../storage/BakerRegistry";
-import { tezStoreStorage } from "../../../storage/test/TezStore";
+import { bucketStorage } from "../../../storage/test/Bucket";
 import { dexCoreStorage } from "../../../storage/DexCore";
 
-import { BanBaker, DivestTez } from "../../types/TezStore";
+import { BanBaker, DivestTez } from "../../types/Bucket";
 import { SBAccount } from "../../types/Common";
 
 chai.use(require("chai-bignumber")(BigNumber));
 
-describe("TezStore (views)", async () => {
+describe("Bucket (views)", async () => {
   var bakerRegistry: BakerRegistry;
-  var tezStore: TezStore;
   var dexCore: DexCore;
+  var bucket: Bucket;
   var utils: Utils;
 
   var alice: SBAccount = accounts.alice;
@@ -48,14 +48,14 @@ describe("TezStore (views)", async () => {
 
     await dexCore.setLambdas();
 
-    tezStoreStorage.baker_registry = bakerRegistry.contract.address;
-    tezStoreStorage.dex_core = bob.pkh;
+    bucketStorage.baker_registry = bakerRegistry.contract.address;
+    bucketStorage.dex_core = bob.pkh;
 
-    tezStore = await TezStore.originate(utils.tezos, tezStoreStorage);
+    bucket = await Bucket.originate(utils.tezos, bucketStorage);
   });
 
   it("should return false if baker is not banned", async () => {
-    const isBannedAlice: Promise<any> = await tezStore.contract.contractViews
+    const isBannedAlice: Promise<any> = await bucket.contract.contractViews
       .is_banned_baker(alice.pkh)
       .executeView({ viewCaller: alice.pkh });
 
@@ -69,9 +69,9 @@ describe("TezStore (views)", async () => {
     };
 
     await utils.setProvider(bob.sk);
-    await tezStore.banBaker(banBaker);
+    await bucket.banBaker(banBaker);
 
-    const isBannedAlice: Promise<any> = await tezStore.contract.contractViews
+    const isBannedAlice: Promise<any> = await bucket.contract.contractViews
       .is_banned_baker(alice.pkh)
       .executeView({ viewCaller: alice.pkh });
 
@@ -81,7 +81,7 @@ describe("TezStore (views)", async () => {
   it("should return false if baker's banning period is finished", async () => {
     await utils.bakeBlocks(4);
 
-    const isBannedAlice: Promise<any> = await tezStore.contract.contractViews
+    const isBannedAlice: Promise<any> = await bucket.contract.contractViews
       .is_banned_baker(alice.pkh)
       .executeView({ viewCaller: alice.pkh });
 
@@ -89,12 +89,12 @@ describe("TezStore (views)", async () => {
   });
 
   it("should return zero balance", async () => {
-    tezStore = await TezStore.updateContractInstance(
-      tezStore.contract.address,
+    bucket = await Bucket.updateContractInstance(
+      bucket.contract.address,
       utils.tezos
     );
 
-    const balance: Promise<any> = await tezStore.contract.contractViews
+    const balance: Promise<any> = await bucket.contract.contractViews
       .get_tez_balance()
       .executeView({ viewCaller: alice.pkh });
 
@@ -105,14 +105,14 @@ describe("TezStore (views)", async () => {
     const user: string = bob.pkh;
     const mutezAmount: number = 500;
 
-    await tezStore.investTez(user, mutezAmount);
+    await bucket.investTez(user, mutezAmount);
 
-    tezStore = await TezStore.updateContractInstance(
-      tezStore.contract.address,
+    bucket = await Bucket.updateContractInstance(
+      bucket.contract.address,
       utils.tezos
     );
 
-    const balance: Promise<any> = await tezStore.contract.contractViews
+    const balance: Promise<any> = await bucket.contract.contractViews
       .get_tez_balance()
       .executeView({ viewCaller: alice.pkh });
 
@@ -125,14 +125,14 @@ describe("TezStore (views)", async () => {
       amt: new BigNumber(100),
     };
 
-    await tezStore.divestTez(divestTez);
+    await bucket.divestTez(divestTez);
 
-    tezStore = await TezStore.updateContractInstance(
-      tezStore.contract.address,
+    bucket = await Bucket.updateContractInstance(
+      bucket.contract.address,
       utils.tezos
     );
 
-    const balance: Promise<any> = await tezStore.contract.contractViews
+    const balance: Promise<any> = await bucket.contract.contractViews
       .get_tez_balance()
       .executeView({ viewCaller: alice.pkh });
 
@@ -140,7 +140,7 @@ describe("TezStore (views)", async () => {
   });
 
   it("should return zero_key_hash if contract does not have a delegate", async () => {
-    const candidate: Promise<any> = await tezStore.contract.contractViews
+    const candidate: Promise<any> = await bucket.contract.contractViews
       .get_user_candidate(alice.pkh)
       .executeView({ viewCaller: alice.pkh });
 
@@ -148,28 +148,28 @@ describe("TezStore (views)", async () => {
   });
 
   it("should return current delegated if user does not have a candidate", async () => {
-    tezStoreStorage.current_delegated = bob.pkh;
+    bucketStorage.current_delegated = bob.pkh;
 
-    tezStore = await TezStore.originate(utils.tezos, tezStoreStorage);
+    bucket = await Bucket.originate(utils.tezos, bucketStorage);
 
-    const candidate: Promise<any> = await tezStore.contract.contractViews
+    const candidate: Promise<any> = await bucket.contract.contractViews
       .get_user_candidate(alice.pkh)
       .executeView({ viewCaller: alice.pkh });
 
-    expect(candidate).to.be.equal(tezStoreStorage.current_delegated);
+    expect(candidate).to.be.equal(bucketStorage.current_delegated);
   });
 
   it("should return user's candidate is user have a candidate", async () => {
-    tezStoreStorage.users = MichelsonMap.fromLiteral({
+    bucketStorage.users = MichelsonMap.fromLiteral({
       [alice.pkh]: {
         candidate: carol.pkh,
         votes: new BigNumber(1),
       },
     });
 
-    tezStore = await TezStore.originate(utils.tezos, tezStoreStorage);
+    bucket = await Bucket.originate(utils.tezos, bucketStorage);
 
-    const candidate: Promise<any> = await tezStore.contract.contractViews
+    const candidate: Promise<any> = await bucket.contract.contractViews
       .get_user_candidate(alice.pkh)
       .executeView({ viewCaller: alice.pkh });
 

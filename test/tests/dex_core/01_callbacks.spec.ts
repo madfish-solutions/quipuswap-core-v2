@@ -82,7 +82,7 @@ describe("DexCore (callbacks)", async () => {
         votes: new BigNumber(0),
         current_balance: new BigNumber(0),
       },
-      tez_store: alice.pkh,
+      bucket: alice.pkh,
     };
 
     await rejects(dexCore.launchCallback(params), (err: Error) => {

@@ -13,7 +13,7 @@ function divest_tez(
   block {
     only_dex_core(s.dex_core);
 
-    assert_with_error(params.amt <= Tezos.balance / 1mutez, TezStore.err_insufficient_tez_balance);
+    assert_with_error(params.amt <= Tezos.balance / 1mutez, Bucket.err_insufficient_tez_balance);
   } with (list [transfer_tez(params.receiver, params.amt)], s)
 
 function withdraw_rewards(
