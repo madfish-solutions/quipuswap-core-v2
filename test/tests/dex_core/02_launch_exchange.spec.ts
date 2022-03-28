@@ -969,7 +969,7 @@ describe("DexCore (launch exchange)", async () => {
     );
   });
 
-  it("should deploy TEZ store contract with correct initial storage in time of exchange launch with TEZ token", async () => {
+  it("should deploy bucket contract with correct initial storage in time of exchange launch with TEZ token", async () => {
     const params: LaunchExchange = {
       pair: {
         token_a: { fa12: fa12Token3.contract.address },
@@ -1057,7 +1057,7 @@ describe("DexCore (launch exchange)", async () => {
     );
   });
 
-  it("should vote on TEZ store contract in time of exchange launch with TEZ token", async () => {
+  it("should vote on bucket contract in time of exchange launch with TEZ token", async () => {
     const params: LaunchExchange = {
       pair: {
         token_a: {
@@ -1124,7 +1124,7 @@ describe("DexCore (launch exchange)", async () => {
     );
   });
 
-  it("should vote on TEZ store contract if exchange already launched and have 0 liquidity", async () => {
+  it("should vote on bucket contract if exchange already launched and have 0 liquidity", async () => {
     const pairId: BigNumber = new BigNumber(12);
     const shares: BigNumber = new BigNumber(50);
     const params: LaunchExchange = {

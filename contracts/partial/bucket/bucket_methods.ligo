@@ -1,13 +1,13 @@
-function invest_tez(
-  const _               : invest_tez_t;
+function fill(
+  const _               : fill_t;
   const s               : storage_t)
                         : return_t is
   block {
     only_dex_core(s.dex_core);
   } with ((nil : list(operation)), s)
 
-function divest_tez(
-  const params          : divest_tez_t;
+function pour_out(
+  const params          : pour_out_t;
   const s               : storage_t)
                         : return_t is
   block {

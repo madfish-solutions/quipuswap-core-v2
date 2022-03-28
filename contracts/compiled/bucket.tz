@@ -1,6 +1,6 @@
 { parameter
     (or (or (or (pair %ban_baker (key_hash %baker) (nat %ban_period)) (unit %default))
-            (or (pair %divest_tez (contract %receiver unit) (nat %amt)) (unit %invest_tez)))
+            (or (unit %fill) (pair %pour_out (contract %receiver unit) (nat %amt))))
         (or (pair %vote
                (address %voter)
                (key_hash %candidate)
@@ -417,6 +417,19 @@
                  DIG 4 ;
                  DROP 2 ;
                  IF_LEFT
+                   { DIG 2 ;
+                     DROP 2 ;
+                     PUSH string "403" ;
+                     SWAP ;
+                     DUP ;
+                     DUG 2 ;
+                     GET 15 ;
+                     SENDER ;
+                     COMPARE ;
+                     EQ ;
+                     IF { DROP } { FAILWITH } ;
+                     NIL operation ;
+                     PAIR }
                    { PUSH string "403" ;
                      DUP 3 ;
                      GET 15 ;
@@ -446,19 +459,6 @@
                      SWAP ;
                      EXEC ;
                      CONS ;
-                     PAIR }
-                   { DIG 2 ;
-                     DROP 2 ;
-                     PUSH string "403" ;
-                     SWAP ;
-                     DUP ;
-                     DUG 2 ;
-                     GET 15 ;
-                     SENDER ;
-                     COMPARE ;
-                     EQ ;
-                     IF { DROP } { FAILWITH } ;
-                     NIL operation ;
                      PAIR } } }
            { IF_LEFT
                { DIG 5 ;

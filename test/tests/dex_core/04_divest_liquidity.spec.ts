@@ -606,7 +606,7 @@ describe("DexCore (divest liquidity)", async () => {
     );
   });
 
-  it("should transfer FA1.2 tokens and divest TEZ tokens from TEZ store contract in time of FA1.2/TEZ liquidity divestment", async () => {
+  it("should transfer FA1.2 tokens and pour out TEZ tokens from bucket contract in time of FA1.2/TEZ liquidity divestment", async () => {
     const pairId: BigNumber = new BigNumber(0);
     const liquidityReceiver: string = alice.pkh;
 
@@ -655,7 +655,7 @@ describe("DexCore (divest liquidity)", async () => {
     );
   });
 
-  it("should transfer FA2 tokens and divest TEZ tokens from TEZ store contract in time of FA2/TEZ liquidity divestment", async () => {
+  it("should transfer FA2 tokens and pour out TEZ tokens from bucket contract in time of FA2/TEZ liquidity divestment", async () => {
     const pairId: BigNumber = new BigNumber(1);
     const liquidityReceiver: string = alice.pkh;
 
@@ -960,7 +960,7 @@ describe("DexCore (divest liquidity)", async () => {
     });
   });
 
-  it("should vote for the baker on TEZ store contract in time of FA1.2/TEZ liquidity divestment", async () => {
+  it("should vote for the baker on bucket contract in time of FA1.2/TEZ liquidity divestment", async () => {
     const pairId: BigNumber = new BigNumber(0);
     const liquidityReceiver: string = alice.pkh;
 
@@ -1017,7 +1017,7 @@ describe("DexCore (divest liquidity)", async () => {
     );
   });
 
-  it("should vote for the baker on TEZ store contract in time of FA2/TEZ liquidity divestment", async () => {
+  it("should vote for the baker on bucket contract in time of FA2/TEZ liquidity divestment", async () => {
     const pairId: BigNumber = new BigNumber(1);
     const liquidityReceiver: string = alice.pkh;
 

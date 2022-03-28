@@ -15,18 +15,18 @@
 
 ## Bucket
 
-1. `invest_tez`:
+1. `fill`:
 
-   - ✅ should fail if not dex core is trying to invest tez;
-   - ✅ should invest tez - 1;
-   - ✅ should invest tez - 2.
+   - ✅ should fail if not dex core is trying to fill;
+   - ✅ should fill - 1;
+   - ✅ should fill - 2.
 
-2. `divest_tez`:
+2. `pour_out`:
 
-   - ✅ should fail if not dex core is trying to divest tez;
-   - ✅ should fail if tez store have not enough TEZ on contract's balance;
-   - ✅ should divest tez - 1;
-   - ✅ should divest tez - 2.
+   - ✅ should fail if not dex core is trying to pour out;
+   - ✅ should fail if bucket have not enough TEZ on contract's balance;
+   - ✅ should pour out - 1;
+   - ✅ should pour out - 2.
 
 3. `withdraw_rewards`:
 
@@ -122,9 +122,9 @@
    - ✅ should transfer FA1.2 tokens in time of FA1.2/FA1.2 exchange launch;
    - ✅ should transfer FA2 tokens in time of FA2/FA2 exchange launch;
    - ✅ should transfer FA1.2 tokens and FA2 tokens in time of FA1.2/FA2 exchange launch;
-   - ✅ should deploy TEZ store contract with correct initial storage in time of exchange launch with TEZ token;
-   - ✅ should vote on TEZ store contract in time of exchange launch with TEZ token;
-   - ✅ should vote on TEZ store contract if exchange already launched and have 0 liquidity.
+   - ✅ should deploy bucket contract with correct initial storage in time of exchange launch with TEZ token;
+   - ✅ should vote on bucket contract in time of exchange launch with TEZ token;
+   - ✅ should vote on bucket contract if exchange already launched and have 0 liquidity.
 
 2. `invest_liquidity`:
 
@@ -140,13 +140,13 @@
    - ✅ should invest FA1.2/FA1.2 liquidity;
    - ✅ should invest FA2/FA2 liquidity;
    - ✅ should invest FA1.2/FA2 liquidity;
-   - ✅ should transfer FA1.2 tokens and invest TEZ tokens to TEZ store contract in time of FA1.2/TEZ liquidity investment;
-   - ✅ should transfer FA2 tokens and invest TEZ tokens to TEZ store contract in time of FA2/TEZ liquidity investment;
+   - ✅ should transfer FA1.2 tokens and fill TEZ tokens to bucket contract in time of FA1.2/TEZ liquidity investment;
+   - ✅ should transfer FA2 tokens and fill TEZ tokens to bucket contract in time of FA2/TEZ liquidity investment;
    - ✅ should transfer FA1.2 tokens in time of FA1.2/FA1.2 liquidity investment;
    - ✅ should transfer FA2 tokens in time of FA2/FA2 liquidity investment;
    - ✅ should transfer FA1.2 tokens and FA2 tokens in time of FA1.2/FA2 liquidity investment;
-   - ✅ should vote for the baker on TEZ store contract in time of FA1.2/TEZ liquidity investment;
-   - ✅ should vote for the baker on TEZ store contract in time of FA2/TEZ liquidity investment;
+   - ✅ should vote for the baker on bucket contract in time of FA1.2/TEZ liquidity investment;
+   - ✅ should vote for the baker on bucket contract in time of FA2/TEZ liquidity investment;
    - ✅ should return the TEZ change to the sender if too many TEZ was send.
 
 3. `divest_liquidity`:
@@ -164,13 +164,13 @@
    - ✅ should divest FA1.2/FA1.2 liquidity;
    - ✅ should divest FA2/FA2 liquidity;
    - ✅ should divest FA1.2/FA2 liquidity;
-   - ✅ should transfer FA1.2 tokens and divest TEZ tokens from TEZ store contract in time of FA1.2/TEZ liquidity divestment;
-   - ✅ should transfer FA2 tokens and divest TEZ tokens from TEZ store contract in time of FA2/TEZ liquidity divestment;
+   - ✅ should transfer FA1.2 tokens and pour out TEZ tokens from bucket contract in time of FA1.2/TEZ liquidity divestment;
+   - ✅ should transfer FA2 tokens and pour out TEZ tokens from bucket contract in time of FA2/TEZ liquidity divestment;
    - ✅ should transfer FA1.2 tokens in time of FA1.2/FA1.2 liquidity divestment;
    - ✅ should transfer FA2 tokens in time of FA2/FA2 liquidity divestment;
    - ✅ should transfer FA1.2 tokens and FA2 tokens in time of FA1.2/FA2 liquidity divestment;
-   - ✅ should vote for the baker on TEZ store contract in time of FA1.2/TEZ liquidity divestment;
-   - ✅ should vote for the baker on TEZ store contract in time of FA2/TEZ liquidity divestment.
+   - ✅ should vote for the baker on bucket contract in time of FA1.2/TEZ liquidity divestment;
+   - ✅ should vote for the baker on bucket contract in time of FA2/TEZ liquidity divestment.
 
 4. `flash_swap`:
 
@@ -221,7 +221,7 @@
 
    - ✅ should fail if reentrancy;
    - ✅ should fail if pair not listed;
-   - ✅ should fail if pair does not have TEZ store contract (not TOK/TEZ pair);
+   - ✅ should fail if pair does not have bucket contract (not TOK/TEZ pair);
    - ✅ should withdraw user's profit - 1;
    - ✅ should withdraw user's profit - 2.
 
@@ -251,7 +251,7 @@
     - ✅ should fail if reentrancy;
     - ✅ should fail if pair not listed;
     - ✅ should fail if voter balance is negative;
-    - ✅ should fail if pair does not have TEZ store contract (not TOK/TEZ pair);
+    - ✅ should fail if pair does not have bucket contract (not TOK/TEZ pair);
     - ✅ should vote.
 
 11. `set_admin`:
@@ -315,7 +315,7 @@
 
     - ✅ should fail if not admin is trying to ban baker;
     - ✅ should fail if pair not listed;
-    - ✅ should fail if tez store not found (not TEZ/TOK pair);
+    - ✅ should fail if bucket not found (not TEZ/TOK pair);
     - ✅ should ban baker;
     - ✅ should unban baker.
 
@@ -399,7 +399,7 @@
 30. `check_is_banned_baker` [VIEW]:
 
     - ✅ should fail if pair not listed;
-    - ✅ should fail if pair does not have TEZ store contract (not TOK/TEZ pair);
+    - ✅ should fail if pair does not have bucket contract (not TOK/TEZ pair);
     - ✅ should return true if baker is banned;
     - ✅ should return false if baker is not banned;
     - ✅ should return false if baker's banning period is finished.

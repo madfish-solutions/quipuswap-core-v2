@@ -47,10 +47,7 @@ function flash_swap_callback(
           }
           ];
 
-          ops := get_invest_tez_op(
-            tez_amount_to_invest * 1mutez,
-            unwrap(pair.bucket, DexCore.err_bucket_404)
-          ) # ops;
+          ops := get_fill_op(tez_amount_to_invest * 1mutez, unwrap(pair.bucket, DexCore.err_bucket_404)) # ops;
         }
         else {
           ops := transfer_token(

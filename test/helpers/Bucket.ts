@@ -21,8 +21,8 @@ import {
   WithdrawRewards,
   BucketStorage,
   UpdateRewards,
-  DivestTez,
   BanBaker,
+  PourOut,
   Vote,
 } from "../types/Bucket";
 
@@ -101,12 +101,12 @@ export class Bucket {
     }
   }
 
-  async investTez(
+  async fill(
     user: string,
     mutezAmount: number = 0
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
-      .invest_tez(user)
+      .fill(user)
       .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
@@ -114,9 +114,9 @@ export class Bucket {
     return operation;
   }
 
-  async divestTez(params: DivestTez): Promise<TransactionOperation> {
+  async pourOut(params: PourOut): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
-      .divest_tez(params)
+      .pour_out(params)
       .send();
 
     await confirmOperation(this.tezos, operation.hash);

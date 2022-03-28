@@ -165,7 +165,7 @@ describe("DexCore (withdraw methods)", async () => {
     });
   });
 
-  it("should fail if pair does not have TEZ store contract (not TOK/TEZ pair)", async () => {
+  it("should fail if pair does not have bucket contract (not TOK/TEZ pair)", async () => {
     const params: WithdrawProfit = {
       receiver: alice.pkh,
       pair_id: new BigNumber(0),

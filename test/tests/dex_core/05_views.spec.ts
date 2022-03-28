@@ -217,7 +217,7 @@ describe("DexCore (views)", async () => {
     }
   });
 
-  it("should fail if pair does not have TEZ store contract (not TOK/TEZ pair)", async () => {
+  it("should fail if pair does not have bucket contract (not TOK/TEZ pair)", async () => {
     const params: CheckIsBannedBaker = {
       pair_id: new BigNumber(2),
       baker: alice.pkh,

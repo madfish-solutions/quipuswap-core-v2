@@ -14,12 +14,12 @@ import accounts from "../../../scripts/sandbox/accounts";
 import { bakerRegistryStorage } from "../../../storage/BakerRegistry";
 import { bucketStorage } from "../../../storage/test/Bucket";
 
-import { BanBaker, DivestTez } from "../../types/Bucket";
+import { BanBaker, PourOut } from "../../types/Bucket";
 import { SBAccount } from "../../types/Common";
 
 chai.use(require("chai-bignumber")(BigNumber));
 
-describe("Bucket (invest TEZ, divest TEZ, ban baker)", async () => {
+describe("Bucket (fill, pour out, ban baker)", async () => {
   var bakerRegistry: BakerRegistry;
   var bucket: Bucket;
   var utils: Utils;
@@ -45,70 +45,70 @@ describe("Bucket (invest TEZ, divest TEZ, ban baker)", async () => {
     bucket = await Bucket.originate(utils.tezos, bucketStorage);
   });
 
-  it("should fail if not dex core is trying to invest tez", async () => {
-    await rejects(bucket.investTez(alice.pkh, 1), (err: Error) => {
+  it("should fail if not dex core is trying to fill", async () => {
+    await rejects(bucket.fill(alice.pkh, 1), (err: Error) => {
       expect(err.message).to.equal(Common.ERR_NOT_DEX_CORE);
 
       return true;
     });
   });
 
-  it("should invest tez - 1", async () => {
+  it("should fill - 1", async () => {
     const user: string = alice.pkh;
     const amt: number = 100;
 
     await utils.setProvider(bob.sk);
-    await bucket.investTez(user, amt);
+    await bucket.fill(user, amt);
 
     expect(
       await utils.tezos.tz.getBalance(bucket.contract.address)
     ).to.be.bignumber.equal(new BigNumber(amt));
   });
 
-  it("should invest tez - 2", async () => {
+  it("should fill - 2", async () => {
     const user: string = carol.pkh;
     const amt: number = 666;
     const prevBucketTezBalance: BigNumber = await utils.tezos.tz.getBalance(
       bucket.contract.address
     );
 
-    await bucket.investTez(user, amt);
+    await bucket.fill(user, amt);
 
     expect(
       await utils.tezos.tz.getBalance(bucket.contract.address)
     ).to.be.bignumber.equal(prevBucketTezBalance.plus(amt));
   });
 
-  it("should fail if not dex core is trying to divest tez", async () => {
-    const divestTez: DivestTez = {
+  it("should fail if not dex core is trying to pour out", async () => {
+    const pourOut: PourOut = {
       receiver: alice.pkh,
       amt: new BigNumber(100),
     };
 
     await utils.setProvider(alice.sk);
-    await rejects(bucket.divestTez(divestTez), (err: Error) => {
+    await rejects(bucket.pourOut(pourOut), (err: Error) => {
       expect(err.message).to.equal(Common.ERR_NOT_DEX_CORE);
 
       return true;
     });
   });
 
-  it("should fail if tez store have not enough TEZ on contract's balance", async () => {
-    const divestTez: DivestTez = {
+  it("should fail if bucket have not enough TEZ on contract's balance", async () => {
+    const pourOut: PourOut = {
       receiver: alice.pkh,
       amt: new BigNumber(100_000),
     };
 
     await utils.setProvider(bob.sk);
-    await rejects(bucket.divestTez(divestTez), (err: Error) => {
+    await rejects(bucket.pourOut(pourOut), (err: Error) => {
       expect(err.message).to.equal(BucketErrors.ERR_INSUFFICIENT_TEZ_BALANCE);
 
       return true;
     });
   });
 
-  it("should divest tez - 1", async () => {
-    const divestTez: DivestTez = {
+  it("should pour out - 1", async () => {
+    const pourOut: PourOut = {
       receiver: alice.pkh,
       amt: new BigNumber(100),
     };
@@ -116,21 +116,21 @@ describe("Bucket (invest TEZ, divest TEZ, ban baker)", async () => {
       bucket.contract.address
     );
     const prevRecipientTezBalance: BigNumber = await utils.tezos.tz.getBalance(
-      divestTez.receiver
+      pourOut.receiver
     );
 
-    await bucket.divestTez(divestTez);
+    await bucket.pourOut(pourOut);
 
     expect(
       await utils.tezos.tz.getBalance(bucket.contract.address)
-    ).to.be.bignumber.equal(prevBucketTezBalance.minus(divestTez.amt));
+    ).to.be.bignumber.equal(prevBucketTezBalance.minus(pourOut.amt));
     expect(
-      await utils.tezos.tz.getBalance(divestTez.receiver)
-    ).to.be.bignumber.equal(prevRecipientTezBalance.plus(divestTez.amt));
+      await utils.tezos.tz.getBalance(pourOut.receiver)
+    ).to.be.bignumber.equal(prevRecipientTezBalance.plus(pourOut.amt));
   });
 
-  it("should divest tez - 2", async () => {
-    const divestTez: DivestTez = {
+  it("should pour out - 2", async () => {
+    const pourOut: PourOut = {
       receiver: dev.pkh,
       amt: new BigNumber(666),
     };
@@ -139,17 +139,17 @@ describe("Bucket (invest TEZ, divest TEZ, ban baker)", async () => {
       bucket.contract.address
     );
     const prevRecipientTezBalance: BigNumber = await utils.tezos.tz.getBalance(
-      divestTez.receiver
+      pourOut.receiver
     );
 
-    await bucket.divestTez(divestTez);
+    await bucket.pourOut(pourOut);
 
     expect(
       await utils.tezos.tz.getBalance(bucket.contract.address)
-    ).to.be.bignumber.equal(prevBucketTezBalance.minus(divestTez.amt));
+    ).to.be.bignumber.equal(prevBucketTezBalance.minus(pourOut.amt));
     expect(
-      await utils.tezos.tz.getBalance(divestTez.receiver)
-    ).to.be.bignumber.equal(prevRecipientTezBalance.plus(divestTez.amt));
+      await utils.tezos.tz.getBalance(pourOut.receiver)
+    ).to.be.bignumber.equal(prevRecipientTezBalance.plus(pourOut.amt));
   });
 
   it("should fail if not dex core is trying to ban baker", async () => {

@@ -627,7 +627,7 @@ describe("DexCore (admin methods)", async () => {
     });
   });
 
-  it("should fail if tez store not found (not TEZ/TOK pair)", async () => {
+  it("should fail if bucket not found (not TEZ/TOK pair)", async () => {
     const ban: Ban = {
       pair_id: new BigNumber(0),
       ban_params: { baker: alice.pkh, ban_period: new BigNumber(666) },

@@ -10,20 +10,20 @@ function get_pair_info_or_default(
     const pair : pair_t = unwrap_or(pairs[token_id], Constants.default_pair);
   } with (pair, token_id)
 
-function get_bucket_invest_tez_entrypoint(
+function get_bucket_fill_entrypoint(
   const bucket          : address)
-                        : contract(invest_tez_t) is
+                        : contract(fill_t) is
   unwrap(
-    (Tezos.get_entrypoint_opt("%invest_tez", bucket) : option(contract(invest_tez_t))),
-    DexCore.err_bucket_invest_tez_entrypoint_404
+    (Tezos.get_entrypoint_opt("%fill", bucket) : option(contract(fill_t))),
+    DexCore.err_bucket_fill_entrypoint_404
   )
 
-function get_bucket_divest_tez_entrypoint(
+function get_bucket_pour_out_entrypoint(
   const bucket          : address)
-                        : contract(divest_tez_t) is
+                        : contract(pour_out_t) is
   unwrap(
-    (Tezos.get_entrypoint_opt("%divest_tez", bucket) : option(contract(divest_tez_t))),
-    DexCore.err_bucket_divest_tez_entrypoint_404
+    (Tezos.get_entrypoint_opt("%pour_out", bucket) : option(contract(pour_out_t))),
+    DexCore.err_bucket_pour_out_entrypoint_404
   )
 
 function get_bucket_ban_baker_entrypoint(
@@ -42,17 +42,17 @@ function get_bucket_vote_entrypoint(
     DexCore.err_bucket_vote_entrypoint_404
   )
 
-function get_invest_tez_op(
+function get_fill_op(
   const amt             : tez;
-  const bucket       : address)
-                        : operation is
-  Tezos.transaction(Unit, amt, get_bucket_invest_tez_entrypoint(bucket))
-
-function get_divest_tez_op(
-  const divest_params   : divest_tez_t;
   const bucket          : address)
                         : operation is
-  Tezos.transaction(divest_params, 0mutez, get_bucket_divest_tez_entrypoint(bucket))
+  Tezos.transaction(Unit, amt, get_bucket_fill_entrypoint(bucket))
+
+function get_pour_out_op(
+  const pour_out_params : pour_out_t;
+  const bucket          : address)
+                        : operation is
+  Tezos.transaction(pour_out_params, 0mutez, get_bucket_pour_out_entrypoint(bucket))
 
 function get_ban_baker_op(
   const ban_params      : ban_baker_t;
@@ -66,29 +66,29 @@ function get_vote_op(
                         : operation is
   Tezos.transaction(vote_params, 0mutez, get_bucket_vote_entrypoint(bucket))
 
-function invest_tez_or_transfer_tokens(
-  const tokens_required : nat;
+function fill_or_transfer_tokens(
+  const tokens_amt      : nat;
   const token_type      : token_t;
   const bucket_opt      : option(address))
                         : operation is
   if token_type = Tez
-  then get_invest_tez_op(tokens_required * 1mutez, unwrap(bucket_opt, DexCore.err_bucket_404))
-  else transfer_token(Tezos.sender, Tezos.self_address, tokens_required, token_type)
+  then get_fill_op(tokens_amt * 1mutez, unwrap(bucket_opt, DexCore.err_bucket_404))
+  else transfer_token(Tezos.sender, Tezos.self_address, tokens_amt, token_type)
 
-function divest_tez_or_transfer_tokens(
+function pour_out_or_transfer_tokens(
   const receiver        : address;
-  const tokens_divested : nat;
+  const tokens_amt      : nat;
   const token_type      : token_t;
   const bucket_opt      : option(address))
                         : operation is
   if token_type = Tez
   then block {
-    const divest_params : divest_tez_t = record [
+    const pour_out_params : pour_out_t = record [
       receiver = (Tezos.get_contract_with_error(receiver, Common.err_contract_404) : contract(unit));
-      amt      = tokens_divested;
+      amt      = tokens_amt;
     ];
-  } with get_divest_tez_op(divest_params, unwrap(bucket_opt, DexCore.err_bucket_404))
-  else transfer_token(Tezos.self_address, receiver, tokens_divested, token_type)
+  } with get_pour_out_op(pour_out_params, unwrap(bucket_opt, DexCore.err_bucket_404))
+  else transfer_token(Tezos.self_address, receiver, tokens_amt, token_type)
 
 function get_bucket_initial_storage(
   const baker_registry  : address;
@@ -330,18 +330,18 @@ function swap_internal(
 
     if swap.to_.token = Tez and tmp.counter =/= get_nat_or_fail(tmp.swaps_list_size - 1n)
     then {
-      const divest_params : divest_tez_t = record [
+      const pour_out_params : pour_out_t = record [
         receiver = (Tezos.get_contract_with_error(Tezos.self_address, Common.err_contract_404) : contract(unit));
         amt      = out;
       ];
 
-      tmp.ops := get_divest_tez_op(divest_params, unwrap(pair.bucket, DexCore.err_bucket_404)) # tmp.ops;
+      tmp.ops := get_pour_out_op(pour_out_params, unwrap(pair.bucket, DexCore.err_bucket_404)) # tmp.ops;
     }
     else skip;
 
     if tmp.token_in = Tez and tmp.counter > 0n
     then {
-      tmp.ops := get_invest_tez_op(
+      tmp.ops := get_fill_op(
         tmp.amount_in * 1mutez,
         unwrap(pair.bucket, DexCore.err_bucket_404)
       ) # tmp.ops;
@@ -364,7 +364,7 @@ function swap_internal(
     then {
       tmp.last_operation := Some(
         if swap.to_.token = Tez
-        then get_divest_tez_op(
+        then get_pour_out_op(
           record [
             receiver = (Tezos.get_contract_with_error(tmp.receiver, Common.err_contract_404) : contract(unit));
             amt      = out;

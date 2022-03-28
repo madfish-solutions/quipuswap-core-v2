@@ -18,9 +18,9 @@ type storage_t          is [@layout:comb] record [
   voting_period_end       : nat;
 ]
 
-type invest_tez_t       is unit
+type fill_t             is unit
 
-type divest_tez_t       is [@layout:comb] record [
+type pour_out_t         is [@layout:comb] record [
   receiver                : contract(unit);
   amt                     : nat;
 ]

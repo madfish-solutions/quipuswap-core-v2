@@ -106,7 +106,7 @@ function launch_exchange(
               ],
               unwrap(updated_pair.bucket, DexCore.err_bucket_404)
             ) # ops;
-            ops := get_invest_tez_op(Tezos.amount, unwrap(updated_pair.bucket, DexCore.err_bucket_404)) # ops;
+            ops := get_fill_op(Tezos.amount, unwrap(updated_pair.bucket, DexCore.err_bucket_404)) # ops;
           }
           else skip;
         };
@@ -184,7 +184,7 @@ function invest_liquidity(
         else skip;
 
         ops := transfer_token(Tezos.sender, Tezos.self_address, tokens_a_required, tokens.token_a) # ops;
-        ops := invest_tez_or_transfer_tokens(tokens_b_required, tokens.token_b, updated_pair.bucket) # ops;
+        ops := fill_or_transfer_tokens(tokens_b_required, tokens.token_b, updated_pair.bucket) # ops;
 
         if Tezos.amount / 1mutez > tokens_b_required
         then {
@@ -265,7 +265,7 @@ function divest_liquidity(
         else skip;
 
         ops := transfer_token(Tezos.self_address, params.liquidity_receiver, token_a_divested, tokens.token_a) # ops;
-        ops := divest_tez_or_transfer_tokens(
+        ops := pour_out_or_transfer_tokens(
           params.liquidity_receiver,
           token_b_divested,
           tokens.token_b,
@@ -312,7 +312,7 @@ function flash_swap(
 
         ops := call_flash_swap_callback(flash_swap_callback_params) # ops;
         ops := call_flash_swaps_proxy(params.lambda, s.flash_swaps_proxy) # ops;
-        ops := divest_tez_or_transfer_tokens(
+        ops := pour_out_or_transfer_tokens(
           params.receiver,
           params.amount_out,
           flash_swap_data.swap_token,
@@ -376,7 +376,7 @@ function swap(
         tmp.ops := reverse_list(tmp.ops);
 
         ops := concat_lists(tmp.ops, ops);
-        ops := invest_tez_or_transfer_tokens(params.amount_in, token, pair.bucket) # ops;
+        ops := fill_or_transfer_tokens(params.amount_in, token, pair.bucket) # ops;
       }
     | _ -> skip
     ]
@@ -461,12 +461,12 @@ function claim_interface_tez_fee(
           s.interface_tez_fee[(params.pair_id, Tezos.sender)] := get_nat_or_fail(interface_fee_f - value *
             Constants.precision);
 
-          const divest_params : divest_tez_t = record [
+          const divest_params : pour_out_t = record [
             receiver = (Tezos.get_contract_with_error(params.receiver, Common.err_contract_404) : contract(unit));
             amt      = value;
           ];
 
-          ops := get_divest_tez_op(divest_params, unwrap(pair.bucket, DexCore.err_bucket_404)) # ops;
+          ops := get_pour_out_op(divest_params, unwrap(pair.bucket, DexCore.err_bucket_404)) # ops;
         }
         else skip;
       }
@@ -517,8 +517,8 @@ function withdraw_auction_fee(
         ];
 
         ops := get_auction_receive_fee_op(receive_fee_params, s.auction) # ops;
-        ops := divest_tez_or_transfer_tokens(s.auction, actual_auction_fee, params.token, bucket) # ops;
-        ops := divest_tez_or_transfer_tokens(Tezos.sender, user_reward, params.token, bucket) # ops;
+        ops := pour_out_or_transfer_tokens(s.auction, actual_auction_fee, params.token, bucket) # ops;
+        ops := pour_out_or_transfer_tokens(Tezos.sender, user_reward, params.token, bucket) # ops;
       }
     | _ -> skip
     ]

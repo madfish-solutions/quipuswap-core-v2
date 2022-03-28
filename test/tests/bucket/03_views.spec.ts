@@ -15,7 +15,7 @@ import { bakerRegistryStorage } from "../../../storage/BakerRegistry";
 import { bucketStorage } from "../../../storage/test/Bucket";
 import { dexCoreStorage } from "../../../storage/DexCore";
 
-import { BanBaker, DivestTez } from "../../types/Bucket";
+import { BanBaker, PourOut } from "../../types/Bucket";
 import { SBAccount } from "../../types/Common";
 
 chai.use(require("chai-bignumber")(BigNumber));
@@ -105,7 +105,7 @@ describe("Bucket (views)", async () => {
     const user: string = bob.pkh;
     const mutezAmount: number = 500;
 
-    await bucket.investTez(user, mutezAmount);
+    await bucket.fill(user, mutezAmount);
 
     bucket = await Bucket.updateContractInstance(
       bucket.contract.address,
@@ -120,12 +120,12 @@ describe("Bucket (views)", async () => {
   });
 
   it("should return positive balance - 2", async () => {
-    const divestTez: DivestTez = {
+    const pourOut: PourOut = {
       receiver: bob.pkh,
       amt: new BigNumber(100),
     };
 
-    await bucket.divestTez(divestTez);
+    await bucket.pourOut(pourOut);
 
     bucket = await Bucket.updateContractInstance(
       bucket.contract.address,

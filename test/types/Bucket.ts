@@ -13,7 +13,7 @@ export type Baker = {
   votes: BigNumber;
 };
 
-export type DivestTez = {
+export type PourOut = {
   receiver: string;
   amt: BigNumber;
 };

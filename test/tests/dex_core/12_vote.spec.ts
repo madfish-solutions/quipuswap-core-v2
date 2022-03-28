@@ -178,7 +178,7 @@ describe("DexCore (vote)", async () => {
     });
   });
 
-  it("should fail if pair does not have TEZ store contract (not TOK/TEZ pair)", async () => {
+  it("should fail if pair does not have bucket contract (not TOK/TEZ pair)", async () => {
     const voteParams: DexVote = {
       pair_id: new BigNumber(1),
       candidate: bob.pkh,

@@ -20,8 +20,8 @@ module DexCore is {
   const err_zero_in                                   : string = "118";
   const err_wrong_route                               : string = "119";
   const err_wrong_tez_amount                          : string = "120";
-  const err_bucket_invest_tez_entrypoint_404          : string = "121";
-  const err_bucket_divest_tez_entrypoint_404          : string = "122";
+  const err_bucket_fill_entrypoint_404                : string = "121";
+  const err_bucket_pour_out_entrypoint_404            : string = "122";
   const err_bucket_ban_baker_entrypoint_404           : string = "123";
   const err_bucket_vote_entrypoint_404                : string = "124";
   const err_bucket_is_banned_baker_view_404           : string = "125";
