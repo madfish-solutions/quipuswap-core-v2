@@ -18,6 +18,14 @@ function get_bucket_pour_out_entrypoint(
     DexCore.err_bucket_pour_out_entrypoint_404
   )
 
+function get_bucket_pour_over_entrypoint(
+  const bucket          : address)
+                        : contract(pour_over_t) is
+  unwrap(
+    (Tezos.get_entrypoint_opt("%pour_over", bucket) : option(contract(pour_over_t))),
+    DexCore.err_bucket_pour_over_entrypoint_404
+  )
+
 function get_bucket_ban_baker_entrypoint(
   const bucket          : address)
                         : contract(ban_baker_t) is
@@ -34,17 +42,17 @@ function get_bucket_vote_entrypoint(
     DexCore.err_bucket_vote_entrypoint_404
   )
 
-function get_fill_op(
-  const amt             : tez;
-  const bucket          : address)
-                        : operation is
-  Tezos.transaction(Unit, amt, get_bucket_fill_entrypoint(bucket))
-
 function get_pour_out_op(
   const pour_out_params : pour_out_t;
   const bucket          : address)
                         : operation is
   Tezos.transaction(pour_out_params, 0mutez, get_bucket_pour_out_entrypoint(bucket))
+
+function get_pour_over_op(
+  const pour_over_param : pour_over_t;
+  const bucket          : address)
+                        : operation is
+  Tezos.transaction(pour_over_param, 0mutez, get_bucket_pour_over_entrypoint(bucket))
 
 function get_ban_baker_op(
   const ban_params      : ban_baker_t;
@@ -320,23 +328,21 @@ function swap_internal(
 
     tmp.s := update_fees(tmp.s, params.pair_id, tmp.token_in, tmp.referrer, interface_fee, auction_fee);
 
-    if swap.to_.token = Tez and tmp.counter =/= get_nat_or_fail(tmp.swaps_list_size - 1n)
-    then {
-      const pour_out_params : pour_out_t = record [
-        receiver = (Tezos.get_contract_with_error(Tezos.self_address, Common.err_contract_404) : contract(unit));
-        amt      = out;
-      ];
+    const is_last_swap : bool = (tmp.counter = get_nat_or_fail(tmp.swaps_list_size - 1n));
 
-      tmp.ops := get_pour_out_op(pour_out_params, unwrap(pair.bucket, DexCore.err_bucket_404)) # tmp.ops;
-    }
+    if swap.to_.token = Tez and not is_last_swap
+    then tmp.from_bucket := unwrap(pair.bucket, DexCore.err_bucket_404)
     else skip;
 
     if tmp.token_in = Tez and tmp.counter > 0n
     then {
-      tmp.ops := get_fill_op(
-        tmp.amount_in * 1mutez,
-        unwrap(pair.bucket, DexCore.err_bucket_404)
-      ) # tmp.ops;
+      const forward : forward_t = record [
+        from_bucket = tmp.from_bucket;
+        to_bucket   = unwrap(pair.bucket, DexCore.err_bucket_404);
+        amt         = tmp.amount_in;
+      ];
+
+      tmp.forwards := forward # tmp.forwards;
     }
     else skip;
 
@@ -352,7 +358,7 @@ function swap_internal(
 
     tmp.s.pairs[params.pair_id] := calc_cumulative_prices(pair, updated_pair.token_a_pool, updated_pair.token_b_pool);
 
-    if tmp.counter = get_nat_or_fail(tmp.swaps_list_size - 1n)
+    if is_last_swap
     then {
       tmp.last_operation := Some(
         if swap.to_.token = Tez
@@ -370,6 +376,17 @@ function swap_internal(
 
     tmp.counter := tmp.counter + 1n;
   } with tmp
+
+function create_pour_over_op(
+  const ops             : list(operation);
+  const params          : forward_t)
+                        : list(operation) is
+  block {
+    const pour_over_params : pour_over_t = record [
+      bucket = params.to_bucket;
+      amt    = params.amt;
+    ];
+  } with get_pour_over_op(pour_over_params, params.from_bucket) # ops
 
 function get_flash_swaps_proxy_default_entrypoint(
   const swaps_proxy     : address)

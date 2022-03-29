@@ -123,13 +123,20 @@ type swap_data_t        is [@layout:comb] record [
   from_                   : swap_side_t;
 ]
 
+type forward_t          is [@layout:comb] record [
+  from_bucket             : address;
+  to_bucket               : address;
+  amt                     : nat;
+]
+
 type tmp_swap_t         is [@layout:comb] record [
   s                       : storage_t;
-  ops                     : list(operation);
+  forwards                : list(forward_t);
   last_operation          : option(operation);
   token_in                : token_t;
   receiver                : address;
   referrer                : address;
+  from_bucket             : address;
   amount_in               : nat;
   swaps_list_size         : nat;
   counter                 : nat;

@@ -73,11 +73,12 @@
       params.swaps,
       record [
         s               = s.storage;
-        ops             = (nil : list(operation));
+        forwards        = (nil : list(forward_t));
         last_operation  = (None : option(operation));
         token_in        = token;
         receiver        = Constants.zero_address;
         referrer        = Constants.zero_address;
+        from_bucket     = Constants.zero_address;
         amount_in       = params.amount_in;
         swaps_list_size = List.size(params.swaps);
         counter         = 0n;

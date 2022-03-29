@@ -353,29 +353,25 @@ function swap(
           params.swaps,
           record [
             s               = s;
-            ops             = (nil : list(operation));
+            forwards        = (nil : list(forward_t));
             last_operation  = (None : option(operation));
             token_in        = token;
             receiver        = params.receiver;
             referrer        = params.referrer;
+            from_bucket     = Constants.zero_address;
             amount_in       = params.amount_in;
             swaps_list_size = List.size(params.swaps);
             counter         = 0n;
           ]
         );
+        const forward_ops : list(operation) = List.fold(create_pour_over_op, tmp.forwards, (nil : list(operation)));
 
         assert_with_error(tmp.amount_in >= params.min_amount_out, DexCore.err_high_min_out);
 
         s := tmp.s;
 
-        ops := case tmp.last_operation of [
-        | Some(op) -> op # ops
-        | None     -> (failwith(DexCore.err_too_few_swaps) : list(operation))
-        ];
-
-        tmp.ops := reverse_list(tmp.ops);
-
-        ops := concat_lists(tmp.ops, ops);
+        ops := unwrap(tmp.last_operation, DexCore.err_too_few_swaps) # ops;
+        ops := concat_lists(forward_ops, ops);
         ops := fill_or_transfer_tokens(params.amount_in, token, pair.bucket) # ops;
       }
     | _ -> skip

@@ -52,6 +52,12 @@ function get_bucket_fill_entrypoint(
     Common.err_bucket_fill_entrypoint_404
   )
 
+function get_fill_op(
+  const amt             : tez;
+  const bucket          : address)
+                        : operation is
+  Tezos.transaction(Unit, amt, get_bucket_fill_entrypoint(bucket))
+
 function get_fa12_token_transfer_entrypoint(
   const token           : address)
                         : contract(fa12_transfer_t) is

@@ -18,7 +18,7 @@ function pour_over(
                         : return_t is
   block {
     only_dex_core(s.dex_core);
-  } with (list [Tezos.transaction(Unit, params.amt * 1mutez, get_bucket_fill_entrypoint(params.bucket))], s)
+  } with (list [get_fill_op(params.amt * 1mutez, params.bucket)], s)
 
 function withdraw_rewards(
   const params          : withdraw_rewards_t;
