@@ -9,6 +9,7 @@ import {
   defaultCollectingPeriod,
   defaultCycleDuration,
   defaultVotingPeriod,
+  zeroAddress,
   Utils,
 } from "../../helpers/Utils";
 
@@ -109,6 +110,7 @@ describe("DexCore (swap)", async () => {
       token_b_in: new BigNumber(5_000_000),
       shares_receiver: alice.pkh,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa12Token1.approve(dexCore.contract.address, launchParams.token_a_in);
@@ -128,6 +130,7 @@ describe("DexCore (swap)", async () => {
       token_b_in: new BigNumber(5_000_000),
       shares_receiver: alice.pkh,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa2Token1.updateOperators([
@@ -153,6 +156,7 @@ describe("DexCore (swap)", async () => {
       token_b_in: new BigNumber(5_000_000),
       shares_receiver: alice.pkh,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
     launchParams = DexCore.changeTokensOrderInPair(launchParams, false);
 
@@ -171,6 +175,7 @@ describe("DexCore (swap)", async () => {
       token_b_in: new BigNumber(5_000_000),
       shares_receiver: alice.pkh,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa12Token1.approve(dexCore.contract.address, launchParams.token_a_in);
@@ -189,6 +194,7 @@ describe("DexCore (swap)", async () => {
       token_b_in: new BigNumber(5_000_000),
       shares_receiver: alice.pkh,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
     launchParams = DexCore.changeTokensOrderInPair(launchParams, false);
 
@@ -214,6 +220,7 @@ describe("DexCore (swap)", async () => {
       token_b_in: new BigNumber(5_000_000),
       shares_receiver: alice.pkh,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa12Token3.approve(dexCore.contract.address, launchParams.token_a_in);
@@ -230,6 +237,7 @@ describe("DexCore (swap)", async () => {
       token_b_in: new BigNumber(5_000_000),
       shares_receiver: alice.pkh,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa12Token3.approve(dexCore.contract.address, launchParams.token_a_in);
@@ -244,6 +252,7 @@ describe("DexCore (swap)", async () => {
       token_b_in: new BigNumber(5_000_000),
       shares_receiver: alice.pkh,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa12Token3.approve(dexCore.contract.address, launchParams.token_a_in);
@@ -255,11 +264,12 @@ describe("DexCore (swap)", async () => {
 
   it("should fail if reentrancy", async () => {
     const swapParams: Swap = {
-      swaps: [{ direction: { a_to_b: undefined }, pair_id: new BigNumber(0) }],
-      receiver: alice.pkh,
-      referrer: bob.pkh,
-      amount_in: new BigNumber(1),
-      min_amount_out: new BigNumber(1),
+      swaps: [],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000),
+      receiver: zeroAddress,
+      referrer: zeroAddress,
+      amount_in: new BigNumber(0),
+      min_amount_out: new BigNumber(0),
     };
 
     await rejects(dexCore2.swap(swapParams), (err: Error) => {
@@ -269,9 +279,27 @@ describe("DexCore (swap)", async () => {
     });
   });
 
+  it("should fail if action is outdated", async () => {
+    const swapParams: Swap = {
+      swaps: [{ direction: { a_to_b: undefined }, pair_id: new BigNumber(0) }],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000),
+      receiver: alice.pkh,
+      referrer: alice.pkh,
+      amount_in: new BigNumber(1),
+      min_amount_out: new BigNumber(1),
+    };
+
+    await rejects(dexCore.swap(swapParams), (err: Error) => {
+      expect(err.message).to.equal(DexCoreErrors.ERR_ACTION_OUTDATED);
+
+      return true;
+    });
+  });
+
   it("should fail if user is trying to refer himself", async () => {
     const swapParams: Swap = {
       swaps: [{ direction: { a_to_b: undefined }, pair_id: new BigNumber(0) }],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: alice.pkh,
       amount_in: new BigNumber(1),
@@ -288,6 +316,7 @@ describe("DexCore (swap)", async () => {
   it("should fail if empty route", async () => {
     const swapParams: Swap = {
       swaps: [],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(1),
@@ -306,6 +335,7 @@ describe("DexCore (swap)", async () => {
       swaps: [
         { direction: { a_to_b: undefined }, pair_id: new BigNumber(666) },
       ],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(1),
@@ -322,6 +352,7 @@ describe("DexCore (swap)", async () => {
   it("should fail if wrong TEZ amount was sent to swap", async () => {
     const swapParams: Swap = {
       swaps: [{ direction: { b_to_a: undefined }, pair_id: new BigNumber(0) }],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(1),
@@ -338,6 +369,7 @@ describe("DexCore (swap)", async () => {
   it("should fail if a user expects too high min out", async () => {
     const swapParams: Swap = {
       swaps: [{ direction: { a_to_b: undefined }, pair_id: new BigNumber(0) }],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(5),
@@ -354,6 +386,7 @@ describe("DexCore (swap)", async () => {
   it("should fail if user passed zero amount in", async () => {
     const swapParams: Swap = {
       swaps: [{ direction: { a_to_b: undefined }, pair_id: new BigNumber(0) }],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(0),
@@ -373,6 +406,7 @@ describe("DexCore (swap)", async () => {
         { direction: { a_to_b: undefined }, pair_id: new BigNumber(0) },
         { direction: { a_to_b: undefined }, pair_id: new BigNumber(0) },
       ],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(5),
@@ -391,6 +425,7 @@ describe("DexCore (swap)", async () => {
     const token: Token = { fa12: fa12Token1.contract.address };
     const swapParams: Swap = {
       swaps: [{ direction: { a_to_b: undefined }, pair_id: pairId }],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: bob.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(5),
@@ -486,6 +521,7 @@ describe("DexCore (swap)", async () => {
     };
     const swapParams: Swap = {
       swaps: [{ direction: { a_to_b: undefined }, pair_id: pairId }],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: bob.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(10),
@@ -580,6 +616,7 @@ describe("DexCore (swap)", async () => {
     const token: Token = { tez: undefined };
     const swapParams: Swap = {
       swaps: [{ direction: { b_to_a: undefined }, pair_id: pairId }],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(50),
@@ -663,6 +700,7 @@ describe("DexCore (swap)", async () => {
     const token: Token = { tez: undefined };
     const swapParams: Swap = {
       swaps: [{ direction: { b_to_a: undefined }, pair_id: pairId }],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(100),
@@ -765,6 +803,7 @@ describe("DexCore (swap)", async () => {
     const token2Contract: FA12 = await FA12.init(token2.fa12, utils.tezos);
     const swapParams: Swap = {
       swaps: [{ direction: { a_to_b: undefined }, pair_id: pairId }],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(400),
@@ -886,6 +925,7 @@ describe("DexCore (swap)", async () => {
     const token: Token = { fa12: fa12Token1.contract.address };
     const swapParams: Swap = {
       swaps: [{ direction: { a_to_b: undefined }, pair_id: pairId }],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(333),
@@ -1001,6 +1041,7 @@ describe("DexCore (swap)", async () => {
     };
     const swapParams: Swap = {
       swaps: [{ direction: { b_to_a: undefined }, pair_id: pairId }],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(666),
@@ -1126,6 +1167,7 @@ describe("DexCore (swap)", async () => {
     const token2Contract: FA2 = await FA2.init(token2.fa2.token, utils.tezos);
     const swapParams: Swap = {
       swaps: [{ direction: { a_to_b: undefined }, pair_id: pairId }],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(999),
@@ -1257,12 +1299,14 @@ describe("DexCore (swap)", async () => {
       shares: shares,
       liquidity_receiver: alice.pkh,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await dexCore.divestLiquidity(divestParams);
 
     const swapParams: Swap = {
       swaps: [{ direction: { a_to_b: undefined }, pair_id: pairId }],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(100),
@@ -1287,6 +1331,7 @@ describe("DexCore (swap)", async () => {
         { direction: { a_to_b: undefined }, pair_id: pairIds[0] },
         { direction: { b_to_a: undefined }, pair_id: pairIds[1] },
       ],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(500),
@@ -1476,6 +1521,7 @@ describe("DexCore (swap)", async () => {
         { direction: { b_to_a: undefined }, pair_id: pairIds[1] },
         { direction: { a_to_b: undefined }, pair_id: pairIds[2] },
       ],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(999),
@@ -1734,6 +1780,7 @@ describe("DexCore (swap)", async () => {
         { direction: { a_to_b: undefined }, pair_id: pairIds[1] },
         { direction: { a_to_b: undefined }, pair_id: pairIds[2] },
       ],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: bob.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(100),
@@ -1990,6 +2037,7 @@ describe("DexCore (swap)", async () => {
         { direction: { a_to_b: undefined }, pair_id: pairIds[0] },
         { direction: { b_to_a: undefined }, pair_id: pairIds[1] },
       ],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(100),
@@ -2195,6 +2243,7 @@ describe("DexCore (swap)", async () => {
         { direction: { a_to_b: undefined }, pair_id: pairIds[3] },
         { direction: { b_to_a: undefined }, pair_id: pairIds[4] },
       ],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(100),

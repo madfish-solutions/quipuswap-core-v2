@@ -74,6 +74,7 @@ describe("Bucket (vote - 2)", async () => {
       token_b_in: new BigNumber(50),
       shares_receiver: sharesReceiver,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa2Token1.updateOperators([
@@ -106,6 +107,7 @@ describe("Bucket (vote - 2)", async () => {
       shares: shares,
       shares_receiver: sharesReceiver,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await utils.bakeBlocks(1);
@@ -160,6 +162,7 @@ describe("Bucket (vote - 2)", async () => {
       shares: shares,
       shares_receiver: sharesReceiver,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await utils.setProvider(bob.sk);
@@ -223,6 +226,7 @@ describe("Bucket (vote - 2)", async () => {
       shares: shares,
       shares_receiver: sharesReceiver,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await bucket.updateStorage({
@@ -279,6 +283,7 @@ describe("Bucket (vote - 2)", async () => {
       shares: shares,
       shares_receiver: sharesReceiver,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await bucket.updateStorage({
@@ -345,6 +350,7 @@ describe("Bucket (vote - 2)", async () => {
       shares: shares,
       shares_receiver: sharesReceiver,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await bucket.updateStorage({

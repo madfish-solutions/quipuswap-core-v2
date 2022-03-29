@@ -93,6 +93,7 @@ describe("DexCore (vote)", async () => {
       token_b_in: new BigNumber(100_000),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa12Token1.approve(dexCore.contract.address, launchParams.token_a_in);
@@ -114,6 +115,7 @@ describe("DexCore (vote)", async () => {
       token_b_in: new BigNumber(100_000),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
     launchParams = DexCore.changeTokensOrderInPair(launchParams, false);
 

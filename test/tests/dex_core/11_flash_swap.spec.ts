@@ -12,6 +12,7 @@ import {
   defaultCollectingPeriod,
   defaultCycleDuration,
   defaultVotingPeriod,
+  zeroAddress,
   Utils,
 } from "../../helpers/Utils";
 
@@ -122,6 +123,7 @@ describe("DexCore (flash swap)", async () => {
       token_b_in: new BigNumber(5_000_000),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa12Token1.approve(dexCore.contract.address, launchParams.token_a_in);
@@ -141,6 +143,7 @@ describe("DexCore (flash swap)", async () => {
       token_b_in: new BigNumber(5_000_000),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa2Token1.updateOperators([
@@ -166,6 +169,7 @@ describe("DexCore (flash swap)", async () => {
       token_b_in: new BigNumber(5_000_000),
       shares_receiver: alice.pkh,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     launchParams = DexCore.changeTokensOrderInPair(launchParams, false);
@@ -187,6 +191,7 @@ describe("DexCore (flash swap)", async () => {
       token_b_in: new BigNumber(5_000_000),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
     launchParams = DexCore.changeTokensOrderInPair(launchParams, false);
 
@@ -212,6 +217,7 @@ describe("DexCore (flash swap)", async () => {
       token_b_in: new BigNumber(5_000_000),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa12Token1.approve(dexCore.contract.address, launchParams.token_a_in);
@@ -249,9 +255,10 @@ describe("DexCore (flash swap)", async () => {
     const params: FlashSwap = {
       flash_swap_rule: "Loan_a_return_a",
       pair_id: new BigNumber(0),
-      receiver: alice.pkh,
-      referrer: alice.pkh,
-      amount_out: new BigNumber(1),
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000),
+      receiver: zeroAddress,
+      referrer: zeroAddress,
+      amount_out: new BigNumber(0),
     };
 
     await rejects(dexCore2.flashSwap(params), (err: Error) => {
@@ -261,10 +268,28 @@ describe("DexCore (flash swap)", async () => {
     });
   });
 
+  it("should fail if action is outdated", async () => {
+    const params: FlashSwap = {
+      flash_swap_rule: "Loan_a_return_a",
+      pair_id: new BigNumber(0),
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000),
+      receiver: alice.pkh,
+      referrer: alice.pkh,
+      amount_out: new BigNumber(1),
+    };
+
+    await rejects(dexCore.flashSwap(params), (err: Error) => {
+      expect(err.message).to.equal(DexCoreErrors.ERR_ACTION_OUTDATED);
+
+      return true;
+    });
+  });
+
   it("should fail if user is trying to refer himself", async () => {
     const params: FlashSwap = {
       flash_swap_rule: "Loan_a_return_a",
       pair_id: new BigNumber(0),
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: alice.pkh,
       amount_out: new BigNumber(1),
@@ -281,6 +306,7 @@ describe("DexCore (flash swap)", async () => {
     const params: FlashSwap = {
       flash_swap_rule: "Loan_a_return_a",
       pair_id: new BigNumber(0),
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_out: new BigNumber(0),
@@ -297,6 +323,7 @@ describe("DexCore (flash swap)", async () => {
     const params: FlashSwap = {
       flash_swap_rule: "Loan_a_return_a",
       pair_id: new BigNumber(666),
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_out: new BigNumber(1),
@@ -313,6 +340,7 @@ describe("DexCore (flash swap)", async () => {
     const params: FlashSwap = {
       flash_swap_rule: "Loan_a_return_a",
       pair_id: new BigNumber(0),
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_out: new BigNumber(5_000_001),
@@ -329,6 +357,7 @@ describe("DexCore (flash swap)", async () => {
     const params: FlashSwap = {
       flash_swap_rule: "Loan_a_return_a",
       pair_id: new BigNumber(0),
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: flashSwapAgent.contract.address,
       referrer: bob.pkh,
       amount_out: new BigNumber(1000),
@@ -422,6 +451,7 @@ describe("DexCore (flash swap)", async () => {
     const params: FlashSwap = {
       flash_swap_rule: "Loan_b_return_a",
       pair_id: new BigNumber(2),
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: flashSwapAgent.contract.address,
       referrer: bob.pkh,
       amount_out: new BigNumber(1000),
@@ -562,6 +592,7 @@ describe("DexCore (flash swap)", async () => {
     const params: FlashSwap = {
       flash_swap_rule: "Loan_a_return_b",
       pair_id: new BigNumber(4),
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: flashSwapAgent.contract.address,
       referrer: bob.pkh,
       amount_out: new BigNumber(1000),
@@ -692,6 +723,7 @@ describe("DexCore (flash swap)", async () => {
     const params: FlashSwap = {
       flash_swap_rule: "Loan_a_return_b",
       pair_id: new BigNumber(0),
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: flashSwapAgent.contract.address,
       referrer: bob.pkh,
       amount_out: new BigNumber(1000),
@@ -802,6 +834,7 @@ describe("DexCore (flash swap)", async () => {
     const params: FlashSwap = {
       flash_swap_rule: "Loan_a_return_a",
       pair_id: new BigNumber(1),
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: flashSwapAgent.contract.address,
       referrer: bob.pkh,
       amount_out: new BigNumber(1000),
@@ -891,6 +924,7 @@ describe("DexCore (flash swap)", async () => {
     const params: FlashSwap = {
       flash_swap_rule: "Loan_b_return_a",
       pair_id: new BigNumber(4),
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: flashSwapAgent.contract.address,
       referrer: bob.pkh,
       amount_out: new BigNumber(1000),
@@ -1022,6 +1056,7 @@ describe("DexCore (flash swap)", async () => {
     const params: FlashSwap = {
       flash_swap_rule: "Loan_a_return_b",
       pair_id: new BigNumber(3),
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: flashSwapAgent.contract.address,
       referrer: bob.pkh,
       amount_out: new BigNumber(1000),
@@ -1161,6 +1196,7 @@ describe("DexCore (flash swap)", async () => {
     const params: FlashSwap = {
       flash_swap_rule: "Loan_a_return_b",
       pair_id: new BigNumber(1),
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: flashSwapAgent.contract.address,
       referrer: bob.pkh,
       amount_out: new BigNumber(1000),
@@ -1268,6 +1304,7 @@ describe("DexCore (flash swap)", async () => {
     const params: FlashSwap = {
       flash_swap_rule: "Loan_b_return_b",
       pair_id: new BigNumber(0),
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: bob.pkh,
       referrer: bob.pkh,
       amount_out: new BigNumber(1000),
@@ -1348,6 +1385,7 @@ describe("DexCore (flash swap)", async () => {
     const params: FlashSwap = {
       flash_swap_rule: "Loan_b_return_a",
       pair_id: new BigNumber(0),
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: bob.pkh,
       referrer: bob.pkh,
       amount_out: new BigNumber(1000),
@@ -1455,6 +1493,7 @@ describe("DexCore (flash swap)", async () => {
     const params: FlashSwap = {
       flash_swap_rule: "Loan_b_return_a",
       pair_id: new BigNumber(1),
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: bob.pkh,
       referrer: bob.pkh,
       amount_out: new BigNumber(1000),
@@ -1558,6 +1597,7 @@ describe("DexCore (flash swap)", async () => {
     const params: FlashSwap = {
       flash_swap_rule: "Loan_a_return_b",
       pair_id: new BigNumber(0),
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_out: new BigNumber(10000),

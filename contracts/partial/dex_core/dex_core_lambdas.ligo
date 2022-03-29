@@ -26,6 +26,7 @@ function launch_exchange(
 
     case action of [
     | Launch_exchange(params) -> {
+        assert_with_error(params.deadline >= Tezos.now, DexCore.err_action_outdated);
         assert_with_error(params.pair.token_a < params.pair.token_b, DexCore.err_wrong_pair_order);
 
         const pair_info : (pair_t * nat) = get_pair_info_or_default(
@@ -138,6 +139,8 @@ function invest_liquidity(
 
     case action of [
     | Invest_liquidity(params) -> {
+        assert_with_error(params.deadline >= Tezos.now, DexCore.err_action_outdated);
+
         const pair : pair_t = unwrap(s.pairs[params.pair_id], DexCore.err_pair_not_listed);
 
         assert_with_error(pair.token_a_pool * pair.token_b_pool =/= 0n, DexCore.err_no_liquidity);
@@ -212,6 +215,8 @@ function divest_liquidity(
 
     case action of [
     | Divest_liquidity(params) -> {
+        assert_with_error(params.deadline >= Tezos.now, DexCore.err_action_outdated);
+
         const pair : pair_t = unwrap(s.pairs[params.pair_id], DexCore.err_pair_not_listed);
 
         assert_with_error(pair.token_a_pool * pair.token_b_pool =/= 0n, DexCore.err_no_liquidity);
@@ -289,6 +294,7 @@ function flash_swap(
 
     case action of [
     | Flash_swap(params) -> {
+        assert_with_error(params.deadline >= Tezos.now, DexCore.err_action_outdated);
         assert_with_error(params.referrer =/= Tezos.sender, DexCore.err_can_not_refer_yourself);
         assert_with_error(params.amount_out > 0n, DexCore.err_dust_out);
 
@@ -336,6 +342,7 @@ function swap(
 
     case action of [
     | Swap(params) -> {
+        assert_with_error(params.deadline >= Tezos.now, DexCore.err_action_outdated);
         assert_with_error(params.referrer =/= Tezos.sender, DexCore.err_can_not_refer_yourself);
 
         const first_swap : swap_slice_t = unwrap(List.head_opt(params.swaps), DexCore.err_empty_route);

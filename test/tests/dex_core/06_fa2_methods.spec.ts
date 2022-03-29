@@ -33,7 +33,7 @@ import { fa12Storage } from "../../../storage/test/FA12";
 import { fa2Storage } from "../../../storage/test/FA2";
 
 import { BalanceRequest, Transfer, UpdateOperator } from "../../types/FA2";
-import { LaunchExchange, Swap } from "../../types/DexCore";
+import { LaunchExchange } from "../../types/DexCore";
 import { Baker, User } from "../../types/Bucket";
 import { SBAccount } from "../../types/Common";
 
@@ -105,6 +105,7 @@ describe("DexCore (FA2 methods)", async () => {
       token_b_in: new BigNumber(100_000),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa2Token1.updateOperators([
@@ -130,6 +131,7 @@ describe("DexCore (FA2 methods)", async () => {
       token_b_in: new BigNumber(100_000),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
     launchParams = DexCore.changeTokensOrderInPair(launchParams, false);
 
@@ -150,6 +152,7 @@ describe("DexCore (FA2 methods)", async () => {
       token_b_in: new BigNumber(100_000),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
     launchParams = DexCore.changeTokensOrderInPair(launchParams, false);
 
@@ -175,15 +178,20 @@ describe("DexCore (FA2 methods)", async () => {
   });
 
   it("should fail if reentrancy", async () => {
-    const swapParams: Swap = {
-      swaps: [{ direction: { a_to_b: undefined }, pair_id: new BigNumber(0) }],
-      receiver: alice.pkh,
-      referrer: bob.pkh,
-      amount_in: new BigNumber(1),
-      min_amount_out: new BigNumber(1),
-    };
+    const params: Transfer[] = [
+      {
+        from_: zeroAddress,
+        txs: [
+          {
+            to_: zeroAddress,
+            token_id: new BigNumber(0),
+            amount: new BigNumber(0),
+          },
+        ],
+      },
+    ];
 
-    await rejects(dexCore2.swap(swapParams), (err: Error) => {
+    await rejects(dexCore2.transfer(params), (err: Error) => {
       expect(err.message).to.equal(DexCoreErrors.ERR_REENTRANCY);
 
       return true;

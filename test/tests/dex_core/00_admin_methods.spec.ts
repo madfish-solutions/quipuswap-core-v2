@@ -426,6 +426,7 @@ describe("DexCore (admin methods)", async () => {
       token_b_in: new BigNumber(1),
       shares_receiver: bob.pkh,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
     const updateTokenMetadata: UpdateTokenMetadata = {
       token_id: new BigNumber(0),
@@ -650,6 +651,7 @@ describe("DexCore (admin methods)", async () => {
       token_b_in: new BigNumber(1),
       shares_receiver: bob.pkh,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
     const ban: Ban = {
       pair_id: new BigNumber(1),

@@ -15,6 +15,7 @@ type flash_swap_t       is [@layout:comb] record [
   lambda                  : unit -> list(operation);
   flash_swap_rule         : flash_swap_rule_t;
   pair_id                 : token_id_t;
+  deadline                : timestamp;
   receiver                : address;
   referrer                : address;
   amount_out              : nat;
@@ -88,6 +89,7 @@ type launch_exchange_t  is [@layout:comb] record [
   token_b_in              : nat;
   shares_receiver         : address;
   candidate               : key_hash;
+  deadline                : timestamp;
 ]
 
 type launch_callback_t  is [@layout:comb] record [
@@ -102,6 +104,7 @@ type invest_liquidity_t is [@layout:comb] record [
   shares                  : nat;
   shares_receiver         : address;
   candidate               : key_hash;
+  deadline                : timestamp;
 ]
 
 type divest_liquidity_t is [@layout:comb] record [
@@ -111,6 +114,7 @@ type divest_liquidity_t is [@layout:comb] record [
   shares                  : nat;
   liquidity_receiver      : address;
   candidate               : key_hash;
+  deadline                : timestamp;
 ]
 
 type swap_side_t        is [@layout:comb] record [
@@ -153,6 +157,7 @@ type swap_slice_t       is [@layout:comb] record [
 
 type swap_t             is [@layout:comb] record [
   swaps                   : list(swap_slice_t);
+  deadline                : timestamp;
   receiver                : address;
   referrer                : address;
   amount_in               : nat;

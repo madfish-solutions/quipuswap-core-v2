@@ -43,6 +43,7 @@ export enum DexCore {
   ERR_TEZ_AMOUNT_MISMATCH = "141",
   ERR_WRONG_RESERVES_STATE = "142",
   ERR_NO_PAIR_ID = "143",
+  ERR_ACTION_OUTDATED = "144",
 }
 
 export enum Bucket {

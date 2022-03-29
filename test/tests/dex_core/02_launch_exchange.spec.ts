@@ -97,19 +97,46 @@ describe("DexCore (launch exchange)", async () => {
   });
 
   it("should fail if reentrancy", async () => {
-    const swapParams: Swap = {
-      swaps: [{ direction: { a_to_b: undefined }, pair_id: new BigNumber(0) }],
-      receiver: alice.pkh,
-      referrer: bob.pkh,
-      amount_in: new BigNumber(1),
-      min_amount_out: new BigNumber(1),
+    const params: LaunchExchange = {
+      pair: {
+        token_a: { tez: undefined },
+        token_b: { tez: undefined },
+      },
+      token_a_in: new BigNumber(0),
+      token_b_in: new BigNumber(0),
+      shares_receiver: zeroAddress,
+      candidate: zeroAddress,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000),
     };
 
-    await rejects(dexCore2.swap(swapParams), (err: Error) => {
+    await rejects(dexCore2.launchExchange(params), (err: Error) => {
       expect(err.message).to.equal(DexCoreErrors.ERR_REENTRANCY);
 
       return true;
     });
+  });
+
+  it("should fail if action is outdated", async () => {
+    const params: LaunchExchange = {
+      pair: {
+        token_a: { tez: undefined },
+        token_b: { tez: undefined },
+      },
+      token_a_in: new BigNumber(1),
+      token_b_in: new BigNumber(1),
+      shares_receiver: alice.pkh,
+      candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000),
+    };
+
+    await rejects(
+      dexCore.launchExchange(params, params.token_a_in.toNumber()),
+      (err: Error) => {
+        expect(err.message).to.equal(DexCoreErrors.ERR_ACTION_OUTDATED);
+
+        return true;
+      }
+    );
   });
 
   it("should fail if wrong pair order was passed with TEZ token and TEZ token", async () => {
@@ -122,6 +149,7 @@ describe("DexCore (launch exchange)", async () => {
       token_b_in: new BigNumber(1),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await rejects(
@@ -144,6 +172,7 @@ describe("DexCore (launch exchange)", async () => {
       token_b_in: new BigNumber(1),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await rejects(
@@ -168,6 +197,7 @@ describe("DexCore (launch exchange)", async () => {
       token_b_in: new BigNumber(1),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await rejects(
@@ -190,6 +220,7 @@ describe("DexCore (launch exchange)", async () => {
       token_b_in: new BigNumber(1),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     params = DexCore.changeTokensOrderInPair(params, true);
@@ -215,6 +246,7 @@ describe("DexCore (launch exchange)", async () => {
       token_b_in: new BigNumber(1),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await rejects(dexCore.launchExchange(params), (err: Error) => {
@@ -236,6 +268,7 @@ describe("DexCore (launch exchange)", async () => {
       token_b_in: new BigNumber(1),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await rejects(dexCore.launchExchange(params), (err: Error) => {
@@ -255,6 +288,7 @@ describe("DexCore (launch exchange)", async () => {
       token_b_in: new BigNumber(1),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await rejects(
@@ -277,6 +311,7 @@ describe("DexCore (launch exchange)", async () => {
       token_b_in: new BigNumber(0),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await rejects(
@@ -299,6 +334,7 @@ describe("DexCore (launch exchange)", async () => {
       token_b_in: new BigNumber(100),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await rejects(
@@ -323,6 +359,7 @@ describe("DexCore (launch exchange)", async () => {
       token_b_in: new BigNumber(0),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await rejects(dexCore.launchExchange(params), (err: Error) => {
@@ -342,6 +379,7 @@ describe("DexCore (launch exchange)", async () => {
       token_b_in: new BigNumber(100),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
     const expectedPairId: BigNumber = new BigNumber(0);
 
@@ -395,6 +433,7 @@ describe("DexCore (launch exchange)", async () => {
       token_b_in: new BigNumber(1),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await rejects(
@@ -419,6 +458,7 @@ describe("DexCore (launch exchange)", async () => {
       token_b_in: new BigNumber(50),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
     const expectedPairId: BigNumber = new BigNumber(1);
 
@@ -480,6 +520,7 @@ describe("DexCore (launch exchange)", async () => {
       token_b_in: new BigNumber(100),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
     const expectedPairId: BigNumber = new BigNumber(2);
 
@@ -536,6 +577,7 @@ describe("DexCore (launch exchange)", async () => {
       token_b_in: new BigNumber(50),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
     const expectedPairId: BigNumber = new BigNumber(3);
 
@@ -597,6 +639,7 @@ describe("DexCore (launch exchange)", async () => {
       token_b_in: new BigNumber(50),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
     const expectedPairId: BigNumber = new BigNumber(4);
 
@@ -648,6 +691,7 @@ describe("DexCore (launch exchange)", async () => {
       token_b_in: new BigNumber(50),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
     const expectedPairId: BigNumber = new BigNumber(5);
 
@@ -707,6 +751,7 @@ describe("DexCore (launch exchange)", async () => {
       token_b_in: new BigNumber(100),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
     const expectedPairId: BigNumber = new BigNumber(6);
 
@@ -756,6 +801,7 @@ describe("DexCore (launch exchange)", async () => {
       token_b_in: new BigNumber(100),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
     const expectedPairId: BigNumber = new BigNumber(7);
 
@@ -804,6 +850,7 @@ describe("DexCore (launch exchange)", async () => {
       token_b_in: new BigNumber(600),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     params = DexCore.changeTokensOrderInPair(params, false);
@@ -861,6 +908,7 @@ describe("DexCore (launch exchange)", async () => {
       token_b_in: new BigNumber(400),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     params = DexCore.changeTokensOrderInPair(params, false);
@@ -927,6 +975,7 @@ describe("DexCore (launch exchange)", async () => {
       token_b_in: new BigNumber(1000),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa12Token3.updateStorage({
@@ -979,6 +1028,7 @@ describe("DexCore (launch exchange)", async () => {
       token_b_in: new BigNumber(200),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
     const expectedPairId: BigNumber = new BigNumber(11);
 
@@ -1069,6 +1119,7 @@ describe("DexCore (launch exchange)", async () => {
       token_b_in: new BigNumber(200),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
     const expectedPairId: BigNumber = new BigNumber(12);
 
@@ -1138,6 +1189,7 @@ describe("DexCore (launch exchange)", async () => {
       token_b_in: new BigNumber(200),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await dexCore.updateStorage({
@@ -1159,6 +1211,7 @@ describe("DexCore (launch exchange)", async () => {
       shares: shares,
       liquidity_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await bucket.updateStorage();

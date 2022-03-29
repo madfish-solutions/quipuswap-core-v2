@@ -80,6 +80,7 @@ describe("Bucket (vote - 1)", async () => {
       token_b_in: new BigNumber(50),
       shares_receiver: alice.pkh,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa2Token1.updateOperators([
@@ -163,6 +164,7 @@ describe("Bucket (vote - 1)", async () => {
       shares: shares,
       shares_receiver: sharesReceiver,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await utils.setProvider(bob.sk);
@@ -216,6 +218,7 @@ describe("Bucket (vote - 1)", async () => {
       shares: shares,
       shares_receiver: sharesReceiver,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await bucket.updateStorage({
@@ -268,6 +271,7 @@ describe("Bucket (vote - 1)", async () => {
       shares: shares,
       shares_receiver: sharesReceiver,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await bucket.updateStorage({
@@ -322,6 +326,7 @@ describe("Bucket (vote - 1)", async () => {
       shares: shares,
       shares_receiver: sharesReceiver,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await bucket.updateStorage({
@@ -376,6 +381,7 @@ describe("Bucket (vote - 1)", async () => {
       shares: shares,
       liquidity_receiver: liquidityReceiver,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await bucket.updateStorage({
@@ -424,6 +430,7 @@ describe("Bucket (vote - 1)", async () => {
       shares: shares,
       liquidity_receiver: liquidityReceiver,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await bucket.updateStorage({
@@ -473,6 +480,7 @@ describe("Bucket (vote - 1)", async () => {
       shares: shares,
       liquidity_receiver: liquidityReceiver,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await bucket.updateStorage({

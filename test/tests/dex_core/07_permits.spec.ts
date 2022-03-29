@@ -74,6 +74,7 @@ describe("DexCore (permits)", async () => {
       token_b_in: new BigNumber(1000),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa12Token1.approve(dexCore.contract.address, params.token_a_in);

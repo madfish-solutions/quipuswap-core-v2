@@ -80,6 +80,7 @@ describe.skip("Bucket (withdraw rewards)", async () => {
       token_b_in: new BigNumber(100),
       shares_receiver: alice.pkh,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa2Token1.updateOperators([

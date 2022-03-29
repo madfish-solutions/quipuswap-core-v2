@@ -58,6 +58,7 @@ describe("FlashSwapsProxy", async () => {
       token_b_in: new BigNumber(100_000),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     params = DexCore.changeTokensOrderInPair(params, false);
@@ -108,6 +109,7 @@ describe("FlashSwapsProxy", async () => {
     const params: FlashSwap = {
       flash_swap_rule: "Loan_a_return_a",
       pair_id: new BigNumber(0),
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_out: new BigNumber(10),

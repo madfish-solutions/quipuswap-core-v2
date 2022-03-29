@@ -103,6 +103,7 @@ describe("DexCore (invest liquidity)", async () => {
       token_b_in: new BigNumber(100_000),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa12Token1.approve(dexCore.contract.address, launchParams.token_a_in);
@@ -122,6 +123,7 @@ describe("DexCore (invest liquidity)", async () => {
       token_b_in: new BigNumber(100_000),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa2Token1.updateOperators([
@@ -147,6 +149,7 @@ describe("DexCore (invest liquidity)", async () => {
       token_b_in: new BigNumber(100_000),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
     launchParams = DexCore.changeTokensOrderInPair(launchParams, false);
 
@@ -167,6 +170,7 @@ describe("DexCore (invest liquidity)", async () => {
       token_b_in: new BigNumber(100_000),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
     launchParams = DexCore.changeTokensOrderInPair(launchParams, false);
 
@@ -192,6 +196,7 @@ describe("DexCore (invest liquidity)", async () => {
       token_b_in: new BigNumber(100_000),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa12Token1.approve(dexCore.contract.address, launchParams.token_a_in);
@@ -199,16 +204,36 @@ describe("DexCore (invest liquidity)", async () => {
   });
 
   it("should fail if reentrancy", async () => {
-    const swapParams: Swap = {
-      swaps: [{ direction: { a_to_b: undefined }, pair_id: new BigNumber(0) }],
-      receiver: alice.pkh,
-      referrer: bob.pkh,
-      amount_in: new BigNumber(1),
-      min_amount_out: new BigNumber(1),
+    const investParams: InvestLiquidity = {
+      pair_id: new BigNumber(0),
+      token_a_in: new BigNumber(0),
+      token_b_in: new BigNumber(0),
+      shares: new BigNumber(0),
+      shares_receiver: zeroAddress,
+      candidate: zeroAddress,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000),
     };
 
-    await rejects(dexCore2.swap(swapParams), (err: Error) => {
+    await rejects(dexCore2.investLiquidity(investParams), (err: Error) => {
       expect(err.message).to.equal(DexCoreErrors.ERR_REENTRANCY);
+
+      return true;
+    });
+  });
+
+  it("should fail if action is outdated", async () => {
+    const investParams: InvestLiquidity = {
+      pair_id: new BigNumber(0),
+      token_a_in: new BigNumber(0),
+      token_b_in: new BigNumber(0),
+      shares: new BigNumber(0),
+      shares_receiver: alice.pkh,
+      candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000),
+    };
+
+    await rejects(dexCore.investLiquidity(investParams), (err: Error) => {
+      expect(err.message).to.equal(DexCoreErrors.ERR_ACTION_OUTDATED);
 
       return true;
     });
@@ -222,6 +247,7 @@ describe("DexCore (invest liquidity)", async () => {
       shares: new BigNumber(0),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await rejects(dexCore.investLiquidity(investParams), (err: Error) => {
@@ -239,6 +265,7 @@ describe("DexCore (invest liquidity)", async () => {
       shares: new BigNumber(0),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await rejects(dexCore.investLiquidity(investParams), (err: Error) => {
@@ -267,6 +294,7 @@ describe("DexCore (invest liquidity)", async () => {
       shares: shares,
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await rejects(
@@ -301,6 +329,7 @@ describe("DexCore (invest liquidity)", async () => {
       shares: shares,
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await rejects(
@@ -332,6 +361,7 @@ describe("DexCore (invest liquidity)", async () => {
       shares: shares,
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await rejects(
@@ -368,6 +398,7 @@ describe("DexCore (invest liquidity)", async () => {
       shares: shares,
       shares_receiver: sharesReceiver,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa12Token1.approve(dexCore.contract.address, investParams.token_a_in);
@@ -422,6 +453,7 @@ describe("DexCore (invest liquidity)", async () => {
       shares: shares,
       shares_receiver: sharesReceiver,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await dexCore.investLiquidity(
@@ -475,6 +507,7 @@ describe("DexCore (invest liquidity)", async () => {
       shares: shares,
       shares_receiver: sharesReceiver,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa12Token1.approve(dexCore.contract.address, investParams.token_a_in);
@@ -527,6 +560,7 @@ describe("DexCore (invest liquidity)", async () => {
       shares: shares,
       shares_receiver: sharesReceiver,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await dexCore.investLiquidity(investParams);
@@ -577,6 +611,7 @@ describe("DexCore (invest liquidity)", async () => {
       shares: shares,
       shares_receiver: sharesReceiver,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa12Token1.approve(dexCore.contract.address, investParams.token_a_in);
@@ -632,6 +667,7 @@ describe("DexCore (invest liquidity)", async () => {
       shares: shares,
       shares_receiver: sharesReceiver,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa12Token1.approve(dexCore.contract.address, investParams.token_a_in);
@@ -686,6 +722,7 @@ describe("DexCore (invest liquidity)", async () => {
       shares: shares,
       shares_receiver: sharesReceiver,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await dexCore.investLiquidity(
@@ -747,6 +784,7 @@ describe("DexCore (invest liquidity)", async () => {
       shares: shares,
       shares_receiver: sharesReceiver,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa12Token1.approve(dexCore.contract.address, investParams.token_a_in);
@@ -822,6 +860,7 @@ describe("DexCore (invest liquidity)", async () => {
       shares: shares,
       shares_receiver: sharesReceiver,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await dexCore.investLiquidity(investParams);
@@ -897,6 +936,7 @@ describe("DexCore (invest liquidity)", async () => {
       shares: shares,
       shares_receiver: sharesReceiver,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa12Token1.approve(dexCore.contract.address, investParams.token_a_in);
@@ -958,6 +998,7 @@ describe("DexCore (invest liquidity)", async () => {
       shares: shares,
       liquidity_receiver: liquidityReceiver,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await dexCore.divestLiquidity(divestParams);
@@ -969,6 +1010,7 @@ describe("DexCore (invest liquidity)", async () => {
       shares: new BigNumber(1),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await rejects(dexCore.investLiquidity(investParams), (err: Error) => {
@@ -999,6 +1041,7 @@ describe("DexCore (invest liquidity)", async () => {
       shares: shares,
       shares_receiver: sharesReceiver,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
     const bucket: Bucket = await Bucket.init(
       dexCore.storage.storage.pairs[pairId.toFixed()].bucket,
@@ -1061,6 +1104,7 @@ describe("DexCore (invest liquidity)", async () => {
       shares: shares,
       shares_receiver: sharesReceiver,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
     const bucket: Bucket = await Bucket.init(
       dexCore.storage.storage.pairs[pairId.toFixed()].bucket,
@@ -1124,6 +1168,7 @@ describe("DexCore (invest liquidity)", async () => {
       shares: shares,
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
     const prevDexCoreTezBalance: BigNumber = await utils.tezos.tz.getBalance(
       dexCore.contract.address

@@ -107,6 +107,7 @@
 1. `launch_exchange`:
 
    - ✅ should fail if reentrancy;
+   - ✅ should fail if action is outdated;
    - ✅ should fail if wrong pair order was passed with TEZ token and TEZ token;
    - ✅ should fail if wrong pair order was passed with FA1.2 token and TEZ token;
    - ✅ should fail if wrong pair order was passed with FA2 token and TEZ token;
@@ -136,6 +137,7 @@
 2. `invest_liquidity`:
 
    - ✅ should fail if reentrancy;
+   - ✅ should fail if action is outdated;
    - ✅ should fail if pair not listed;
    - ✅ should fail if pair does not have liquidity;
    - ✅ should fail if investor expects zero shares amount in result of investment;
@@ -159,6 +161,7 @@
 3. `divest_liquidity`:
 
    - ✅ should fail if reentrancy;
+   - ✅ should fail if action is outdated;
    - ✅ should fail if pair not listed;
    - ✅ should fail if pair does not have liquidity;
    - ✅ should fail if a divestor have an insufficient liquidity balance;
@@ -182,6 +185,7 @@
 4. `flash_swap`:
 
    - ✅ should fail if reentrancy;
+   - ✅ should fail if action is outdated;
    - ✅ should fail if user is trying to refer himself;
    - ✅ should fail if dust out;
    - ✅ should fail if pair not listed;
@@ -202,6 +206,7 @@
 5. `swap`:
 
    - ✅ should fail if reentrancy;
+   - ✅ should fail if action is outdated;
    - ✅ should fail if user is trying to refer himself;
    - ✅ should fail if empty route;
    - ✅ should fail if pair not listed;

@@ -28,6 +28,7 @@ export type LaunchExchange = {
   token_b_in: BigNumber;
   shares_receiver: string;
   candidate: string;
+  deadline: string;
 };
 
 export type InvestLiquidity = {
@@ -37,6 +38,7 @@ export type InvestLiquidity = {
   shares: BigNumber;
   shares_receiver: string;
   candidate: string;
+  deadline: string;
 };
 
 export type DivestLiquidity = {
@@ -46,11 +48,13 @@ export type DivestLiquidity = {
   shares: BigNumber;
   liquidity_receiver: string;
   candidate: string;
+  deadline: string;
 };
 
 export type FlashSwap = {
   flash_swap_rule: FlashSwapRule;
   pair_id: BigNumber;
+  deadline: string;
   receiver: string;
   referrer: string;
   amount_out: BigNumber;
@@ -58,6 +62,7 @@ export type FlashSwap = {
 
 export type Swap = {
   swaps: SwapSlice[];
+  deadline: string;
   receiver: string;
   referrer: string;
   amount_in: BigNumber;

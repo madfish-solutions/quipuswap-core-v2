@@ -107,6 +107,7 @@ describe("DexCore (withdraw methods)", async () => {
       token_b_in: new BigNumber(5_000_000),
       shares_receiver: alice.pkh,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa12Token1.approve(dexCore.contract.address, launchParams.token_a_in);
@@ -130,6 +131,7 @@ describe("DexCore (withdraw methods)", async () => {
       token_b_in: new BigNumber(5_000_000),
       shares_receiver: alice.pkh,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa12Token1.approve(dexCore.contract.address, launchParams.token_a_in);
@@ -329,6 +331,7 @@ describe("DexCore (withdraw methods)", async () => {
     const referrer: string = bob.pkh;
     const swapParams: Swap = {
       swaps: [{ direction: { a_to_b: undefined }, pair_id: new BigNumber(0) }],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: receiver,
       referrer: referrer,
       amount_in: new BigNumber(333),
@@ -393,6 +396,7 @@ describe("DexCore (withdraw methods)", async () => {
     const referrer: string = bob.pkh;
     const swapParams: Swap = {
       swaps: [{ direction: { b_to_a: undefined }, pair_id: new BigNumber(0) }],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: receiver,
       referrer: referrer,
       amount_in: new BigNumber(333),
@@ -481,11 +485,11 @@ describe("DexCore (withdraw methods)", async () => {
 
   it("should claim TEZ interface fee and transfer it to a receiver", async () => {
     const pairId: BigNumber = new BigNumber(1);
-    const token: Token = { tez: undefined };
     const receiver: string = alice.pkh;
     const referrer: string = bob.pkh;
     const swapParams: Swap = {
       swaps: [{ direction: { b_to_a: undefined }, pair_id: new BigNumber(1) }],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: receiver,
       referrer: referrer,
       amount_in: new BigNumber(333),
