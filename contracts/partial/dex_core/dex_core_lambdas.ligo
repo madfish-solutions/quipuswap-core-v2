@@ -371,9 +371,10 @@ function swap(
             counter         = 0n;
           ]
         );
-        const forward_ops : list(operation) = List.fold(create_pour_over_op, tmp.forwards, (nil : list(operation)));
 
         assert_with_error(tmp.amount_in >= params.min_amount_out, DexCore.err_high_min_out);
+
+        const forward_ops : list(operation) = List.fold(create_pour_over_op, tmp.forwards, (nil : list(operation)));
 
         s := tmp.s;
 
