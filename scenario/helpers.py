@@ -13,6 +13,8 @@ dave = "tz1iDaveDaveDaveDaveDaveDaveDatFC4So"
 julian = "tz1iJu1ianJu1ianJu1ianJu1ianJtvTftP8"
 admin = "tz1iAdminAdminAdminAdminAdminAh4qKqu"
 
+burn = "tz1ZZZZZZZZZZZZZZZZZZZZZZZZZZZZNkiRg"
+
 dummy_candidate = "tz1XXPVLyQqsMVaQKnPWvD4q6nVwgwXUG4Fp"
 
 # the same as Pytezos' contract.context.get_self_address()
@@ -124,15 +126,28 @@ def parse_as_fa2(values):
 
     return result
 
+def parse_originations(res):
+    originations = []
+    for op in res.operations:
+        if op["kind"] == "origination":
+            orig = {
+                "balance": int(op["balance"])
+            }
+            originations.append(orig)
+    return originations
+
 def parse_transfers(res):
-    token_transfers = []
+    transfers = []
     for op in res.operations:
         if op["kind"] == "transaction":
             entrypoint = op["parameters"]["entrypoint"]
+            if entrypoint == "default":
+                tx = parse_tez_transfer(op)
+                transfers.append(tx)
             if entrypoint == "transfer":
                 txs = parse_transfer(op)
-                token_transfers += txs
-    return token_transfers
+                transfers += txs
+    return transfers
 
 def parse_transfer(op):
     transfers = []

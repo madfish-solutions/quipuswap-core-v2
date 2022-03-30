@@ -15,26 +15,43 @@ token_c_address = "KT1XXAavg3tTj12W1ADvd3EEnm1pu6XTmiEF"
 token_d_address = "KT1PQ8TMzGMfViRq4tCMFKD2QF5zwJnY67Xn"
 token_e_address = "KT1X1LgNkQShpF9nRLYw3Dgdy4qp38MX617z"
 
-token_a = ("fa12", token_a_address)
-token_b = ("fa12", token_b_address)
+token_a_fa12 = ("fa12", token_a_address)
+token_a_fa2 = {
+    "fa2": {
+            "token": token_a_address,
+            "id": 0
+        }
+    }
+
+token_b_fa2 = {
+    "fa2": {
+            "token": token_b_address,
+            "id": 1
+        }
+    }
+
+token_c_fa12 = ("fa12", token_c_address)
+
+
 token_c = ("fa12", token_c_address)
 token_d = ("fa12", token_d_address)
 token_e = ("fa12", token_e_address)
 
 pair_ab = {
-    "token_a" : {
-        "fa2": {
-            "token": token_a_address,
-            "id": 0
-        }
-    },
-    "token_b": {
-        "fa2": {
-            "token": token_b_address,
-            "id": 1
-        }
-    },
+    "token_a" : token_a_fa2,
+    "token_b" : token_b_fa2
 }
+
+pair_bc = {
+    "token_a" : token_c_fa12,
+    "token_b" : token_b_fa2,
+}
+
+tez_pair = {
+    "token_a" : token_a_fa2,
+    "token_b" : {"tez" : None}
+}
+
 
 factory = "KT1LzyPS8rN375tC31WPAVHaQ4HyBvTSLwBu"
 quipu_token = "KT1LzyPS8rN375tC31WPAVHaQ4HyBvTSLwBu"
