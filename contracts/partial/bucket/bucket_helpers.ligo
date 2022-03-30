@@ -8,7 +8,7 @@ function get_baker_registry_validate_entrypoint(
                         : contract(key_hash) is
   unwrap(
     (Tezos.get_entrypoint_opt("%validate", baker_registry) : option(contract(key_hash))),
-    TezStore.err_baker_registry_validate_entrypoint_404
+    Bucket.err_baker_registry_validate_entrypoint_404
   )
 
 function get_baker_registry_validate_op(
@@ -17,14 +17,14 @@ function get_baker_registry_validate_op(
                         : operation is
   Tezos.transaction(baker, 0mutez, get_baker_registry_validate_entrypoint(baker_registry))
 
-function get_pair_total_supply(
+[@inline] function get_pair_total_supply(
   const dex_core        : address;
   const pair_id         : token_id_t)
                         : nat is
   block {
     const total_supply_response : list(total_supply_res_t) = unwrap(
       (Tezos.call_view("get_total_supply", list [pair_id], dex_core) : option(list(total_supply_res_t))),
-      TezStore.err_dex_core_get_total_supply_view_404
+      Bucket.err_dex_core_get_total_supply_view_404
     );
 
     function get_total_supply(
@@ -38,28 +38,28 @@ function get_pair_total_supply(
       } with total_supply;
   } with List.fold(get_total_supply, total_supply_response, 0n)
 
-function get_voting_period(
+[@inline] function get_voting_period(
   const dex_core        : address)
                         : nat is
   unwrap(
     (Tezos.call_view("get_voting_period", Unit, dex_core) : option(nat)),
-    TezStore.err_dex_core_get_voting_period_view_404
+    Bucket.err_dex_core_get_voting_period_view_404
   )
 
-function get_collecting_period(
+[@inline] function get_collecting_period(
   const dex_core        : address)
                         : nat is
   unwrap(
     (Tezos.call_view("get_collecting_period", Unit, dex_core) : option(nat)),
-    TezStore.err_dex_core_get_collecting_period_view_404
+    Bucket.err_dex_core_get_collecting_period_view_404
   )
 
-function get_cycle_duration(
+[@inline] function get_cycle_duration(
   const dex_core        : address)
                         : nat is
   unwrap(
     (Tezos.call_view("get_cycle_duration", Unit, dex_core) : option(nat)),
-    TezStore.err_dex_core_get_cycle_duration_view_404
+    Bucket.err_dex_core_get_cycle_duration_view_404
   )
 
 function update_rewards(

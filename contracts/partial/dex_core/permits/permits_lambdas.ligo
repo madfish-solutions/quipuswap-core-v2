@@ -51,8 +51,8 @@ function set_expiry(
       else skip;
 
       const updated_permits : permits_t = case specific_permit_or_default of [
-      | None       -> set_user_default_expiry(owner, new_expiry, s.permits)
-      | Some(hash) -> set_permit_expiry(owner, hash, new_expiry, s.permits, s.default_expiry)
+      | None         -> set_user_default_expiry(owner, new_expiry, s.permits)
+      | Some(permit) -> set_permit_expiry(owner, permit, new_expiry, s.permits, s.default_expiry)
       ];
 
       s.permits := updated_permits;

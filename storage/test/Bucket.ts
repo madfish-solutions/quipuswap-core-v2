@@ -4,9 +4,9 @@ import { BigNumber } from "bignumber.js";
 
 import { zeroAddress } from "../../test/helpers/Utils";
 
-import { TezStoreStorage } from "../../test/types/TezStore";
+import { BucketStorage } from "../../test/types/Bucket";
 
-export const tezStoreStorage: TezStoreStorage = {
+export const bucketStorage: BucketStorage = {
   users: MichelsonMap.fromLiteral({}),
   bakers: MichelsonMap.fromLiteral({}),
   users_rewards: MichelsonMap.fromLiteral({}),

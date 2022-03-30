@@ -13,8 +13,13 @@ export type Baker = {
   votes: BigNumber;
 };
 
-export type DivestTez = {
+export type PourOut = {
   receiver: string;
+  amt: BigNumber;
+};
+
+export type PourOver = {
+  bucket: string;
   amt: BigNumber;
 };
 
@@ -38,7 +43,7 @@ export type Vote = {
   current_balance: BigNumber;
 };
 
-export type TezStoreStorage = {
+export type BucketStorage = {
   users: MichelsonMap<MichelsonMapKey, unknown>;
   bakers: MichelsonMap<MichelsonMapKey, unknown>;
   users_rewards: MichelsonMap<MichelsonMapKey, unknown>;

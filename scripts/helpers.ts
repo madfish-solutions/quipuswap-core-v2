@@ -116,12 +116,12 @@ export const compileLambdas = async (
 
   try {
     for (const lambda of lambdas) {
-      const michelson = execSync(
+      const michelson: Buffer = execSync(
         `${ligo} compile expression pascaligo 'Bytes.pack(${lambda.name})' --michelson-format json --init-file $PWD/${contract} --protocol hangzhou`,
         { maxBuffer: 1024 * 500 }
-      ).toString();
+      );
 
-      res.push(JSON.parse(michelson).bytes);
+      res.push(JSON.parse(michelson.toString()).bytes);
 
       console.log(
         lambda.index + 1 + ". " + lambda.name + " successfully compiled."

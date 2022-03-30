@@ -5,12 +5,14 @@ import { BakerRegistry } from "../../helpers/BakerRegistry";
 import { PRECISION } from "../../helpers/Constants";
 import { Auction } from "../../helpers/Auction";
 import { DexCore } from "../../helpers/DexCore";
+import { Bucket } from "../../helpers/Bucket";
 import { FA12 } from "../../helpers/FA12";
 import { FA2 } from "../../helpers/FA2";
 import {
   defaultCollectingPeriod,
   defaultCycleDuration,
   defaultVotingPeriod,
+  zeroAddress,
   Utils,
 } from "../../helpers/Utils";
 
@@ -30,7 +32,6 @@ import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa12Storage } from "../../../storage/test/FA12";
 import { fa2Storage } from "../../../storage/test/FA2";
 
-import { TezStore } from "../../helpers/TezStore";
 import { SBAccount } from "../../types/Common";
 import {
   CalculateFlashSwap,
@@ -122,6 +123,7 @@ describe("DexCore (flash swap)", async () => {
       token_b_in: new BigNumber(5_000_000),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa12Token1.approve(dexCore.contract.address, launchParams.token_a_in);
@@ -141,6 +143,7 @@ describe("DexCore (flash swap)", async () => {
       token_b_in: new BigNumber(5_000_000),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa2Token1.updateOperators([
@@ -166,6 +169,7 @@ describe("DexCore (flash swap)", async () => {
       token_b_in: new BigNumber(5_000_000),
       shares_receiver: alice.pkh,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     launchParams = DexCore.changeTokensOrderInPair(launchParams, false);
@@ -187,6 +191,7 @@ describe("DexCore (flash swap)", async () => {
       token_b_in: new BigNumber(5_000_000),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
     launchParams = DexCore.changeTokensOrderInPair(launchParams, false);
 
@@ -212,6 +217,7 @@ describe("DexCore (flash swap)", async () => {
       token_b_in: new BigNumber(5_000_000),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa12Token1.approve(dexCore.contract.address, launchParams.token_a_in);
@@ -249,9 +255,10 @@ describe("DexCore (flash swap)", async () => {
     const params: FlashSwap = {
       flash_swap_rule: "Loan_a_return_a",
       pair_id: new BigNumber(0),
-      receiver: alice.pkh,
-      referrer: alice.pkh,
-      amount_out: new BigNumber(1),
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000),
+      receiver: zeroAddress,
+      referrer: zeroAddress,
+      amount_out: new BigNumber(0),
     };
 
     await rejects(dexCore2.flashSwap(params), (err: Error) => {
@@ -261,10 +268,28 @@ describe("DexCore (flash swap)", async () => {
     });
   });
 
+  it("should fail if action is outdated", async () => {
+    const params: FlashSwap = {
+      flash_swap_rule: "Loan_a_return_a",
+      pair_id: new BigNumber(0),
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000),
+      receiver: alice.pkh,
+      referrer: alice.pkh,
+      amount_out: new BigNumber(1),
+    };
+
+    await rejects(dexCore.flashSwap(params), (err: Error) => {
+      expect(err.message).to.equal(DexCoreErrors.ERR_ACTION_OUTDATED);
+
+      return true;
+    });
+  });
+
   it("should fail if user is trying to refer himself", async () => {
     const params: FlashSwap = {
       flash_swap_rule: "Loan_a_return_a",
       pair_id: new BigNumber(0),
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: alice.pkh,
       amount_out: new BigNumber(1),
@@ -281,6 +306,7 @@ describe("DexCore (flash swap)", async () => {
     const params: FlashSwap = {
       flash_swap_rule: "Loan_a_return_a",
       pair_id: new BigNumber(0),
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_out: new BigNumber(0),
@@ -297,6 +323,7 @@ describe("DexCore (flash swap)", async () => {
     const params: FlashSwap = {
       flash_swap_rule: "Loan_a_return_a",
       pair_id: new BigNumber(666),
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_out: new BigNumber(1),
@@ -313,6 +340,7 @@ describe("DexCore (flash swap)", async () => {
     const params: FlashSwap = {
       flash_swap_rule: "Loan_a_return_a",
       pair_id: new BigNumber(0),
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_out: new BigNumber(5_000_001),
@@ -329,6 +357,7 @@ describe("DexCore (flash swap)", async () => {
     const params: FlashSwap = {
       flash_swap_rule: "Loan_a_return_a",
       pair_id: new BigNumber(0),
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: flashSwapAgent.contract.address,
       referrer: bob.pkh,
       amount_out: new BigNumber(1000),
@@ -422,6 +451,7 @@ describe("DexCore (flash swap)", async () => {
     const params: FlashSwap = {
       flash_swap_rule: "Loan_b_return_a",
       pair_id: new BigNumber(2),
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: flashSwapAgent.contract.address,
       referrer: bob.pkh,
       amount_out: new BigNumber(1000),
@@ -562,6 +592,7 @@ describe("DexCore (flash swap)", async () => {
     const params: FlashSwap = {
       flash_swap_rule: "Loan_a_return_b",
       pair_id: new BigNumber(4),
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: flashSwapAgent.contract.address,
       referrer: bob.pkh,
       amount_out: new BigNumber(1000),
@@ -692,6 +723,7 @@ describe("DexCore (flash swap)", async () => {
     const params: FlashSwap = {
       flash_swap_rule: "Loan_a_return_b",
       pair_id: new BigNumber(0),
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: flashSwapAgent.contract.address,
       referrer: bob.pkh,
       amount_out: new BigNumber(1000),
@@ -709,8 +741,8 @@ describe("DexCore (flash swap)", async () => {
     });
     await flashSwapAgent.updateStorage();
 
-    const tezStore: TezStore = await TezStore.init(
-      dexCore.storage.storage.pairs[params.pair_id.toFixed()].tez_store,
+    const bucket: Bucket = await Bucket.init(
+      dexCore.storage.storage.pairs[params.pair_id.toFixed()].bucket,
       dexCore.tezos
     );
     const prevTokenAPool: BigNumber =
@@ -733,8 +765,8 @@ describe("DexCore (flash swap)", async () => {
     const prevDexCoreTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
       dexCore.contract.address
     );
-    const prevTezStoreTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
-      tezStore.contract.address
+    const prevBucketTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
+      bucket.contract.address
     );
     const prevFlashSwapAgentTokBBalance: BigNumber =
       await utils.tezos.tz.getBalance(flashSwapAgent.contract.address);
@@ -763,8 +795,8 @@ describe("DexCore (flash swap)", async () => {
     const currDexCoreTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
       dexCore.contract.address
     );
-    const currTezStoreTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
-      tezStore.contract.address
+    const currBucketTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
+      bucket.contract.address
     );
     const currFlashSwapAgentTokBBalance: BigNumber =
       await utils.tezos.tz.getBalance(flashSwapAgent.contract.address);
@@ -775,8 +807,8 @@ describe("DexCore (flash swap)", async () => {
     expect(currDexCoreTokBBalance).to.be.bignumber.equal(
       prevDexCoreTokBBalance
     );
-    expect(currTezStoreTokBBalance).to.be.bignumber.equal(
-      prevTezStoreTokBBalance.plus(new BigNumber(2000))
+    expect(currBucketTokBBalance).to.be.bignumber.equal(
+      prevBucketTokBBalance.plus(new BigNumber(2000))
     );
     expect(currFlashSwapAgentTokABalance).to.be.bignumber.equal(
       prevFlashSwapAgentTokABalance.plus(params.amount_out)
@@ -802,6 +834,7 @@ describe("DexCore (flash swap)", async () => {
     const params: FlashSwap = {
       flash_swap_rule: "Loan_a_return_a",
       pair_id: new BigNumber(1),
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: flashSwapAgent.contract.address,
       referrer: bob.pkh,
       amount_out: new BigNumber(1000),
@@ -891,6 +924,7 @@ describe("DexCore (flash swap)", async () => {
     const params: FlashSwap = {
       flash_swap_rule: "Loan_b_return_a",
       pair_id: new BigNumber(4),
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: flashSwapAgent.contract.address,
       referrer: bob.pkh,
       amount_out: new BigNumber(1000),
@@ -1022,6 +1056,7 @@ describe("DexCore (flash swap)", async () => {
     const params: FlashSwap = {
       flash_swap_rule: "Loan_a_return_b",
       pair_id: new BigNumber(3),
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: flashSwapAgent.contract.address,
       referrer: bob.pkh,
       amount_out: new BigNumber(1000),
@@ -1161,6 +1196,7 @@ describe("DexCore (flash swap)", async () => {
     const params: FlashSwap = {
       flash_swap_rule: "Loan_a_return_b",
       pair_id: new BigNumber(1),
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: flashSwapAgent.contract.address,
       referrer: bob.pkh,
       amount_out: new BigNumber(1000),
@@ -1175,8 +1211,8 @@ describe("DexCore (flash swap)", async () => {
     });
     await flashSwapAgent.updateStorage();
 
-    const tezStore: TezStore = await TezStore.init(
-      dexCore.storage.storage.pairs[params.pair_id.toFixed()].tez_store,
+    const bucket: Bucket = await Bucket.init(
+      dexCore.storage.storage.pairs[params.pair_id.toFixed()].bucket,
       dexCore.tezos
     );
     const prevTokenAPool: BigNumber =
@@ -1199,8 +1235,8 @@ describe("DexCore (flash swap)", async () => {
     const prevDexCoreTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
       dexCore.contract.address
     );
-    const prevTezStoreTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
-      tezStore.contract.address
+    const prevBucketTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
+      bucket.contract.address
     );
     const prevFlashSwapAgentTokBBalance: BigNumber =
       await utils.tezos.tz.getBalance(flashSwapAgent.contract.address);
@@ -1229,8 +1265,8 @@ describe("DexCore (flash swap)", async () => {
     const currDexCoreTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
       dexCore.contract.address
     );
-    const currTezStoreTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
-      tezStore.contract.address
+    const currBucketTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
+      bucket.contract.address
     );
     const currFlashSwapAgentTokBBalance: BigNumber =
       await utils.tezos.tz.getBalance(flashSwapAgent.contract.address);
@@ -1241,8 +1277,8 @@ describe("DexCore (flash swap)", async () => {
     expect(currDexCoreTokBBalance).to.be.bignumber.equal(
       prevDexCoreTokBBalance
     );
-    expect(currTezStoreTokBBalance).to.be.bignumber.equal(
-      prevTezStoreTokBBalance.plus(new BigNumber(2000))
+    expect(currBucketTokBBalance).to.be.bignumber.equal(
+      prevBucketTokBBalance.plus(new BigNumber(2000))
     );
     expect(currFlashSwapAgentTokABalance).to.be.bignumber.equal(
       prevFlashSwapAgentTokABalance.plus(params.amount_out)
@@ -1268,6 +1304,7 @@ describe("DexCore (flash swap)", async () => {
     const params: FlashSwap = {
       flash_swap_rule: "Loan_b_return_b",
       pair_id: new BigNumber(0),
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: bob.pkh,
       referrer: bob.pkh,
       amount_out: new BigNumber(1000),
@@ -1278,8 +1315,8 @@ describe("DexCore (flash swap)", async () => {
     });
     await flashSwapAgent.updateStorage();
 
-    const tezStore: TezStore = await TezStore.init(
-      dexCore.storage.storage.pairs[params.pair_id.toFixed()].tez_store,
+    const bucket: Bucket = await Bucket.init(
+      dexCore.storage.storage.pairs[params.pair_id.toFixed()].bucket,
       dexCore.tezos
     );
     const prevTokenAPool: BigNumber =
@@ -1296,8 +1333,8 @@ describe("DexCore (flash swap)", async () => {
     const prevDexCoreTokBalance: BigNumber = await utils.tezos.tz.getBalance(
       dexCore.contract.address
     );
-    const prevTezStoreTokBalance: BigNumber = await utils.tezos.tz.getBalance(
-      tezStore.contract.address
+    const prevBucketTokBalance: BigNumber = await utils.tezos.tz.getBalance(
+      bucket.contract.address
     );
     const prevBobTokBalance: BigNumber = await utils.tezos.tz.getBalance(
       bob.pkh
@@ -1318,16 +1355,16 @@ describe("DexCore (flash swap)", async () => {
     const currDexCoreTokBalance: BigNumber = await utils.tezos.tz.getBalance(
       dexCore.contract.address
     );
-    const currTezStoreTokBalance: BigNumber = await utils.tezos.tz.getBalance(
-      tezStore.contract.address
+    const currBucketTokBalance: BigNumber = await utils.tezos.tz.getBalance(
+      bucket.contract.address
     );
     const currBobTokBalance: BigNumber = await utils.tezos.tz.getBalance(
       bob.pkh
     );
 
     expect(currDexCoreTokBalance).to.be.bignumber.equal(prevDexCoreTokBalance);
-    expect(currTezStoreTokBalance).to.be.bignumber.equal(
-      prevTezStoreTokBalance.plus(new BigNumber(1000))
+    expect(currBucketTokBalance).to.be.bignumber.equal(
+      prevBucketTokBalance.plus(new BigNumber(1000))
     );
     expect(currBobTokBalance).to.be.bignumber.equal(
       prevBobTokBalance.plus(params.amount_out)
@@ -1348,6 +1385,7 @@ describe("DexCore (flash swap)", async () => {
     const params: FlashSwap = {
       flash_swap_rule: "Loan_b_return_a",
       pair_id: new BigNumber(0),
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: bob.pkh,
       referrer: bob.pkh,
       amount_out: new BigNumber(1000),
@@ -1365,8 +1403,8 @@ describe("DexCore (flash swap)", async () => {
     });
     await flashSwapAgent.updateStorage();
 
-    const tezStore: TezStore = await TezStore.init(
-      dexCore.storage.storage.pairs[params.pair_id.toFixed()].tez_store,
+    const bucket: Bucket = await Bucket.init(
+      dexCore.storage.storage.pairs[params.pair_id.toFixed()].bucket,
       dexCore.tezos
     );
     const prevTokenAPool: BigNumber =
@@ -1387,8 +1425,8 @@ describe("DexCore (flash swap)", async () => {
     const prevDexCoreTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
       dexCore.contract.address
     );
-    const prevTezStoreTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
-      tezStore.contract.address
+    const prevBucketTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
+      bucket.contract.address
     );
     const prevFlashSwapAgentTokBBalance: BigNumber =
       await utils.tezos.tz.getBalance(flashSwapAgent.contract.address);
@@ -1416,8 +1454,8 @@ describe("DexCore (flash swap)", async () => {
     const currDexCoreTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
       dexCore.contract.address
     );
-    const currTezStoreTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
-      tezStore.contract.address
+    const currBucketTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
+      bucket.contract.address
     );
     const currFlashSwapAgentTokBBalance: BigNumber =
       await utils.tezos.tz.getBalance(flashSwapAgent.contract.address);
@@ -1428,8 +1466,8 @@ describe("DexCore (flash swap)", async () => {
     expect(currDexCoreTokBBalance).to.be.bignumber.equal(
       prevDexCoreTokBBalance.plus(new BigNumber(2000))
     );
-    expect(currTezStoreTokBBalance).to.be.bignumber.equal(
-      prevTezStoreTokBBalance.minus(params.amount_out)
+    expect(currBucketTokBBalance).to.be.bignumber.equal(
+      prevBucketTokBBalance.minus(params.amount_out)
     );
     expect(currFlashSwapAgentTokBBalance).to.be.bignumber.equal(
       prevFlashSwapAgentTokBBalance.minus(new BigNumber(2000))
@@ -1455,6 +1493,7 @@ describe("DexCore (flash swap)", async () => {
     const params: FlashSwap = {
       flash_swap_rule: "Loan_b_return_a",
       pair_id: new BigNumber(1),
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: bob.pkh,
       referrer: bob.pkh,
       amount_out: new BigNumber(1000),
@@ -1469,8 +1508,8 @@ describe("DexCore (flash swap)", async () => {
     });
     await flashSwapAgent.updateStorage();
 
-    const tezStore: TezStore = await TezStore.init(
-      dexCore.storage.storage.pairs[params.pair_id.toFixed()].tez_store,
+    const bucket: Bucket = await Bucket.init(
+      dexCore.storage.storage.pairs[params.pair_id.toFixed()].bucket,
       dexCore.tezos
     );
     const prevTokenAPool: BigNumber =
@@ -1491,8 +1530,8 @@ describe("DexCore (flash swap)", async () => {
     const prevDexCoreTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
       dexCore.contract.address
     );
-    const prevTezStoreTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
-      tezStore.contract.address
+    const prevBucketTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
+      bucket.contract.address
     );
     const prevFlashSwapAgentTokBBalance: BigNumber =
       await utils.tezos.tz.getBalance(flashSwapAgent.contract.address);
@@ -1519,8 +1558,8 @@ describe("DexCore (flash swap)", async () => {
     const currDexCoreTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
       dexCore.contract.address
     );
-    const currTezStoreTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
-      tezStore.contract.address
+    const currBucketTokBBalance: BigNumber = await utils.tezos.tz.getBalance(
+      bucket.contract.address
     );
     const currFlashSwapAgentTokBBalance: BigNumber =
       await utils.tezos.tz.getBalance(flashSwapAgent.contract.address);
@@ -1531,8 +1570,8 @@ describe("DexCore (flash swap)", async () => {
     expect(currDexCoreTokBBalance).to.be.bignumber.equal(
       prevDexCoreTokBBalance.plus(new BigNumber(2000))
     );
-    expect(currTezStoreTokBBalance).to.be.bignumber.equal(
-      prevTezStoreTokBBalance.minus(params.amount_out)
+    expect(currBucketTokBBalance).to.be.bignumber.equal(
+      prevBucketTokBBalance.minus(params.amount_out)
     );
     expect(currFlashSwapAgentTokBBalance).to.be.bignumber.equal(
       prevFlashSwapAgentTokBBalance.minus(new BigNumber(2000))
@@ -1558,6 +1597,7 @@ describe("DexCore (flash swap)", async () => {
     const params: FlashSwap = {
       flash_swap_rule: "Loan_a_return_b",
       pair_id: new BigNumber(0),
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_out: new BigNumber(10000),

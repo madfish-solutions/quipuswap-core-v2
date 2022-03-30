@@ -82,16 +82,16 @@ function iterate_transfer(
         if tokens.token_b = Tez
         then {
           const pair : pair_t = unwrap(s.pairs[dst.token_id], DexCore.err_pair_not_listed);
-          const tez_store : address = unwrap(pair.tez_store, DexCore.err_tez_store_404);
+          const bucket : address = unwrap(pair.bucket, DexCore.err_bucket_404);
           const sender_candidate : key_hash =
-            case (Tezos.call_view("get_user_candidate", transfer_param.from_, tez_store) : option(key_hash)) of [
+            case (Tezos.call_view("get_user_candidate", transfer_param.from_, bucket) : option(key_hash)) of [
           | Some(v) -> v
-          | None    -> failwith(DexCore.err_tez_store_get_user_candidate_view_404)
+          | None    -> failwith(DexCore.err_bucket_get_user_candidate_view_404)
           ];
           const receiver_candidate : key_hash =
-            case (Tezos.call_view("get_user_candidate", dst.to_, tez_store) : option(key_hash)) of [
+            case (Tezos.call_view("get_user_candidate", dst.to_, bucket) : option(key_hash)) of [
           | Some(v) -> v
-          | None    -> failwith(DexCore.err_tez_store_get_user_candidate_view_404)
+          | None    -> failwith(DexCore.err_bucket_get_user_candidate_view_404)
           ];
           const new_sender_balance : nat = unwrap_or(s.ledger[(transfer_param.from_, dst.token_id)], 0n);
           const new_receiver_balance : nat = unwrap_or(s.ledger[(dst.to_, dst.token_id)], 0n);
@@ -104,7 +104,7 @@ function iterate_transfer(
               votes           = new_receiver_balance;
               current_balance = receiver_balance;
             ],
-            unwrap(pair.tez_store, DexCore.err_tez_store_404)
+            unwrap(pair.bucket, DexCore.err_bucket_404)
           ) # ops;
           ops := get_vote_op(
             record [
@@ -114,7 +114,7 @@ function iterate_transfer(
               votes           = new_sender_balance;
               current_balance = sender_balance;
             ],
-            unwrap(pair.tez_store, DexCore.err_tez_store_404)
+            unwrap(pair.bucket, DexCore.err_bucket_404)
           ) # ops;
         }
         else skip;

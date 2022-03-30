@@ -82,7 +82,7 @@ describe("DexCore (callbacks)", async () => {
         votes: new BigNumber(0),
         current_balance: new BigNumber(0),
       },
-      tez_store: alice.pkh,
+      bucket: alice.pkh,
     };
 
     await rejects(dexCore.launchCallback(params), (err: Error) => {
@@ -114,6 +114,7 @@ describe("DexCore (callbacks)", async () => {
       token_b_in: new BigNumber(100),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa12Token1.approve(dexCore.contract.address, params.token_a_in);

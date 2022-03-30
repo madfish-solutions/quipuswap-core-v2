@@ -1,20 +1,24 @@
-function invest_tez(
-  const _               : invest_tez_t;
+(* An alternative to `default` entrypoint, which doesn't affect rewards *)
+function fill(
+  const s               : storage_t)
+                        : return_t is
+  ((nil : list(operation)), s)
+
+function pour_out(
+  const params          : pour_out_t;
   const s               : storage_t)
                         : return_t is
   block {
     only_dex_core(s.dex_core);
-  } with ((nil : list(operation)), s)
-
-function divest_tez(
-  const params          : divest_tez_t;
-  const s               : storage_t)
-                        : return_t is
-  block {
-    only_dex_core(s.dex_core);
-
-    assert_with_error(params.amt <= Tezos.balance / 1mutez, TezStore.err_insufficient_tez_balance);
   } with (list [transfer_tez(params.receiver, params.amt)], s)
+
+function pour_over(
+  const params          : pour_over_t;
+  const s               : storage_t)
+                        : return_t is
+  block {
+    only_dex_core(s.dex_core);
+  } with (list [get_fill_op(params.amt * 1mutez, params.bucket)], s)
 
 function withdraw_rewards(
   const params          : withdraw_rewards_t;

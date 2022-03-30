@@ -51,7 +51,7 @@ type pair_t             is [@layout:comb] record [
   token_b_price_cml       : nat;
   total_supply            : nat;
   last_block_timestamp    : timestamp;
-  tez_store               : option(address);
+  bucket                  : option(address);
 ]
 
 type setup_func_t       is [@layout:comb] record [
@@ -60,3 +60,5 @@ type setup_func_t       is [@layout:comb] record [
 ]
 
 type default_t          is unit
+
+type fill_t             is unit

@@ -1,4 +1,4 @@
-type tez_store_t        is storage_t
+type bucket_t           is storage_t
 
 type tokens_t           is [@layout:comb] record [
   token_a                 : token_t;
@@ -15,6 +15,7 @@ type flash_swap_t       is [@layout:comb] record [
   lambda                  : unit -> list(operation);
   flash_swap_rule         : flash_swap_rule_t;
   pair_id                 : token_id_t;
+  deadline                : timestamp;
   receiver                : address;
   referrer                : address;
   amount_out              : nat;
@@ -88,11 +89,12 @@ type launch_exchange_t  is [@layout:comb] record [
   token_b_in              : nat;
   shares_receiver         : address;
   candidate               : key_hash;
+  deadline                : timestamp;
 ]
 
 type launch_callback_t  is [@layout:comb] record [
   vote_params             : vote_t;
-  tez_store               : address;
+  bucket                  : address;
 ]
 
 type invest_liquidity_t is [@layout:comb] record [
@@ -102,6 +104,7 @@ type invest_liquidity_t is [@layout:comb] record [
   shares                  : nat;
   shares_receiver         : address;
   candidate               : key_hash;
+  deadline                : timestamp;
 ]
 
 type divest_liquidity_t is [@layout:comb] record [
@@ -111,6 +114,7 @@ type divest_liquidity_t is [@layout:comb] record [
   shares                  : nat;
   liquidity_receiver      : address;
   candidate               : key_hash;
+  deadline                : timestamp;
 ]
 
 type swap_side_t        is [@layout:comb] record [
@@ -123,13 +127,20 @@ type swap_data_t        is [@layout:comb] record [
   from_                   : swap_side_t;
 ]
 
+type forward_t          is [@layout:comb] record [
+  from_bucket             : address;
+  to_bucket               : address;
+  amt                     : nat;
+]
+
 type tmp_swap_t         is [@layout:comb] record [
   s                       : storage_t;
-  ops                     : list(operation);
+  forwards                : list(forward_t);
   last_operation          : option(operation);
   token_in                : token_t;
   receiver                : address;
   referrer                : address;
+  from_bucket             : address;
   amount_in               : nat;
   swaps_list_size         : nat;
   counter                 : nat;
@@ -146,6 +157,7 @@ type swap_slice_t       is [@layout:comb] record [
 
 type swap_t             is [@layout:comb] record [
   swaps                   : list(swap_slice_t);
+  deadline                : timestamp;
   receiver                : address;
   referrer                : address;
   amount_in               : nat;
@@ -322,6 +334,6 @@ type full_action_t      is
 | Setup_func              of setup_func_t
 | Default                 of default_t
 
-type deploy_tez_store_t is (option(key_hash) * tez * tez_store_t) -> (operation * address)
+type deploy_bucket_t    is (option(key_hash) * tez * bucket_t) -> (operation * address)
 
 const dex_core_methods_max_index : nat = 28n;

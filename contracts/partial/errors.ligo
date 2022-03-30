@@ -12,7 +12,7 @@ module DexCore is {
   const err_no_shares_expected                        : string = "110";
   const err_low_token_a_in                            : string = "111";
   const err_low_token_b_in                            : string = "112";
-  const err_tez_store_404                             : string = "113";
+  const err_bucket_404                                : string = "113";
   const err_insufficient_liquidity                    : string = "114";
   const err_dust_out                                  : string = "115";
   const err_high_min_out                              : string = "116";
@@ -20,19 +20,19 @@ module DexCore is {
   const err_zero_in                                   : string = "118";
   const err_wrong_route                               : string = "119";
   const err_wrong_tez_amount                          : string = "120";
-  const err_tez_store_invest_tez_entrypoint_404       : string = "121";
-  const err_tez_store_divest_tez_entrypoint_404       : string = "122";
-  const err_tez_store_ban_baker_entrypoint_404        : string = "123";
-  const err_tez_store_vote_entrypoint_404             : string = "124";
-  const err_tez_store_is_banned_baker_view_404        : string = "125";
+  const err_bucket_pour_out_entrypoint_404            : string = "121";
+  const err_bucket_pour_over_entrypoint_404           : string = "122";
+  const err_bucket_ban_baker_entrypoint_404           : string = "123";
+  const err_bucket_vote_entrypoint_404                : string = "124";
+  const err_bucket_is_banned_baker_view_404           : string = "125";
   const err_flash_swaps_proxy_default_entrypoint_404  : string = "126";
-  const err_tez_store_get_tez_balance_view_404        : string = "127";
+  const err_bucket_get_tez_balance_view_404           : string = "127";
   const err_flash_swap_callback_404                   : string = "128";
   const err_wrong_flash_swap_returns                  : string = "129";
   const err_can_not_refer_yourself                    : string = "130";
-  const err_tez_store_withdraw_rewards_entrypoint_404 : string = "131";
+  const err_bucket_withdraw_rewards_entrypoint_404    : string = "131";
   const err_insufficient_interface_fee_balance        : string = "132";
-  const err_tez_store_get_user_candidate_view_404     : string = "133";
+  const err_bucket_get_user_candidate_view_404        : string = "133";
   const err_launch_callback_404                       : string = "134";
   const err_auction_receive_fee_entrypoint_404        : string = "135";
   const err_reentrancy                                : string = "136";
@@ -43,15 +43,15 @@ module DexCore is {
   const err_tez_amount_mismatch                       : string = "141";
   const err_wrong_reserves_state                      : string = "142";
   const err_no_pair_id                                : string = "143";
+  const err_action_outdated                           : string = "144";
 }
 
-module TezStore is {
-  const err_insufficient_tez_balance                : string = "200";
-  const err_baker_registry_validate_entrypoint_404  : string = "201";
-  const err_dex_core_get_total_supply_view_404      : string = "202";
-  const err_dex_core_get_voting_period_view_404     : string = "203";
-  const err_dex_core_get_collecting_period_view_404 : string = "204";
-  const err_dex_core_get_cycle_duration_view_404    : string = "205";
+module Bucket is {
+  const err_baker_registry_validate_entrypoint_404  : string = "200";
+  const err_dex_core_get_total_supply_view_404      : string = "201";
+  const err_dex_core_get_voting_period_view_404     : string = "202";
+  const err_dex_core_get_collecting_period_view_404 : string = "203";
+  const err_dex_core_get_cycle_duration_view_404    : string = "204";
 }
 
 module Auction is {
@@ -81,4 +81,5 @@ module Common is {
   const err_wrong_token_type               : string = "409";
   const err_div_by_zero                    : string = "410";
   const err_contract_404                   : string = "411";
+  const err_bucket_fill_entrypoint_404     : string = "412";
 }

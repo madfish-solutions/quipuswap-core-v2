@@ -6,7 +6,7 @@
   "scripts": {
     "start-sandbox": "docker run --rm --name my-sandbox -e flextesa_node_cors_origin='*' -e block_time=1 --detach -p 8732:20000 oxheadalpha/flextesa:20211221 hangzbox start",
     "clean": "rm -rf ./build ./contracts/compiled",
-    "pre-compile": "ts-node scripts/cli.ts compile -c tez_store -o contracts/compiled",
+    "pre-compile": "ts-node scripts/cli.ts compile -c bucket -o contracts/compiled",
     "compile-dex-core-lambdas": "ts-node scripts/cli.ts compile-lambda -j storage/json/DexCoreFunctions.json -c contracts/main/dex_core.ligo",
     "compile-auction-lambdas": "ts-node scripts/cli.ts compile-lambda -j storage/json/AuctionFunctions.json -c contracts/main/auction.ligo",
     "compile-lambdas": "yarn compile-auction-lambdas && yarn compile-dex-core-lambdas",
@@ -16,7 +16,7 @@
     "migrate-hangzhounet": "yarn compile && ts-node scripts/cli.ts migrate -n hangzhounet",
     "migrate-ithacanet": "yarn compile && ts-node scripts/cli.ts migrate -n ithacanet",
     "migrate-mainnet": "yarn compile && ts-node scripts/cli.ts migrate -n mainnet",
-    "test-compile": "ts-node scripts/cli.ts compile -f json -p contracts/test -o test/contracts -c flash_swap_agent tez_receiver",
+    "test-compile": "ts-node scripts/cli.ts compile -f json -p contracts/test -o test/contracts -c flash_swap_agent",
     "test": "ts-mocha --bail"
   },
   "repository": {

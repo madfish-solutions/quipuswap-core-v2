@@ -10,7 +10,7 @@
 
 #include "../partial/common_helpers.ligo"
 
-#include "../partial/tez_store/tez_store_types.ligo"
+#include "../partial/bucket/bucket_types.ligo"
 
 #include "../partial/dex_core/permits/permits_types.ligo"
 

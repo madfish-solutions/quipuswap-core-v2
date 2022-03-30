@@ -9,6 +9,7 @@ import {
   defaultCollectingPeriod,
   defaultCycleDuration,
   defaultVotingPeriod,
+  zeroAddress,
   Utils,
 } from "../../helpers/Utils";
 
@@ -109,6 +110,7 @@ describe("DexCore (swap)", async () => {
       token_b_in: new BigNumber(5_000_000),
       shares_receiver: alice.pkh,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa12Token1.approve(dexCore.contract.address, launchParams.token_a_in);
@@ -128,6 +130,7 @@ describe("DexCore (swap)", async () => {
       token_b_in: new BigNumber(5_000_000),
       shares_receiver: alice.pkh,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa2Token1.updateOperators([
@@ -153,6 +156,7 @@ describe("DexCore (swap)", async () => {
       token_b_in: new BigNumber(5_000_000),
       shares_receiver: alice.pkh,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
     launchParams = DexCore.changeTokensOrderInPair(launchParams, false);
 
@@ -171,6 +175,7 @@ describe("DexCore (swap)", async () => {
       token_b_in: new BigNumber(5_000_000),
       shares_receiver: alice.pkh,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa12Token1.approve(dexCore.contract.address, launchParams.token_a_in);
@@ -189,6 +194,7 @@ describe("DexCore (swap)", async () => {
       token_b_in: new BigNumber(5_000_000),
       shares_receiver: alice.pkh,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
     launchParams = DexCore.changeTokensOrderInPair(launchParams, false);
 
@@ -214,6 +220,7 @@ describe("DexCore (swap)", async () => {
       token_b_in: new BigNumber(5_000_000),
       shares_receiver: alice.pkh,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa12Token3.approve(dexCore.contract.address, launchParams.token_a_in);
@@ -230,6 +237,7 @@ describe("DexCore (swap)", async () => {
       token_b_in: new BigNumber(5_000_000),
       shares_receiver: alice.pkh,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa12Token3.approve(dexCore.contract.address, launchParams.token_a_in);
@@ -244,6 +252,7 @@ describe("DexCore (swap)", async () => {
       token_b_in: new BigNumber(5_000_000),
       shares_receiver: alice.pkh,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa12Token3.approve(dexCore.contract.address, launchParams.token_a_in);
@@ -255,11 +264,12 @@ describe("DexCore (swap)", async () => {
 
   it("should fail if reentrancy", async () => {
     const swapParams: Swap = {
-      swaps: [{ direction: { a_to_b: undefined }, pair_id: new BigNumber(0) }],
-      receiver: alice.pkh,
-      referrer: bob.pkh,
-      amount_in: new BigNumber(1),
-      min_amount_out: new BigNumber(1),
+      swaps: [],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000),
+      receiver: zeroAddress,
+      referrer: zeroAddress,
+      amount_in: new BigNumber(0),
+      min_amount_out: new BigNumber(0),
     };
 
     await rejects(dexCore2.swap(swapParams), (err: Error) => {
@@ -269,9 +279,27 @@ describe("DexCore (swap)", async () => {
     });
   });
 
+  it("should fail if action is outdated", async () => {
+    const swapParams: Swap = {
+      swaps: [{ direction: { a_to_b: undefined }, pair_id: new BigNumber(0) }],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000),
+      receiver: alice.pkh,
+      referrer: alice.pkh,
+      amount_in: new BigNumber(1),
+      min_amount_out: new BigNumber(1),
+    };
+
+    await rejects(dexCore.swap(swapParams), (err: Error) => {
+      expect(err.message).to.equal(DexCoreErrors.ERR_ACTION_OUTDATED);
+
+      return true;
+    });
+  });
+
   it("should fail if user is trying to refer himself", async () => {
     const swapParams: Swap = {
       swaps: [{ direction: { a_to_b: undefined }, pair_id: new BigNumber(0) }],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: alice.pkh,
       amount_in: new BigNumber(1),
@@ -288,6 +316,7 @@ describe("DexCore (swap)", async () => {
   it("should fail if empty route", async () => {
     const swapParams: Swap = {
       swaps: [],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(1),
@@ -306,6 +335,7 @@ describe("DexCore (swap)", async () => {
       swaps: [
         { direction: { a_to_b: undefined }, pair_id: new BigNumber(666) },
       ],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(1),
@@ -322,6 +352,7 @@ describe("DexCore (swap)", async () => {
   it("should fail if wrong TEZ amount was sent to swap", async () => {
     const swapParams: Swap = {
       swaps: [{ direction: { b_to_a: undefined }, pair_id: new BigNumber(0) }],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(1),
@@ -338,6 +369,7 @@ describe("DexCore (swap)", async () => {
   it("should fail if a user expects too high min out", async () => {
     const swapParams: Swap = {
       swaps: [{ direction: { a_to_b: undefined }, pair_id: new BigNumber(0) }],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(5),
@@ -354,6 +386,7 @@ describe("DexCore (swap)", async () => {
   it("should fail if user passed zero amount in", async () => {
     const swapParams: Swap = {
       swaps: [{ direction: { a_to_b: undefined }, pair_id: new BigNumber(0) }],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(0),
@@ -373,6 +406,7 @@ describe("DexCore (swap)", async () => {
         { direction: { a_to_b: undefined }, pair_id: new BigNumber(0) },
         { direction: { a_to_b: undefined }, pair_id: new BigNumber(0) },
       ],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(5),
@@ -391,6 +425,7 @@ describe("DexCore (swap)", async () => {
     const token: Token = { fa12: fa12Token1.contract.address };
     const swapParams: Swap = {
       swaps: [{ direction: { a_to_b: undefined }, pair_id: pairId }],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: bob.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(5),
@@ -411,8 +446,8 @@ describe("DexCore (swap)", async () => {
 
     await dexCore.updateStorage({ pairs: [pairId] });
 
-    const prevTezStoreTezBalance: BigNumber = await utils.tezos.tz.getBalance(
-      dexCore.storage.storage.pairs[pairId.toFixed()].tez_store
+    const prevBucketTezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[pairId.toFixed()].bucket
     );
     const prevFromPool: BigNumber =
       dexCore.storage.storage.pairs[pairId.toFixed()].token_a_pool;
@@ -432,8 +467,8 @@ describe("DexCore (swap)", async () => {
     const currBobTezBalance: BigNumber = await utils.tezos.tz.getBalance(
       bob.pkh
     );
-    const currTezStoreTezBalance: BigNumber = await utils.tezos.tz.getBalance(
-      dexCore.storage.storage.pairs[pairId.toFixed()].tez_store
+    const currBucketTezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[pairId.toFixed()].bucket
     );
 
     await dexCore.updateStorage({
@@ -458,8 +493,8 @@ describe("DexCore (swap)", async () => {
     expect(currBobTezBalance).to.be.bignumber.equal(
       prevBobTezBalance.plus(swapResult.out)
     );
-    expect(currTezStoreTezBalance).to.be.bignumber.equal(
-      prevTezStoreTezBalance.minus(swapResult.out)
+    expect(currBucketTezBalance).to.be.bignumber.equal(
+      prevBucketTezBalance.minus(swapResult.out)
     );
 
     const currInterfaceFee: BigNumber =
@@ -486,6 +521,7 @@ describe("DexCore (swap)", async () => {
     };
     const swapParams: Swap = {
       swaps: [{ direction: { a_to_b: undefined }, pair_id: pairId }],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: bob.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(10),
@@ -508,8 +544,8 @@ describe("DexCore (swap)", async () => {
 
     await dexCore.updateStorage({ pairs: [pairId] });
 
-    const prevTezStoreTezBalance: BigNumber = await utils.tezos.tz.getBalance(
-      dexCore.storage.storage.pairs[pairId.toFixed()].tez_store
+    const prevBucketTezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[pairId.toFixed()].bucket
     );
     const prevFromPool: BigNumber =
       dexCore.storage.storage.pairs[pairId.toFixed()].token_a_pool;
@@ -530,8 +566,8 @@ describe("DexCore (swap)", async () => {
     const currBobTezBalance: BigNumber = await utils.tezos.tz.getBalance(
       bob.pkh
     );
-    const currTezStoreTezBalance: BigNumber = await utils.tezos.tz.getBalance(
-      dexCore.storage.storage.pairs[pairId.toFixed()].tez_store
+    const currBucketTezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[pairId.toFixed()].bucket
     );
 
     await dexCore.updateStorage({
@@ -556,8 +592,8 @@ describe("DexCore (swap)", async () => {
     expect(currBobTezBalance).to.be.bignumber.equal(
       prevBobTezBalance.plus(swapResult.out)
     );
-    expect(currTezStoreTezBalance).to.be.bignumber.equal(
-      prevTezStoreTezBalance.minus(swapResult.out)
+    expect(currBucketTezBalance).to.be.bignumber.equal(
+      prevBucketTezBalance.minus(swapResult.out)
     );
 
     const currInterfaceFee: BigNumber =
@@ -580,6 +616,7 @@ describe("DexCore (swap)", async () => {
     const token: Token = { tez: undefined };
     const swapParams: Swap = {
       swaps: [{ direction: { b_to_a: undefined }, pair_id: pairId }],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(50),
@@ -597,8 +634,8 @@ describe("DexCore (swap)", async () => {
 
     await dexCore.updateStorage({ pairs: [pairId] });
 
-    const prevTezStoreTezBalance: BigNumber = await utils.tezos.tz.getBalance(
-      dexCore.storage.storage.pairs[pairId.toFixed()].tez_store
+    const prevBucketTezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[pairId.toFixed()].bucket
     );
     const prevFromPool: BigNumber =
       dexCore.storage.storage.pairs[pairId.toFixed()].token_b_pool;
@@ -614,8 +651,8 @@ describe("DexCore (swap)", async () => {
     const currDexCoreTokBalance: BigNumber = fa12Token1.getBalance(
       dexCore.contract.address
     );
-    const currTezStoreTezBalance: BigNumber = await utils.tezos.tz.getBalance(
-      dexCore.storage.storage.pairs[pairId.toFixed()].tez_store
+    const currBucketTezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[pairId.toFixed()].bucket
     );
 
     await dexCore.updateStorage({
@@ -637,8 +674,8 @@ describe("DexCore (swap)", async () => {
     expect(currDexCoreTokBalance).to.be.bignumber.equal(
       prevDexCoreTokBalance.minus(swapResult.out)
     );
-    expect(currTezStoreTezBalance).to.be.bignumber.equal(
-      prevTezStoreTezBalance.plus(swapParams.amount_in)
+    expect(currBucketTezBalance).to.be.bignumber.equal(
+      prevBucketTezBalance.plus(swapParams.amount_in)
     );
 
     const currInterfaceTezFee: BigNumber =
@@ -663,6 +700,7 @@ describe("DexCore (swap)", async () => {
     const token: Token = { tez: undefined };
     const swapParams: Swap = {
       swaps: [{ direction: { b_to_a: undefined }, pair_id: pairId }],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(100),
@@ -684,8 +722,8 @@ describe("DexCore (swap)", async () => {
       pairs: [pairId],
     });
 
-    const prevTezStoreTezBalance: BigNumber = await utils.tezos.tz.getBalance(
-      dexCore.storage.storage.pairs[pairId.toFixed()].tez_store
+    const prevBucketTezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[pairId.toFixed()].bucket
     );
     const prevFromPool: BigNumber =
       dexCore.storage.storage.pairs[pairId.toFixed()].token_b_pool;
@@ -703,8 +741,8 @@ describe("DexCore (swap)", async () => {
     const currDexCoreTokBalance: BigNumber = await fa2Token1.getBalance(
       dexCore.contract.address
     );
-    const currTezStoreTezBalance: BigNumber = await utils.tezos.tz.getBalance(
-      dexCore.storage.storage.pairs[pairId.toFixed()].tez_store
+    const currBucketTezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[pairId.toFixed()].bucket
     );
 
     await dexCore.updateStorage({
@@ -726,8 +764,8 @@ describe("DexCore (swap)", async () => {
     expect(currDexCoreTokBalance).to.be.bignumber.equal(
       prevDexCoreTokBalance.minus(swapResult.out)
     );
-    expect(currTezStoreTezBalance).to.be.bignumber.equal(
-      prevTezStoreTezBalance.plus(swapParams.amount_in)
+    expect(currBucketTezBalance).to.be.bignumber.equal(
+      prevBucketTezBalance.plus(swapParams.amount_in)
     );
 
     const currInterfaceTezFee: BigNumber =
@@ -765,6 +803,7 @@ describe("DexCore (swap)", async () => {
     const token2Contract: FA12 = await FA12.init(token2.fa12, utils.tezos);
     const swapParams: Swap = {
       swaps: [{ direction: { a_to_b: undefined }, pair_id: pairId }],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(400),
@@ -886,6 +925,7 @@ describe("DexCore (swap)", async () => {
     const token: Token = { fa12: fa12Token1.contract.address };
     const swapParams: Swap = {
       swaps: [{ direction: { a_to_b: undefined }, pair_id: pairId }],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(333),
@@ -1001,6 +1041,7 @@ describe("DexCore (swap)", async () => {
     };
     const swapParams: Swap = {
       swaps: [{ direction: { b_to_a: undefined }, pair_id: pairId }],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(666),
@@ -1126,6 +1167,7 @@ describe("DexCore (swap)", async () => {
     const token2Contract: FA2 = await FA2.init(token2.fa2.token, utils.tezos);
     const swapParams: Swap = {
       swaps: [{ direction: { a_to_b: undefined }, pair_id: pairId }],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(999),
@@ -1257,12 +1299,14 @@ describe("DexCore (swap)", async () => {
       shares: shares,
       liquidity_receiver: alice.pkh,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await dexCore.divestLiquidity(divestParams);
 
     const swapParams: Swap = {
       swaps: [{ direction: { a_to_b: undefined }, pair_id: pairId }],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(100),
@@ -1287,6 +1331,7 @@ describe("DexCore (swap)", async () => {
         { direction: { a_to_b: undefined }, pair_id: pairIds[0] },
         { direction: { b_to_a: undefined }, pair_id: pairIds[1] },
       ],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(500),
@@ -1476,6 +1521,7 @@ describe("DexCore (swap)", async () => {
         { direction: { b_to_a: undefined }, pair_id: pairIds[1] },
         { direction: { a_to_b: undefined }, pair_id: pairIds[2] },
       ],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(999),
@@ -1734,6 +1780,7 @@ describe("DexCore (swap)", async () => {
         { direction: { a_to_b: undefined }, pair_id: pairIds[1] },
         { direction: { a_to_b: undefined }, pair_id: pairIds[2] },
       ],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: bob.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(100),
@@ -1753,8 +1800,8 @@ describe("DexCore (swap)", async () => {
     const prevDexCoreTok1Balance: BigNumber = await utils.tezos.tz.getBalance(
       dexCore.contract.address
     );
-    const prevTezStore1TezBalance: BigNumber = await utils.tezos.tz.getBalance(
-      dexCore.storage.storage.pairs[pairIds[0].toFixed()].tez_store
+    const prevBucket1TezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[pairIds[0].toFixed()].bucket
     );
     const prevAliceTok2Balance: BigNumber = fa12Token1.getBalance(alice.pkh);
     const prevDexCoreTok2Balance: BigNumber = fa12Token1.getBalance(
@@ -1772,8 +1819,8 @@ describe("DexCore (swap)", async () => {
     const prevDexCoreTok4Balance: BigNumber = await utils.tezos.tz.getBalance(
       dexCore.contract.address
     );
-    const prevTezStore4TezBalance: BigNumber = await utils.tezos.tz.getBalance(
-      dexCore.storage.storage.pairs[pairIds[2].toFixed()].tez_store
+    const prevBucket4TezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[pairIds[2].toFixed()].bucket
     );
 
     await dexCore.updateStorage({
@@ -1840,8 +1887,8 @@ describe("DexCore (swap)", async () => {
     const currDexCoreTok1Balance: BigNumber = await utils.tezos.tz.getBalance(
       dexCore.contract.address
     );
-    const currTezStore1TezBalance: BigNumber = await utils.tezos.tz.getBalance(
-      dexCore.storage.storage.pairs[pairIds[0].toFixed()].tez_store
+    const currBucket1TezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[pairIds[0].toFixed()].bucket
     );
     const currAliceTok2Balance: BigNumber = fa12Token1.getBalance(alice.pkh);
     const currDexCoreTok2Balance: BigNumber = fa12Token1.getBalance(
@@ -1859,8 +1906,8 @@ describe("DexCore (swap)", async () => {
     const currDexCoreTok4Balance: BigNumber = await utils.tezos.tz.getBalance(
       dexCore.contract.address
     );
-    const currTezStore4TezBalance: BigNumber = await utils.tezos.tz.getBalance(
-      dexCore.storage.storage.pairs[pairIds[2].toFixed()].tez_store
+    const currBucket4TezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[pairIds[2].toFixed()].bucket
     );
 
     await dexCore.updateStorage({
@@ -1890,8 +1937,8 @@ describe("DexCore (swap)", async () => {
     expect(currDexCoreTok1Balance).to.be.bignumber.equal(
       prevDexCoreTok1Balance
     );
-    expect(currTezStore1TezBalance).to.be.bignumber.equal(
-      prevTezStore1TezBalance.plus(swapParams.amount_in)
+    expect(currBucket1TezBalance).to.be.bignumber.equal(
+      prevBucket1TezBalance.plus(swapParams.amount_in)
     );
     expect(currAliceTok2Balance).to.be.bignumber.equal(prevAliceTok2Balance);
     expect(currDexCoreTok2Balance).to.be.bignumber.equal(
@@ -1907,8 +1954,8 @@ describe("DexCore (swap)", async () => {
     expect(currDexCoreTok4Balance).to.be.bignumber.equal(
       prevDexCoreTok4Balance
     );
-    expect(currTezStore4TezBalance).to.be.bignumber.equal(
-      prevTezStore4TezBalance.minus(swapResult3.out)
+    expect(currBucket4TezBalance).to.be.bignumber.equal(
+      prevBucket4TezBalance.minus(swapResult3.out)
     );
 
     const currTok1InterfaceFee: BigNumber =
@@ -1990,6 +2037,7 @@ describe("DexCore (swap)", async () => {
         { direction: { a_to_b: undefined }, pair_id: pairIds[0] },
         { direction: { b_to_a: undefined }, pair_id: pairIds[1] },
       ],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(100),
@@ -2013,11 +2061,11 @@ describe("DexCore (swap)", async () => {
     const prevDexCoreTok2Balance: BigNumber = await utils.tezos.tz.getBalance(
       dexCore.contract.address
     );
-    const prevTezStore1TezBalance: BigNumber = await utils.tezos.tz.getBalance(
-      dexCore.storage.storage.pairs[pairIds[0].toFixed()].tez_store
+    const prevBucket1TezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[pairIds[0].toFixed()].bucket
     );
-    const prevTezStore2TezBalance: BigNumber = await utils.tezos.tz.getBalance(
-      dexCore.storage.storage.pairs[pairIds[1].toFixed()].tez_store
+    const prevBucket2TezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[pairIds[1].toFixed()].bucket
     );
     const prevAliceTok3Balance: BigNumber = await fa2Token1.getBalance(
       alice.pkh
@@ -2077,11 +2125,11 @@ describe("DexCore (swap)", async () => {
     const currDexCoreTok2Balance: BigNumber = await utils.tezos.tz.getBalance(
       dexCore.contract.address
     );
-    const currTezStore1TezBalance: BigNumber = await utils.tezos.tz.getBalance(
-      dexCore.storage.storage.pairs[pairIds[0].toFixed()].tez_store
+    const currBucket1TezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[pairIds[0].toFixed()].bucket
     );
-    const currTezStore2TezBalance: BigNumber = await utils.tezos.tz.getBalance(
-      dexCore.storage.storage.pairs[pairIds[1].toFixed()].tez_store
+    const currBucket2TezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[pairIds[1].toFixed()].bucket
     );
     const currAliceTok3Balance: BigNumber = await fa2Token1.getBalance(
       alice.pkh
@@ -2117,11 +2165,11 @@ describe("DexCore (swap)", async () => {
     expect(currDexCoreTok2Balance).to.be.bignumber.equal(
       prevDexCoreTok2Balance
     );
-    expect(currTezStore1TezBalance).to.be.bignumber.equal(
-      prevTezStore1TezBalance.minus(swapResult1.out)
+    expect(currBucket1TezBalance).to.be.bignumber.equal(
+      prevBucket1TezBalance.minus(swapResult1.out)
     );
-    expect(currTezStore2TezBalance).to.be.bignumber.equal(
-      prevTezStore2TezBalance.plus(swapResult1.out)
+    expect(currBucket2TezBalance).to.be.bignumber.equal(
+      prevBucket2TezBalance.plus(swapResult1.out)
     );
     expect(currAliceTok3Balance).to.be.bignumber.equal(
       prevAliceTok3Balance.plus(swapResult2.out)
@@ -2195,6 +2243,7 @@ describe("DexCore (swap)", async () => {
         { direction: { a_to_b: undefined }, pair_id: pairIds[3] },
         { direction: { b_to_a: undefined }, pair_id: pairIds[4] },
       ],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(100),
@@ -2221,14 +2270,14 @@ describe("DexCore (swap)", async () => {
     const prevDexCoreTok2Balance: BigNumber = await utils.tezos.tz.getBalance(
       dexCore.contract.address
     );
-    const prevTezStore1TezBalance: BigNumber = await utils.tezos.tz.getBalance(
-      dexCore.storage.storage.pairs[pairIds[0].toFixed()].tez_store
+    const prevBucket1TezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[pairIds[0].toFixed()].bucket
     );
-    const prevTezStore2TezBalance: BigNumber = await utils.tezos.tz.getBalance(
-      dexCore.storage.storage.pairs[pairIds[1].toFixed()].tez_store
+    const prevBucket2TezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[pairIds[1].toFixed()].bucket
     );
-    const prevTezStore3TezBalance: BigNumber = await utils.tezos.tz.getBalance(
-      dexCore.storage.storage.pairs[pairIds[4].toFixed()].tez_store
+    const prevBucket3TezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[pairIds[4].toFixed()].bucket
     );
     const prevAliceTok3Balance: BigNumber = await fa2Token1.getBalance(
       alice.pkh
@@ -2325,14 +2374,14 @@ describe("DexCore (swap)", async () => {
     const currDexCoreTok2Balance: BigNumber = await utils.tezos.tz.getBalance(
       dexCore.contract.address
     );
-    const currTezStore1TezBalance: BigNumber = await utils.tezos.tz.getBalance(
-      dexCore.storage.storage.pairs[pairIds[0].toFixed()].tez_store
+    const currBucket1TezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[pairIds[0].toFixed()].bucket
     );
-    const currTezStore2TezBalance: BigNumber = await utils.tezos.tz.getBalance(
-      dexCore.storage.storage.pairs[pairIds[1].toFixed()].tez_store
+    const currBucket2TezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[pairIds[1].toFixed()].bucket
     );
-    const currTezStore3TezBalance: BigNumber = await utils.tezos.tz.getBalance(
-      dexCore.storage.storage.pairs[pairIds[4].toFixed()].tez_store
+    const currBucket3TezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[pairIds[4].toFixed()].bucket
     );
     const currAliceTok3Balance: BigNumber = await fa2Token1.getBalance(
       alice.pkh
@@ -2390,14 +2439,14 @@ describe("DexCore (swap)", async () => {
     expect(currDexCoreTok2Balance).to.be.bignumber.equal(
       prevDexCoreTok2Balance
     );
-    expect(currTezStore1TezBalance).to.be.bignumber.equal(
-      prevTezStore1TezBalance.minus(swapResult1.out).minus(swapResult4.out)
+    expect(currBucket1TezBalance).to.be.bignumber.equal(
+      prevBucket1TezBalance.minus(swapResult1.out).minus(swapResult4.out)
     );
-    expect(currTezStore2TezBalance).to.be.bignumber.equal(
-      prevTezStore2TezBalance.plus(swapResult1.out)
+    expect(currBucket2TezBalance).to.be.bignumber.equal(
+      prevBucket2TezBalance.plus(swapResult1.out)
     );
-    expect(currTezStore3TezBalance).to.be.bignumber.equal(
-      prevTezStore3TezBalance.plus(swapResult4.out)
+    expect(currBucket3TezBalance).to.be.bignumber.equal(
+      prevBucket3TezBalance.plus(swapResult4.out)
     );
     expect(currAliceTok3Balance).to.be.bignumber.equal(prevAliceTok3Balance);
     expect(currDexCoreTok3Balance).to.be.bignumber.equal(

@@ -47,10 +47,7 @@ function flash_swap_callback(
           }
           ];
 
-          ops := get_invest_tez_op(
-            tez_amount_to_invest * 1mutez,
-            unwrap(pair.tez_store, DexCore.err_tez_store_404)
-          ) # ops;
+          ops := get_fill_op(tez_amount_to_invest * 1mutez, unwrap(pair.bucket, DexCore.err_bucket_404)) # ops;
         }
         else {
           ops := transfer_token(
@@ -117,7 +114,7 @@ function launch_callback(
         only_dex_core(Tezos.self_address);
         only_entered(s.entered);
 
-        ops := get_vote_op(params.vote_params, params.tez_store) # ops;
+        ops := get_vote_op(params.vote_params, params.bucket) # ops;
       }
     | _ -> skip
     ]

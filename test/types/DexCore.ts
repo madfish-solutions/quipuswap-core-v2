@@ -2,7 +2,7 @@ import { MichelsonMap, MichelsonMapKey } from "@taquito/michelson-encoder";
 
 import { BigNumber } from "bignumber.js";
 
-import { BanBaker, Vote } from "./TezStore";
+import { BanBaker, Vote } from "./Bucket";
 
 import { Token } from "./Common";
 
@@ -28,6 +28,7 @@ export type LaunchExchange = {
   token_b_in: BigNumber;
   shares_receiver: string;
   candidate: string;
+  deadline: string;
 };
 
 export type InvestLiquidity = {
@@ -37,6 +38,7 @@ export type InvestLiquidity = {
   shares: BigNumber;
   shares_receiver: string;
   candidate: string;
+  deadline: string;
 };
 
 export type DivestLiquidity = {
@@ -46,11 +48,13 @@ export type DivestLiquidity = {
   shares: BigNumber;
   liquidity_receiver: string;
   candidate: string;
+  deadline: string;
 };
 
 export type FlashSwap = {
   flash_swap_rule: FlashSwapRule;
   pair_id: BigNumber;
+  deadline: string;
   receiver: string;
   referrer: string;
   amount_out: BigNumber;
@@ -58,6 +62,7 @@ export type FlashSwap = {
 
 export type Swap = {
   swaps: SwapSlice[];
+  deadline: string;
   receiver: string;
   referrer: string;
   amount_in: BigNumber;
@@ -124,7 +129,7 @@ export type SetExpiry = {
 
 export type LaunchCallback = {
   vote_params: Vote;
-  tez_store: string;
+  bucket: string;
 };
 
 export type FlashSwapCallback = {
@@ -188,7 +193,7 @@ export type Pair = {
   token_b_price_cml: BigNumber;
   total_supply: BigNumber;
   last_block_timestamp: string;
-  tez_store: string | undefined | null;
+  bucket: string | undefined | null;
 };
 
 export type RequiredTokens = {
