@@ -1,20 +1,24 @@
-function invest_tez(
-  const _               : invest_tez_t;
+(* An alternative to `default` entrypoint, which doesn't affect rewards *)
+function fill(
+  const s               : storage_t)
+                        : return_t is
+  ((nil : list(operation)), s)
+
+function pour_out(
+  const params          : pour_out_t;
   const s               : storage_t)
                         : return_t is
   block {
     only_dex_core(s.dex_core);
-  } with ((nil : list(operation)), s)
-
-function divest_tez(
-  const params          : divest_tez_t;
-  const s               : storage_t)
-                        : return_t is
-  block {
-    only_dex_core(s.dex_core);
-
-    assert_with_error(params.amt <= Tezos.balance / 1mutez, TezStore.err_insufficient_tez_balance);
   } with (list [transfer_tez(params.receiver, params.amt)], s)
+
+function pour_over(
+  const params          : pour_over_t;
+  const s               : storage_t)
+                        : return_t is
+  block {
+    only_dex_core(s.dex_core);
+  } with (list [get_fill_op(params.amt * 1mutez, params.bucket)], s)
 
 function withdraw_rewards(
   const params          : withdraw_rewards_t;
@@ -70,11 +74,11 @@ function vote(
     only_dex_core(s.dex_core);
 
     s := update_rewards(s);
-    s := update_user_reward(params.voter, params.current_balance, params.new_balance, s);
+    s := update_user_reward(params.voter, params.current_balance, params.votes, s);
 
     var user : user_t := unwrap_or(s.users[params.voter], Constants.default_user);
 
-    case user.candidate of
+    case user.candidate of [
       None                 -> skip
     | Some(user_candidate) -> {
       var candidate : baker_t := unwrap_or(s.bakers[user_candidate], Constants.default_baker);
@@ -82,7 +86,7 @@ function vote(
 
       s.bakers[user_candidate] := candidate with record [ votes = candidate_new_votes ];
     }
-    end;
+    ];
 
     var user_candidate : baker_t := unwrap_or(s.bakers[params.candidate], Constants.default_baker);
     const user_candidate_votes : nat = user_candidate.votes + params.votes;
@@ -120,7 +124,7 @@ function vote(
 
     var ops: list(operation) := nil;
 
-    if Tezos.level >= s.voting_period_ends and params.execute_voting
+    if Tezos.level >= s.voting_period_end and params.execute_voting
     then {
       if check_is_banned_baker(unwrap_or(s.bakers[s.next_candidate], Constants.default_baker))
       then s.next_candidate := Constants.zero_key_hash
@@ -148,7 +152,7 @@ function vote(
         else skip;
       };
 
-      s.voting_period_ends := Tezos.level + (get_cycle_duration(s.dex_core) * get_voting_period(s.dex_core));
+      s.voting_period_end := Tezos.level + (get_cycle_duration(s.dex_core) * get_voting_period(s.dex_core));
     }
     else skip;
   } with (ops, s)

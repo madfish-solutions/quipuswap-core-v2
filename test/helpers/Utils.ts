@@ -108,6 +108,12 @@ export class Utils {
 
     return "";
   }
+
+  static parseLambdaViewError(err: any): string {
+    const strErr: string = String(err);
+
+    return strErr.slice(strErr.indexOf('"with"', 0) + 18, strErr.length - 4);
+  }
 }
 
 export const zeroAddress: string = "tz1ZZZZZZZZZZZZZZZZZZZZZZZZZZZZNkiRg";

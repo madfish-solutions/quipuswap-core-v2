@@ -7,39 +7,33 @@
 #include "../partial/common_types.ligo"
 #include "../partial/common_helpers.ligo"
 
-const fee_amt : nat = 10n;
-
 type storage_t          is [@layout:comb] record [
   dex_core                : address;
-]
-
-type default_t          is [@layout:comb] record [
-  token1                  : token_t;
-  token2                  : token_t;
-  token1_amt              : nat;
-  token2_amt              : nat;
+  val                     : nat;
 ]
 
 type action_t           is
-| Default                 of default_t
+| Default                 of nat
 
 type return_t           is list(operation) * storage_t
 
 function default(
-  const params          : default_t;
-  const s               : storage_t)
+  const val             : nat;
+  var s                 : storage_t)
                         : return_t is
   block {
-    const ops : list(operation) = list [
-      transfer_token(Tezos.self_address, s.dex_core, params.token1_amt + fee_amt, params.token1);
-      transfer_token(Tezos.self_address, s.dex_core, params.token2_amt + fee_amt, params.token2);
-    ];
-  } with (ops, s)
+    s.val := val;
+
+    const op : operation = transfer_tez(
+      (Tezos.get_contract_with_error(s.dex_core, Common.err_contract_404) : contract(unit)),
+      2000n
+    );
+  } with (list [op], s)
 
 function main(
   const action          : action_t;
   const s               : storage_t)
                         : return_t is
-  case action of
-  | Default(params) -> default(params, s)
-  end
+  case action of [
+  | Default(val) -> default(val, s)
+  ]

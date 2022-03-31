@@ -14,14 +14,17 @@ type storage_t          is [@layout:comb] record [
   reward_per_share        : nat;
   reward_per_block        : nat;
   last_update_level       : nat;
-  collecting_period_ends  : nat;
-  voting_period_ends      : nat;
+  collecting_period_end   : nat;
+  voting_period_end       : nat;
 ]
 
-type invest_tez_t       is unit
-
-type divest_tez_t       is [@layout:comb] record [
+type pour_out_t         is [@layout:comb] record [
   receiver                : contract(unit);
+  amt                     : nat;
+]
+
+type pour_over_t        is [@layout:comb] record [
+  bucket                  : address;
   amt                     : nat;
 ]
 
@@ -43,7 +46,6 @@ type vote_t             is [@layout:comb] record [
   execute_voting          : bool;
   votes                   : nat;
   current_balance         : nat;
-  new_balance             : nat;
 ]
 
 type is_banned_baker_t  is key_hash

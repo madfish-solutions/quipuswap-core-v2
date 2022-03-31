@@ -10,21 +10,22 @@
 
 #include "../partial/common_helpers.ligo"
 
-#include "../partial/tez_store/tez_store_types.ligo"
-#include "../partial/tez_store/tez_store_actions.ligo"
-#include "../partial/tez_store/tez_store_helpers.ligo"
-#include "../partial/tez_store/tez_store_views.ligo"
-#include "../partial/tez_store/tez_store_methods.ligo"
+#include "../partial/bucket/bucket_types.ligo"
+#include "../partial/bucket/bucket_actions.ligo"
+#include "../partial/bucket/bucket_helpers.ligo"
+#include "../partial/bucket/bucket_views.ligo"
+#include "../partial/bucket/bucket_methods.ligo"
 
 function main(
   const action          : action_t;
   const s               : storage_t)
                         : return_t is
-  case action of
-  | Invest_tez(params)       -> invest_tez(params, s)
-  | Divest_tez(params)       -> divest_tez(params, s)
+  case action of [
+  | Fill                     -> fill(s)
+  | Pour_out(params)         -> pour_out(params, s)
+  | Pour_over(params)        -> pour_over(params, s)
   | Withdraw_rewards(params) -> withdraw_rewards(params, s)
   | Ban_baker(params)        -> ban_baker(params, s)
   | Vote(params)             -> vote(params, s)
   | Default                  -> default(s)
-  end
+  ]

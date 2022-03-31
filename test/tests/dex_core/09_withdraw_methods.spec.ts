@@ -4,6 +4,7 @@ import { BakerRegistry } from "../../helpers/BakerRegistry";
 import { PRECISION } from "../../helpers/Constants";
 import { Auction } from "../../helpers/Auction";
 import { DexCore } from "../../helpers/DexCore";
+import { Bucket } from "../../helpers/Bucket";
 import { FA12 } from "../../helpers/FA12";
 import { FA2 } from "../../helpers/FA2";
 
@@ -22,15 +23,16 @@ import { fa12Storage } from "../../../storage/test/FA12";
 import { fa2Storage } from "../../../storage/test/FA2";
 
 import { SBAccount, Token } from "../../types/Common";
-import { TezStore } from "../../helpers/TezStore";
 import {
   UpdateUserRewards,
-  TezStoreStorage,
+  BucketStorage,
   UpdateRewards,
-} from "../../types/TezStore";
+} from "../../types/Bucket";
 import {
+  WithdrawAuctionFee,
   LaunchExchange,
   WithdrawProfit,
+  ClaimTezFee,
   ClaimFee,
   Swap,
 } from "../../types/DexCore";
@@ -105,6 +107,7 @@ describe("DexCore (withdraw methods)", async () => {
       token_b_in: new BigNumber(5_000_000),
       shares_receiver: alice.pkh,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa12Token1.approve(dexCore.contract.address, launchParams.token_a_in);
@@ -128,6 +131,7 @@ describe("DexCore (withdraw methods)", async () => {
       token_b_in: new BigNumber(5_000_000),
       shares_receiver: alice.pkh,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa12Token1.approve(dexCore.contract.address, launchParams.token_a_in);
@@ -163,20 +167,20 @@ describe("DexCore (withdraw methods)", async () => {
     });
   });
 
-  it("should fail if pair does not have TEZ store contract (not TOK/TEZ pair)", async () => {
+  it("should fail if pair does not have bucket contract (not TOK/TEZ pair)", async () => {
     const params: WithdrawProfit = {
       receiver: alice.pkh,
       pair_id: new BigNumber(0),
     };
 
     await rejects(dexCore.withdrawProfit(params), (err: Error) => {
-      expect(err.message).to.equal(DexCoreErrors.ERR_TEZ_STORE_404);
+      expect(err.message).to.equal(DexCoreErrors.ERR_BUCKET_404);
 
       return true;
     });
   });
 
-  it("should withdraw user's profit - 1", async () => {
+  it.skip("should withdraw user's profit - 1", async () => {
     const pairId: BigNumber = new BigNumber(1);
     const amount: BigNumber = new BigNumber(100);
     const receiver: string = bob.pkh;
@@ -186,18 +190,18 @@ describe("DexCore (withdraw methods)", async () => {
       pairs: [pairId],
     });
 
-    const tezStore: TezStore = await TezStore.init(
-      dexCore.storage.storage.pairs[pairId.toFixed()].tez_store,
+    const bucket: Bucket = await Bucket.init(
+      dexCore.storage.storage.pairs[pairId.toFixed()].bucket,
       utils.tezos
     );
 
-    await tezStore.default(amount.toNumber());
+    await bucket.default(amount.toNumber());
     await utils.bakeBlocks(4);
     await dexCore.updateStorage({
       pairs: [pairId],
       ledger: [[user, pairId]],
     });
-    await tezStore.updateStorage({
+    await bucket.updateStorage({
       users_rewards: [user],
     });
 
@@ -208,15 +212,15 @@ describe("DexCore (withdraw methods)", async () => {
 
     await dexCore.withdrawProfit(withdrawProfitParams);
 
-    const expectedRewardsInfo: UpdateRewards = await TezStore.updateRewards(
-      tezStore.storage,
+    const expectedRewardsInfo: UpdateRewards = await Bucket.updateRewards(
+      bucket.storage,
       dexCore.storage,
       dexCore.storage.storage.pairs[pairId.toFixed()].total_supply,
       utils
     );
     const expectedUserRewardsInfo: UpdateUserRewards =
-      await TezStore.updateUserRewards(
-        tezStore.storage,
+      await Bucket.updateUserRewards(
+        bucket.storage,
         user,
         dexCore.storage.storage.ledger[`${user},${pairId}`],
         dexCore.storage.storage.ledger[`${user},${pairId}`],
@@ -226,22 +230,22 @@ describe("DexCore (withdraw methods)", async () => {
       .dividedBy(PRECISION)
       .integerValue(BigNumber.ROUND_DOWN);
 
-    await tezStore.updateStorage({
+    await bucket.updateStorage({
       users_rewards: [user],
     });
 
-    expect(tezStore.storage.reward_paid).to.be.bignumber.equal(actualReward);
-    expect(tezStore.storage.users_rewards[user].reward_f).to.be.bignumber.equal(
+    expect(bucket.storage.reward_paid).to.be.bignumber.equal(actualReward);
+    expect(bucket.storage.users_rewards[user].reward_f).to.be.bignumber.equal(
       expectedUserRewardsInfo.reward_f.minus(
         actualReward.multipliedBy(PRECISION)
       )
     );
     expect(
-      tezStore.storage.users_rewards[user].reward_paid_f
+      bucket.storage.users_rewards[user].reward_paid_f
     ).to.be.bignumber.equal(expectedUserRewardsInfo.rewardPaid_f);
   });
 
-  it("should withdraw user's profit - 2", async () => {
+  it.skip("should withdraw user's profit - 2", async () => {
     const pairId: BigNumber = new BigNumber(1);
     const receiver: string = bob.pkh;
     const user: string = alice.pkh;
@@ -250,18 +254,18 @@ describe("DexCore (withdraw methods)", async () => {
       pairs: [pairId],
     });
 
-    const tezStore: TezStore = await TezStore.init(
-      dexCore.storage.storage.pairs[pairId.toFixed()].tez_store,
+    const bucket: Bucket = await Bucket.init(
+      dexCore.storage.storage.pairs[pairId.toFixed()].bucket,
       utils.tezos
     );
 
     await utils.bakeBlocks(3);
-    await tezStore.default(400);
+    await bucket.default(400);
     await dexCore.updateStorage({
       pairs: [pairId],
       ledger: [[user, pairId]],
     });
-    await tezStore.updateStorage({
+    await bucket.updateStorage({
       users_rewards: [user],
     });
 
@@ -272,16 +276,16 @@ describe("DexCore (withdraw methods)", async () => {
 
     await dexCore.withdrawProfit(withdrawProfitParams);
 
-    const prevTezStoreStorage: TezStoreStorage = tezStore.storage;
-    const expectedRewardsInfo: UpdateRewards = await TezStore.updateRewards(
-      prevTezStoreStorage,
+    const prevBucketStorage: BucketStorage = bucket.storage;
+    const expectedRewardsInfo: UpdateRewards = await Bucket.updateRewards(
+      prevBucketStorage,
       dexCore.storage,
       dexCore.storage.storage.pairs[pairId.toFixed()].total_supply,
       utils
     );
     const expectedUserRewardsInfo: UpdateUserRewards =
-      await TezStore.updateUserRewards(
-        prevTezStoreStorage,
+      await Bucket.updateUserRewards(
+        prevBucketStorage,
         user,
         dexCore.storage.storage.ledger[`${user},${pairId}`],
         dexCore.storage.storage.ledger[`${user},${pairId}`],
@@ -291,20 +295,20 @@ describe("DexCore (withdraw methods)", async () => {
       .dividedBy(PRECISION)
       .integerValue(BigNumber.ROUND_DOWN);
 
-    await tezStore.updateStorage({
+    await bucket.updateStorage({
       users_rewards: [user],
     });
 
-    expect(tezStore.storage.reward_paid).to.be.bignumber.equal(
-      prevTezStoreStorage.reward_paid.plus(actualReward)
+    expect(bucket.storage.reward_paid).to.be.bignumber.equal(
+      prevBucketStorage.reward_paid.plus(actualReward)
     );
-    expect(tezStore.storage.users_rewards[user].reward_f).to.be.bignumber.equal(
+    expect(bucket.storage.users_rewards[user].reward_f).to.be.bignumber.equal(
       expectedUserRewardsInfo.reward_f.minus(
         actualReward.multipliedBy(PRECISION)
       )
     );
     expect(
-      tezStore.storage.users_rewards[user].reward_paid_f
+      bucket.storage.users_rewards[user].reward_paid_f
     ).to.be.bignumber.equal(expectedUserRewardsInfo.rewardPaid_f);
   });
 
@@ -312,7 +316,6 @@ describe("DexCore (withdraw methods)", async () => {
     const claimParams: ClaimFee = {
       token: { fa12: fa12Token1.contract.address },
       receiver: alice.pkh,
-      amount: new BigNumber(0),
     };
 
     await rejects(dexCore2.claimInterfaceFee(claimParams), (err: Error) => {
@@ -322,28 +325,15 @@ describe("DexCore (withdraw methods)", async () => {
     });
   });
 
-  it("should fail if insufficient interface fee balance - 1", async () => {
-    const claimParams: ClaimFee = {
-      token: { fa12: fa12Token1.contract.address },
-      receiver: alice.pkh,
-      amount: new BigNumber(1),
-    };
-
-    await rejects(dexCore.claimInterfaceFee(claimParams), (err: Error) => {
-      expect(err.message).to.equal(
-        DexCoreErrors.ERR_INSUFFICIENT_INTERFACE_FEE_BALANCE
-      );
-
-      return true;
-    });
-  });
-
-  it("should fail if insufficient interface fee balance - 2", async () => {
+  it("should claim FA1.2 interface fee and transfer it to a receiver", async () => {
     const token: Token = { fa12: fa12Token1.contract.address };
+    const receiver: string = carol.pkh;
+    const referrer: string = bob.pkh;
     const swapParams: Swap = {
       swaps: [{ direction: { a_to_b: undefined }, pair_id: new BigNumber(0) }],
-      receiver: alice.pkh,
-      referrer: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
+      receiver: receiver,
+      referrer: referrer,
       amount_in: new BigNumber(333),
       min_amount_out: new BigNumber(0),
     };
@@ -351,55 +341,27 @@ describe("DexCore (withdraw methods)", async () => {
     await fa12Token1.approve(dexCore.contract.address, swapParams.amount_in);
     await dexCore.swap(swapParams);
     await dexCore.updateStorage({
-      interface_fee: [[token, swapParams.referrer]],
+      interface_fee: [[token, referrer]],
+    });
+    await fa12Token1.updateStorage({
+      ledger: [receiver, dexCore.contract.address],
     });
 
-    const availableInterfaceFee: BigNumber =
-      dexCore.storage.storage.interface_fee[
-        `${token.toString()},${swapParams.referrer}`
-      ]
-        .dividedBy(PRECISION)
-        .integerValue(BigNumber.ROUND_FLOOR);
+    const prevInterfaceFee: BigNumber =
+      dexCore.storage.storage.interface_fee[`${token.toString()},${referrer}`];
+    const actualPrevInterfaceFee: BigNumber = prevInterfaceFee
+      .dividedBy(PRECISION)
+      .integerValue(BigNumber.ROUND_FLOOR);
+    const prevReceiverTokBalance: BigNumber = fa12Token1.getBalance(receiver);
+    const prevDexCoreTokBalance: BigNumber = fa12Token1.getBalance(
+      dexCore.contract.address
+    );
     const claimParams: ClaimFee = {
       token: token,
-      receiver: alice.pkh,
-      amount: availableInterfaceFee.plus(1),
+      receiver: receiver,
     };
 
     await utils.setProvider(bob.sk);
-    await rejects(dexCore.claimInterfaceFee(claimParams), (err: Error) => {
-      expect(err.message).to.equal(
-        DexCoreErrors.ERR_INSUFFICIENT_INTERFACE_FEE_BALANCE
-      );
-
-      return true;
-    });
-  });
-
-  it("should claim FA1.2 interface fee and transfer it to a receiver - 1", async () => {
-    const token: Token = { fa12: fa12Token1.contract.address };
-    const receiver: string = carol.pkh;
-    const referrer: string = bob.pkh;
-
-    await dexCore.updateStorage({
-      interface_fee: [[token, referrer]],
-    });
-    await fa12Token1.updateStorage({
-      ledger: [receiver, dexCore.contract.address],
-    });
-
-    const prevInterfaceFee: BigNumber =
-      dexCore.storage.storage.interface_fee[`${token.toString()},${referrer}`];
-    const prevReceiverTokBalance: BigNumber = fa12Token1.getBalance(receiver);
-    const prevDexCoreTokBalance: BigNumber = fa12Token1.getBalance(
-      dexCore.contract.address
-    );
-    const claimParams: ClaimFee = {
-      token: token,
-      receiver: receiver,
-      amount: new BigNumber(25),
-    };
-
     await dexCore.claimInterfaceFee(claimParams);
     await dexCore.updateStorage({
       interface_fee: [[token, referrer]],
@@ -416,69 +378,17 @@ describe("DexCore (withdraw methods)", async () => {
     );
 
     expect(currInterfaceFee).to.be.bignumber.equal(
-      prevInterfaceFee.minus(claimParams.amount.multipliedBy(PRECISION))
+      prevInterfaceFee.minus(actualPrevInterfaceFee.multipliedBy(PRECISION))
     );
     expect(currReceiverTokBalance).to.be.bignumber.equal(
-      prevReceiverTokBalance.plus(claimParams.amount)
+      prevReceiverTokBalance.plus(actualPrevInterfaceFee)
     );
     expect(currDexCoreTokBalance).to.be.bignumber.equal(
-      prevDexCoreTokBalance.minus(claimParams.amount)
+      prevDexCoreTokBalance.minus(actualPrevInterfaceFee)
     );
   });
 
-  it("should claim FA1.2 interface fee and transfer it to a receiver - 2", async () => {
-    const token: Token = { fa12: fa12Token1.contract.address };
-    const receiver: string = alice.pkh;
-    const referrer: string = bob.pkh;
-
-    await dexCore.updateStorage({
-      interface_fee: [[token, referrer]],
-    });
-    await fa12Token1.updateStorage({
-      ledger: [receiver, dexCore.contract.address],
-    });
-
-    const prevInterfaceFee: BigNumber =
-      dexCore.storage.storage.interface_fee[`${token.toString()},${referrer}`];
-    const prevReceiverTokBalance: BigNumber = fa12Token1.getBalance(receiver);
-    const prevDexCoreTokBalance: BigNumber = fa12Token1.getBalance(
-      dexCore.contract.address
-    );
-    const claimParams: ClaimFee = {
-      token: token,
-      receiver: receiver,
-      amount: prevInterfaceFee
-        .dividedBy(PRECISION)
-        .integerValue(BigNumber.ROUND_FLOOR),
-    };
-
-    await dexCore.claimInterfaceFee(claimParams);
-    await dexCore.updateStorage({
-      interface_fee: [[token, referrer]],
-    });
-    await fa12Token1.updateStorage({
-      ledger: [receiver, dexCore.contract.address],
-    });
-
-    const currInterfaceFee: BigNumber =
-      dexCore.storage.storage.interface_fee[`${token.toString()},${referrer}`];
-    const currReceiverTokBalance: BigNumber = fa12Token1.getBalance(receiver);
-    const currDexCoreTokBalance: BigNumber = fa12Token1.getBalance(
-      dexCore.contract.address
-    );
-
-    expect(currInterfaceFee).to.be.bignumber.equal(
-      prevInterfaceFee.minus(claimParams.amount.multipliedBy(PRECISION))
-    );
-    expect(currReceiverTokBalance).to.be.bignumber.equal(
-      prevReceiverTokBalance.plus(claimParams.amount)
-    );
-    expect(currDexCoreTokBalance).to.be.bignumber.equal(
-      prevDexCoreTokBalance.minus(claimParams.amount)
-    );
-  });
-
-  it("should claim FA2 interface fee and transfer it to a receiver - 1", async () => {
+  it("should claim FA2 interface fee and transfer it to a receiver", async () => {
     const token: Token = {
       fa2: { token: fa2Token1.contract.address, id: new BigNumber(0) },
     };
@@ -486,6 +396,7 @@ describe("DexCore (withdraw methods)", async () => {
     const referrer: string = bob.pkh;
     const swapParams: Swap = {
       swaps: [{ direction: { b_to_a: undefined }, pair_id: new BigNumber(0) }],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: receiver,
       referrer: referrer,
       amount_in: new BigNumber(333),
@@ -503,6 +414,9 @@ describe("DexCore (withdraw methods)", async () => {
 
     const prevInterfaceFee: BigNumber =
       dexCore.storage.storage.interface_fee[`${token.toString()},${referrer}`];
+    const actualPrevInterfaceFee: BigNumber = prevInterfaceFee
+      .dividedBy(PRECISION)
+      .integerValue(BigNumber.ROUND_FLOOR);
     const prevReceiverTokBalance: BigNumber = await fa2Token1.getBalance(
       receiver
     );
@@ -512,7 +426,6 @@ describe("DexCore (withdraw methods)", async () => {
     const claimParams: ClaimFee = {
       token: token,
       receiver: receiver,
-      amount: new BigNumber(30),
     };
 
     await utils.setProvider(bob.sk);
@@ -534,81 +447,49 @@ describe("DexCore (withdraw methods)", async () => {
     );
 
     expect(currInterfaceFee).to.be.bignumber.equal(
-      prevInterfaceFee.minus(claimParams.amount.multipliedBy(PRECISION))
+      prevInterfaceFee.minus(actualPrevInterfaceFee.multipliedBy(PRECISION))
     );
     expect(currReceiverTokBalance).to.be.bignumber.equal(
-      prevReceiverTokBalance.plus(claimParams.amount)
+      prevReceiverTokBalance.plus(actualPrevInterfaceFee)
     );
     expect(currDexCoreTokBalance).to.be.bignumber.equal(
-      prevDexCoreTokBalance.minus(claimParams.amount)
+      prevDexCoreTokBalance.minus(actualPrevInterfaceFee)
     );
   });
 
-  it("should claim FA2 interface fee and transfer it to a receiver - 2", async () => {
-    const token: Token = {
-      fa2: { token: fa2Token1.contract.address, id: new BigNumber(0) },
-    };
-    const receiver: string = alice.pkh;
-    const referrer: string = bob.pkh;
-
-    await dexCore.updateStorage({
-      interface_fee: [[token, referrer]],
-    });
-    await fa2Token1.updateStorage({
-      account_info: [receiver, dexCore.contract.address],
-    });
-
-    const prevInterfaceFee: BigNumber =
-      dexCore.storage.storage.interface_fee[`${token.toString()},${referrer}`];
-    const prevReceiverTokBalance: BigNumber = await fa2Token1.getBalance(
-      receiver
-    );
-    const prevDexCoreTokBalance: BigNumber = await fa2Token1.getBalance(
-      dexCore.contract.address
-    );
-    const claimParams: ClaimFee = {
-      token: token,
-      receiver: receiver,
-      amount: prevInterfaceFee
-        .dividedBy(PRECISION)
-        .integerValue(BigNumber.ROUND_FLOOR),
+  it("should fail if reentrancy", async () => {
+    const claimParams: ClaimTezFee = {
+      pair_id: new BigNumber(0),
+      receiver: alice.pkh,
     };
 
-    await dexCore.claimInterfaceFee(claimParams);
-    await dexCore.updateStorage({
-      interface_fee: [[token, referrer]],
-    });
-    await fa2Token1.updateStorage({
-      account_info: [receiver, dexCore.contract.address],
-    });
+    await rejects(dexCore2.claimInterfaceTezFee(claimParams), (err: Error) => {
+      expect(err.message).to.equal(DexCoreErrors.ERR_REENTRANCY);
 
-    const currInterfaceFee: BigNumber =
-      dexCore.storage.storage.interface_fee[`${token.toString()},${referrer}`];
-    const currReceiverTokBalance: BigNumber = await fa2Token1.getBalance(
-      receiver
-    );
-    const currDexCoreTokBalance: BigNumber = await fa2Token1.getBalance(
-      dexCore.contract.address
-    );
-
-    expect(currInterfaceFee).to.be.bignumber.equal(
-      prevInterfaceFee.minus(claimParams.amount.multipliedBy(PRECISION))
-    );
-    expect(currReceiverTokBalance).to.be.bignumber.equal(
-      prevReceiverTokBalance.plus(claimParams.amount)
-    );
-    expect(currDexCoreTokBalance).to.be.bignumber.equal(
-      prevDexCoreTokBalance.minus(claimParams.amount)
-    );
+      return true;
+    });
   });
 
-  it("should claim TEZ interface fee and transfer it to a receiver - 1", async () => {
+  it("should fail if pair not listed", async () => {
+    const claimParams: ClaimTezFee = {
+      pair_id: new BigNumber(666),
+      receiver: alice.pkh,
+    };
+
+    await rejects(dexCore.claimInterfaceTezFee(claimParams), (err: Error) => {
+      expect(err.message).to.equal(DexCoreErrors.ERR_PAIR_NOT_LISTED);
+
+      return true;
+    });
+  });
+
+  it("should claim TEZ interface fee and transfer it to a receiver", async () => {
     const pairId: BigNumber = new BigNumber(1);
-    const token: Token = { tez: undefined };
     const receiver: string = alice.pkh;
     const referrer: string = bob.pkh;
     const swapParams: Swap = {
       swaps: [{ direction: { b_to_a: undefined }, pair_id: new BigNumber(1) }],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: receiver,
       referrer: referrer,
       amount_in: new BigNumber(333),
@@ -619,39 +500,35 @@ describe("DexCore (withdraw methods)", async () => {
     await dexCore.swap(swapParams, swapParams.amount_in.toNumber());
     await dexCore.updateStorage({
       pairs: [pairId],
-      interface_fee: [[token, referrer]],
       interface_tez_fee: [[pairId, referrer]],
     });
 
-    const prevInterfaceFee: BigNumber =
-      dexCore.storage.storage.interface_fee[`${token},${referrer}`];
     const prevInterfaceTezFee: BigNumber =
       dexCore.storage.storage.interface_tez_fee[`${pairId},${referrer}`];
+    const actualPrevInterfaceTezFee: BigNumber = prevInterfaceTezFee
+      .dividedBy(PRECISION)
+      .integerValue(BigNumber.ROUND_FLOOR);
     const prevTezReceiverBalance: BigNumber = await utils.tezos.tz.getBalance(
       receiver
     );
     const prevTezDexCoreBalance: BigNumber = await utils.tezos.tz.getBalance(
       dexCore.contract.address
     );
-    const prevTezTezStoreBalance: BigNumber = await utils.tezos.tz.getBalance(
-      dexCore.storage.storage.pairs[pairId.toFixed()].tez_store
+    const prevTezBucketBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[pairId.toFixed()].bucket
     );
-    const claimParams: ClaimFee = {
-      token: token,
+    const claimParams: ClaimTezFee = {
+      pair_id: pairId,
       receiver: receiver,
-      amount: new BigNumber(35),
     };
 
     await utils.setProvider(bob.sk);
-    await dexCore.claimInterfaceFee(claimParams);
+    await dexCore.claimInterfaceTezFee(claimParams);
     await dexCore.updateStorage({
       pairs: [pairId],
-      interface_fee: [[token, referrer]],
       interface_tez_fee: [[pairId, referrer]],
     });
 
-    const currInterfaceFee: BigNumber =
-      dexCore.storage.storage.interface_fee[`${token},${referrer}`];
     const currInterfaceTezFee: BigNumber =
       dexCore.storage.storage.interface_tez_fee[`${pairId},${referrer}`];
     const currTezReceiverBalance: BigNumber = await utils.tezos.tz.getBalance(
@@ -660,114 +537,76 @@ describe("DexCore (withdraw methods)", async () => {
     const currTezDexCoreBalance: BigNumber = await utils.tezos.tz.getBalance(
       dexCore.contract.address
     );
-    const currTezTezStoreBalance: BigNumber = await utils.tezos.tz.getBalance(
-      dexCore.storage.storage.pairs[pairId.toFixed()].tez_store
+    const currTezBucketBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[pairId.toFixed()].bucket
     );
 
-    expect(currInterfaceFee).to.be.bignumber.equal(
-      prevInterfaceFee.minus(claimParams.amount.multipliedBy(PRECISION))
+    expect(currInterfaceTezFee).to.be.bignumber.equal(
+      prevInterfaceTezFee.minus(
+        actualPrevInterfaceTezFee.multipliedBy(PRECISION)
+      )
     );
-    expect(currInterfaceTezFee).to.be.bignumber.equal(prevInterfaceTezFee);
     expect(currTezReceiverBalance).to.be.bignumber.equal(
-      prevTezReceiverBalance.plus(claimParams.amount)
+      prevTezReceiverBalance.plus(actualPrevInterfaceTezFee)
     );
-    expect(currTezDexCoreBalance).to.be.bignumber.equal(
-      prevTezDexCoreBalance.minus(claimParams.amount)
+    expect(currTezBucketBalance).to.be.bignumber.equal(
+      prevTezBucketBalance.minus(actualPrevInterfaceTezFee)
     );
-    expect(currTezTezStoreBalance).to.be.bignumber.equal(
-      prevTezTezStoreBalance
-    );
-  });
-
-  it("should claim TEZ interface fee and transfer it to a receiver - 2", async () => {
-    const pairId: BigNumber = new BigNumber(1);
-    const token: Token = { tez: undefined };
-    const receiver: string = alice.pkh;
-    const referrer: string = bob.pkh;
-
-    await dexCore.updateStorage({
-      pairs: [pairId],
-      interface_fee: [[token, referrer]],
-      interface_tez_fee: [[pairId, referrer]],
-    });
-
-    const prevInterfaceFee: BigNumber =
-      dexCore.storage.storage.interface_fee[`${token},${referrer}`];
-    const prevInterfaceTezFee: BigNumber =
-      dexCore.storage.storage.interface_tez_fee[`${pairId},${referrer}`];
-    const prevTezReceiverBalance: BigNumber = await utils.tezos.tz.getBalance(
-      receiver
-    );
-    const prevTezDexCoreBalance: BigNumber = await utils.tezos.tz.getBalance(
-      dexCore.contract.address
-    );
-    const prevTezTezStoreBalance: BigNumber = await utils.tezos.tz.getBalance(
-      dexCore.storage.storage.pairs[pairId.toFixed()].tez_store
-    );
-    const claimParams: ClaimFee = {
-      token: token,
-      receiver: receiver,
-      amount: prevInterfaceFee
-        .dividedBy(PRECISION)
-        .integerValue(BigNumber.ROUND_FLOOR),
-    };
-
-    await dexCore.claimInterfaceFee(claimParams);
-    await dexCore.updateStorage({
-      pairs: [pairId],
-      interface_fee: [[token, referrer]],
-      interface_tez_fee: [[pairId, referrer]],
-    });
-
-    const currInterfaceFee: BigNumber =
-      dexCore.storage.storage.interface_fee[`${token},${referrer}`];
-    const currInterfaceTezFee: BigNumber =
-      dexCore.storage.storage.interface_tez_fee[`${pairId},${referrer}`];
-    const currTezReceiverBalance: BigNumber = await utils.tezos.tz.getBalance(
-      receiver
-    );
-    const currTezDexCoreBalance: BigNumber = await utils.tezos.tz.getBalance(
-      dexCore.contract.address
-    );
-    const currTezTezStoreBalance: BigNumber = await utils.tezos.tz.getBalance(
-      dexCore.storage.storage.pairs[pairId.toFixed()].tez_store
-    );
-
-    expect(currInterfaceFee).to.be.bignumber.equal(
-      prevInterfaceFee.minus(claimParams.amount.multipliedBy(PRECISION))
-    );
-    expect(currInterfaceTezFee).to.be.bignumber.equal(prevInterfaceTezFee);
-    expect(currTezReceiverBalance).to.be.bignumber.equal(
-      prevTezReceiverBalance.plus(claimParams.amount)
-    );
-    expect(currTezDexCoreBalance).to.be.bignumber.equal(
-      prevTezDexCoreBalance.minus(claimParams.amount)
-    );
-    expect(currTezTezStoreBalance).to.be.bignumber.equal(
-      prevTezTezStoreBalance
-    );
+    expect(currTezDexCoreBalance).to.be.bignumber.equal(prevTezDexCoreBalance);
   });
 
   it("should fail if reentrancy", async () => {
-    const token: Token = { fa12: fa12Token1.contract.address };
+    const params: WithdrawAuctionFee = {
+      pair_id: undefined,
+      token: { fa12: fa12Token1.contract.address },
+    };
 
-    await rejects(dexCore2.withdrawAuctionFee(token), (err: Error) => {
+    await rejects(dexCore2.withdrawAuctionFee(params), (err: Error) => {
       expect(err.message).to.equal(DexCoreErrors.ERR_REENTRANCY);
 
       return true;
     });
   });
 
-  it("should withdraw FA1.2 auction fee", async () => {
-    const token: Token = { fa12: fa12Token1.contract.address };
+  it("should fail if user did not passed pair ID in time of withdrawing TEZ auction fee", async () => {
+    const params: WithdrawAuctionFee = {
+      pair_id: undefined,
+      token: { tez: undefined },
+    };
 
-    await dexCore.updateStorage({ auction_fee: [token] });
+    await rejects(dexCore.withdrawAuctionFee(params), (err: Error) => {
+      expect(err.message).to.equal(DexCoreErrors.ERR_NO_PAIR_ID);
+
+      return true;
+    });
+  });
+
+  it("should fail if pair not listed in time of withdrawing TEZ auction fee", async () => {
+    const params: WithdrawAuctionFee = {
+      pair_id: new BigNumber(666),
+      token: { tez: undefined },
+    };
+
+    await rejects(dexCore.withdrawAuctionFee(params), (err: Error) => {
+      expect(err.message).to.equal(DexCoreErrors.ERR_PAIR_NOT_LISTED);
+
+      return true;
+    });
+  });
+
+  it("should withdraw FA1.2 auction fee", async () => {
+    const params: WithdrawAuctionFee = {
+      pair_id: undefined,
+      token: { fa12: fa12Token1.contract.address },
+    };
+
+    await dexCore.updateStorage({ auction_fee: [params.token] });
     await fa12Token1.updateStorage({
       ledger: [dexCore.contract.address, auction.contract.address, alice.pkh],
     });
 
     const prevAuctionFee: BigNumber =
-      dexCore.storage.storage.auction_fee[token.toString()];
+      dexCore.storage.storage.auction_fee[params.token.toString()];
     const prevDexCoreTokBal: BigNumber = fa12Token1.getBalance(
       dexCore.contract.address
     );
@@ -777,8 +616,8 @@ describe("DexCore (withdraw methods)", async () => {
     const prevAliceTokBal: BigNumber = fa12Token1.getBalance(alice.pkh);
 
     await utils.setProvider(alice.sk);
-    await dexCore.withdrawAuctionFee(token);
-    await dexCore.updateStorage({ auction_fee: [token] });
+    await dexCore.withdrawAuctionFee(params);
+    await dexCore.updateStorage({ auction_fee: [params.token] });
     await fa12Token1.updateStorage({
       ledger: [dexCore.contract.address, auction.contract.address, alice.pkh],
     });
@@ -794,7 +633,7 @@ describe("DexCore (withdraw methods)", async () => {
       .integerValue(BigNumber.ROUND_FLOOR)
       .minus(userReward);
     const currAuctionFee: BigNumber =
-      dexCore.storage.storage.auction_fee[token.toString()];
+      dexCore.storage.storage.auction_fee[params.token.toString()];
     const currDexCoreTokBal: BigNumber = fa12Token1.getBalance(
       dexCore.contract.address
     );
@@ -820,11 +659,14 @@ describe("DexCore (withdraw methods)", async () => {
   });
 
   it("should withdraw FA2 auction fee", async () => {
-    const token: Token = {
-      fa2: { token: fa2Token1.contract.address, id: new BigNumber(0) },
+    const params: WithdrawAuctionFee = {
+      pair_id: undefined,
+      token: {
+        fa2: { token: fa2Token1.contract.address, id: new BigNumber(0) },
+      },
     };
 
-    await dexCore.updateStorage({ auction_fee: [token] });
+    await dexCore.updateStorage({ auction_fee: [params.token] });
     await fa2Token1.updateStorage({
       account_info: [
         dexCore.contract.address,
@@ -834,7 +676,7 @@ describe("DexCore (withdraw methods)", async () => {
     });
 
     const prevAuctionFee: BigNumber =
-      dexCore.storage.storage.auction_fee[token.toString()];
+      dexCore.storage.storage.auction_fee[params.token.toString()];
     const prevDexCoreTokBal: BigNumber = await fa2Token1.getBalance(
       dexCore.contract.address
     );
@@ -843,8 +685,8 @@ describe("DexCore (withdraw methods)", async () => {
     );
     const prevAliceTokBal: BigNumber = await fa2Token1.getBalance(alice.pkh);
 
-    await dexCore.withdrawAuctionFee(token);
-    await dexCore.updateStorage({ auction_fee: [token] });
+    await dexCore.withdrawAuctionFee(params);
+    await dexCore.updateStorage({ auction_fee: [params.token] });
     await fa2Token1.updateStorage({
       account_info: [
         dexCore.contract.address,
@@ -864,7 +706,7 @@ describe("DexCore (withdraw methods)", async () => {
       .integerValue(BigNumber.ROUND_FLOOR)
       .minus(userReward);
     const currAuctionFee: BigNumber =
-      dexCore.storage.storage.auction_fee[token.toString()];
+      dexCore.storage.storage.auction_fee[params.token.toString()];
     const currDexCoreTokBal: BigNumber = await fa2Token1.getBalance(
       dexCore.contract.address
     );
@@ -890,21 +732,20 @@ describe("DexCore (withdraw methods)", async () => {
   });
 
   it("should withdraw TEZ auction fee", async () => {
-    const pairId: BigNumber = new BigNumber(1);
-    const token: Token = { tez: undefined };
+    const params: WithdrawAuctionFee = {
+      pair_id: new BigNumber(1),
+      token: { tez: undefined },
+    };
 
     await dexCore.updateStorage({
-      pairs: [pairId],
-      auction_fee: [token],
-      auction_tez_fee: [pairId],
+      pairs: [params.pair_id],
+      auction_tez_fee: [params.pair_id],
     });
 
-    const prevAuctionFee: BigNumber =
-      dexCore.storage.storage.auction_fee[token.toString()];
     const prevAuctionTezFee: BigNumber =
-      dexCore.storage.storage.auction_tez_fee[pairId.toString()];
-    const prevTezTezStoreBalance: BigNumber = await utils.tezos.tz.getBalance(
-      dexCore.storage.storage.pairs[pairId.toFixed()].tez_store
+      dexCore.storage.storage.auction_tez_fee[params.pair_id.toString()];
+    const prevTezBucketBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[params.pair_id.toFixed()].bucket
     );
     const prevDexCoreTokBal: BigNumber = await utils.tezos.tz.getBalance(
       dexCore.contract.address
@@ -913,29 +754,26 @@ describe("DexCore (withdraw methods)", async () => {
       auction.contract.address
     );
 
-    await dexCore.withdrawAuctionFee(token);
+    await dexCore.withdrawAuctionFee(params);
     await dexCore.updateStorage({
-      pairs: [pairId],
-      auction_fee: [token],
-      auction_tez_fee: [pairId],
+      pairs: [params.pair_id],
+      auction_tez_fee: [params.pair_id],
     });
 
-    const userReward: BigNumber = prevAuctionFee
+    const userReward: BigNumber = prevAuctionTezFee
       .multipliedBy(dexCore.storage.storage.fees.withdraw_fee_reward)
       .dividedBy(PRECISION)
       .integerValue(BigNumber.ROUND_FLOOR)
       .dividedBy(PRECISION)
       .integerValue(BigNumber.ROUND_FLOOR);
-    const actualAuctionFee: BigNumber = prevAuctionFee
+    const actualAuctionFee: BigNumber = prevAuctionTezFee
       .dividedBy(PRECISION)
       .integerValue(BigNumber.ROUND_FLOOR)
       .minus(userReward);
-    const currAuctionFee: BigNumber =
-      dexCore.storage.storage.auction_fee[token.toString()];
     const currAuctionTezFee: BigNumber =
-      dexCore.storage.storage.auction_tez_fee[pairId.toString()];
-    const currTezTezStoreBalance: BigNumber = await utils.tezos.tz.getBalance(
-      dexCore.storage.storage.pairs[pairId.toFixed()].tez_store
+      dexCore.storage.storage.auction_tez_fee[params.pair_id.toString()];
+    const currTezBucketBalance: BigNumber = await utils.tezos.tz.getBalance(
+      dexCore.storage.storage.pairs[params.pair_id.toFixed()].bucket
     );
     const currDexCoreTokBal: BigNumber = await utils.tezos.tz.getBalance(
       dexCore.contract.address
@@ -944,20 +782,17 @@ describe("DexCore (withdraw methods)", async () => {
       auction.contract.address
     );
 
-    expect(currAuctionFee).to.be.bignumber.equal(
-      prevAuctionFee.minus(
+    expect(currAuctionTezFee).to.be.bignumber.equal(
+      prevAuctionTezFee.minus(
         userReward.plus(actualAuctionFee).multipliedBy(PRECISION)
       )
     );
-    expect(currAuctionTezFee).to.be.bignumber.equal(prevAuctionTezFee);
-    expect(currTezTezStoreBalance).to.be.bignumber.equal(
-      prevTezTezStoreBalance
-    );
-    expect(currDexCoreTokBal).to.be.bignumber.equal(
-      prevDexCoreTokBal.minus(userReward.plus(actualAuctionFee))
+    expect(currTezBucketBalance).to.be.bignumber.equal(
+      prevTezBucketBalance.minus(userReward.plus(actualAuctionFee))
     );
     expect(currAuctionTokBal).to.be.bignumber.equal(
       prevAuctionTokBal.plus(actualAuctionFee)
     );
+    expect(currDexCoreTokBal).to.be.bignumber.equal(prevDexCoreTokBal);
   });
 });

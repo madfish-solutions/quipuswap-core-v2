@@ -22,7 +22,7 @@ import fs from "fs";
 
 chai.use(require("chai-bignumber")(BigNumber));
 
-describe.skip("FlashSwapsProxy", async () => {
+describe("FlashSwapsProxy", async () => {
   var flashSwapsProxy: FlashSwapsProxy;
   var flashSwapAgent: FlashSwapAgent;
   var dexCore: DexCore;
@@ -54,10 +54,11 @@ describe.skip("FlashSwapsProxy", async () => {
         token_a: { fa12: fa12Token1.contract.address },
         token_b: { fa12: fa12Token2.contract.address },
       },
-      token_a_in: new BigNumber(100),
-      token_b_in: new BigNumber(100),
+      token_a_in: new BigNumber(100_000),
+      token_b_in: new BigNumber(100_000),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     params = DexCore.changeTokensOrderInPair(params, false);
@@ -82,9 +83,11 @@ describe.skip("FlashSwapsProxy", async () => {
       flashSwapAgentStorage
     );
 
+    const value: number = Math.round(Math.random() * 100 + 1);
+
     fs.writeFile(
       "contracts/test/parameters.ligo",
-      `const agent : address = ("${flashSwapAgent.contract.address}" : address);\nconst token1 : token_t = Fa12(("${fa12Token1.contract.address}" : address));\nconst token2 : token_t = Fa12(("${fa12Token2.contract.address}" : address));\n`,
+      `const agent : address = ("${flashSwapAgent.contract.address}" : address);\nconst val : nat = ${value}n;\n`,
       function (err) {
         if (err) console.log(err.message);
       }
@@ -104,13 +107,22 @@ describe.skip("FlashSwapsProxy", async () => {
 
   it("should call default entrypoint by dex core", async () => {
     const params: FlashSwap = {
+      flash_swap_rule: "Loan_a_return_a",
       pair_id: new BigNumber(0),
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
-      amount_a_out: new BigNumber(1),
-      amount_b_out: new BigNumber(1),
+      amount_out: new BigNumber(10),
     };
+    const tokenA: FA12 = await FA12.init(
+      Utils.getMinFA12Token(
+        fa12Token1.contract.address,
+        fa12Token2.contract.address
+      ),
+      utils.tezos
+    );
 
+    await tokenA.approve(dexCore.contract.address, new BigNumber(100));
     await dexCore.flashSwap(params);
   });
 });

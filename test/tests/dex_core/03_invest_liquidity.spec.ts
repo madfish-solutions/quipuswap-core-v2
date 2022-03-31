@@ -2,6 +2,7 @@ import { DexCore as DexCoreErrors } from "../../helpers/Errors";
 import { BakerRegistry } from "../../helpers/BakerRegistry";
 import { Auction } from "../../helpers/Auction";
 import { DexCore } from "../../helpers/DexCore";
+import { Bucket } from "../../helpers/Bucket";
 import { FA12 } from "../../helpers/FA12";
 import { FA2 } from "../../helpers/FA2";
 import {
@@ -26,9 +27,8 @@ import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa12Storage } from "../../../storage/test/FA12";
 import { fa2Storage } from "../../../storage/test/FA2";
 
-import { User } from "../../types/TezStore";
-import { TezStore } from "../../helpers/TezStore";
 import { SBAccount } from "../../types/Common";
+import { User } from "../../types/Bucket";
 import {
   InvestLiquidity,
   DivestLiquidity,
@@ -103,6 +103,7 @@ describe("DexCore (invest liquidity)", async () => {
       token_b_in: new BigNumber(100_000),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa12Token1.approve(dexCore.contract.address, launchParams.token_a_in);
@@ -122,6 +123,7 @@ describe("DexCore (invest liquidity)", async () => {
       token_b_in: new BigNumber(100_000),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa2Token1.updateOperators([
@@ -147,6 +149,7 @@ describe("DexCore (invest liquidity)", async () => {
       token_b_in: new BigNumber(100_000),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
     launchParams = DexCore.changeTokensOrderInPair(launchParams, false);
 
@@ -167,6 +170,7 @@ describe("DexCore (invest liquidity)", async () => {
       token_b_in: new BigNumber(100_000),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
     launchParams = DexCore.changeTokensOrderInPair(launchParams, false);
 
@@ -192,6 +196,7 @@ describe("DexCore (invest liquidity)", async () => {
       token_b_in: new BigNumber(100_000),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa12Token1.approve(dexCore.contract.address, launchParams.token_a_in);
@@ -199,16 +204,36 @@ describe("DexCore (invest liquidity)", async () => {
   });
 
   it("should fail if reentrancy", async () => {
-    const swapParams: Swap = {
-      swaps: [{ direction: { a_to_b: undefined }, pair_id: new BigNumber(0) }],
-      receiver: alice.pkh,
-      referrer: bob.pkh,
-      amount_in: new BigNumber(1),
-      min_amount_out: new BigNumber(1),
+    const investParams: InvestLiquidity = {
+      pair_id: new BigNumber(0),
+      token_a_in: new BigNumber(0),
+      token_b_in: new BigNumber(0),
+      shares: new BigNumber(0),
+      shares_receiver: zeroAddress,
+      candidate: zeroAddress,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000),
     };
 
-    await rejects(dexCore2.swap(swapParams), (err: Error) => {
+    await rejects(dexCore2.investLiquidity(investParams), (err: Error) => {
       expect(err.message).to.equal(DexCoreErrors.ERR_REENTRANCY);
+
+      return true;
+    });
+  });
+
+  it("should fail if action is outdated", async () => {
+    const investParams: InvestLiquidity = {
+      pair_id: new BigNumber(0),
+      token_a_in: new BigNumber(0),
+      token_b_in: new BigNumber(0),
+      shares: new BigNumber(0),
+      shares_receiver: alice.pkh,
+      candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000),
+    };
+
+    await rejects(dexCore.investLiquidity(investParams), (err: Error) => {
+      expect(err.message).to.equal(DexCoreErrors.ERR_ACTION_OUTDATED);
 
       return true;
     });
@@ -222,6 +247,7 @@ describe("DexCore (invest liquidity)", async () => {
       shares: new BigNumber(0),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await rejects(dexCore.investLiquidity(investParams), (err: Error) => {
@@ -239,6 +265,7 @@ describe("DexCore (invest liquidity)", async () => {
       shares: new BigNumber(0),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await rejects(dexCore.investLiquidity(investParams), (err: Error) => {
@@ -246,6 +273,41 @@ describe("DexCore (invest liquidity)", async () => {
 
       return true;
     });
+  });
+
+  it("should fail if TEZ token mismatch", async () => {
+    const pairId: BigNumber = new BigNumber(0);
+
+    await dexCore.updateStorage({
+      pairs: [pairId.toFixed()],
+    });
+
+    const shares: BigNumber = new BigNumber(100);
+    const requiredTokens: RequiredTokens = DexCore.getRequiredTokens(
+      shares,
+      dexCore.storage.storage.pairs[pairId.toFixed()]
+    );
+    const investParams: InvestLiquidity = {
+      pair_id: pairId,
+      token_a_in: requiredTokens.tokens_a_required,
+      token_b_in: requiredTokens.tokens_b_required,
+      shares: shares,
+      shares_receiver: alice.pkh,
+      candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
+    };
+
+    await rejects(
+      dexCore.investLiquidity(
+        investParams,
+        investParams.token_b_in.toNumber() - 1
+      ),
+      (err: Error) => {
+        expect(err.message).to.equal(DexCoreErrors.ERR_TEZ_AMOUNT_MISMATCH);
+
+        return true;
+      }
+    );
   });
 
   it("should fail if low token A in", async () => {
@@ -267,40 +329,13 @@ describe("DexCore (invest liquidity)", async () => {
       shares: shares,
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
-    };
-
-    await rejects(dexCore.investLiquidity(investParams), (err: Error) => {
-      expect(err.message).to.equal(DexCoreErrors.ERR_LOW_TOKEN_A_IN);
-
-      return true;
-    });
-  });
-
-  it("should fail if token B is TEZ and low token B in", async () => {
-    const pairId: BigNumber = new BigNumber(0);
-
-    await dexCore.updateStorage({
-      pairs: [pairId.toFixed()],
-    });
-
-    const shares: BigNumber = new BigNumber(100);
-    const requiredTokens: RequiredTokens = DexCore.getRequiredTokens(
-      shares,
-      dexCore.storage.storage.pairs[pairId.toFixed()]
-    );
-    const investParams: InvestLiquidity = {
-      pair_id: pairId,
-      token_a_in: requiredTokens.tokens_a_required,
-      token_b_in: requiredTokens.tokens_b_required.minus(1),
-      shares: shares,
-      shares_receiver: alice.pkh,
-      candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await rejects(
       dexCore.investLiquidity(investParams, investParams.token_b_in.toNumber()),
       (err: Error) => {
-        expect(err.message).to.equal(DexCoreErrors.ERR_LOW_TOKEN_B_IN);
+        expect(err.message).to.equal(DexCoreErrors.ERR_LOW_TOKEN_A_IN);
 
         return true;
       }
@@ -326,13 +361,17 @@ describe("DexCore (invest liquidity)", async () => {
       shares: shares,
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
-    await rejects(dexCore.investLiquidity(investParams), (err: Error) => {
-      expect(err.message).to.equal(DexCoreErrors.ERR_LOW_TOKEN_B_IN);
+    await rejects(
+      dexCore.investLiquidity(investParams, investParams.token_b_in.toNumber()),
+      (err: Error) => {
+        expect(err.message).to.equal(DexCoreErrors.ERR_LOW_TOKEN_B_IN);
 
-      return true;
-    });
+        return true;
+      }
+    );
   });
 
   it("should invest FA1.2/TEZ liquidity", async () => {
@@ -359,6 +398,7 @@ describe("DexCore (invest liquidity)", async () => {
       shares: shares,
       shares_receiver: sharesReceiver,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa12Token1.approve(dexCore.contract.address, investParams.token_a_in);
@@ -413,6 +453,7 @@ describe("DexCore (invest liquidity)", async () => {
       shares: shares,
       shares_receiver: sharesReceiver,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await dexCore.investLiquidity(
@@ -466,6 +507,7 @@ describe("DexCore (invest liquidity)", async () => {
       shares: shares,
       shares_receiver: sharesReceiver,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa12Token1.approve(dexCore.contract.address, investParams.token_a_in);
@@ -518,6 +560,7 @@ describe("DexCore (invest liquidity)", async () => {
       shares: shares,
       shares_receiver: sharesReceiver,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await dexCore.investLiquidity(investParams);
@@ -568,6 +611,7 @@ describe("DexCore (invest liquidity)", async () => {
       shares: shares,
       shares_receiver: sharesReceiver,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa12Token1.approve(dexCore.contract.address, investParams.token_a_in);
@@ -595,7 +639,7 @@ describe("DexCore (invest liquidity)", async () => {
     );
   });
 
-  it("should transfer FA1.2 tokens and invest TEZ tokens to TEZ store contract in time of FA1.2/TEZ liquidity investment", async () => {
+  it("should transfer FA1.2 tokens and fill TEZ tokens to bucket contract in time of FA1.2/TEZ liquidity investment", async () => {
     const pairId: BigNumber = new BigNumber(0);
     const sharesReceiver: string = alice.pkh;
 
@@ -623,6 +667,7 @@ describe("DexCore (invest liquidity)", async () => {
       shares: shares,
       shares_receiver: sharesReceiver,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa12Token1.approve(dexCore.contract.address, investParams.token_a_in);
@@ -648,7 +693,7 @@ describe("DexCore (invest liquidity)", async () => {
     );
   });
 
-  it("should transfer FA2 tokens and invest TEZ tokens to TEZ store contract in time of FA2/TEZ liquidity investment", async () => {
+  it("should transfer FA2 tokens and fill TEZ tokens to bucket contract in time of FA2/TEZ liquidity investment", async () => {
     const pairId: BigNumber = new BigNumber(1);
     const sharesReceiver: string = alice.pkh;
 
@@ -677,6 +722,7 @@ describe("DexCore (invest liquidity)", async () => {
       shares: shares,
       shares_receiver: sharesReceiver,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await dexCore.investLiquidity(
@@ -738,6 +784,7 @@ describe("DexCore (invest liquidity)", async () => {
       shares: shares,
       shares_receiver: sharesReceiver,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa12Token1.approve(dexCore.contract.address, investParams.token_a_in);
@@ -813,6 +860,7 @@ describe("DexCore (invest liquidity)", async () => {
       shares: shares,
       shares_receiver: sharesReceiver,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await dexCore.investLiquidity(investParams);
@@ -888,6 +936,7 @@ describe("DexCore (invest liquidity)", async () => {
       shares: shares,
       shares_receiver: sharesReceiver,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa12Token1.approve(dexCore.contract.address, investParams.token_a_in);
@@ -949,6 +998,7 @@ describe("DexCore (invest liquidity)", async () => {
       shares: shares,
       liquidity_receiver: liquidityReceiver,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await dexCore.divestLiquidity(divestParams);
@@ -960,6 +1010,7 @@ describe("DexCore (invest liquidity)", async () => {
       shares: new BigNumber(1),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await rejects(dexCore.investLiquidity(investParams), (err: Error) => {
@@ -969,7 +1020,7 @@ describe("DexCore (invest liquidity)", async () => {
     });
   });
 
-  it("should vote for the baker on TEZ store contract in time of FA1.2/TEZ liquidity investment", async () => {
+  it("should vote for the baker on bucket contract in time of FA1.2/TEZ liquidity investment", async () => {
     const pairId: BigNumber = new BigNumber(0);
     const sharesReceiver: string = alice.pkh;
 
@@ -990,48 +1041,49 @@ describe("DexCore (invest liquidity)", async () => {
       shares: shares,
       shares_receiver: sharesReceiver,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
-    const tezStore: TezStore = await TezStore.init(
-      dexCore.storage.storage.pairs[pairId.toFixed()].tez_store,
+    const bucket: Bucket = await Bucket.init(
+      dexCore.storage.storage.pairs[pairId.toFixed()].bucket,
       dexCore.tezos
     );
 
-    await tezStore.updateStorage({
+    await bucket.updateStorage({
       users: [sharesReceiver],
       bakers: [alice.pkh],
     });
 
-    const initialVoterAliceInfo: User = tezStore.storage.users[alice.pkh];
-    const initialBakerAliceInfo: User = tezStore.storage.bakers[alice.pkh];
+    const initialVoterAliceInfo: User = bucket.storage.users[alice.pkh];
+    const initialBakerAliceInfo: User = bucket.storage.bakers[alice.pkh];
 
     await fa12Token1.approve(dexCore.contract.address, investParams.token_a_in);
     await dexCore.investLiquidity(
       investParams,
       requiredTokens.tokens_b_required.toNumber()
     );
-    await tezStore.updateStorage({
+    await bucket.updateStorage({
       users: [sharesReceiver],
       bakers: [investParams.candidate],
     });
 
-    expect(tezStore.storage.users[sharesReceiver].candidate).to.be.equal(
+    expect(bucket.storage.users[sharesReceiver].candidate).to.be.equal(
       investParams.candidate
     );
-    expect(tezStore.storage.users[sharesReceiver].votes).to.be.bignumber.equal(
+    expect(bucket.storage.users[sharesReceiver].votes).to.be.bignumber.equal(
       initialVoterAliceInfo.votes.plus(shares)
     );
     expect(
-      tezStore.storage.bakers[investParams.candidate].votes
+      bucket.storage.bakers[investParams.candidate].votes
     ).to.be.bignumber.equal(initialBakerAliceInfo.votes.plus(shares));
-    expect(tezStore.storage.previous_delegated).to.be.equal(zeroAddress);
-    expect(tezStore.storage.current_delegated).to.be.equal(bob.pkh);
-    expect(tezStore.storage.next_candidate).to.be.equal(alice.pkh);
-    expect(
-      await utils.tezos.rpc.getDelegate(tezStore.contract.address)
-    ).to.equal(null);
+    expect(bucket.storage.previous_delegated).to.be.equal(zeroAddress);
+    expect(bucket.storage.current_delegated).to.be.equal(bob.pkh);
+    expect(bucket.storage.next_candidate).to.be.equal(alice.pkh);
+    expect(await utils.tezos.rpc.getDelegate(bucket.contract.address)).to.equal(
+      null
+    );
   });
 
-  it("should vote for the baker on TEZ store contract in time of FA2/TEZ liquidity investment", async () => {
+  it("should vote for the baker on bucket contract in time of FA2/TEZ liquidity investment", async () => {
     const pairId: BigNumber = new BigNumber(1);
     const sharesReceiver: string = alice.pkh;
 
@@ -1052,44 +1104,45 @@ describe("DexCore (invest liquidity)", async () => {
       shares: shares,
       shares_receiver: sharesReceiver,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
-    const tezStore: TezStore = await TezStore.init(
-      dexCore.storage.storage.pairs[pairId.toFixed()].tez_store,
+    const bucket: Bucket = await Bucket.init(
+      dexCore.storage.storage.pairs[pairId.toFixed()].bucket,
       dexCore.tezos
     );
 
-    await tezStore.updateStorage({
+    await bucket.updateStorage({
       users: [sharesReceiver],
       bakers: [alice.pkh],
     });
 
-    const initialVoterAliceInfo: User = tezStore.storage.users[alice.pkh];
-    const initialBakerAliceInfo: User = tezStore.storage.bakers[alice.pkh];
+    const initialVoterAliceInfo: User = bucket.storage.users[alice.pkh];
+    const initialBakerAliceInfo: User = bucket.storage.bakers[alice.pkh];
 
     await dexCore.investLiquidity(
       investParams,
       requiredTokens.tokens_b_required.toNumber()
     );
-    await tezStore.updateStorage({
+    await bucket.updateStorage({
       users: [sharesReceiver],
       bakers: [investParams.candidate],
     });
 
-    expect(tezStore.storage.users[sharesReceiver].candidate).to.be.equal(
+    expect(bucket.storage.users[sharesReceiver].candidate).to.be.equal(
       investParams.candidate
     );
-    expect(tezStore.storage.users[sharesReceiver].votes).to.be.bignumber.equal(
+    expect(bucket.storage.users[sharesReceiver].votes).to.be.bignumber.equal(
       initialVoterAliceInfo.votes.plus(shares)
     );
     expect(
-      tezStore.storage.bakers[investParams.candidate].votes
+      bucket.storage.bakers[investParams.candidate].votes
     ).to.be.bignumber.equal(initialBakerAliceInfo.votes.plus(shares));
-    expect(tezStore.storage.previous_delegated).to.be.equal(zeroAddress);
-    expect(tezStore.storage.current_delegated).to.be.equal(bob.pkh);
-    expect(tezStore.storage.next_candidate).to.be.equal(alice.pkh);
-    expect(
-      await utils.tezos.rpc.getDelegate(tezStore.contract.address)
-    ).to.equal(null);
+    expect(bucket.storage.previous_delegated).to.be.equal(zeroAddress);
+    expect(bucket.storage.current_delegated).to.be.equal(bob.pkh);
+    expect(bucket.storage.next_candidate).to.be.equal(alice.pkh);
+    expect(await utils.tezos.rpc.getDelegate(bucket.contract.address)).to.equal(
+      null
+    );
   });
 
   it("should return the TEZ change to the sender if too many TEZ was send", async () => {
@@ -1100,8 +1153,8 @@ describe("DexCore (invest liquidity)", async () => {
       pairs: [pairId.toFixed()],
     });
 
-    const tezStore: TezStore = await TezStore.init(
-      dexCore.storage.storage.pairs[pairId.toFixed()].tez_store,
+    const bucket: Bucket = await Bucket.init(
+      dexCore.storage.storage.pairs[pairId.toFixed()].bucket,
       dexCore.tezos
     );
     const requiredTokens: RequiredTokens = DexCore.getRequiredTokens(
@@ -1115,30 +1168,31 @@ describe("DexCore (invest liquidity)", async () => {
       shares: shares,
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
     const prevDexCoreTezBalance: BigNumber = await utils.tezos.tz.getBalance(
       dexCore.contract.address
     );
-    const prevTezStoreTezBalance: BigNumber = await utils.tezos.tz.getBalance(
-      tezStore.contract.address
+    const prevBucketTezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      bucket.contract.address
     );
 
     await fa12Token1.approve(dexCore.contract.address, investParams.token_a_in);
     await dexCore.investLiquidity(
       investParams,
-      investParams.token_a_in.toNumber() + 100_000
+      investParams.token_a_in.toNumber()
     );
 
     const currDexCoreTezBalance: BigNumber = await utils.tezos.tz.getBalance(
       dexCore.contract.address
     );
-    const currTezStoreTezBalance: BigNumber = await utils.tezos.tz.getBalance(
-      tezStore.contract.address
+    const currBucketTezBalance: BigNumber = await utils.tezos.tz.getBalance(
+      bucket.contract.address
     );
 
     expect(currDexCoreTezBalance).to.be.bignumber.equal(prevDexCoreTezBalance);
-    expect(currTezStoreTezBalance).to.be.bignumber.equal(
-      prevTezStoreTezBalance.plus(investParams.token_a_in)
+    expect(currBucketTezBalance).to.be.bignumber.equal(
+      prevBucketTezBalance.plus(investParams.token_a_in)
     );
   });
 });

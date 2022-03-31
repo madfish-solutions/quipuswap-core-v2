@@ -1,9 +1,9 @@
 import { Common, DexCore as DexCoreErrors } from "../../helpers/Errors";
 import { FlashSwapsProxy } from "../../helpers/FlashSwapsProxy";
 import { Utils, zeroAddress } from "../../helpers/Utils";
-import { TezStore } from "../../helpers/TezStore";
 import { Auction } from "../../helpers/Auction";
 import { DexCore } from "../../helpers/DexCore";
+import { Bucket } from "../../helpers/Bucket";
 import { FA12 } from "../../helpers/FA12";
 import { FA2 } from "../../helpers/FA2";
 
@@ -54,6 +54,8 @@ describe("DexCore (admin methods)", async () => {
     dexCoreStorage.storage.entered = false;
     dexCoreStorage.storage.admin = alice.pkh;
     dexCoreStorage.storage.baker_registry = alice.pkh;
+    dexCoreStorage.storage.voting_period = new BigNumber(0);
+    dexCoreStorage.storage.collecting_period = new BigNumber(0);
 
     dexCore = await DexCore.originate(utils.tezos, dexCoreStorage);
 
@@ -424,6 +426,7 @@ describe("DexCore (admin methods)", async () => {
       token_b_in: new BigNumber(1),
       shares_receiver: bob.pkh,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
     const updateTokenMetadata: UpdateTokenMetadata = {
       token_id: new BigNumber(0),
@@ -625,14 +628,14 @@ describe("DexCore (admin methods)", async () => {
     });
   });
 
-  it("should fail if tez store not found (not TEZ/TOK pair)", async () => {
+  it("should fail if bucket not found (not TEZ/TOK pair)", async () => {
     const ban: Ban = {
       pair_id: new BigNumber(0),
       ban_params: { baker: alice.pkh, ban_period: new BigNumber(666) },
     };
 
     await rejects(dexCore.ban(ban), (err: Error) => {
-      expect(err.message).to.equal(DexCoreErrors.ERR_TEZ_STORE_404);
+      expect(err.message).to.equal(DexCoreErrors.ERR_BUCKET_404);
 
       return true;
     });
@@ -648,6 +651,7 @@ describe("DexCore (admin methods)", async () => {
       token_b_in: new BigNumber(1),
       shares_receiver: bob.pkh,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
     const ban: Ban = {
       pair_id: new BigNumber(1),
@@ -661,19 +665,19 @@ describe("DexCore (admin methods)", async () => {
     await dexCore.launchExchange(launchExchange, 1);
     await dexCore.updateStorage({ pairs: [ban.pair_id] });
 
-    const tezStore: TezStore = await TezStore.init(
-      dexCore.storage.storage.pairs[ban.pair_id.toNumber()].tez_store,
+    const bucket: Bucket = await Bucket.init(
+      dexCore.storage.storage.pairs[ban.pair_id.toNumber()].bucket,
       utils.tezos
     );
 
     await dexCore.ban(ban);
-    await tezStore.updateStorage({ bakers: [ban.ban_params.baker] });
+    await bucket.updateStorage({ bakers: [ban.ban_params.baker] });
 
     expect(
-      tezStore.storage.bakers[ban.ban_params.baker].ban_period
+      bucket.storage.bakers[ban.ban_params.baker].ban_period
     ).to.be.bignumber.equal(ban.ban_params.ban_period);
     expect(
-      Date.parse(tezStore.storage.bakers[ban.ban_params.baker].ban_start_time)
+      Date.parse(bucket.storage.bakers[ban.ban_params.baker].ban_start_time)
     ).to.be.lte(await utils.getLastBlockTimestamp());
   });
 
@@ -682,19 +686,19 @@ describe("DexCore (admin methods)", async () => {
       pair_id: new BigNumber(1),
       ban_params: { baker: alice.pkh, ban_period: new BigNumber(0) },
     };
-    const tezStore: TezStore = await TezStore.init(
-      dexCore.storage.storage.pairs[ban.pair_id.toNumber()].tez_store,
+    const bucket: Bucket = await Bucket.init(
+      dexCore.storage.storage.pairs[ban.pair_id.toNumber()].bucket,
       utils.tezos
     );
 
     await dexCore.ban(ban);
-    await tezStore.updateStorage({ bakers: [ban.ban_params.baker] });
+    await bucket.updateStorage({ bakers: [ban.ban_params.baker] });
 
     expect(
-      tezStore.storage.bakers[ban.ban_params.baker].ban_period
+      bucket.storage.bakers[ban.ban_params.baker].ban_period
     ).to.be.bignumber.equal(ban.ban_params.ban_period);
     expect(
-      Date.parse(tezStore.storage.bakers[ban.ban_params.baker].ban_start_time)
+      Date.parse(bucket.storage.bakers[ban.ban_params.baker].ban_start_time)
     ).to.be.lte(await utils.getLastBlockTimestamp());
   });
 });

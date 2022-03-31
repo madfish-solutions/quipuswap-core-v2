@@ -41,7 +41,7 @@ yarn compile-dex-core-lambdas
 yarn compile-auction-lambdas
 ```
 
-Also, you can pre compile `TezStore` contract separately (in `.tz` format, needed
+Also, you can pre compile `Bucket` contract separately (in `.tz` format, needed
 for deploying from the `DexCore`). For this purpose run the next command:
 
 ```shell
@@ -75,7 +75,7 @@ By default, the contracts will be deployed to the `development` network (in the
 Docker container).
 
 Also, you can specify the network for deploying (possible networks:
-`hangzhounet`, `idiazabalnet`, `mainnet`):
+`hangzhounet`, `ithacanet`, `mainnet`):
 
 ```shell
   yarn migrate -n [network_name]
@@ -85,6 +85,6 @@ Or just execute one of this commands:
 
 ```shell
   yarn migrate-hangzhounet
-  yarn migrate-idiazabalnet
+  yarn migrate-ithacanet
   yarn migrate-mainnet
 ```

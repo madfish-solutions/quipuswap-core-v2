@@ -10,7 +10,7 @@
 
 #include "../partial/common_helpers.ligo"
 
-#include "../partial/tez_store/tez_store_types.ligo"
+#include "../partial/bucket/bucket_types.ligo"
 
 #include "../partial/dex_core/permits/permits_types.ligo"
 
@@ -30,8 +30,8 @@ function main(
   const action          : full_action_t;
   const s               : full_storage_t)
                         : full_return_t is
-  case action of
+  case action of [
   | Use(params)        -> call_dex_core(params, s)
   | Setup_func(params) -> setup_func(params, s)
   | Default            -> default(s)
-  end
+  ]

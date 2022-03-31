@@ -44,26 +44,14 @@ type account_t          is [@layout:comb] record [
   allowances              : set(address);
 ]
 
-type tmp_t              is [@layout:comb] record [
-  pair_id                 : token_id_t;
-  amount_a_out            : nat;
-  amount_b_out            : nat;
-  referrer                : address;
-  token_a_balance_1       : nat;
-  token_b_balance_1       : nat;
-  token_a_balance_2       : nat;
-  token_b_balance_2       : nat;
-  prev_tez_balance        : nat;
-]
-
 type pair_t             is [@layout:comb] record [
   token_a_pool            : nat;
   token_b_pool            : nat;
-  token_a_price_cum       : nat;
-  token_b_price_cum       : nat;
+  token_a_price_cml       : nat;
+  token_b_price_cml       : nat;
   total_supply            : nat;
   last_block_timestamp    : timestamp;
-  tez_store               : option(address);
+  bucket                  : option(address);
 ]
 
 type setup_func_t       is [@layout:comb] record [
@@ -72,3 +60,5 @@ type setup_func_t       is [@layout:comb] record [
 ]
 
 type default_t          is unit
+
+type fill_t             is unit

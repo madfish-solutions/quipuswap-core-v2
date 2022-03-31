@@ -3,7 +3,7 @@ function call_auction(
   var s                 : full_storage_t)
                         : full_return_t is
   block {
-    const id : nat = case action of
+    const id : nat = case action of [
     (* AUCTION *)
     | Receive_fee(_)          -> 0n
     | Launch_auction(_)       -> 1n
@@ -20,14 +20,14 @@ function call_auction(
     | Withdraw_dev_fee(_)     -> 11n
     | Withdraw_public_fee(_)  -> 12n
     | Burn_bid_fee(_)         -> 13n
-    end;
+    ];
 
     const lambda_bytes : bytes = unwrap(s.auction_lambdas[id], Auction.err_unknown_func);
 
-    const res : return_t = case (Bytes.unpack(lambda_bytes) : option(auction_func_t)) of
+    const res : return_t = case (Bytes.unpack(lambda_bytes) : option(auction_func_t)) of [
     | Some(f) -> f(action, s.storage)
     | None    -> failwith(Auction.err_cant_unpack_lambda)
-    end;
+    ];
 
     s.storage := res.1;
   } with (res.0, s)
@@ -41,10 +41,10 @@ function setup_func(
 
     assert_with_error(params.idx <= auction_methods_max_index, Auction.err_high_func_index);
 
-    case s.auction_lambdas[params.idx] of
+    case s.auction_lambdas[params.idx] of [
     | Some(_) -> failwith(Auction.err_func_set)
     | None    -> s.auction_lambdas[params.idx] := params.func_bytes
-    end;
+    ];
   } with ((nil : list(operation)), s)
 
 function default(

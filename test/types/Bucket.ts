@@ -13,8 +13,13 @@ export type Baker = {
   votes: BigNumber;
 };
 
-export type DivestTez = {
+export type PourOut = {
   receiver: string;
+  amt: BigNumber;
+};
+
+export type PourOver = {
+  bucket: string;
   amt: BigNumber;
 };
 
@@ -36,10 +41,9 @@ export type Vote = {
   execute_voting: boolean;
   votes: BigNumber;
   current_balance: BigNumber;
-  new_balance: BigNumber;
 };
 
-export type TezStoreStorage = {
+export type BucketStorage = {
   users: MichelsonMap<MichelsonMapKey, unknown>;
   bakers: MichelsonMap<MichelsonMapKey, unknown>;
   users_rewards: MichelsonMap<MichelsonMapKey, unknown>;
@@ -55,8 +59,8 @@ export type TezStoreStorage = {
   reward_per_share: BigNumber;
   reward_per_block: BigNumber;
   last_update_level: BigNumber;
-  collecting_period_ends: BigNumber;
-  voting_period_ends: BigNumber;
+  collecting_period_end: BigNumber;
+  voting_period_end: BigNumber;
 };
 
 export type UpdateRewards = {
@@ -64,7 +68,7 @@ export type UpdateRewards = {
   rewardPerBlock: BigNumber;
   totalReward: BigNumber;
   lastUpdateLevel: BigNumber;
-  collectingPeriodEnds: BigNumber;
+  collectingPeriodEnd: BigNumber;
 };
 
 export type UpdateUserRewards = {

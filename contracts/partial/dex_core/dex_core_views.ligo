@@ -4,10 +4,10 @@
                         : bool is
   block {
     const pair : pair_t = unwrap(s.storage.pairs[params.pair_id], DexCore.err_pair_not_listed);
-    const tez_store : address = unwrap(pair.tez_store, DexCore.err_tez_store_404);
+    const bucket : address = unwrap(pair.bucket, DexCore.err_bucket_404);
   } with unwrap(
-    (Tezos.call_view("is_banned_baker", params.baker, tez_store) : option(bool)),
-    DexCore.err_tez_store_is_banned_baker_view_404
+    (Tezos.call_view("is_banned_baker", params.baker, bucket) : option(bool)),
+    DexCore.err_bucket_is_banned_baker_view_404
   )
 
 [@view] function get_reserves(
@@ -64,20 +64,21 @@
   block {
     const first_swap : swap_slice_t = unwrap(List.head_opt(params.swaps), DexCore.err_empty_route);
     const tokens : tokens_t = unwrap(s.storage.tokens[first_swap.pair_id], DexCore.err_pair_not_listed);
-    const token : token_t = case first_swap.direction of
+    const token : token_t = case first_swap.direction of [
     | A_to_b -> tokens.token_a
     | B_to_a -> tokens.token_b
-    end;
+    ];
     const tmp : tmp_swap_t = List.fold(
       swap_internal,
       params.swaps,
       record [
         s               = s.storage;
-        ops             = (nil : list(operation));
+        forwards        = (nil : list(forward_t));
         last_operation  = (None : option(operation));
         token_in        = token;
         receiver        = Constants.zero_address;
         referrer        = Constants.zero_address;
+        from_bucket     = Constants.zero_address;
         amount_in       = params.amount_in;
         swaps_list_size = List.size(params.swaps);
         counter         = 0n;
@@ -130,8 +131,8 @@
           request           = pair_id;
           cumulative_prices = record [
             last_block_timestamp = pair.last_block_timestamp;
-            token_a_price_cum    = pair.token_a_price_cum;
-            token_b_price_cum    = pair.token_b_price_cum;
+            token_a_price_cml    = pair.token_a_price_cml;
+            token_b_price_cml    = pair.token_b_price_cml;
           ];
         ];
       } with response # l;

@@ -34,26 +34,14 @@ module Constants is {
     allowances = (Set.empty : set(address));
   ];
 
-  const default_tmp : tmp_t = record [
-    pair_id           = 0n;
-    amount_a_out      = 0n;
-    amount_b_out      = 0n;
-    referrer          = zero_address;
-    token_a_balance_1 = 0n;
-    token_b_balance_1 = 0n;
-    token_a_balance_2 = 0n;
-    token_b_balance_2 = 0n;
-    prev_tez_balance  = 0n;
-  ];
-
   const default_pair : pair_t = record [
     token_a_pool         = 0n;
     token_b_pool         = 0n;
-    token_a_price_cum    = 0n;
-    token_b_price_cum    = 0n;
+    token_a_price_cml    = 0n;
+    token_b_price_cml    = 0n;
     total_supply         = 0n;
     last_block_timestamp = (0 : timestamp);
-    tez_store            = (None : option(address));
+    bucket               = (None : option(address));
   ];
 }
 

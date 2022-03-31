@@ -35,7 +35,7 @@ function transfer_sender_check(
   } with
       if is_approved_for_all_transfers
       then s
-      else case params of
+      else case params of [
         | nil -> s
         | first_param # rest -> block {
             const from_ : address = first_param.from_;
@@ -50,7 +50,7 @@ function transfer_sender_check(
 
             List.iter(check, rest);
           } with updated_s
-        end
+        ]
 
 function iterate_transfer(
   const result          : return_t;
@@ -82,17 +82,17 @@ function iterate_transfer(
         if tokens.token_b = Tez
         then {
           const pair : pair_t = unwrap(s.pairs[dst.token_id], DexCore.err_pair_not_listed);
-          const tez_store : address = unwrap(pair.tez_store, DexCore.err_tez_store_404);
+          const bucket : address = unwrap(pair.bucket, DexCore.err_bucket_404);
           const sender_candidate : key_hash =
-            case (Tezos.call_view("get_user_candidate", transfer_param.from_, tez_store) : option(key_hash)) of
+            case (Tezos.call_view("get_user_candidate", transfer_param.from_, bucket) : option(key_hash)) of [
           | Some(v) -> v
-          | None    -> failwith(DexCore.err_tez_store_get_user_candidate_view_404)
-          end;
+          | None    -> failwith(DexCore.err_bucket_get_user_candidate_view_404)
+          ];
           const receiver_candidate : key_hash =
-            case (Tezos.call_view("get_user_candidate", dst.to_, tez_store) : option(key_hash)) of
+            case (Tezos.call_view("get_user_candidate", dst.to_, bucket) : option(key_hash)) of [
           | Some(v) -> v
-          | None    -> failwith(DexCore.err_tez_store_get_user_candidate_view_404)
-          end;
+          | None    -> failwith(DexCore.err_bucket_get_user_candidate_view_404)
+          ];
           const new_sender_balance : nat = unwrap_or(s.ledger[(transfer_param.from_, dst.token_id)], 0n);
           const new_receiver_balance : nat = unwrap_or(s.ledger[(dst.to_, dst.token_id)], 0n);
 
@@ -103,9 +103,8 @@ function iterate_transfer(
               execute_voting  = True;
               votes           = new_receiver_balance;
               current_balance = receiver_balance;
-              new_balance     = new_receiver_balance;
             ],
-            unwrap(pair.tez_store, DexCore.err_tez_store_404)
+            unwrap(pair.bucket, DexCore.err_bucket_404)
           ) # ops;
           ops := get_vote_op(
             record [
@@ -114,9 +113,8 @@ function iterate_transfer(
               execute_voting  = False;
               votes           = new_sender_balance;
               current_balance = sender_balance;
-              new_balance     = new_sender_balance;
             ],
-            unwrap(pair.tez_store, DexCore.err_tez_store_404)
+            unwrap(pair.bucket, DexCore.err_bucket_404)
           ) # ops;
         }
         else skip;
@@ -128,10 +126,10 @@ function update_operator(
   const params          : update_operator_t)
                         : storage_t is
   block {
-    const (param, should_add) = case params of
+    const (param, should_add) = case params of [
     | Add_operator(param)    -> (param, True)
     | Remove_operator(param) -> (param, False)
-    end;
+    ];
 
     assert_with_error(param.token_id < s.tokens_count, "FA2_TOKEN_UNDEFINED");
     assert_with_error(Tezos.sender = param.owner, "FA2_NOT_OWNER");
@@ -157,13 +155,13 @@ function transfer(
       s
     );
 
-    case action of
+    case action of [
     | Transfer(params) -> {
         result.1 := transfer_sender_check(params, action, s);
         result := List.fold(iterate_transfer, params, result);
       }
     | _ -> skip
-    end
+    ]
   } with result
 
 function update_operators(
@@ -171,12 +169,12 @@ function update_operators(
   var s                 : storage_t)
                         : return_t is
   block {
-    case action of
+    case action of [
     | Update_operators(params) -> {
         s := List.fold(update_operator, params, s);
       }
     | _ -> skip
-    end
+    ]
   } with ((nil : list(operation)), s)
 
 function balance_of(
@@ -186,7 +184,7 @@ function balance_of(
   block {
     var ops : list(operation) := nil;
 
-    case action of
+    case action of [
     | Balance_of(params) -> {
         function look_up_balance(
           const l         : list(balance_response_t);
@@ -211,5 +209,5 @@ function balance_of(
         ops := Tezos.transaction(accumulated_response, 0mutez, params.callback) # ops;
       }
     | _ -> skip
-    end
+    ]
   } with (ops, s)

@@ -2,6 +2,7 @@ import { DexCore as DexCoreErrors } from "../../helpers/Errors";
 import { BakerRegistry } from "../../helpers/BakerRegistry";
 import { Auction } from "../../helpers/Auction";
 import { DexCore } from "../../helpers/DexCore";
+import { Bucket } from "../../helpers/Bucket";
 import { FA12 } from "../../helpers/FA12";
 import { FA2 } from "../../helpers/FA2";
 import {
@@ -26,9 +27,8 @@ import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa12Storage } from "../../../storage/test/FA12";
 import { fa2Storage } from "../../../storage/test/FA2";
 
-import { TezStore } from "../../helpers/TezStore";
 import { SBAccount } from "../../types/Common";
-import { User } from "../../types/TezStore";
+import { User } from "../../types/Bucket";
 import {
   DivestLiquidity,
   TokensPerShare,
@@ -101,6 +101,7 @@ describe("DexCore (divest liquidity)", async () => {
       token_b_in: new BigNumber(100_000),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa12Token1.approve(dexCore.contract.address, launchParams.token_a_in);
@@ -120,6 +121,7 @@ describe("DexCore (divest liquidity)", async () => {
       token_b_in: new BigNumber(100_000),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa2Token1.updateOperators([
@@ -145,6 +147,7 @@ describe("DexCore (divest liquidity)", async () => {
       token_b_in: new BigNumber(100_000),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
     launchParams = DexCore.changeTokensOrderInPair(launchParams, false);
 
@@ -165,6 +168,7 @@ describe("DexCore (divest liquidity)", async () => {
       token_b_in: new BigNumber(100_000),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
     launchParams = DexCore.changeTokensOrderInPair(launchParams, false);
 
@@ -190,6 +194,7 @@ describe("DexCore (divest liquidity)", async () => {
       token_b_in: new BigNumber(100_000),
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await fa12Token1.approve(dexCore.contract.address, launchParams.token_a_in);
@@ -197,16 +202,36 @@ describe("DexCore (divest liquidity)", async () => {
   });
 
   it("should fail if reentrancy", async () => {
-    const swapParams: Swap = {
-      swaps: [{ direction: { a_to_b: undefined }, pair_id: new BigNumber(0) }],
-      receiver: alice.pkh,
-      referrer: bob.pkh,
-      amount_in: new BigNumber(1),
-      min_amount_out: new BigNumber(1),
+    const divestParams: DivestLiquidity = {
+      pair_id: new BigNumber(0),
+      min_token_a_out: new BigNumber(0),
+      min_token_b_out: new BigNumber(0),
+      shares: new BigNumber(0),
+      liquidity_receiver: zeroAddress,
+      candidate: zeroAddress,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000),
     };
 
-    await rejects(dexCore2.swap(swapParams), (err: Error) => {
+    await rejects(dexCore2.divestLiquidity(divestParams), (err: Error) => {
       expect(err.message).to.equal(DexCoreErrors.ERR_REENTRANCY);
+
+      return true;
+    });
+  });
+
+  it("should fail if action is outdated", async () => {
+    const divestParams: DivestLiquidity = {
+      pair_id: new BigNumber(666),
+      min_token_a_out: new BigNumber(0),
+      min_token_b_out: new BigNumber(0),
+      shares: new BigNumber(0),
+      liquidity_receiver: alice.pkh,
+      candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000),
+    };
+
+    await rejects(dexCore.divestLiquidity(divestParams), (err: Error) => {
+      expect(err.message).to.equal(DexCoreErrors.ERR_ACTION_OUTDATED);
 
       return true;
     });
@@ -220,6 +245,7 @@ describe("DexCore (divest liquidity)", async () => {
       shares: new BigNumber(0),
       liquidity_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await rejects(dexCore.divestLiquidity(divestParams), (err: Error) => {
@@ -237,6 +263,7 @@ describe("DexCore (divest liquidity)", async () => {
       shares: new BigNumber(100_001),
       liquidity_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await rejects(dexCore.divestLiquidity(divestParams), (err: Error) => {
@@ -254,6 +281,7 @@ describe("DexCore (divest liquidity)", async () => {
       shares: new BigNumber(100_000),
       liquidity_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await rejects(dexCore.divestLiquidity(divestParams), (err: Error) => {
@@ -271,6 +299,7 @@ describe("DexCore (divest liquidity)", async () => {
       shares: new BigNumber(100_000),
       liquidity_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await rejects(dexCore.divestLiquidity(divestParams), (err: Error) => {
@@ -299,6 +328,7 @@ describe("DexCore (divest liquidity)", async () => {
       shares: shares,
       liquidity_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await rejects(dexCore.divestLiquidity(divestParams), (err: Error) => {
@@ -327,6 +357,7 @@ describe("DexCore (divest liquidity)", async () => {
       shares: shares,
       liquidity_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await rejects(dexCore.divestLiquidity(divestParams), (err: Error) => {
@@ -362,6 +393,7 @@ describe("DexCore (divest liquidity)", async () => {
       shares: shares,
       liquidity_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await dexCore.divestLiquidity(divestParams);
@@ -416,6 +448,7 @@ describe("DexCore (divest liquidity)", async () => {
       shares: shares,
       liquidity_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await dexCore.divestLiquidity(divestParams);
@@ -470,6 +503,7 @@ describe("DexCore (divest liquidity)", async () => {
       shares: shares,
       liquidity_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await dexCore.divestLiquidity(divestParams);
@@ -524,6 +558,7 @@ describe("DexCore (divest liquidity)", async () => {
       shares: shares,
       liquidity_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await dexCore.divestLiquidity(divestParams);
@@ -578,6 +613,7 @@ describe("DexCore (divest liquidity)", async () => {
       shares: shares,
       liquidity_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await dexCore.divestLiquidity(divestParams);
@@ -606,7 +642,7 @@ describe("DexCore (divest liquidity)", async () => {
     );
   });
 
-  it("should transfer FA1.2 tokens and divest TEZ tokens from TEZ store contract in time of FA1.2/TEZ liquidity divestment", async () => {
+  it("should transfer FA1.2 tokens and pour out TEZ tokens from bucket contract in time of FA1.2/TEZ liquidity divestment", async () => {
     const pairId: BigNumber = new BigNumber(0);
     const liquidityReceiver: string = alice.pkh;
 
@@ -634,6 +670,7 @@ describe("DexCore (divest liquidity)", async () => {
       shares: shares,
       liquidity_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await dexCore.divestLiquidity(divestParams);
@@ -655,7 +692,7 @@ describe("DexCore (divest liquidity)", async () => {
     );
   });
 
-  it("should transfer FA2 tokens and divest TEZ tokens from TEZ store contract in time of FA2/TEZ liquidity divestment", async () => {
+  it("should transfer FA2 tokens and pour out TEZ tokens from bucket contract in time of FA2/TEZ liquidity divestment", async () => {
     const pairId: BigNumber = new BigNumber(1);
     const liquidityReceiver: string = alice.pkh;
 
@@ -685,6 +722,7 @@ describe("DexCore (divest liquidity)", async () => {
       shares: shares,
       liquidity_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await dexCore.divestLiquidity(divestParams);
@@ -743,6 +781,7 @@ describe("DexCore (divest liquidity)", async () => {
       shares: shares,
       liquidity_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await dexCore.divestLiquidity(divestParams);
@@ -816,6 +855,7 @@ describe("DexCore (divest liquidity)", async () => {
       shares: shares,
       liquidity_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await dexCore.divestLiquidity(divestParams);
@@ -890,6 +930,7 @@ describe("DexCore (divest liquidity)", async () => {
       shares: shares,
       liquidity_receiver: alice.pkh,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await dexCore.divestLiquidity(divestParams);
@@ -950,6 +991,7 @@ describe("DexCore (divest liquidity)", async () => {
       shares: shares,
       liquidity_receiver: liquidityReceiver,
       candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
 
     await dexCore.divestLiquidity(divestParams);
@@ -960,7 +1002,7 @@ describe("DexCore (divest liquidity)", async () => {
     });
   });
 
-  it("should vote for the baker on TEZ store contract in time of FA1.2/TEZ liquidity divestment", async () => {
+  it("should vote for the baker on bucket contract in time of FA1.2/TEZ liquidity divestment", async () => {
     const pairId: BigNumber = new BigNumber(0);
     const liquidityReceiver: string = alice.pkh;
 
@@ -980,44 +1022,45 @@ describe("DexCore (divest liquidity)", async () => {
       shares: shares,
       liquidity_receiver: liquidityReceiver,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
-    const tezStore: TezStore = await TezStore.init(
-      dexCore.storage.storage.pairs[pairId.toFixed()].tez_store,
+    const bucket: Bucket = await Bucket.init(
+      dexCore.storage.storage.pairs[pairId.toFixed()].bucket,
       dexCore.tezos
     );
 
-    await tezStore.updateStorage({
+    await bucket.updateStorage({
       users: [liquidityReceiver],
       bakers: [alice.pkh],
     });
 
-    const initialVoterAliceInfo: User = tezStore.storage.users[alice.pkh];
-    const initialBakerAliceInfo: User = tezStore.storage.bakers[alice.pkh];
+    const initialVoterAliceInfo: User = bucket.storage.users[alice.pkh];
+    const initialBakerAliceInfo: User = bucket.storage.bakers[alice.pkh];
 
     await dexCore.divestLiquidity(divestParams);
-    await tezStore.updateStorage({
+    await bucket.updateStorage({
       users: [liquidityReceiver],
       bakers: [divestParams.candidate],
     });
 
-    expect(tezStore.storage.users[liquidityReceiver].candidate).to.be.equal(
+    expect(bucket.storage.users[liquidityReceiver].candidate).to.be.equal(
       divestParams.candidate
     );
+    expect(bucket.storage.users[liquidityReceiver].votes).to.be.bignumber.equal(
+      initialVoterAliceInfo.votes.minus(shares)
+    );
     expect(
-      tezStore.storage.users[liquidityReceiver].votes
-    ).to.be.bignumber.equal(initialVoterAliceInfo.votes.minus(shares));
-    expect(
-      tezStore.storage.bakers[divestParams.candidate].votes
+      bucket.storage.bakers[divestParams.candidate].votes
     ).to.be.bignumber.equal(initialBakerAliceInfo.votes.minus(shares));
-    expect(tezStore.storage.previous_delegated).to.be.equal(zeroAddress);
-    expect(tezStore.storage.current_delegated).to.be.equal(bob.pkh);
-    expect(tezStore.storage.next_candidate).to.be.equal(alice.pkh);
-    expect(
-      await utils.tezos.rpc.getDelegate(tezStore.contract.address)
-    ).to.equal(null);
+    expect(bucket.storage.previous_delegated).to.be.equal(zeroAddress);
+    expect(bucket.storage.current_delegated).to.be.equal(bob.pkh);
+    expect(bucket.storage.next_candidate).to.be.equal(alice.pkh);
+    expect(await utils.tezos.rpc.getDelegate(bucket.contract.address)).to.equal(
+      null
+    );
   });
 
-  it("should vote for the baker on TEZ store contract in time of FA2/TEZ liquidity divestment", async () => {
+  it("should vote for the baker on bucket contract in time of FA2/TEZ liquidity divestment", async () => {
     const pairId: BigNumber = new BigNumber(1);
     const liquidityReceiver: string = alice.pkh;
 
@@ -1037,40 +1080,41 @@ describe("DexCore (divest liquidity)", async () => {
       shares: shares,
       liquidity_receiver: liquidityReceiver,
       candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
     };
-    const tezStore: TezStore = await TezStore.init(
-      dexCore.storage.storage.pairs[pairId.toFixed()].tez_store,
+    const bucket: Bucket = await Bucket.init(
+      dexCore.storage.storage.pairs[pairId.toFixed()].bucket,
       dexCore.tezos
     );
 
-    await tezStore.updateStorage({
+    await bucket.updateStorage({
       users: [liquidityReceiver],
       bakers: [alice.pkh],
     });
 
-    const initialVoterAliceInfo: User = tezStore.storage.users[alice.pkh];
-    const initialBakerAliceInfo: User = tezStore.storage.bakers[alice.pkh];
+    const initialVoterAliceInfo: User = bucket.storage.users[alice.pkh];
+    const initialBakerAliceInfo: User = bucket.storage.bakers[alice.pkh];
 
     await dexCore.divestLiquidity(divestParams);
-    await tezStore.updateStorage({
+    await bucket.updateStorage({
       users: [liquidityReceiver],
       bakers: [divestParams.candidate],
     });
 
-    expect(tezStore.storage.users[liquidityReceiver].candidate).to.be.equal(
+    expect(bucket.storage.users[liquidityReceiver].candidate).to.be.equal(
       divestParams.candidate
     );
+    expect(bucket.storage.users[liquidityReceiver].votes).to.be.bignumber.equal(
+      initialVoterAliceInfo.votes.minus(shares)
+    );
     expect(
-      tezStore.storage.users[liquidityReceiver].votes
-    ).to.be.bignumber.equal(initialVoterAliceInfo.votes.minus(shares));
-    expect(
-      tezStore.storage.bakers[divestParams.candidate].votes
+      bucket.storage.bakers[divestParams.candidate].votes
     ).to.be.bignumber.equal(initialBakerAliceInfo.votes.minus(shares));
-    expect(tezStore.storage.previous_delegated).to.be.equal(zeroAddress);
-    expect(tezStore.storage.current_delegated).to.be.equal(bob.pkh);
-    expect(tezStore.storage.next_candidate).to.be.equal(alice.pkh);
-    expect(
-      await utils.tezos.rpc.getDelegate(tezStore.contract.address)
-    ).to.equal(null);
+    expect(bucket.storage.previous_delegated).to.be.equal(zeroAddress);
+    expect(bucket.storage.current_delegated).to.be.equal(bob.pkh);
+    expect(bucket.storage.next_candidate).to.be.equal(alice.pkh);
+    expect(await utils.tezos.rpc.getDelegate(bucket.contract.address)).to.equal(
+      null
+    );
   });
 });

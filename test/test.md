@@ -13,22 +13,29 @@
     - ✅ should register a new baker;
     - ✅ should fail if address to register is not a baker.
 
-## TezStore
+## Bucket
 
-1. `invest_tez`:
+1. `fill`:
 
-   - ✅ should fail if not dex core is trying to invest tez;
-   - ✅ should invest tez - 1;
-   - ✅ should invest tez - 2.
+   - ✅ should fill - 1;
+   - ✅ should fill - 2.
 
-2. `divest_tez`:
+2. `pour_out`:
 
-   - ✅ should fail if not dex core is trying to divest tez;
-   - ✅ should fail if tez store have not enough TEZ on contract's balance;
-   - ✅ should divest tez - 1;
-   - ✅ should divest tez - 2.
+   - ✅ should fail if not dex core is trying to pour out;
+   - ✅ should fail if bucket have not enough TEZ on contract's balance;
+   - ✅ should pour out - 1;
+   - ✅ should pour out - 2.
 
-3. `withdraw_rewards`:
+3. `pour_over`:
+
+   - ✅ should fail if not dex core is trying to pour over;
+   - ✅ should fail if `fill` entrypoint of a receiver not found;
+   - ✅ should fail if bucket have not enough TEZ on contract's balance;
+   - ✅ should pour over - 1;
+   - ✅ should pour over - 2.
+
+4. `withdraw_rewards`:
 
    - ✅ should fail if not dex core is trying to withdraw rewards;
    - ✅ should withdraw user's rewards - 1;
@@ -36,13 +43,13 @@
    - ✅ should update user rewards;
    - ✅ should update global rewards.
 
-4. `ban_baker`:
+5. `ban_baker`:
 
    - ✅ should fail if not dex core is trying to ban baker;
    - ✅ should ban baker;
    - ✅ should unban baker.
 
-5. `vote`:
+6. `vote`:
 
    - ✅ should vote for bob, bob must become first current delegated;
    - ✅ should fail if not dex core is trying to vote;
@@ -63,7 +70,7 @@
    - ✅ should update end of voting period if voting can be done;
    - ✅ should remove delegate and set current delegated to the `zero_address` if voting can be done and current delegated is banned.
 
-6. `default`:
+7. `default`:
 
    - ✅ should update global rewards - 1;
    - ✅ should update global rewards - 2;
@@ -71,23 +78,23 @@
    - ✅ should update global rewards - 4;
    - ✅ should not update global rewards if pair total supply is 0.
 
-7. `is_banned_baker` [VIEW]:
+8. `is_banned_baker` [VIEW]:
 
    - ✅ should return true if baker is banned;
    - ✅ should return false if baker is not banned;
    - ✅ should return false if baker's banning period is finished.
 
-8. `get_tez_balance` [VIEW]:
+9. `get_tez_balance` [VIEW]:
 
    - ✅ should return zero balance;
    - ✅ should return positive balance - 1;
    - ✅ should return positive balance - 2.
 
-9. `get_user_candidate` [VIEW]:
+10. `get_user_candidate` [VIEW]:
 
-   - ✅ should return user's candidate is user have a candidate;
-   - ✅ should return current delegated if user does not have a candidate;
-   - ✅ should return `zero_key_hash` if contract does not have a delegate.
+    - ✅ should return user's candidate is user have a candidate;
+    - ✅ should return current delegated if user does not have a candidate;
+    - ✅ should return `zero_key_hash` if contract does not have a delegate.
 
 ## FlashSwapsProxy
 
@@ -100,6 +107,7 @@
 1. `launch_exchange`:
 
    - ✅ should fail if reentrancy;
+   - ✅ should fail if action is outdated;
    - ✅ should fail if wrong pair order was passed with TEZ token and TEZ token;
    - ✅ should fail if wrong pair order was passed with FA1.2 token and TEZ token;
    - ✅ should fail if wrong pair order was passed with FA2 token and TEZ token;
@@ -108,6 +116,7 @@
    - ✅ should fail if wrong pair order was passed with FA1.2 token and FA2 token;
    - ✅ should fail if token A zero amount in was passed;
    - ✅ should fail if TEZ token B zero amount in was passed;
+   - ✅ should fail if TEZ token B wrong amount in was passed;
    - ✅ should fail if token B zero amount in was passed;
    - ✅ should launch FA1.2/TEZ exchange;
    - ✅ should fail if pair already listed;
@@ -121,36 +130,38 @@
    - ✅ should transfer FA1.2 tokens in time of FA1.2/FA1.2 exchange launch;
    - ✅ should transfer FA2 tokens in time of FA2/FA2 exchange launch;
    - ✅ should transfer FA1.2 tokens and FA2 tokens in time of FA1.2/FA2 exchange launch;
-   - ✅ should deploy TEZ store contract with correct initial storage in time of exchange launch with TEZ token;
-   - ✅ should vote on TEZ store contract in time of exchange launch with TEZ token;
-   - ✅ should vote on TEZ store contract if exchange already launched and have 0 liquidity.
+   - ✅ should deploy bucket contract with correct initial storage in time of exchange launch with TEZ token;
+   - ✅ should vote on bucket contract in time of exchange launch with TEZ token;
+   - ✅ should vote on bucket contract if exchange already launched and have 0 liquidity.
 
 2. `invest_liquidity`:
 
    - ✅ should fail if reentrancy;
+   - ✅ should fail if action is outdated;
    - ✅ should fail if pair not listed;
    - ✅ should fail if pair does not have liquidity;
    - ✅ should fail if investor expects zero shares amount in result of investment;
+   - ✅ should fail if TEZ token mismatch;
    - ✅ should fail if low token A in;
-   - ✅ should fail if token B is TEZ and low token B in;
    - ✅ should fail if low token B in;
    - ✅ should invest FA1.2/TEZ liquidity;
    - ✅ should invest FA2/TEZ liquidity;
    - ✅ should invest FA1.2/FA1.2 liquidity;
    - ✅ should invest FA2/FA2 liquidity;
    - ✅ should invest FA1.2/FA2 liquidity;
-   - ✅ should transfer FA1.2 tokens and invest TEZ tokens to TEZ store contract in time of FA1.2/TEZ liquidity investment;
-   - ✅ should transfer FA2 tokens and invest TEZ tokens to TEZ store contract in time of FA2/TEZ liquidity investment;
+   - ✅ should transfer FA1.2 tokens and fill TEZ tokens to bucket contract in time of FA1.2/TEZ liquidity investment;
+   - ✅ should transfer FA2 tokens and fill TEZ tokens to bucket contract in time of FA2/TEZ liquidity investment;
    - ✅ should transfer FA1.2 tokens in time of FA1.2/FA1.2 liquidity investment;
    - ✅ should transfer FA2 tokens in time of FA2/FA2 liquidity investment;
    - ✅ should transfer FA1.2 tokens and FA2 tokens in time of FA1.2/FA2 liquidity investment;
-   - ✅ should vote for the baker on TEZ store contract in time of FA1.2/TEZ liquidity investment;
-   - ✅ should vote for the baker on TEZ store contract in time of FA2/TEZ liquidity investment;
+   - ✅ should vote for the baker on bucket contract in time of FA1.2/TEZ liquidity investment;
+   - ✅ should vote for the baker on bucket contract in time of FA2/TEZ liquidity investment;
    - ✅ should return the TEZ change to the sender if too many TEZ was send.
 
 3. `divest_liquidity`:
 
    - ✅ should fail if reentrancy;
+   - ✅ should fail if action is outdated;
    - ✅ should fail if pair not listed;
    - ✅ should fail if pair does not have liquidity;
    - ✅ should fail if a divestor have an insufficient liquidity balance;
@@ -163,35 +174,39 @@
    - ✅ should divest FA1.2/FA1.2 liquidity;
    - ✅ should divest FA2/FA2 liquidity;
    - ✅ should divest FA1.2/FA2 liquidity;
-   - ✅ should transfer FA1.2 tokens and divest TEZ tokens from TEZ store contract in time of FA1.2/TEZ liquidity divestment;
-   - ✅ should transfer FA2 tokens and divest TEZ tokens from TEZ store contract in time of FA2/TEZ liquidity divestment;
+   - ✅ should transfer FA1.2 tokens and pour out TEZ tokens from bucket contract in time of FA1.2/TEZ liquidity divestment;
+   - ✅ should transfer FA2 tokens and pour out TEZ tokens from bucket contract in time of FA2/TEZ liquidity divestment;
    - ✅ should transfer FA1.2 tokens in time of FA1.2/FA1.2 liquidity divestment;
    - ✅ should transfer FA2 tokens in time of FA2/FA2 liquidity divestment;
    - ✅ should transfer FA1.2 tokens and FA2 tokens in time of FA1.2/FA2 liquidity divestment;
-   - ✅ should vote for the baker on TEZ store contract in time of FA1.2/TEZ liquidity divestment;
-   - ✅ should vote for the baker on TEZ store contract in time of FA2/TEZ liquidity divestment.
+   - ✅ should vote for the baker on bucket contract in time of FA1.2/TEZ liquidity divestment;
+   - ✅ should vote for the baker on bucket contract in time of FA2/TEZ liquidity divestment.
 
 4. `flash_swap`:
 
    - ✅ should fail if reentrancy;
+   - ✅ should fail if action is outdated;
    - ✅ should fail if user is trying to refer himself;
    - ✅ should fail if dust out;
    - ✅ should fail if pair not listed;
-   - ✅ should fail if insufficient token A liquidity;
-   - ✅ should fail if insufficient token B liquidity;
-   - ❌ should flash swap one FA1.2 token;
-   - ❌ should flash swap one FA2 token;
-   - ❌ should flash swap one TEZ token;
-   - ❌ should flash swap two FA1.2 tokens;
-   - ❌ should flash swap two FA2 tokens;
-   - ❌ should flash swap FA1.2 and FA2 tokens;
-   - ❌ should flash swap FA2 and FA1.2 tokens;
-   - ❌ should flash swap FA1.2 and TEZ tokens;
-   - ❌ should flash swap FA2 and TEZ tokens.
+   - ✅ should fail if insufficient out token liquidity;
+   - ✅ should fail if wrong flash swap returns in TEZ token;
+   - ✅ should flash swap FA1.2 token and return the same token with fee;
+   - ✅ should flash swap FA1.2 token and return opposite FA1.2 token with fee;
+   - ✅ should flash swap FA1.2 token and return opposite FA2 token with fee;
+   - ✅ should flash swap FA1.2 token and return opposite TEZ token with fee;
+   - ✅ should flash swap FA2 token and return the same token with fee;
+   - ✅ should flash swap FA2 token and return opposite FA1.2 token with fee;
+   - ✅ should flash swap FA2 token and return opposite FA2 token with fee;
+   - ✅ should flash swap FA2 token and return opposite TEZ token with fee;
+   - ✅ should flash swap TEZ token and return the same token with fee;
+   - ✅ should flash swap TEZ token and return opposite FA1.2 token with fee;
+   - ✅ should flash swap TEZ token and return opposite FA2 token with fee.
 
 5. `swap`:
 
    - ✅ should fail if reentrancy;
+   - ✅ should fail if action is outdated;
    - ✅ should fail if user is trying to refer himself;
    - ✅ should fail if empty route;
    - ✅ should fail if pair not listed;
@@ -218,58 +233,60 @@
 
    - ✅ should fail if reentrancy;
    - ✅ should fail if pair not listed;
-   - ✅ should fail if pair does not have TEZ store contract (not TOK/TEZ pair);
+   - ✅ should fail if pair does not have bucket contract (not TOK/TEZ pair);
    - ✅ should withdraw user's profit - 1;
    - ✅ should withdraw user's profit - 2.
 
 7. `claim_interface_fee`:
 
    - ✅ should fail if reentrancy;
-   - ✅ should fail if insufficient interface fee balance - 1;
-   - ✅ should fail if insufficient interface fee balance - 2;
-   - ✅ should claim FA1.2 interface fee and transfer it to a receiver - 1;
-   - ✅ should claim FA1.2 interface fee and transfer it to a receiver - 2;
-   - ✅ should claim FA2 interface fee and transfer it to a receiver - 1;
-   - ✅ should claim FA2 interface fee and transfer it to a receiver - 2;
-   - ✅ should claim TEZ interface fee and transfer it to a receiver - 1;
-   - ✅ should claim TEZ interface fee and transfer it to a receiver - 2.
+   - ✅ should claim FA1.2 interface fee and transfer it to a receiver;
+   - ✅ should claim FA2 interface fee and transfer it to a receiver.
 
-8. `withdraw_auction_fee`:
+8. `claim_interface_tez_fee`:
 
    - ✅ should fail if reentrancy;
+   - ✅ should fail if pair not listed;
+   - ✅ should claim TEZ interface fee and transfer it to a receiver.
+
+9. `withdraw_auction_fee`:
+
+   - ✅ should fail if reentrancy;
+   - ✅ should fail if user did not passed pair ID in time of withdrawing TEZ auction fee;
+   - ✅ should fail if pair not listed in time of withdrawing TEZ auction fee;
    - ✅ should withdraw FA1.2 auction fee;
    - ✅ should withdraw FA2 auction fee;
    - ✅ should withdraw TEZ auction fee.
 
-9. `vote`:
+10. `vote`:
 
-   - ✅ should fail if reentrancy;
-   - ✅ should fail if pair not listed;
-   - ✅ should fail if voter balance is negative;
-   - ✅ should fail if pair does not have TEZ store contract (not TOK/TEZ pair);
-   - ✅ should vote.
+    - ✅ should fail if reentrancy;
+    - ✅ should fail if pair not listed;
+    - ✅ should fail if voter balance is negative;
+    - ✅ should fail if pair does not have bucket contract (not TOK/TEZ pair);
+    - ✅ should vote.
 
-10. `set_admin`:
+11. `set_admin`:
 
     - ✅ should fail if not admin is trying to setup new pending admin;
     - ✅ should setup new pending admin by admin.
 
-11. `confirm_admin`:
+12. `confirm_admin`:
 
     - ✅ should fail if not pending admin is trying to confirm new admin;
     - ✅ should confirm new admin by pending admin.
 
-12. `set_flash_swaps_proxy`:
+13. `set_flash_swaps_proxy`:
 
     - ✅ should fail if not admin is trying to setup new flash swaps proxy;
     - ✅ should setup new flash swaps proxy.
 
-13. `set_auction`:
+14. `set_auction`:
 
     - ✅ should fail if not admin is trying to setup new auction;
     - ✅ should setup new auction.
 
-14. `add_managers`:
+15. `add_managers`:
 
     - ✅ should fail if not admin is trying to add new manager;
     - ✅ should add one manager;
@@ -278,27 +295,27 @@
     - ✅ should remove a group of managers;
     - ✅ shoud add/remove some groups of managers.
 
-15. `set_fees`:
+16. `set_fees`:
 
     - ✅ should fail if not admin is trying to set fees;
     - ✅ should update fees.
 
-16. `set_cycle_duration`:
+17. `set_cycle_duration`:
 
     - ✅ should fail if not admin is trying to set cycle duration;
     - ✅ should update cycle duration.
 
-17. `set_voting_period`:
+18. `set_voting_period`:
 
     - ✅ should fail if not admin is trying to setup new voting period;
     - ✅ should setup new voting period.
 
-18. `set_collecting_period`:
+19. `set_collecting_period`:
 
     - ✅ should fail if not admin is trying to setup new collecting period;
     - ✅ should setup new collecting period.
 
-19. `update_token_metadata`:
+20. `update_token_metadata`:
 
     - ✅ should fail if not manager is trying to update token metadata;
     - ✅ should fail if pair not listed;
@@ -306,15 +323,15 @@
     - ✅ should set new fields in token metadata;
     - ✅ should update existing and set new fields in token metadata.
 
-20. `ban`:
+21. `ban`:
 
     - ✅ should fail if not admin is trying to ban baker;
     - ✅ should fail if pair not listed;
-    - ✅ should fail if tez store not found (not TEZ/TOK pair);
+    - ✅ should fail if bucket not found (not TEZ/TOK pair);
     - ✅ should ban baker;
     - ✅ should unban baker.
 
-21. `permit`:
+22. `permit`:
 
     - ✅ should generate permit payload and submit it to the contract by alice - 1;
     - ✅ should generate permit payload and submit it to the contract by alice - 2;
@@ -327,7 +344,7 @@
     - ✅ should call permit by carol on bob's behalf;
     - ✅ should fail if anyone is trying to use already used permit.
 
-22. `ser_expiry`:
+23. `ser_expiry`:
 
     - ✅ should fail if not issuer is trying to set expiry - 1;
     - ✅ should fail if not issuer is trying to set expiry - 2;
@@ -340,7 +357,7 @@
     - ✅ should set an expiry for a specified permit;
     - ✅ should set a 0 expiry for a specified permit.
 
-23. `transfer`:
+24. `transfer`:
 
     - ✅ should fail if reentrancy;
     - ✅ should fail if token ID from request not found;
@@ -357,7 +374,7 @@
     - ✅ should make a group of transfers from one account and using allowances;
     - ✅ should vote in time of transfer.
 
-24. `update_operators`:
+25. `update_operators`:
 
     - ✅ should fail if token ID from request not found;
     - ✅ should fail if one token ID from list of requests not found;
@@ -369,7 +386,7 @@
     - ✅ should remove a group of operators;
     - ✅ should add/remove operators per one request.
 
-25. `balance_of`:
+26. `balance_of`:
 
     - ✅ should fail if token ID from request not found;
     - ✅ should fail if one token ID from list of requests not found;
@@ -378,70 +395,42 @@
     - ✅ should return the same balance for the same account 2 times in one request;
     - ✅ should return 0 if an account does not have tokens.
 
-26. `fa12_balance_callback_1`:
-
-    - ✅ should fail if not entered;
-    - ✅ should fail if pair not listed.
-
-27. `fa2_balance_callback_1`:
-
-    - ✅ should fail if not entered;
-    - ✅ should fail if pair not listed.
-
-28. `fa12_balance_callback_2`:
-
-    - ✅ should fail if not entered;
-    - ✅ should fail if pair not listed.
-
-29. `fa2_balance_callback_2`:
-
-    - ✅ should fail if not entered;
-    - ✅ should fail if pair not listed.
-
-30. `flash_swap_callback_1`:
+27. `flash_swap_callback`:
 
     - ✅ should fail if not dex core is trying to call it.
 
-31. `flash_swap_callback_2`:
-
-    - ✅ should fail if not dex core is trying to call it.
-
-32. `flash_swap_callback_3`:
-
-    - ✅ should fail if not dex core is trying to call it.
-
-33. `launch_callback`:
+28. `launch_callback`:
 
     - ✅ should fail if not dex core is trying to call launch exchange callback.
 
-34. `close`:
+29. `close`:
 
     - ✅ should fail if not dex core is trying to call it;
     - ✅ should close (reentrancy protection).
 
-35. `check_is_banned_baker` [VIEW]:
+30. `check_is_banned_baker` [VIEW]:
 
     - ✅ should fail if pair not listed;
-    - ✅ should fail if pair does not have TEZ store contract (not TOK/TEZ pair);
+    - ✅ should fail if pair does not have bucket contract (not TOK/TEZ pair);
     - ✅ should return true if baker is banned;
     - ✅ should return false if baker is not banned;
     - ✅ should return false if baker's banning period is finished.
 
-36. `get_reserves` [VIEW]:
+31. `get_reserves` [VIEW]:
 
     - ✅ should fail if pair not listed;
     - ✅ should fail if one pair from list not listed;
     - ✅ should return proper reserves for pair;
     - ✅ should return proper reserves for all pairs in a list.
 
-37. `get_total_supply` [VIEW]:
+32. `get_total_supply` [VIEW]:
 
     - ✅ should fail if pair not listed;
     - ✅ should fail if one pair from list not listed;
     - ✅ should return proper total supply for pair;
     - ✅ should return proper total supply for all pairs in a list.
 
-38. `get_swap_min_res` [VIEW]:
+33. `get_swap_min_res` [VIEW]:
 
     - ✅ should fail if empty route;
     - ✅ should fail if pair not listed;
@@ -452,7 +441,7 @@
     - ✅ should return proper min swap result - 2;
     - ✅ should return proper min swap result - 3.
 
-39. `get_toks_per_share` [VIEW]:
+34. `get_toks_per_share` [VIEW]:
 
     - ✅ should fail if pair not listed;
     - ✅ should fail if one pair from list not listed;
@@ -461,26 +450,26 @@
     - ✅ should return proper tokens per shares amount for pair;
     - ✅ should return proper tokens per shares anount for all pairs in a list.
 
-40. `get_cumulative_prices` [VIEW]:
+35. `get_cumulative_prices` [VIEW]:
 
     - ✅ should fail if pair not listed;
     - ✅ should fail if one pair from list not listed;
     - ✅ should return proper cumulative prices for pair;
     - ✅ should return proper cumulative prices for all pairs in a list.
 
-41. `get_voting_period` [VIEW]:
+36. `get_voting_period` [VIEW]:
 
     - ✅ should return proper voting period.
 
-42. `get_collecting_period` [VIEW]:
+37. `get_collecting_period` [VIEW]:
 
     - ✅ should return proper collecting period.
 
-43. `get_cycle_duration` [VIEW]:
+38. `get_cycle_duration` [VIEW]:
 
     - ✅ should return proper cycle duration.
 
-44. `oracle_part`:
+39. `oracle_part`:
 
     - ✅ should not calculate cumulative prices and should update last block timestamp in time of any exchange launch;
     - ✅ should calculate cumulative prices and update last block timestamp in time of liquidity investment;
