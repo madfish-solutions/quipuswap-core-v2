@@ -5,13 +5,6 @@
     assert_with_error(Tezos.sender = admin, Common.err_not_admin);
   } with unit
 
-[@inline] function only_pending_admin(
-  const pending_admin   : address)
-                        : unit is
-  block {
-    assert_with_error(Tezos.sender = pending_admin, Common.err_not_pending_admin);
-  } with unit
-
 [@inline] function only_manager(
   const managers        : set(address))
                         : unit is

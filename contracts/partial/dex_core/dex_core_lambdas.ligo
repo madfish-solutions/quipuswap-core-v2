@@ -587,7 +587,7 @@ function confirm_admin(
     | Confirm_admin -> {
         const pending_admin : address = unwrap(s.pending_admin, Common.err_pending_admin_is_none);
 
-        only_pending_admin(pending_admin);
+        assert_with_error(Tezos.sender = pending_admin, Common.err_not_pending_admin);
 
         s.admin := pending_admin;
         s.pending_admin := (None : option(address));
