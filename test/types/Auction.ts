@@ -2,7 +2,7 @@ import { MichelsonMap, MichelsonMapKey } from "@taquito/michelson-encoder";
 
 import { BigNumber } from "bignumber.js";
 
-import { Token } from "./Common";
+import { FA2Token, Token } from "./Common";
 
 export type ReceiveFees = {
   devFee: BigNumber;
@@ -46,13 +46,12 @@ export type AuctionStorage = {
     dev_fee_balances_f: MichelsonMap<MichelsonMapKey, unknown>;
     public_fee_balances_f: MichelsonMap<MichelsonMapKey, unknown>;
     whitelist: Token[];
+    quipu_token: FA2Token;
     fees: Fees;
-    baker: string;
+    baker: string | undefined | null;
     admin: string;
-    pending_admin: string;
+    pending_admin: string | undefined | null;
     dex_core: string;
-    quipu_token: string;
-    quipu_token_id: BigNumber;
     bid_fee_balance: BigNumber;
     auctions_count: BigNumber;
     auction_duration: BigNumber;

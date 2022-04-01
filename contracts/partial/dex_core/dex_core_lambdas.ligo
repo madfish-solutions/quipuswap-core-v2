@@ -572,7 +572,7 @@ function set_admin(
     | Set_admin(admin) -> {
         only_admin(s.admin);
 
-        s.pending_admin := admin;
+        s.pending_admin := Some(admin);
       }
     | _ -> skip
     ]
@@ -585,10 +585,12 @@ function confirm_admin(
   block {
     case action of [
     | Confirm_admin -> {
-        only_pending_admin(s.pending_admin);
+        const pending_admin : address = unwrap(s.pending_admin, Common.err_pending_admin_is_none);
 
-        s.admin := s.pending_admin;
-        s.pending_admin := Constants.zero_address;
+        only_pending_admin(pending_admin);
+
+        s.admin := pending_admin;
+        s.pending_admin := (None : option(address));
       }
     | _ -> skip
     ]
