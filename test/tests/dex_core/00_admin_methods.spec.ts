@@ -81,11 +81,19 @@ describe("DexCore (admin methods)", async () => {
 
     auctionStorage.storage.admin = alice.pkh;
     auctionStorage.storage.dex_core = dexCore.contract.address;
-    auctionStorage.storage.quipu_token = alice.pkh;
+    auctionStorage.storage.quipu_token.token = alice.pkh;
 
     auction = await Auction.originate(utils.tezos, auctionStorage);
 
     await auction.setLambdas();
+  });
+
+  it("should fail if pending admin is `None`", async () => {
+    await rejects(dexCore.confirmAdmin(), (err: Error) => {
+      expect(err.message).to.equal(Common.ERR_PENDING_ADMIN_IS_NONE);
+
+      return true;
+    });
   });
 
   it("should fail if not admin is trying to setup new pending admin", async () => {
@@ -120,7 +128,7 @@ describe("DexCore (admin methods)", async () => {
     await dexCore.updateStorage();
 
     expect(dexCore.storage.storage.admin).to.equal(bob.pkh);
-    expect(dexCore.storage.storage.pending_admin).to.equal(zeroAddress);
+    expect(dexCore.storage.storage.pending_admin).to.equal(null);
   });
 
   it("should fail if not admin is trying to setup new flash swaps proxy", async () => {

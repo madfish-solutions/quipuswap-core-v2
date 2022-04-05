@@ -82,6 +82,7 @@ export enum Common {
   ERR_DIV_BY_ZERO = "410",
   ERR_CONTRACT_404 = "411",
   ERR_BUCKET_FILL_ENTRYPOINT_404 = "412",
+  ERR_PENDING_ADMIN_IS_NONE = "413",
 }
 
 export enum FA2 {

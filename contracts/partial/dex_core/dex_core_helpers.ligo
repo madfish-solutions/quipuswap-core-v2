@@ -399,24 +399,6 @@ function call_flash_swaps_proxy(
                         : operation is
   Tezos.transaction(lambda, 0mutez, get_flash_swaps_proxy_default_entrypoint(swaps_proxy))
 
-function get_token_address_or_fail(
-  const token           : token_t)
-                        : address is
-  case token of [
-  | Fa12(token_address) -> token_address
-  | Fa2(token_info)     -> token_info.token
-  | Tez                 -> (failwith(Common.err_wrong_token_type) : address)
-  ]
-
-function get_token_id_or_fail(
-  const token           : token_t)
-                        : token_id_t is
-  case token of [
-  | Fa12(_)         -> (failwith(Common.err_wrong_token_type) : token_id_t)
-  | Fa2(token_info) -> token_info.id
-  | Tez             -> (failwith(Common.err_wrong_token_type) : token_id_t)
-  ]
-
 function get_flash_swap_callback(
   const self            : address)
                         : contract(flash_swap_1_t) is

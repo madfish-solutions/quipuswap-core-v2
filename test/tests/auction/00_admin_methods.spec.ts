@@ -36,11 +36,19 @@ describe("Auction (admin methods)", async () => {
 
     auctionStorage.storage.admin = alice.pkh;
     auctionStorage.storage.dex_core = alice.pkh;
-    auctionStorage.storage.quipu_token = quipuToken.contract.address;
+    auctionStorage.storage.quipu_token.token = quipuToken.contract.address;
 
     auction = await Auction.originate(utils.tezos, auctionStorage);
 
     await auction.setLambdas();
+  });
+
+  it("should fail if pending admin is `None`", async () => {
+    await rejects(auction.confirmAdmin(), (err: Error) => {
+      expect(err.message).to.equal(Common.ERR_PENDING_ADMIN_IS_NONE);
+
+      return true;
+    });
   });
 
   it("should fail if not admin is trying to setup a new pending admin", async () => {
@@ -75,7 +83,7 @@ describe("Auction (admin methods)", async () => {
     await auction.updateStorage();
 
     expect(auction.storage.storage.admin).to.equal(bob.pkh);
-    expect(auction.storage.storage.pending_admin).to.equal(zeroAddress);
+    expect(auction.storage.storage.pending_admin).to.equal(null);
   });
 
   it("should fail if not admin is trying to setup a new baker", async () => {
@@ -112,11 +120,11 @@ describe("Auction (admin methods)", async () => {
     ).to.equal(alice.pkh);
   });
 
-  it("should remove a delegate if zero_key_hash was passed by an admin", async () => {
-    await auction.setBaker(zeroAddress);
+  it("should remove a delegate if `None` was passed by an admin", async () => {
+    await auction.setBaker(null);
     await auction.updateStorage();
 
-    expect(auction.storage.storage.baker).to.equal(zeroAddress);
+    expect(auction.storage.storage.baker).to.equal(null);
     expect(
       await utils.tezos.rpc.getDelegate(auction.contract.address)
     ).to.equal(null);

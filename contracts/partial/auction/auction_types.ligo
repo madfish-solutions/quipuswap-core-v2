@@ -21,13 +21,12 @@ type storage_t          is [@layout:comb] record [
   dev_fee_balances_f      : big_map(token_t, nat);
   public_fee_balances_f   : big_map(token_t, nat);
   whitelist               : set(token_t);
+  quipu_token             : fa2_token_t;
   fees                    : fees_t;
-  baker                   : key_hash;
+  baker                   : option(key_hash);
   admin                   : address;
-  pending_admin           : address;
+  pending_admin           : option(address);
   dex_core                : address;
-  quipu_token             : address;
-  quipu_token_id          : nat;
   bid_fee_balance         : nat;
   auctions_count          : nat;
   auction_duration        : int;
@@ -51,7 +50,7 @@ type set_admin_t        is address
 
 type confirm_admin_t    is unit
 
-type set_baker_t        is key_hash
+type set_baker_t        is option(key_hash)
 
 type set_fees_t         is fees_t
 

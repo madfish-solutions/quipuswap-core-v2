@@ -70,7 +70,7 @@ type storage_t          is [@layout:comb] record [
   managers                : set(address);
   fees                    : fees_t;
   admin                   : address;
-  pending_admin           : address;
+  pending_admin           : option(address);
   baker_registry          : address;
   flash_swaps_proxy       : address;
   auction                 : address;

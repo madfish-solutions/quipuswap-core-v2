@@ -88,10 +88,7 @@ function sender_check(
   then s
   else block {
     const action_hash : blake2b_hash_t = Crypto.blake2b(Bytes.pack(Use(action)));
-    const user_permits : user_permits_t = case Big_map.find_opt(expected_user, s.permits) of [
-    | Some(user_permits) -> user_permits
-    | None               -> (failwith(err_message) : user_permits_t)
-    ];
+    const user_permits : user_permits_t = unwrap(Big_map.find_opt(expected_user, s.permits), err_message);
   } with case Map.find_opt(action_hash, user_permits.permits) of [
     | None              -> (failwith(err_message) : storage_t)
     | Some(permit_info) ->
@@ -116,10 +113,7 @@ function set_user_default_expiry(
   const permits         : permits_t)
                         : permits_t is
   block {
-    const user_permits : user_permits_t = case Big_map.find_opt(user, permits) of [
-    | Some(user_permits) -> user_permits
-    | None               -> new_user_permits
-    ];
+    const user_permits : user_permits_t = unwrap_or(Big_map.find_opt(user, permits), new_user_permits);
     const updated_user_permits : user_permits_t = user_permits with record [expiry = Some(new_expiry)];
   } with Big_map.update(user, Some(updated_user_permits), permits)
 

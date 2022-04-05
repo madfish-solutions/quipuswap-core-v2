@@ -30,7 +30,7 @@ function launch_auction(
 
     case action of [
     | Launch_auction(params) -> {
-        is_not_whitelisted_token(params.token, s.whitelist);
+        assert_with_error(not Set.mem(params.token, s.whitelist), Auction.err_whitelisted_token);
 
         const token_balance_f : nat = unwrap_or(s.public_fee_balances_f[params.token], 0n);
 
@@ -48,7 +48,7 @@ function launch_auction(
         s.auctions_count := s.auctions_count + 1n;
         s.public_fee_balances_f[params.token] := get_nat_or_fail(token_balance_f - (params.amt * Constants.precision));
 
-        ops := transfer_fa2(Tezos.sender, Tezos.self_address, params.bid, s.quipu_token, s.quipu_token_id) # ops;
+        ops := transfer_token(Tezos.sender, Tezos.self_address, params.bid, Fa2(s.quipu_token)) # ops;
       }
     | _ -> skip
     ]
@@ -73,8 +73,8 @@ function place_bid(
 
         s.bid_fee_balance := s.bid_fee_balance + get_nat_or_fail(auction.current_bid - refund);
 
-        ops := transfer_fa2(Tezos.sender, Tezos.self_address, params.bid, s.quipu_token, s.quipu_token_id) # ops;
-        ops := transfer_fa2(Tezos.self_address, auction.current_bidder, refund, s.quipu_token, s.quipu_token_id) # ops;
+        ops := transfer_token(Tezos.sender, Tezos.self_address, params.bid, Fa2(s.quipu_token)) # ops;
+        ops := transfer_token(Tezos.self_address, auction.current_bidder, refund, Fa2(s.quipu_token)) # ops;
 
         s.auctions[params.auction_id] := auction with record[
           current_bid    = params.bid;
@@ -99,12 +99,11 @@ function claim(
         assert_with_error(Tezos.now >= auction.end_time, Auction.err_auction_not_finished);
         assert_with_error(auction.status =/= Finished, Auction.err_auction_finished);
 
-        ops := transfer_fa2(
+        ops := transfer_token(
           Tezos.self_address,
           Constants.zero_address,
           auction.current_bid,
-          s.quipu_token,
-          s.quipu_token_id
+          Fa2(s.quipu_token)
         ) # ops;
         ops := transfer_token(Tezos.self_address, auction.current_bidder, auction.amt, auction.token) # ops;
 
@@ -125,7 +124,7 @@ function set_admin(
     | Set_admin(admin) -> {
         only_admin(s.admin);
 
-        s.pending_admin := admin;
+        s.pending_admin := Some(admin);
       }
     | _ -> skip
     ]
@@ -138,10 +137,12 @@ function confirm_admin(
   block {
     case action of [
     | Confirm_admin -> {
-        only_pending_admin(s.pending_admin);
+        const pending_admin : address = unwrap(s.pending_admin, Common.err_pending_admin_is_none);
 
-        s.admin := s.pending_admin;
-        s.pending_admin := Constants.zero_address;
+        assert_with_error(Tezos.sender = pending_admin, Common.err_not_pending_admin);
+
+        s.admin := pending_admin;
+        s.pending_admin := (None : option(address));
       }
     | _ -> skip
     ]
@@ -162,9 +163,7 @@ function set_baker(
         then {
           s.baker := baker;
 
-          if s.baker = Constants.zero_key_hash
-          then ops := Tezos.set_delegate((None : option(key_hash))) # ops
-          else ops := Tezos.set_delegate(Some(s.baker)) # ops;
+          ops := Tezos.set_delegate(s.baker) # ops;
         }
         else skip;
       }
@@ -270,7 +269,7 @@ function withdraw_public_fee(
     case action of [
     | Withdraw_public_fee(params) -> {
         only_admin(s.admin);
-        is_whitelisted_token(params.token, s.whitelist);
+        assert_with_error(Set.mem(params.token, s.whitelist), Auction.err_not_whitelisted_token);
 
         const public_fee_balance_f : nat = unwrap_or(s.public_fee_balances_f[params.token], 0n);
         const public_fee_balance : nat = public_fee_balance_f / Constants.precision;
@@ -302,12 +301,11 @@ function burn_bid_fee(
 
         if s.bid_fee_balance > 0n
         then {
-          ops := transfer_fa2(
+          ops := transfer_token(
             Tezos.self_address,
             Constants.zero_address,
             s.bid_fee_balance,
-            s.quipu_token,
-            s.quipu_token_id
+            Fa2(s.quipu_token)
           ) # ops;
 
           s.bid_fee_balance := 0n;
