@@ -9,6 +9,9 @@ FAR_FUTURE = int(1e10)
 
 MIN_RAMP_TIME=86_400
 
+dex_core = "KT18fp5rcTW7mbWDmzFwjLDUhs5MeJmagDSZ"
+bucket = "KT19kgnqC5VWoxktLRdRUERbyUPku9YioE8W"
+
 token_a_address = "KT18amZmM5W7qDWVt2pH6uj7sCEd3kbzLrHT"
 token_b_address = "KT1AxaBxkFLCUi3f8rdDAAxBKHfzY8LfKDRA"
 token_c_address = "KT1XXAavg3tTj12W1ADvd3EEnm1pu6XTmiEF"
@@ -31,10 +34,8 @@ token_b_fa2 = {
     }
 
 token_c_fa12 = ("fa12", token_c_address)
+token_d_fa12 = ("fa12", token_d_address)
 
-
-token_c = ("fa12", token_c_address)
-token_d = ("fa12", token_d_address)
 token_e = ("fa12", token_e_address)
 
 pair_ab = {
@@ -47,9 +48,26 @@ pair_bc = {
     "token_b" : token_b_fa2,
 }
 
+pair_ac = {
+    "token_a" : token_a_fa2,
+    "token_b" : token_c_fa12
+}
+
+pair_cd = {
+    "token_a" : token_c_fa12,
+    "token_b" : token_d_fa12
+}
+
 tez_pair = {
     "token_a" : token_a_fa2,
     "token_b" : {"tez" : None}
+}
+
+vr = {
+    f"{dex_core}%get_total_supply": [{"request": 0, "total_supply": 500_000}],
+    f"{dex_core}%get_collecting_period": 100,
+    f"{dex_core}%get_cycle_duration": 100,
+    f"{dex_core}%get_voting_period": 100,
 }
 
 
@@ -61,10 +79,6 @@ fee_collector = "tz1MDhGTfMQjtMYFXeasKzRWzkQKPtXEkSEw"
 dummy_sig = "sigY3oZknG7z2N9bj5aWVtdZBakTviKnwbSYTecbbT2gwQDrnLRNhP5KDcLroggq71AjXWkx27nSLfS8rodS4DYn14FyueS5"
 
 dev = "tz1fRXMLR27hWoD49tdtKunHyfy3CQb5XZst"
-
-vr = {
-    f"{factory}%dev_fee": 500_000
-}
 
 dummy_metadata = {
     "symbol": "0x01",

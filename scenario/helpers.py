@@ -166,10 +166,34 @@ def parse_transfer(op):
 def parse_delegations(res):
     delegates = []
     for op in res.operations:
-        if op["kind"] == "delegation":
-            delegates.append(op["delegate"])
+         if op["kind"] == "transaction":
+            entrypoint = op["parameters"]["entrypoint"]
+            if entrypoint == "validate":
+                delegates.append(op["parameters"]["value"]["string"])
     return delegates
 
+def parse_vote(op):
+    args = op["parameters"]["value"]["args"]
+
+    res = {
+        "type": "vote",
+        "delegate": args[1]["string"],
+        "amount": int(args[3]["int"])
+    }
+    
+    return res
+
+def parse_votes(res):
+    result = []
+
+    for op in res.operations:
+        if op["kind"] == "transaction":
+            entrypoint = op["parameters"]["entrypoint"]
+            if entrypoint == "vote":
+                tx = parse_vote(op)
+                result.append(tx)
+
+    return result
 
 def parse_ops(res):
     result = []
@@ -269,17 +293,20 @@ class LocalChain():
         self.contract_balances = {}
         self.last_res = None
 
-    def execute(self, call, amount=0, sender=None):
+    """ execute the entrypoint and save the resulting state and balance updates """
+    def execute(self, call, amount=0, sender=None, source=None, view_results=None):
         new_balance = self.balance + amount
-        res = call.interpret(amount=amount, \
-            storage=self.storage, \
-            balance=new_balance, \
-            now=self.now, \
-            sender=sender    
+        res = call.interpret(
+            amount=amount,
+            storage=self.storage,
+            balance=new_balance,
+            now=self.now,
+            sender=sender,
+            source=source,
+            view_results=view_results
         )
         self.balance = new_balance
         self.storage = res.storage
-        self.last_res = res
 
         # calculate total xtz payouts from contract
         ops = parse_ops(res)
@@ -292,30 +319,43 @@ class LocalChain():
                 # reduce contract balance in case it has sent something
                 if op["source"] == contract_self_address:
                     self.balance -= op["amount"]
-
+                    
             elif op["type"] == "token":
                 dest = op["destination"]
                 amount = op["amount"]
                 address = op["token_address"]
                 if address not in self.contract_balances:
                     self.contract_balances[address] = {}
-                contract_balance = self.contract_balances[address] 
+                contract_balance = self.contract_balances[address]
                 if dest not in contract_balance:
                     contract_balance[dest] = 0
-                contract_balance[dest] += amount 
+                contract_balance[dest] += amount
+                # TODO source funds removal
             # imitate closing of the function for convenience
             elif op["type"] == "close":
                 self.storage["storage"]["entered"] = False   
 
         return res
 
-    # just interpret, don't store anything
-    def interpret(self, call, amount=0, sender=None):
-        res = call.interpret(amount=amount, \
-            storage=self.storage, \
-            balance=self.balance, \
-            now=self.now, \
-            sender=sender
+    """ just interpret, don't store anything """
+    def interpret(self, call, amount=0, sender=None, source=None, view_results=None):
+        res = call.interpret(
+            amount=amount,
+            storage=self.storage,
+            balance=self.balance,
+            now=self.now,
+            sender=sender,
+            source=source,
+            view_results=view_results
+        )
+        return res
+
+    """ just view, don't store anything """
+    def view(self, call, view_results=None):
+        res = call.onchain_view(
+            storage=self.storage,
+            balance=self.balance,
+            view_results=view_results
         )
         return res
 
