@@ -115,21 +115,22 @@ export const compileLambdas = async (
   let res: any[] = [];
 
   try {
-    let list = "list ["
+    let list: string = "list [";
+
     for (const lambda of lambdas) {
-      list += `Bytes.pack(${lambda.name});`
+      list += `Bytes.pack(${lambda.name});`;
     }
-    list += "]"
+    list += "]";
 
     const michelson: Buffer = execSync(
       `${ligo} compile expression pascaligo '${list}' --michelson-format json --init-file $PWD/${contract} --protocol hangzhou`,
       { maxBuffer: 1024 * 500 }
     );
 
-    const michelsonsJson = JSON.parse(michelson.toString())
+    const michelsonsJson: any = JSON.parse(michelson.toString());
 
-    for (const f of michelsonsJson) {
-      res.push(f.bytes)
+    for (const func of michelsonsJson) {
+      res.push(func.bytes);
     }
 
     if (!fs.existsSync(`${env.buildDir}/lambdas`)) {
