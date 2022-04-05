@@ -49,13 +49,13 @@ pair_bc = {
 }
 
 pair_ac = {
-    "token_a" : token_a_fa2,
-    "token_b" : token_c_fa12
+    "token_a" : token_c_fa12,
+    "token_b" : token_a_fa2,
 }
 
 pair_cd = {
-    "token_a" : token_c_fa12,
-    "token_b" : token_d_fa12
+    "token_a" : token_d_fa12,
+    "token_b" : token_c_fa12
 }
 
 tez_pair = {
