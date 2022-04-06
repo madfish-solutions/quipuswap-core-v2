@@ -38,28 +38,12 @@ function get_baker_registry_validate_op(
       } with total_supply;
   } with List.fold(get_total_supply, total_supply_response, 0n)
 
-[@inline] function get_voting_period(
-  const dex_core        : address)
-                        : nat is
-  unwrap(
-    (Tezos.call_view("get_voting_period", Unit, dex_core) : option(nat)),
-    Bucket.err_dex_core_get_voting_period_view_404
-  )
-
 [@inline] function get_collecting_period(
   const dex_core        : address)
                         : nat is
   unwrap(
     (Tezos.call_view("get_collecting_period", Unit, dex_core) : option(nat)),
     Bucket.err_dex_core_get_collecting_period_view_404
-  )
-
-[@inline] function get_cycle_duration(
-  const dex_core        : address)
-                        : nat is
-  unwrap(
-    (Tezos.call_view("get_cycle_duration", Unit, dex_core) : option(nat)),
-    Bucket.err_dex_core_get_cycle_duration_view_404
   )
 
 function update_rewards(
@@ -84,7 +68,7 @@ function update_rewards(
         const collecting_period : nat = get_collecting_period(s.dex_core);
         const period_duration : nat = (
           (get_nat_or_fail(Tezos.level - s.collecting_period_end) / collecting_period) + 1n
-        ) * collecting_period * get_cycle_duration(s.dex_core);
+        ) * collecting_period;
 
         s.reward_per_block := (s.next_reward * Constants.precision) / period_duration;
 

@@ -7,8 +7,6 @@ import { FA12 } from "../../helpers/FA12";
 import { FA2 } from "../../helpers/FA2";
 import {
   defaultCollectingPeriod,
-  defaultCycleDuration,
-  defaultVotingPeriod,
   zeroAddress,
   Utils,
 } from "../../helpers/Utils";
@@ -33,7 +31,6 @@ import {
   DivestLiquidity,
   LaunchExchange,
   TokensPerShare,
-  Swap,
 } from "../../types/DexCore";
 
 chai.use(require("chai-bignumber")(BigNumber));
@@ -52,7 +49,6 @@ describe("DexCore (launch exchange)", async () => {
   var utils: Utils;
 
   var alice: SBAccount = accounts.alice;
-  var bob: SBAccount = accounts.bob;
 
   before("setup", async () => {
     utils = new Utils();
@@ -67,8 +63,6 @@ describe("DexCore (launch exchange)", async () => {
     dexCoreStorage.storage.entered = false;
     dexCoreStorage.storage.admin = alice.pkh;
     dexCoreStorage.storage.collecting_period = defaultCollectingPeriod;
-    dexCoreStorage.storage.cycle_duration = defaultCycleDuration;
-    dexCoreStorage.storage.voting_period = defaultVotingPeriod;
     dexCoreStorage.storage.baker_registry = bakerRegistry.contract.address;
 
     dexCore = await DexCore.originate(utils.tezos, dexCoreStorage);
@@ -1073,7 +1067,7 @@ describe("DexCore (launch exchange)", async () => {
     expect(bucket.storage.bakers[params.candidate].votes).to.be.bignumber.equal(
       BigNumber.min(params.token_a_in, params.token_b_in)
     );
-    expect(bucket.storage.previous_delegated).to.be.equal(zeroAddress);
+    expect(bucket.storage.previous_delegated).to.be.equal(params.candidate);
     expect(bucket.storage.current_delegated).to.be.equal(params.candidate);
     expect(bucket.storage.next_candidate).to.be.equal(zeroAddress);
     expect(bucket.storage.baker_registry).to.be.equal(
@@ -1094,15 +1088,8 @@ describe("DexCore (launch exchange)", async () => {
       new BigNumber((await utils.tezos.rpc.getBlock()).header.level)
     );
     expect(bucket.storage.collecting_period_end).to.be.bignumber.equal(
-      dexCore.storage.storage.collecting_period
-        .multipliedBy(defaultCycleDuration)
-        .plus(new BigNumber((await utils.tezos.rpc.getBlock()).header.level))
-    );
-    expect(bucket.storage.voting_period_end).to.be.bignumber.equal(
-      new BigNumber(
-        (await utils.tezos.rpc.getBlock()).header.level +
-          dexCore.storage.storage.cycle_duration.toNumber() *
-            dexCore.storage.storage.voting_period.toNumber()
+      dexCore.storage.storage.collecting_period.plus(
+        new BigNumber((await utils.tezos.rpc.getBlock()).header.level)
       )
     );
   });
@@ -1149,11 +1136,11 @@ describe("DexCore (launch exchange)", async () => {
     expect(bucket.storage.bakers[params.candidate].votes).to.be.bignumber.equal(
       BigNumber.min(params.token_a_in, params.token_b_in)
     );
-    expect(bucket.storage.previous_delegated).to.be.equal(zeroAddress);
+    expect(bucket.storage.previous_delegated).to.be.equal(params.candidate);
     expect(bucket.storage.current_delegated).to.be.equal(params.candidate);
     expect(bucket.storage.next_candidate).to.be.equal(zeroAddress);
     expect(await utils.tezos.rpc.getDelegate(bucket.contract.address)).to.equal(
-      null
+      params.candidate
     );
     expect(bucket.storage.baker_registry).to.be.equal(
       dexCore.storage.storage.baker_registry
@@ -1162,15 +1149,8 @@ describe("DexCore (launch exchange)", async () => {
       new BigNumber((await utils.tezos.rpc.getBlock()).header.level)
     );
     expect(bucket.storage.collecting_period_end).to.be.bignumber.equal(
-      dexCore.storage.storage.collecting_period
-        .multipliedBy(defaultCycleDuration)
-        .plus(new BigNumber((await utils.tezos.rpc.getBlock()).header.level))
-    );
-    expect(bucket.storage.voting_period_end).to.be.bignumber.equal(
-      new BigNumber(
-        (await utils.tezos.rpc.getBlock()).header.level +
-          dexCore.storage.storage.cycle_duration.toNumber() *
-            dexCore.storage.storage.voting_period.toNumber()
+      dexCore.storage.storage.collecting_period.plus(
+        new BigNumber((await utils.tezos.rpc.getBlock()).header.level)
       )
     );
   });
@@ -1236,11 +1216,11 @@ describe("DexCore (launch exchange)", async () => {
     expect(bucket.storage.bakers[params.candidate].votes).to.be.bignumber.equal(
       new BigNumber(0)
     );
-    expect(bucket.storage.previous_delegated).to.be.equal(zeroAddress);
+    expect(bucket.storage.previous_delegated).to.be.equal(params.candidate);
     expect(bucket.storage.current_delegated).to.be.equal(params.candidate);
     expect(bucket.storage.next_candidate).to.be.equal(zeroAddress);
     expect(await utils.tezos.rpc.getDelegate(bucket.contract.address)).to.equal(
-      null
+      params.candidate
     );
     expect(bucket.storage.baker_registry).to.be.equal(
       dexCore.storage.storage.baker_registry
@@ -1250,9 +1230,6 @@ describe("DexCore (launch exchange)", async () => {
     );
     expect(bucket.storage.collecting_period_end).to.be.bignumber.equal(
       prevBucketStorage.collecting_period_end
-    );
-    expect(bucket.storage.voting_period_end).to.be.bignumber.equal(
-      prevBucketStorage.voting_period_end
     );
 
     await dexCore.launchExchange(params, params.token_b_in.toNumber());
@@ -1275,11 +1252,11 @@ describe("DexCore (launch exchange)", async () => {
     expect(bucket.storage.bakers[params.candidate].votes).to.be.bignumber.equal(
       BigNumber.min(params.token_a_in, params.token_b_in)
     );
-    expect(bucket.storage.previous_delegated).to.be.equal(zeroAddress);
+    expect(bucket.storage.previous_delegated).to.be.equal(params.candidate);
     expect(bucket.storage.current_delegated).to.be.equal(params.candidate);
     expect(bucket.storage.next_candidate).to.be.equal(zeroAddress);
     expect(await utils.tezos.rpc.getDelegate(bucket.contract.address)).to.equal(
-      null
+      params.candidate
     );
     expect(bucket.storage.baker_registry).to.be.equal(
       dexCore.storage.storage.baker_registry
@@ -1289,9 +1266,6 @@ describe("DexCore (launch exchange)", async () => {
     );
     expect(bucket.storage.collecting_period_end).to.be.bignumber.equal(
       prevBucketStorage.collecting_period_end
-    );
-    expect(bucket.storage.voting_period_end).to.be.bignumber.equal(
-      prevBucketStorage.voting_period_end
     );
   });
 });

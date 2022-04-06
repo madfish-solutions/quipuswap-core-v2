@@ -118,11 +118,6 @@ export class Utils {
 
 export const zeroAddress: string = "tz1ZZZZZZZZZZZZZZZZZZZZZZZZZZZZNkiRg";
 
-export const defaultCycleDuration: BigNumber = new BigNumber(4096);
-
-export const defaultCollectingPeriod: BigNumber =
-  defaultCycleDuration.multipliedBy(new BigNumber(12));
-
-export const defaultVotingPeriod: BigNumber = new BigNumber(2);
+export const defaultCollectingPeriod: BigNumber = new BigNumber(12);
 
 export const defaulPermitExpiryLimit: BigNumber = new BigNumber(31_556_995_200);

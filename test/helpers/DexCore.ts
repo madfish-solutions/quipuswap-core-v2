@@ -402,30 +402,6 @@ export class DexCore {
     return operation;
   }
 
-  async setCycleDuration(
-    cycleDuration: BigNumber
-  ): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methods
-      .set_cycle_duration(cycleDuration.toString())
-      .send();
-
-    await confirmOperation(this.tezos, operation.hash);
-
-    return operation;
-  }
-
-  async setVotingPeriod(
-    votingPeriod: BigNumber
-  ): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methods
-      .set_voting_period(votingPeriod.toString())
-      .send();
-
-    await confirmOperation(this.tezos, operation.hash);
-
-    return operation;
-  }
-
   async setCollectingPeriod(
     collectingPeriod: BigNumber
   ): Promise<TransactionOperation> {

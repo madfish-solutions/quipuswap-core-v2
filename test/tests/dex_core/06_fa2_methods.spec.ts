@@ -10,8 +10,6 @@ import { FA12 } from "../../helpers/FA12";
 import { FA2 } from "../../helpers/FA2";
 import {
   defaultCollectingPeriod,
-  defaultCycleDuration,
-  defaultVotingPeriod,
   zeroAddress,
   Utils,
 } from "../../helpers/Utils";
@@ -67,8 +65,6 @@ describe("DexCore (FA2 methods)", async () => {
 
     dexCoreStorage.storage.entered = false;
     dexCoreStorage.storage.admin = alice.pkh;
-    dexCoreStorage.storage.cycle_duration = defaultCycleDuration;
-    dexCoreStorage.storage.voting_period = defaultVotingPeriod;
     dexCoreStorage.storage.collecting_period = defaultCollectingPeriod;
     dexCoreStorage.storage.baker_registry = bakerRegistry.contract.address;
 
@@ -1193,11 +1189,11 @@ describe("DexCore (FA2 methods)", async () => {
     expect(bucket.storage.bakers[alice.pkh].votes).to.be.bignumber.equal(
       initialBakerAliceInfo.votes
     );
-    expect(bucket.storage.previous_delegated).to.be.equal(zeroAddress);
+    expect(bucket.storage.previous_delegated).to.be.equal(alice.pkh);
     expect(bucket.storage.current_delegated).to.be.equal(alice.pkh);
     expect(bucket.storage.next_candidate).to.be.equal(zeroAddress);
     expect(await utils.tezos.rpc.getDelegate(bucket.contract.address)).to.equal(
-      null
+      alice.pkh
     );
   });
 });

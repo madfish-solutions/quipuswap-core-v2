@@ -207,8 +207,7 @@ export class Bucket {
           .dividedBy(collectingPeriod)
           .integerValue(BigNumber.ROUND_DOWN)
           .plus(1)
-          .multipliedBy(collectingPeriod)
-          .multipliedBy(dexCoreStorage.storage.cycle_duration);
+          .multipliedBy(collectingPeriod);
         const rewardPerBlock: BigNumber = bucketStorage.next_reward
           .multipliedBy(PRECISION)
           .dividedBy(periodDuration)

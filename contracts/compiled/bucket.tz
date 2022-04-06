@@ -31,8 +31,7 @@
           (nat %reward_per_share)
           (nat %reward_per_block)
           (nat %last_update_level)
-          (nat %collecting_period_end)
-          (nat %voting_period_end)) ;
+          (nat %collecting_period_end)) ;
   code { PUSH string "403" ;
          PUSH key_hash "tz1ZZZZZZZZZZZZZZZZZZZZZZZZZZZZNkiRg" ;
          PUSH nat 1000000000000000000 ;
@@ -79,7 +78,6 @@
                        nat
                        nat
                        nat
-                       nat
                        nat))
            (pair (big_map address (pair (option key_hash) nat))
                  (big_map key_hash (pair timestamp nat nat))
@@ -89,7 +87,6 @@
                  key_hash
                  address
                  address
-                 nat
                  nat
                  nat
                  nat
@@ -133,11 +130,11 @@
              IF { SWAP ;
                   DUP ;
                   DUG 2 ;
-                  GET 31 ;
+                  GET 30 ;
                   LEVEL ;
                   COMPARE ;
                   GT ;
-                  IF { SWAP ; DUP ; DUG 2 ; GET 31 } { LEVEL } ;
+                  IF { SWAP ; DUP ; DUG 2 ; GET 30 } { LEVEL } ;
                   DUP 3 ;
                   GET 27 ;
                   DUP 4 ;
@@ -160,11 +157,11 @@
                   LEVEL ;
                   UPDATE 29 ;
                   DUP ;
-                  GET 31 ;
+                  GET 30 ;
                   LEVEL ;
                   COMPARE ;
                   GT ;
-                  IF { PUSH string "203" ;
+                  IF { PUSH string "202" ;
                        SWAP ;
                        DUP ;
                        DUG 2 ;
@@ -172,19 +169,11 @@
                        UNIT ;
                        VIEW "get_collecting_period" nat ;
                        IF_NONE { FAILWITH } { SWAP ; DROP } ;
-                       PUSH string "204" ;
-                       DUP 3 ;
-                       GET 15 ;
-                       UNIT ;
-                       VIEW "get_cycle_duration" nat ;
-                       IF_NONE { FAILWITH } { SWAP ; DROP } ;
-                       SWAP ;
                        DUP ;
-                       DUG 2 ;
                        PUSH nat 1 ;
-                       DIG 3 ;
-                       DUP 5 ;
-                       GET 31 ;
+                       DIG 2 ;
+                       DUP 4 ;
+                       GET 30 ;
                        LEVEL ;
                        SUB ;
                        ISNAT ;
@@ -193,7 +182,6 @@
                        IF_NONE { PUSH string "DIV by 0" ; FAILWITH } {} ;
                        CAR ;
                        ADD ;
-                       MUL ;
                        MUL ;
                        SWAP ;
                        DUP ;
@@ -214,7 +202,7 @@
                        SWAP ;
                        DUP ;
                        DUG 2 ;
-                       GET 31 ;
+                       GET 30 ;
                        LEVEL ;
                        SUB ;
                        ISNAT ;
@@ -225,9 +213,9 @@
                        DUG 2 ;
                        DUP 4 ;
                        DIG 3 ;
-                       GET 31 ;
+                       GET 30 ;
                        ADD ;
-                       UPDATE 31 ;
+                       UPDATE 30 ;
                        DUP ;
                        DIG 4 ;
                        DIG 3 ;
@@ -277,7 +265,6 @@
                                    nat
                                    nat
                                    nat
-                                   nat
                                    nat))))
            (pair (big_map address (pair (option key_hash) nat))
                  (big_map key_hash (pair timestamp nat nat))
@@ -287,7 +274,6 @@
                  key_hash
                  address
                  address
-                 nat
                  nat
                  nat
                  nat
@@ -649,12 +635,6 @@
                      NIL operation ;
                      DIG 2 ;
                      GET 5 ;
-                     DUP 3 ;
-                     GET 32 ;
-                     LEVEL ;
-                     COMPARE ;
-                     GE ;
-                     AND ;
                      IF { DUP 4 ;
                           DUP 3 ;
                           GET 3 ;
@@ -733,27 +713,9 @@
                                     PAIR }
                                   { SWAP ; PAIR } } ;
                           DUP ;
-                          CDR ;
-                          DUP ;
-                          PUSH string "202" ;
-                          DUP 3 ;
-                          GET 15 ;
-                          UNIT ;
-                          VIEW "get_voting_period" nat ;
-                          IF_NONE { FAILWITH } { SWAP ; DROP } ;
-                          PUSH string "204" ;
-                          DIG 3 ;
-                          GET 15 ;
-                          UNIT ;
-                          VIEW "get_cycle_duration" nat ;
-                          IF_NONE { FAILWITH } { SWAP ; DROP } ;
-                          MUL ;
-                          LEVEL ;
-                          ADD ;
-                          UPDATE 32 ;
-                          SWAP ;
                           CAR ;
                           SWAP ;
+                          CDR ;
                           PAIR }
                         { DIG 2 ; DIG 3 ; DIG 4 ; DROP 3 ; SWAP ; PAIR } ;
                      DUP ;

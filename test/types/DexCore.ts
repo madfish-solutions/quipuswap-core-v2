@@ -173,9 +173,7 @@ export type DexCoreStorage = {
     default_expiry: BigNumber;
     entered: boolean;
     tokens_count: BigNumber;
-    cycle_duration: BigNumber;
     collecting_period: BigNumber;
-    voting_period: BigNumber;
   };
   dex_core_lambdas: MichelsonMap<MichelsonMapKey, unknown>;
   metadata: MichelsonMap<MichelsonMapKey, unknown>;

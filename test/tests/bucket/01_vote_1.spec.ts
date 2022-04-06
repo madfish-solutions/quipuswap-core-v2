@@ -59,8 +59,6 @@ describe("Bucket (vote - 1)", async () => {
     dexCoreStorage.storage.entered = false;
     dexCoreStorage.storage.admin = alice.pkh;
     dexCoreStorage.storage.collecting_period = new BigNumber(100);
-    dexCoreStorage.storage.cycle_duration = new BigNumber(10);
-    dexCoreStorage.storage.voting_period = new BigNumber(10);
     dexCoreStorage.storage.baker_registry = bakerRegistry.contract.address;
 
     dexCore = await DexCore.originate(utils.tezos, dexCoreStorage);
@@ -123,13 +121,15 @@ describe("Bucket (vote - 1)", async () => {
     ).to.be.bignumber.equal(
       BigNumber.min(launchParams.token_a_in, launchParams.token_b_in)
     );
-    expect(bucket.storage.previous_delegated).to.be.equal(zeroAddress);
+    expect(bucket.storage.previous_delegated).to.be.equal(
+      launchParams.candidate
+    );
     expect(bucket.storage.current_delegated).to.be.equal(
       launchParams.candidate
     );
     expect(bucket.storage.next_candidate).to.be.equal(zeroAddress);
     expect(await utils.tezos.rpc.getDelegate(bucket.contract.address)).to.equal(
-      null
+      launchParams.candidate
     );
   });
 
@@ -195,11 +195,11 @@ describe("Bucket (vote - 1)", async () => {
     expect(
       bucket.storage.bakers[investParams.candidate].votes
     ).to.be.bignumber.equal(shares);
-    expect(bucket.storage.previous_delegated).to.be.equal(zeroAddress);
+    expect(bucket.storage.previous_delegated).to.be.equal(bob.pkh);
     expect(bucket.storage.current_delegated).to.be.equal(bob.pkh);
     expect(bucket.storage.next_candidate).to.be.equal(investParams.candidate);
     expect(await utils.tezos.rpc.getDelegate(bucket.contract.address)).to.equal(
-      null
+      bob.pkh
     );
   });
 
@@ -248,11 +248,11 @@ describe("Bucket (vote - 1)", async () => {
     expect(
       bucket.storage.bakers[investParams.candidate].votes
     ).to.be.bignumber.equal(initialBakerInfo.votes.plus(shares));
-    expect(bucket.storage.previous_delegated).to.be.equal(zeroAddress);
+    expect(bucket.storage.previous_delegated).to.be.equal(bob.pkh);
     expect(bucket.storage.current_delegated).to.be.equal(bob.pkh);
     expect(bucket.storage.next_candidate).to.be.equal(investParams.candidate);
     expect(await utils.tezos.rpc.getDelegate(bucket.contract.address)).to.equal(
-      null
+      bob.pkh
     );
   });
 
@@ -301,13 +301,15 @@ describe("Bucket (vote - 1)", async () => {
     expect(
       bucket.storage.bakers[investParams.candidate].votes
     ).to.be.bignumber.equal(initialBakerInfo.votes.plus(shares));
-    expect(bucket.storage.previous_delegated).to.be.equal(zeroAddress);
+    expect(bucket.storage.previous_delegated).to.be.equal(
+      investParams.candidate
+    );
     expect(bucket.storage.current_delegated).to.be.equal(
       investParams.candidate
     );
     expect(bucket.storage.next_candidate).to.be.equal(bob.pkh);
     expect(await utils.tezos.rpc.getDelegate(bucket.contract.address)).to.equal(
-      null
+      investParams.candidate
     );
   });
 
@@ -360,10 +362,12 @@ describe("Bucket (vote - 1)", async () => {
     expect(bucket.storage.current_delegated).to.be.equal(
       investParams.candidate
     );
-    expect(bucket.storage.previous_delegated).to.be.equal(zeroAddress);
+    expect(bucket.storage.previous_delegated).to.be.equal(
+      investParams.candidate
+    );
     expect(bucket.storage.next_candidate).to.be.equal(alice.pkh);
     expect(await utils.tezos.rpc.getDelegate(bucket.contract.address)).to.equal(
-      null
+      investParams.candidate
     );
   });
 
@@ -408,11 +412,11 @@ describe("Bucket (vote - 1)", async () => {
     expect(
       bucket.storage.bakers[divestParams.candidate].votes
     ).to.be.bignumber.equal(initialBakerInfo.votes.minus(shares));
-    expect(bucket.storage.previous_delegated).to.be.equal(zeroAddress);
+    expect(bucket.storage.previous_delegated).to.be.equal(alice.pkh);
     expect(bucket.storage.current_delegated).to.be.equal(alice.pkh);
     expect(bucket.storage.next_candidate).to.be.equal(divestParams.candidate);
     expect(await utils.tezos.rpc.getDelegate(bucket.contract.address)).to.equal(
-      null
+      alice.pkh
     );
   });
 
@@ -458,11 +462,11 @@ describe("Bucket (vote - 1)", async () => {
     expect(
       bucket.storage.bakers[divestParams.candidate].votes
     ).to.be.bignumber.equal(initialBakerInfo.votes.minus(shares));
-    expect(bucket.storage.previous_delegated).to.be.equal(zeroAddress);
+    expect(bucket.storage.previous_delegated).to.be.equal(bob.pkh);
     expect(bucket.storage.current_delegated).to.be.equal(bob.pkh);
     expect(bucket.storage.next_candidate).to.be.equal(divestParams.candidate);
     expect(await utils.tezos.rpc.getDelegate(bucket.contract.address)).to.equal(
-      null
+      bob.pkh
     );
   });
 
@@ -508,13 +512,15 @@ describe("Bucket (vote - 1)", async () => {
     expect(
       bucket.storage.bakers[divestParams.candidate].votes
     ).to.be.bignumber.equal(initialBakerInfo.votes.minus(shares));
-    expect(bucket.storage.previous_delegated).to.be.equal(zeroAddress);
+    expect(bucket.storage.previous_delegated).to.be.equal(
+      divestParams.candidate
+    );
     expect(bucket.storage.current_delegated).to.be.equal(
       divestParams.candidate
     );
     expect(bucket.storage.next_candidate).to.be.equal(alice.pkh);
     expect(await utils.tezos.rpc.getDelegate(bucket.contract.address)).to.equal(
-      null
+      divestParams.candidate
     );
   });
 
@@ -562,11 +568,11 @@ describe("Bucket (vote - 1)", async () => {
     expect(bucket.storage.bakers[bob.pkh].votes).to.be.bignumber.equal(
       initialBakerBobInfo.votes.minus(transferParams[0].txs[0].amount)
     );
-    expect(bucket.storage.previous_delegated).to.be.equal(zeroAddress);
+    expect(bucket.storage.previous_delegated).to.be.equal(alice.pkh);
     expect(bucket.storage.current_delegated).to.be.equal(alice.pkh);
     expect(bucket.storage.next_candidate).to.be.equal(bob.pkh);
     expect(await utils.tezos.rpc.getDelegate(bucket.contract.address)).to.equal(
-      null
+      alice.pkh
     );
   });
 
@@ -614,11 +620,11 @@ describe("Bucket (vote - 1)", async () => {
     expect(bucket.storage.bakers[bob.pkh].votes).to.be.bignumber.equal(
       initialBakerBobInfo.votes.minus(transferParams[0].txs[0].amount)
     );
-    expect(bucket.storage.previous_delegated).to.be.equal(zeroAddress);
+    expect(bucket.storage.previous_delegated).to.be.equal(alice.pkh);
     expect(bucket.storage.current_delegated).to.be.equal(alice.pkh);
     expect(bucket.storage.next_candidate).to.be.equal(bob.pkh);
     expect(await utils.tezos.rpc.getDelegate(bucket.contract.address)).to.equal(
-      null
+      alice.pkh
     );
   });
 
@@ -667,11 +673,11 @@ describe("Bucket (vote - 1)", async () => {
     expect(bucket.storage.bakers[bob.pkh].votes).to.be.bignumber.equal(
       initialBakerBobInfo.votes.plus(transferParams[0].txs[0].amount)
     );
-    expect(bucket.storage.previous_delegated).to.be.equal(zeroAddress);
+    expect(bucket.storage.previous_delegated).to.be.equal(bob.pkh);
     expect(bucket.storage.current_delegated).to.be.equal(bob.pkh);
     expect(bucket.storage.next_candidate).to.be.equal(alice.pkh);
     expect(await utils.tezos.rpc.getDelegate(bucket.contract.address)).to.equal(
-      null
+      bob.pkh
     );
   });
 
@@ -723,11 +729,11 @@ describe("Bucket (vote - 1)", async () => {
     expect(bucket.storage.bakers[bob.pkh].votes).to.be.bignumber.equal(
       initialBakerBobInfo.votes.plus(transferParams[0].txs[0].amount)
     );
-    expect(bucket.storage.previous_delegated).to.be.equal(zeroAddress);
+    expect(bucket.storage.previous_delegated).to.be.equal(bob.pkh);
     expect(bucket.storage.current_delegated).to.be.equal(bob.pkh);
     expect(bucket.storage.next_candidate).to.be.equal(alice.pkh);
     expect(await utils.tezos.rpc.getDelegate(bucket.contract.address)).to.equal(
-      null
+      bob.pkh
     );
   });
 });

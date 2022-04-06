@@ -1,17 +1,12 @@
 import { ViewSimulationError } from "@taquito/taquito";
 
+import { defaultCollectingPeriod, Utils } from "../../helpers/Utils";
 import { DexCore as DexCoreErrors } from "../../helpers/Errors";
 import { BakerRegistry } from "../../helpers/BakerRegistry";
 import { Auction } from "../../helpers/Auction";
 import { DexCore } from "../../helpers/DexCore";
 import { FA12 } from "../../helpers/FA12";
 import { FA2 } from "../../helpers/FA2";
-import {
-  defaultCollectingPeriod,
-  defaultCycleDuration,
-  defaultVotingPeriod,
-  Utils,
-} from "../../helpers/Utils";
 
 import chai, { expect } from "chai";
 
@@ -67,8 +62,6 @@ describe("DexCore (views)", async () => {
 
     dexCoreStorage.storage.entered = false;
     dexCoreStorage.storage.admin = alice.pkh;
-    dexCoreStorage.storage.cycle_duration = defaultCycleDuration;
-    dexCoreStorage.storage.voting_period = defaultVotingPeriod;
     dexCoreStorage.storage.collecting_period = defaultCollectingPeriod;
     dexCoreStorage.storage.baker_registry = bakerRegistry.contract.address;
     dexCoreStorage.storage.fees = {
@@ -276,28 +269,12 @@ describe("DexCore (views)", async () => {
     expect(isBannedAlice).to.be.false;
   });
 
-  it("should return proper voting period", async () => {
-    const votingPeriod: any = await dexCore.contract.contractViews
-      .get_voting_period()
-      .executeView({ viewCaller: alice.pkh });
-
-    expect(votingPeriod).to.be.bignumber.equal(defaultVotingPeriod);
-  });
-
   it("should return proper collecting period", async () => {
     const collectingPeriod: any = await dexCore.contract.contractViews
       .get_collecting_period()
       .executeView({ viewCaller: alice.pkh });
 
     expect(collectingPeriod).to.be.bignumber.equal(defaultCollectingPeriod);
-  });
-
-  it("should return proper cycle duration", async () => {
-    const cycleDuration: any = await dexCore.contract.contractViews
-      .get_cycle_duration()
-      .executeView({ viewCaller: alice.pkh });
-
-    expect(cycleDuration).to.be.bignumber.equal(defaultCycleDuration);
   });
 
   it("should fail if pair not listed", async () => {

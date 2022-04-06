@@ -1,5 +1,6 @@
 import { Common, DexCore as DexCoreErrors } from "../../helpers/Errors";
 import { FlashSwapsProxy } from "../../helpers/FlashSwapsProxy";
+import { BakerRegistry } from "../../helpers/BakerRegistry";
 import { Utils, zeroAddress } from "../../helpers/Utils";
 import { Auction } from "../../helpers/Auction";
 import { DexCore } from "../../helpers/DexCore";
@@ -18,6 +19,7 @@ import accounts from "../../../scripts/sandbox/accounts";
 import { confirmOperation } from "../../../scripts/confirmation";
 
 import { flashSwapsProxyStorage } from "../../../storage/FlashSwapsProxy";
+import { bakerRegistryStorage } from "../../../storage/BakerRegistry";
 import { auctionStorage } from "../../../storage/Auction";
 import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa12Storage } from "../../../storage/test/FA12";
@@ -36,6 +38,7 @@ chai.use(require("chai-bignumber")(BigNumber));
 
 describe("DexCore (admin methods)", async () => {
   var flashSwapsProxy: FlashSwapsProxy;
+  var bakerRegistry: BakerRegistry;
   var auction: Auction;
   var dexCore: DexCore;
   var firstToken: FA12;
@@ -51,10 +54,14 @@ describe("DexCore (admin methods)", async () => {
 
     await utils.init(alice.sk);
 
+    bakerRegistry = await BakerRegistry.originate(
+      utils.tezos,
+      bakerRegistryStorage
+    );
+
     dexCoreStorage.storage.entered = false;
     dexCoreStorage.storage.admin = alice.pkh;
-    dexCoreStorage.storage.baker_registry = alice.pkh;
-    dexCoreStorage.storage.voting_period = new BigNumber(0);
+    dexCoreStorage.storage.baker_registry = bakerRegistry.contract.address;
     dexCoreStorage.storage.collecting_period = new BigNumber(0);
 
     dexCore = await DexCore.originate(utils.tezos, dexCoreStorage);
@@ -306,54 +313,6 @@ describe("DexCore (admin methods)", async () => {
     expect(
       dexCore.storage.storage.fees.withdraw_fee_reward
     ).to.be.bignumber.equal(fees.withdraw_fee_reward);
-  });
-
-  it("should fail if not admin is trying to set cycle duration", async () => {
-    const cycleDuration: BigNumber = new BigNumber(666);
-
-    await utils.setProvider(alice.sk);
-    await rejects(dexCore.setCycleDuration(cycleDuration), (err: Error) => {
-      expect(err.message).to.equal(Common.ERR_NOT_ADMIN);
-
-      return true;
-    });
-  });
-
-  it("should update cycle duration", async () => {
-    const cycleDuration: BigNumber = new BigNumber(666);
-
-    await utils.setProvider(bob.sk);
-    await dexCore.setCycleDuration(cycleDuration);
-    await dexCore.updateStorage();
-
-    expect(dexCore.storage.storage.cycle_duration).to.be.bignumber.equal(
-      cycleDuration
-    );
-  });
-
-  it("should fail if not admin is trying to setup new voting period", async () => {
-    const votingPeriod: BigNumber = new BigNumber(666);
-
-    await utils.setProvider(alice.sk);
-    await rejects(dexCore.setVotingPeriod(votingPeriod), (err: Error) => {
-      expect(err.message).to.equal(Common.ERR_NOT_ADMIN);
-
-      return true;
-    });
-  });
-
-  it("should setup new voting period", async () => {
-    expect(dexCore.storage.storage.voting_period).to.be.bignumber.equal(0);
-
-    const votingPeriod: BigNumber = new BigNumber(666);
-
-    await utils.setProvider(bob.sk);
-    await dexCore.setVotingPeriod(votingPeriod);
-    await dexCore.updateStorage();
-
-    expect(dexCore.storage.storage.voting_period).to.be.bignumber.equal(
-      votingPeriod
-    );
   });
 
   it("should fail if not admin is trying to setup new collecting period", async () => {
