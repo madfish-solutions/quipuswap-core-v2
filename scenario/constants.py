@@ -92,3 +92,6 @@ fees = {
   "stakers": 200_000,
   "ref": 500_000,
 }
+
+class Errors:
+    PAST_DEADLINE = "'144'"

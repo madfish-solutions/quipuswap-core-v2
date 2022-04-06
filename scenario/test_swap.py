@@ -530,20 +530,22 @@ class StableSwapTest(TestCase):
             chain.execute(self.dex.launch_exchange(pair_ab, 100, 5_000, alice, julian, 1), amount=5_000)
 
 
-    # TODO
     def test_deadline(self):
         chain = LocalChain(storage=self.init_storage)
-        res = chain.execute(self.dex.launch_exchange(pair_ab, 50, 50, me, julian, 1))
+        chain.execute(self.dex.launch_exchange(pair_ab, 50, 50, me, julian, 1))
 
         chain.advance_blocks(2)
 
-        with self.assertRaises(MichelsonRuntimeError):
+        with self.assertRaises(MichelsonRuntimeError) as error:
             chain.execute(self.dex.invest_liquidity(pair_id=0, token_a_in=1, token_b_in=1, shares=1, shares_receiver=me, candidate=julian, deadline=1))
+        self.assertEqual(Errors.PAST_DEADLINE, error.exception.args[-1])
 
-        with self.assertRaises(MichelsonRuntimeError):
+        with self.assertRaises(MichelsonRuntimeError) as error:
             chain.execute(self.dex.divest_liquidity(pair_id=0, min_token_a_out=1, min_token_b_out=1, shares=1, liquidity_receiver=me, candidate=julian, deadline=1))
+        self.assertEqual(Errors.PAST_DEADLINE, error.exception.args[-1])
+        
 
-        with self.assertRaises(MichelsonRuntimeError):
+        with self.assertRaises(MichelsonRuntimeError) as error:
             chain.execute(self.dex.swap({
                 "swaps" : [
                     {
@@ -557,6 +559,7 @@ class StableSwapTest(TestCase):
                 "referrer" : burn,
                 "deadline" : 1
             }))
+        self.assertEqual(Errors.PAST_DEADLINE, error.exception.args[-1])
     
     def test_vote_unvote(self):
         chain = LocalChain(storage=self.init_storage)
