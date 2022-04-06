@@ -45,7 +45,7 @@ class StableSwapTest(TestCase):
         chain = LocalChain(storage=self.init_storage)
 
         add_pool = self.dex.launch_exchange(tez_pair, 1_000_000, 1_000_000, me, dummy_candidate, 1)
-        res = chain.execute(add_pool, sender=admin, amount=987)
+        res = chain.execute(add_pool, sender=admin, amount=1_000_000)
 
         transfers = parse_transfers(res)
         self.assertEqual(len(transfers), 1)
@@ -527,7 +527,7 @@ class StableSwapTest(TestCase):
         chain = LocalChain(storage=self.init_storage)
 
         with self.assertRaises(MichelsonRuntimeError):
-            chain.execute(self.dex.launch_exchange(pair_ab, 100, 5_000, alice, julian), amount=5_000)
+            chain.execute(self.dex.launch_exchange(pair_ab, 100, 5_000, alice, julian, 1), amount=5_000)
 
 
     # TODO
