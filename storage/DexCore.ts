@@ -27,7 +27,7 @@ export const dexCoreStorage: DexCoreStorage = {
       withdraw_fee_reward: new BigNumber(0),
     },
     admin: zeroAddress,
-    pending_admin: zeroAddress,
+    pending_admin: undefined,
     baker_registry: zeroAddress,
     flash_swaps_proxy: zeroAddress,
     auction: zeroAddress,

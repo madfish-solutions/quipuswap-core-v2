@@ -53,7 +53,7 @@ describe("Auction (main methods)", async () => {
 
     auctionStorage.storage.admin = alice.pkh;
     auctionStorage.storage.dex_core = alice.pkh;
-    auctionStorage.storage.quipu_token = quipuToken.contract.address;
+    auctionStorage.storage.quipu_token.token = quipuToken.contract.address;
     auctionStorage.storage.whitelist = [
       { fa12: fa12Whitelisted.contract.address },
     ];

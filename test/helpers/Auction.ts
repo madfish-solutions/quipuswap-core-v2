@@ -221,7 +221,9 @@ export class Auction {
     return operation;
   }
 
-  async setBaker(baker: string): Promise<TransactionOperation> {
+  async setBaker(
+    baker: string | undefined | null
+  ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
       .set_baker(baker)
       .send();

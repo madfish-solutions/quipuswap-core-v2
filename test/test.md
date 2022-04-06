@@ -273,6 +273,7 @@
 
 12. `confirm_admin`:
 
+    - ✅ should fail if pending admin is `None`;
     - ✅ should fail if not pending admin is trying to confirm new admin;
     - ✅ should confirm new admin by pending admin.
 
@@ -520,6 +521,7 @@
 
 6. `confirm_admin`:
 
+   - ✅ should fail if pending admin is `None`;
    - ✅ should fail if not pending admin is trying to confirm a new admin;
    - ✅ should confirm a new admin by pending admin.
 
@@ -528,7 +530,7 @@
    - ✅ should fail if not admin is trying to setup a new baker;
    - ✅ should setup a new baker and delegate for him;
    - ✅ should do nothing if a new baker is the same as the old one;
-   - ✅ should remove a delegate if `zero_key_hash` was passed by an admin.
+   - ✅ should remove a delegate if `None` was passed by an admin.
 
 8. `set_fees`:
 

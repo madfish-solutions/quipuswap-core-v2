@@ -165,7 +165,7 @@ export type DexCoreStorage = {
     managers: string[];
     fees: Fees;
     admin: string;
-    pending_admin: string;
+    pending_admin: string | undefined | null;
     baker_registry: string;
     flash_swaps_proxy: string;
     auction: string;

@@ -11,7 +11,6 @@
 #include "../partial/common_helpers.ligo"
 
 #include "../partial/auction/auction_types.ligo"
-#include "../partial/auction/auction_helpers.ligo"
 #include "../partial/auction/auction_methods.ligo"
 #include "../partial/auction/auction_lambdas.ligo"
 

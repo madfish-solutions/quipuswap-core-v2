@@ -88,7 +88,7 @@ describe("DexCore (invest liquidity)", async () => {
 
     auctionStorage.storage.admin = alice.pkh;
     auctionStorage.storage.dex_core = dexCore.contract.address;
-    auctionStorage.storage.quipu_token = fa2Token1.contract.address;
+    auctionStorage.storage.quipu_token.token = fa2Token1.contract.address;
 
     auction = await Auction.originate(utils.tezos, auctionStorage);
 
