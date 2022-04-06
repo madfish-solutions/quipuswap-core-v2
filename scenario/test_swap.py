@@ -334,7 +334,7 @@ class StableSwapTest(TestCase):
         with self.assertRaises(MichelsonRuntimeError):
             res = chain.execute(self.dex.divest_liquidity(pair_id=0, min_token_a_out=1, min_token_b_out=1, shares=1, liquidity_receiver=me, candidate=dummy_candidate, deadline=1), sender=alice)
 
-
+    # TODO
     def test_multiple_small_invests(self):
         ratios = [1, 0.01, 100]
 
@@ -558,3 +558,30 @@ class StableSwapTest(TestCase):
                 "deadline" : 1
             }))
     
+    def test_vote_unvote(self):
+        chain = LocalChain(storage=self.init_storage)
+        res = chain.execute(self.dex.launch_exchange(tez_pair, 50, 50, me, julian, 1), amount=50)
+
+        res = chain.execute(self.dex.invest_liquidity(pair_id=0, token_a_in=100, token_b_in=100, shares=10, shares_receiver=me, candidate=julian, deadline=1), amount=100)
+
+        votes = parse_votes(res)
+        self.assertEqual(votes[0]["amount"], 60)
+        self.assertEqual(votes[0]["delegate"], julian)
+
+        res = chain.execute(self.dex.invest_liquidity(pair_id=0, token_a_in=100, token_b_in=100, shares=100, shares_receiver=me, candidate=julian, deadline=1), amount=100)
+
+        votes = parse_votes(res)
+        self.assertEqual(votes[0]["amount"], 160)
+        self.assertEqual(votes[0]["delegate"], julian)
+
+        res = chain.execute(self.dex.divest_liquidity(pair_id=0, min_token_a_out=1, min_token_b_out=1, shares=10, liquidity_receiver=me, candidate=julian, deadline=1))
+
+        votes = parse_votes(res)
+        self.assertEqual(votes[0]["amount"], 150)
+        self.assertEqual(votes[0]["delegate"], julian)
+
+        res = chain.execute(self.dex.divest_liquidity(pair_id=0, min_token_a_out=1, min_token_b_out=1, shares=150, liquidity_receiver=me, candidate=julian, deadline=1))
+
+        votes = parse_votes(res)
+        self.assertEqual(votes[0]["amount"], 0)
+        self.assertEqual(votes[0]["delegate"], julian)
