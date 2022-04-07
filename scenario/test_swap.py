@@ -334,33 +334,30 @@ class StableSwapTest(TestCase):
         with self.assertRaises(MichelsonRuntimeError):
             res = chain.execute(self.dex.divest_liquidity(pair_id=0, min_token_a_out=1, min_token_b_out=1, shares=1, liquidity_receiver=me, candidate=dummy_candidate, deadline=1), sender=alice)
 
-    # TODO
     def test_multiple_small_invests(self):
         ratios = [1, 0.01, 100]
 
         for ratio in ratios:
             token_b_amount = int(100 * ratio)
             chain = LocalChain(storage=self.init_storage)
-            add_pool = self.dex.launch_exchange(pair_ab, 100, token_b_amount, me, dummy_candidate, 1)
+            add_pool = self.dex.launch_exchange(pair_ab, 100, token_b_amount, admin, dummy_candidate, 1)
             res = chain.execute(add_pool, sender=admin) 
+            
+            shares = calc_shares(100, token_b_amount) 
 
-            invest = self.dex.invest_liquidity(pair_id=0, token_a_in=int(1e18), token_b_in=int(1e18), shares=1, shares_receiver=alice, candidate=dummy_candidate, deadline=1)
+            invest = self.dex.invest_liquidity(pair_id=0, token_a_in=int(1e18), token_b_in=int(1e18), shares=shares, shares_receiver=me, candidate=dummy_candidate, deadline=1)
 
             for i in range(3):
                 res = chain.execute(invest, sender=alice)            
 
             all_shares = get_shares(res, 0, me)
-            print("all shares", all_shares)
 
-            res = chain.execute(self.dex.divest_liquidity(pair_id=0, min_token_a_out=1, min_token_b_out=1, shares=3, liquidity_receiver=me, candidate=dummy_candidate, deadline=1), sender=alice)
+            res = chain.execute(self.dex.divest_liquidity(pair_id=0, min_token_a_out=1, min_token_b_out=1, shares=all_shares, liquidity_receiver=me, candidate=dummy_candidate, deadline=1))
     
             transfers = parse_transfers(res)
-            pprint(transfers)
-            continue
             self.assertAlmostEqual(transfers[0]["amount"], int(300 * ratio), delta=1)
             self.assertAlmostEqual(transfers[1]["amount"], 300, delta=1)
 
-    # TODO the same for Tez pair
     def test_reinitialize(self):
         chain = LocalChain(storage=self.init_storage)
         add_pool = self.dex.launch_exchange(pair_ab, 10, 10, me, dummy_candidate, 1)
