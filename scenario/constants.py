@@ -63,6 +63,11 @@ tez_pair = {
     "token_b" : {"tez" : None}
 }
 
+tez_pair_b = {
+    "token_a" : token_c_fa12,
+    "token_b" : {"tez" : None}
+}
+
 vr = {
     f"{dex_core}%get_total_supply": [{"request": 0, "total_supply": 500_000}],
     f"{dex_core}%get_collecting_period": 100,
@@ -95,3 +100,7 @@ fees = {
 
 class Errors:
     PAST_DEADLINE = "'144'"
+    DRAINED_PAIR = "'109'"
+    LOW_TOKEN_A_IN = "'111'"
+    LOW_TOKEN_B_IN = "'112'"
+    HIGH_MIN_OUT = "'116'"

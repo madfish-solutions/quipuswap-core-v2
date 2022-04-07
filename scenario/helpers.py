@@ -136,6 +136,16 @@ def parse_originations(res):
             originations.append(orig)
     return originations
 
+def parse_pour_out(op):
+    value = op["parameters"]["value"]
+    args = value["args"]
+
+    return {
+        "type": "tez",
+        "amount": int(args[1]["int"]),
+        "destination": args[0]["string"],
+    }
+
 def parse_transfers(res):
     transfers = []
     for op in res.operations:
@@ -144,9 +154,13 @@ def parse_transfers(res):
             if entrypoint == "default":
                 tx = parse_tez_transfer(op)
                 transfers.append(tx)
-            if entrypoint == "transfer":
+            elif entrypoint == "transfer":
                 txs = parse_transfer(op)
                 transfers += txs
+            elif entrypoint == "pour_out": # dex 2.0 specific
+                tx = parse_pour_out(op)
+                transfers.append(tx)
+
     return transfers
 
 def parse_transfer(op):
@@ -194,6 +208,18 @@ def parse_votes(res):
                 result.append(tx)
 
     return result
+
+# def parse_pour_outs(res):
+#     result = []
+
+#     for op in res.operations:
+#         if op["kind"] == "transaction":
+#             entrypoint = op["parameters"]["entrypoint"]
+#             if entrypoint == "pour_out":
+#                 tx = parse_vote(op)
+#                 result.append(tx)
+
+#     return result
 
 def parse_ops(res):
     result = []
