@@ -301,7 +301,6 @@ class TezPairTest(TestCase):
         with self.assertRaises(MichelsonRuntimeError):
             res = chain.execute(self.dex.divest_liquidity(pair_id=0, min_token_a_out=1, min_token_b_out=1, shares=1, liquidity_receiver=me, candidate=dummy_candidate, deadline=1), sender=alice)
 
-    # TODO
     def test_tez_multiple_small_invests(self):
         ratios = [1, 0.01, 100]
 

@@ -64,9 +64,15 @@ tez_pair = {
 }
 
 tez_pair_b = {
+    "token_a" : token_b_fa2,
+    "token_b" : {"tez" : None}
+}
+
+tez_pair_c = {
     "token_a" : token_c_fa12,
     "token_b" : {"tez" : None}
 }
+
 
 vr = {
     f"{dex_core}%get_total_supply": [{"request": 0, "total_supply": 500_000}],
@@ -104,3 +110,4 @@ class Errors:
     LOW_TOKEN_A_IN = "'111'"
     LOW_TOKEN_B_IN = "'112'"
     HIGH_MIN_OUT = "'116'"
+    WRONG_TEZ_AMOUNT = "'120'"

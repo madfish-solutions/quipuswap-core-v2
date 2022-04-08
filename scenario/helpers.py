@@ -146,6 +146,24 @@ def parse_pour_out(op):
         "destination": args[0]["string"],
     }
 
+def parse_pour_overs(res):
+    result = []
+
+    for op in res.operations:
+        if op["kind"] == "transaction":
+            params = op["parameters"]
+            entrypoint = params["entrypoint"]
+            if entrypoint == "pour_over":
+                args = params["value"]["args"]
+                tx = {
+                    "destination" : args[0]["string"],
+                    "amount" : int(args[1]["int"]),
+                    "source" : op["destination"]
+                }
+                result.append(tx)
+
+    return result
+
 def parse_transfers(res):
     transfers = []
     for op in res.operations:
@@ -209,17 +227,6 @@ def parse_votes(res):
 
     return result
 
-# def parse_pour_outs(res):
-#     result = []
-
-#     for op in res.operations:
-#         if op["kind"] == "transaction":
-#             entrypoint = op["parameters"]["entrypoint"]
-#             if entrypoint == "pour_out":
-#                 tx = parse_vote(op)
-#                 result.append(tx)
-
-#     return result
 
 def parse_ops(res):
     result = []
