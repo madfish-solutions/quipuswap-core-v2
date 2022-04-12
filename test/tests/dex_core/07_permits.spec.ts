@@ -348,10 +348,8 @@ describe("DexCore (permits)", async () => {
 
     await rejects(
       dexCore.permit(alice.pk, signature, permitHash),
-      (err: Error) => {
-        expect(err.message).to.equal(
-          "(temporary) proto.011-PtHangz2.michelson_v1.script_rejected"
-        );
+      (err: any) => {
+        expect(err.errors[1].with.args[0]["string"]).to.equal("MISSIGNED");
 
         return true;
       }
