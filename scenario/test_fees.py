@@ -156,7 +156,7 @@ class TezPairTest(TestCase):
         res = chain.execute(self.dex.withdraw_auction_fee(None, token_a_fa2), sender=alice)
         transfers = parse_transfers(res)
         self.assertEqual(len(transfers), 2)
-        self.assertEqual(transfers[0]["amount"], 297)
+        self.assertEqual(transfers[0]["amount"], 293)
         self.assertEqual(transfers[0]["destination"], alice)
         self.assertEqual(transfers[0]["source"], contract_self_address)
         self.assertEqual(transfers[0]["token_address"], token_b_fa2["address"])
@@ -165,3 +165,5 @@ class TezPairTest(TestCase):
         self.assertEqual(transfers[0]["destination"], auction)
         self.assertEqual(transfers[0]["source"], contract_self_address)
         self.assertEqual(transfers[0]["token_address"], token_b_fa2["address"])
+
+        

@@ -227,7 +227,6 @@ def parse_votes(res):
 
     return result
 
-
 def parse_ops(res):
     result = []
     for op in res.operations:
@@ -242,6 +241,29 @@ def parse_ops(res):
             elif entrypoint == "close":
                 result.append({"type" : "close"})
     return result
+
+def parse_auction_ops(res):
+    result = []
+
+    for op in res.operations:
+        if op["kind"] == "transaction":
+            entrypoint = op["parameters"]["entrypoint"]
+            if entrypoint == "receive_fee":
+                tx = parse_vote(op)
+                result.append(tx)
+
+    return result
+
+def parse_auction_receive_fee(op):
+    args = op["parameters"]["value"]["args"]
+
+    res = {
+        "type": "receive_fee",
+        "token_address": args[1]["string"],
+        "fee": int(args[1]["int"])
+    }
+    
+    return res
 
 # calculates shares balance
 def calc_total_balance(res, address):
