@@ -249,7 +249,7 @@ def parse_auction_ops(res):
         if op["kind"] == "transaction":
             entrypoint = op["parameters"]["entrypoint"]
             if entrypoint == "receive_fee":
-                tx = parse_vote(op)
+                tx = parse_auction_receive_fee(op)
                 result.append(tx)
 
     return result
@@ -259,8 +259,9 @@ def parse_auction_receive_fee(op):
 
     res = {
         "type": "receive_fee",
-        "token_address": args[1]["string"],
-        "fee": int(args[1]["int"])
+        # "token_address": args[1]["string"],
+        "fee": int(args[1]["int"]),
+        "destination": op["destination"]
     }
     
     return res
