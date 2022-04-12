@@ -11,6 +11,7 @@ MIN_RAMP_TIME=86_400
 
 dex_core = "KT18fp5rcTW7mbWDmzFwjLDUhs5MeJmagDSZ"
 bucket = "KT19kgnqC5VWoxktLRdRUERbyUPku9YioE8W"
+auction = "KT19kgnqC5VWoxktLRdRUERbyUPku9YioE8W"
 
 token_a_address = "KT18amZmM5W7qDWVt2pH6uj7sCEd3kbzLrHT"
 token_b_address = "KT1AxaBxkFLCUi3f8rdDAAxBKHfzY8LfKDRA"
