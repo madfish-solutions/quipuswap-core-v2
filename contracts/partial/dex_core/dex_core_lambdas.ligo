@@ -67,13 +67,7 @@ function launch_exchange(
             const deploy_res : (operation * address) = deploy_bucket(
               (None : option(key_hash)),
               Tezos.amount,
-              get_bucket_initial_storage(
-                s.baker_registry,
-                token_id,
-                s.collecting_period,
-                s.cycle_duration,
-                s.voting_period
-              )
+              get_bucket_initial_storage(s.baker_registry, token_id, s.collecting_period)
             );
 
             updated_pair.bucket := Some(deploy_res.1);
@@ -659,36 +653,6 @@ function set_fees(
         only_admin(s.admin);
 
         s.fees := fees;
-      }
-    | _ -> skip
-    ]
-  } with ((nil : list(operation)), s)
-
-function set_cycle_duration(
-  const action          : action_t;
-  var s                 : storage_t)
-                        : return_t is
-  block {
-    case action of [
-    | Set_cycle_duration(cycle_duration) -> {
-        only_admin(s.admin);
-
-        s.cycle_duration := cycle_duration;
-      }
-    | _ -> skip
-    ]
-  } with ((nil : list(operation)), s)
-
-function set_voting_period(
-  const action          : action_t;
-  var s                 : storage_t)
-                        : return_t is
-  block {
-    case action of [
-    | Set_voting_period(voting_period) -> {
-        only_admin(s.admin);
-
-        s.voting_period := voting_period;
       }
     | _ -> skip
     ]

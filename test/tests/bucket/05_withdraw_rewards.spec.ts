@@ -61,8 +61,6 @@ describe.skip("Bucket (withdraw rewards)", async () => {
     dexCoreStorage.storage.entered = false;
     dexCoreStorage.storage.admin = alice.pkh;
     dexCoreStorage.storage.collecting_period = new BigNumber(3);
-    dexCoreStorage.storage.cycle_duration = new BigNumber(1);
-    dexCoreStorage.storage.voting_period = new BigNumber(10);
     dexCoreStorage.storage.baker_registry = bakerRegistry.contract.address;
 
     dexCore = await DexCore.originate(utils.tezos, dexCoreStorage);

@@ -93,9 +93,7 @@ function pour_out_or_transfer_tokens(
 function get_bucket_initial_storage(
   const baker_registry  : address;
   const pair_id         : nat;
-  const collect_period  : nat;
-  const cycle_duration  : nat;
-  const voting_period   : nat)
+  const collect_period  : nat)
                         : bucket_t is
   record [
     users                 = (Big_map.empty : big_map(address, user_t));
@@ -113,8 +111,7 @@ function get_bucket_initial_storage(
     reward_per_share      = 0n;
     reward_per_block      = 0n;
     last_update_level     = Tezos.level;
-    collecting_period_end = Tezos.level + (cycle_duration * collect_period);
-    voting_period_end     = Tezos.level + (cycle_duration * voting_period);
+    collecting_period_end = Tezos.level + collect_period;
   ]
 
 function calc_cumulative_prices(

@@ -22,22 +22,20 @@ function call_dex_core(
     | Set_auction(_)             -> 13n
     | Add_managers(_)            -> 14n
     | Set_fees(_)                -> 15n
-    | Set_cycle_duration(_)      -> 16n
-    | Set_voting_period(_)       -> 17n
-    | Set_collecting_period(_)   -> 18n
-    | Update_token_metadata(_)   -> 19n
-    | Ban(_)                     -> 20n
+    | Set_collecting_period(_)   -> 16n
+    | Update_token_metadata(_)   -> 17n
+    | Ban(_)                     -> 18n
     (* PERMIT *)
-    | Permit(_)                  -> 21n
-    | Set_expiry(_)              -> 22n
+    | Permit(_)                  -> 19n
+    | Set_expiry(_)              -> 20n
     (* FA2 *)
-    | Transfer(_)                -> 23n
-    | Update_operators(_)        -> 24n
-    | Balance_of(_)              -> 25n
+    | Transfer(_)                -> 21n
+    | Update_operators(_)        -> 22n
+    | Balance_of(_)              -> 23n
     (* CALLBACKS *)
-    | Launch_callback(_)         -> 26n
-    | Flash_swap_callback(_)     -> 27n
-    | Close(_)                   -> 28n
+    | Launch_callback(_)         -> 24n
+    | Flash_swap_callback(_)     -> 25n
+    | Close(_)                   -> 26n
     ];
 
     const lambda_bytes : bytes = unwrap(s.dex_core_lambdas[id], DexCore.err_unknown_func);

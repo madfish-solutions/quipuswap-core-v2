@@ -78,9 +78,7 @@ type storage_t          is [@layout:comb] record [
   default_expiry          : seconds_t;
   entered                 : bool;
   tokens_count            : nat;
-  cycle_duration          : nat;
   collecting_period       : nat;
-  voting_period           : nat;
 ]
 
 type launch_exchange_t  is [@layout:comb] record [
@@ -206,10 +204,6 @@ type add_managers_t     is list(add_manager_t)
 
 type set_fees_t         is fees_t
 
-type set_cycle_dur_t    is nat
-
-type set_vote_period_t  is nat
-
 type set_coll_period_t  is nat
 
 type metadata_pair_t    is [@layout:comb] record [
@@ -300,8 +294,6 @@ type action_t           is
 | Set_auction             of set_aution_t
 | Add_managers            of add_managers_t
 | Set_fees                of set_fees_t
-| Set_cycle_duration      of set_cycle_dur_t
-| Set_voting_period       of set_vote_period_t
 | Set_collecting_period   of set_coll_period_t
 | Update_token_metadata   of upd_tok_meta_t
 | Ban                     of ban_t
@@ -336,4 +328,4 @@ type full_action_t      is
 
 type deploy_bucket_t    is (option(key_hash) * tez * bucket_t) -> (operation * address)
 
-const dex_core_methods_max_index : nat = 28n;
+const dex_core_methods_max_index : nat = 26n;

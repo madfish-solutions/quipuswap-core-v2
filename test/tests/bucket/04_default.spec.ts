@@ -26,7 +26,7 @@ import {
 
 chai.use(require("chai-bignumber")(BigNumber));
 
-describe("Bucket (default)", async () => {
+describe.skip("Bucket (default)", async () => {
   var bakerRegistry: BakerRegistry;
   var dexCore: DexCore;
   var fa2Token1: FA2;
@@ -53,8 +53,6 @@ describe("Bucket (default)", async () => {
     dexCoreStorage.storage.entered = false;
     dexCoreStorage.storage.admin = alice.pkh;
     dexCoreStorage.storage.collecting_period = new BigNumber(4);
-    dexCoreStorage.storage.cycle_duration = new BigNumber(10);
-    dexCoreStorage.storage.voting_period = new BigNumber(10);
     dexCoreStorage.storage.baker_registry = bakerRegistry.contract.address;
 
     dexCore = await DexCore.originate(utils.tezos, dexCoreStorage);

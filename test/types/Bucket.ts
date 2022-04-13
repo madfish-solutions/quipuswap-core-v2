@@ -60,7 +60,6 @@ export type BucketStorage = {
   reward_per_block: BigNumber;
   last_update_level: BigNumber;
   collecting_period_end: BigNumber;
-  voting_period_end: BigNumber;
 };
 
 export type UpdateRewards = {

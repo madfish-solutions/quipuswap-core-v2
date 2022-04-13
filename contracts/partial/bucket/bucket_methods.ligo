@@ -124,7 +124,7 @@ function vote(
 
     var ops: list(operation) := nil;
 
-    if Tezos.level >= s.voting_period_end and params.execute_voting
+    if params.execute_voting
     then {
       if check_is_banned_baker(unwrap_or(s.bakers[s.next_candidate], Constants.default_baker))
       then s.next_candidate := Constants.zero_key_hash
@@ -151,8 +151,6 @@ function vote(
         }
         else skip;
       };
-
-      s.voting_period_end := Tezos.level + (get_cycle_duration(s.dex_core) * get_voting_period(s.dex_core));
     }
     else skip;
   } with (ops, s)

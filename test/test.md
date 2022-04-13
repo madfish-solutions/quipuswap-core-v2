@@ -64,11 +64,8 @@
    - ✅ should transfer tokens from alice to bob, vote, alice must remain current delegated;
    - ✅ should transfer tokens from bob to alice, vote, bob must become current delegated;
    - ✅ should transfer tokens from bob to carol, vote, bob must remain current delegated;
-   - ✅ should validate and set a new delegate if voting can be done and current delegated was changed - 1;
-   - ✅ should validate and set a new delegate if voting can be done and current delegated was changed - 2;
-   - ✅ should change next candidate to the `zero_address` if voting can be done and next candidate is banned;
-   - ✅ should update end of voting period if voting can be done;
-   - ✅ should remove delegate and set current delegated to the `zero_address` if voting can be done and current delegated is banned.
+   - ✅ should change next candidate to the `zero_address` if next candidate is banned;
+   - ✅ should remove delegate and set current delegated to the `zero_address` if current delegated is banned.
 
 7. `default`:
 
@@ -301,22 +298,12 @@
     - ✅ should fail if not admin is trying to set fees;
     - ✅ should update fees.
 
-17. `set_cycle_duration`:
-
-    - ✅ should fail if not admin is trying to set cycle duration;
-    - ✅ should update cycle duration.
-
-18. `set_voting_period`:
-
-    - ✅ should fail if not admin is trying to setup new voting period;
-    - ✅ should setup new voting period.
-
-19. `set_collecting_period`:
+17. `set_collecting_period`:
 
     - ✅ should fail if not admin is trying to setup new collecting period;
     - ✅ should setup new collecting period.
 
-20. `update_token_metadata`:
+18. `update_token_metadata`:
 
     - ✅ should fail if not manager is trying to update token metadata;
     - ✅ should fail if pair not listed;
@@ -324,7 +311,7 @@
     - ✅ should set new fields in token metadata;
     - ✅ should update existing and set new fields in token metadata.
 
-21. `ban`:
+19. `ban`:
 
     - ✅ should fail if not admin is trying to ban baker;
     - ✅ should fail if pair not listed;
@@ -332,7 +319,7 @@
     - ✅ should ban baker;
     - ✅ should unban baker.
 
-22. `permit`:
+20. `permit`:
 
     - ✅ should generate permit payload and submit it to the contract by alice - 1;
     - ✅ should generate permit payload and submit it to the contract by alice - 2;
@@ -345,7 +332,7 @@
     - ✅ should call permit by carol on bob's behalf;
     - ✅ should fail if anyone is trying to use already used permit.
 
-23. `ser_expiry`:
+21. `ser_expiry`:
 
     - ✅ should fail if not issuer is trying to set expiry - 1;
     - ✅ should fail if not issuer is trying to set expiry - 2;
@@ -358,7 +345,7 @@
     - ✅ should set an expiry for a specified permit;
     - ✅ should set a 0 expiry for a specified permit.
 
-24. `transfer`:
+22. `transfer`:
 
     - ✅ should fail if reentrancy;
     - ✅ should fail if token ID from request not found;
@@ -375,7 +362,7 @@
     - ✅ should make a group of transfers from one account and using allowances;
     - ✅ should vote in time of transfer.
 
-25. `update_operators`:
+23. `update_operators`:
 
     - ✅ should fail if token ID from request not found;
     - ✅ should fail if one token ID from list of requests not found;
@@ -387,7 +374,7 @@
     - ✅ should remove a group of operators;
     - ✅ should add/remove operators per one request.
 
-26. `balance_of`:
+24. `balance_of`:
 
     - ✅ should fail if token ID from request not found;
     - ✅ should fail if one token ID from list of requests not found;
@@ -396,20 +383,20 @@
     - ✅ should return the same balance for the same account 2 times in one request;
     - ✅ should return 0 if an account does not have tokens.
 
-27. `flash_swap_callback`:
+25. `flash_swap_callback`:
 
     - ✅ should fail if not dex core is trying to call it.
 
-28. `launch_callback`:
+26. `launch_callback`:
 
     - ✅ should fail if not dex core is trying to call launch exchange callback.
 
-29. `close`:
+27. `close`:
 
     - ✅ should fail if not dex core is trying to call it;
     - ✅ should close (reentrancy protection).
 
-30. `check_is_banned_baker` [VIEW]:
+28. `check_is_banned_baker` [VIEW]:
 
     - ✅ should fail if pair not listed;
     - ✅ should fail if pair does not have bucket contract (not TOK/TEZ pair);
@@ -417,21 +404,21 @@
     - ✅ should return false if baker is not banned;
     - ✅ should return false if baker's banning period is finished.
 
-31. `get_reserves` [VIEW]:
+29. `get_reserves` [VIEW]:
 
     - ✅ should fail if pair not listed;
     - ✅ should fail if one pair from list not listed;
     - ✅ should return proper reserves for pair;
     - ✅ should return proper reserves for all pairs in a list.
 
-32. `get_total_supply` [VIEW]:
+30. `get_total_supply` [VIEW]:
 
     - ✅ should fail if pair not listed;
     - ✅ should fail if one pair from list not listed;
     - ✅ should return proper total supply for pair;
     - ✅ should return proper total supply for all pairs in a list.
 
-33. `get_swap_min_res` [VIEW]:
+31. `get_swap_min_res` [VIEW]:
 
     - ✅ should fail if empty route;
     - ✅ should fail if pair not listed;
@@ -442,7 +429,7 @@
     - ✅ should return proper min swap result - 2;
     - ✅ should return proper min swap result - 3.
 
-34. `get_toks_per_share` [VIEW]:
+32. `get_toks_per_share` [VIEW]:
 
     - ✅ should fail if pair not listed;
     - ✅ should fail if one pair from list not listed;
@@ -451,26 +438,18 @@
     - ✅ should return proper tokens per shares amount for pair;
     - ✅ should return proper tokens per shares anount for all pairs in a list.
 
-35. `get_cumulative_prices` [VIEW]:
+33. `get_cumulative_prices` [VIEW]:
 
     - ✅ should fail if pair not listed;
     - ✅ should fail if one pair from list not listed;
     - ✅ should return proper cumulative prices for pair;
     - ✅ should return proper cumulative prices for all pairs in a list.
 
-36. `get_voting_period` [VIEW]:
-
-    - ✅ should return proper voting period.
-
-37. `get_collecting_period` [VIEW]:
+34. `get_collecting_period` [VIEW]:
 
     - ✅ should return proper collecting period.
 
-38. `get_cycle_duration` [VIEW]:
-
-    - ✅ should return proper cycle duration.
-
-39. `oracle_part`:
+35. `oracle_part`:
 
     - ✅ should not calculate cumulative prices and should update last block timestamp in time of any exchange launch;
     - ✅ should calculate cumulative prices and update last block timestamp in time of liquidity investment;

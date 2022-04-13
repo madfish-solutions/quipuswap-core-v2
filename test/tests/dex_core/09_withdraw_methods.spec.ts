@@ -1,10 +1,10 @@
-import { defaultVotingPeriod, Utils } from "../../helpers/Utils";
 import { DexCore as DexCoreErrors } from "../../helpers/Errors";
 import { BakerRegistry } from "../../helpers/BakerRegistry";
 import { PRECISION } from "../../helpers/Constants";
 import { Auction } from "../../helpers/Auction";
 import { DexCore } from "../../helpers/DexCore";
 import { Bucket } from "../../helpers/Bucket";
+import { Utils } from "../../helpers/Utils";
 import { FA12 } from "../../helpers/FA12";
 import { FA2 } from "../../helpers/FA2";
 
@@ -65,8 +65,6 @@ describe("DexCore (withdraw methods)", async () => {
     dexCoreStorage.storage.entered = false;
     dexCoreStorage.storage.admin = alice.pkh;
     dexCoreStorage.storage.collecting_period = new BigNumber(3);
-    dexCoreStorage.storage.cycle_duration = new BigNumber(1);
-    dexCoreStorage.storage.voting_period = defaultVotingPeriod;
     dexCoreStorage.storage.baker_registry = bakerRegistry.contract.address;
     dexCoreStorage.storage.fees = {
       interface_fee: new BigNumber(0.25).multipliedBy(PRECISION),

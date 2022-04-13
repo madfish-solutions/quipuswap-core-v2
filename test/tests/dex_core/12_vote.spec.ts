@@ -1,3 +1,4 @@
+import { defaultCollectingPeriod, Utils } from "../../helpers/Utils";
 import { DexCore as DexCoreErrors } from "../../helpers/Errors";
 import { BakerRegistry } from "../../helpers/BakerRegistry";
 import { Auction } from "../../helpers/Auction";
@@ -5,13 +6,6 @@ import { DexCore } from "../../helpers/DexCore";
 import { Bucket } from "../../helpers/Bucket";
 import { FA12 } from "../../helpers/FA12";
 import { FA2 } from "../../helpers/FA2";
-import {
-  defaultCollectingPeriod,
-  defaultCycleDuration,
-  defaultVotingPeriod,
-  zeroAddress,
-  Utils,
-} from "../../helpers/Utils";
 
 import { rejects } from "assert";
 
@@ -58,8 +52,6 @@ describe("DexCore (vote)", async () => {
 
     dexCoreStorage.storage.entered = false;
     dexCoreStorage.storage.admin = alice.pkh;
-    dexCoreStorage.storage.cycle_duration = defaultCycleDuration;
-    dexCoreStorage.storage.voting_period = defaultVotingPeriod;
     dexCoreStorage.storage.collecting_period = defaultCollectingPeriod;
     dexCoreStorage.storage.baker_registry = bakerRegistry.contract.address;
 
@@ -230,11 +222,11 @@ describe("DexCore (vote)", async () => {
     expect(
       bucket.storage.bakers[voteParams.candidate].votes
     ).to.be.bignumber.equal(100_000);
-    expect(bucket.storage.previous_delegated).to.be.equal(zeroAddress);
+    expect(bucket.storage.previous_delegated).to.be.equal(bob.pkh);
     expect(bucket.storage.current_delegated).to.be.equal(bob.pkh);
     expect(bucket.storage.next_candidate).to.be.equal(alice.pkh);
     expect(await utils.tezos.rpc.getDelegate(bucket.contract.address)).to.equal(
-      null
+      bob.pkh
     );
   });
 });
