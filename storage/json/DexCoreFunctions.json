@@ -65,54 +65,46 @@
   },
   {
     "index": 16,
-    "name": "set_cycle_duration"
-  },
-  {
-    "index": 17,
-    "name": "set_voting_period"
-  },
-  {
-    "index": 18,
     "name": "set_collecting_period"
   },
   {
-    "index": 19,
+    "index": 17,
     "name": "update_token_metadata"
   },
   {
-    "index": 20,
+    "index": 18,
     "name": "ban"
   },
   {
-    "index": 21,
+    "index": 19,
     "name": "permit"
   },
   {
-    "index": 22,
+    "index": 20,
     "name": "set_expiry"
   },
   {
-    "index": 23,
+    "index": 21,
     "name": "transfer"
   },
   {
-    "index": 24,
+    "index": 22,
     "name": "update_operators"
   },
   {
-    "index": 25,
+    "index": 23,
     "name": "balance_of"
   },
   {
-    "index": 26,
+    "index": 24,
     "name": "launch_callback"
   },
   {
-    "index": 27,
+    "index": 25,
     "name": "flash_swap_callback"
   },
   {
-    "index": 28,
+    "index": 26,
     "name": "close"
   }
 ]

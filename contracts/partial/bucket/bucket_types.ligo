@@ -15,7 +15,6 @@ type storage_t          is [@layout:comb] record [
   reward_per_block        : nat;
   last_update_level       : nat;
   collecting_period_end   : nat;
-  voting_period_end       : nat;
 ]
 
 type pour_out_t         is [@layout:comb] record [

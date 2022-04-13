@@ -7,8 +7,6 @@ import { FA12 } from "../../helpers/FA12";
 import { FA2 } from "../../helpers/FA2";
 import {
   defaultCollectingPeriod,
-  defaultCycleDuration,
-  defaultVotingPeriod,
   zeroAddress,
   Utils,
 } from "../../helpers/Utils";
@@ -67,8 +65,6 @@ describe("DexCore (swap)", async () => {
     dexCoreStorage.storage.entered = false;
     dexCoreStorage.storage.admin = alice.pkh;
     dexCoreStorage.storage.collecting_period = defaultCollectingPeriod;
-    dexCoreStorage.storage.cycle_duration = defaultCycleDuration;
-    dexCoreStorage.storage.voting_period = defaultVotingPeriod;
     dexCoreStorage.storage.baker_registry = bakerRegistry.contract.address;
     dexCoreStorage.storage.fees = {
       interface_fee: new BigNumber(0.0025).multipliedBy(PRECISION),

@@ -1,14 +1,9 @@
+import { defaultCollectingPeriod, Utils } from "../../helpers/Utils";
 import { BakerRegistry } from "../../helpers/BakerRegistry";
 import { PRECISION } from "../../helpers/Constants";
 import { Auction } from "../../helpers/Auction";
 import { DexCore } from "../../helpers/DexCore";
 import { FA2 } from "../../helpers/FA2";
-import {
-  defaultCollectingPeriod,
-  defaultCycleDuration,
-  defaultVotingPeriod,
-  Utils,
-} from "../../helpers/Utils";
 
 import chai, { expect } from "chai";
 
@@ -59,8 +54,6 @@ describe("DexCore (oracle part)", async () => {
     dexCoreStorage.storage.entered = false;
     dexCoreStorage.storage.admin = alice.pkh;
     dexCoreStorage.storage.collecting_period = defaultCollectingPeriod;
-    dexCoreStorage.storage.cycle_duration = defaultCycleDuration;
-    dexCoreStorage.storage.voting_period = defaultVotingPeriod;
     dexCoreStorage.storage.baker_registry = bakerRegistry.contract.address;
     dexCoreStorage.storage.fees = {
       interface_fee: new BigNumber(0.0005).multipliedBy(PRECISION),
