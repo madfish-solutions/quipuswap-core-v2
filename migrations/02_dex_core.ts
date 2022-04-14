@@ -27,9 +27,7 @@ module.exports = async () => {
   dexCoreStorage.storage.baker_registry =
     BakerRegistryBuild["networks"][env.network]["baker_registry"];
   dexCoreStorage.storage.default_expiry = new BigNumber(86400); // 24 hours
-  dexCoreStorage.storage.cycle_duration = new BigNumber(4096); // 4096 blocks
   dexCoreStorage.storage.collecting_period = new BigNumber(12); // 12 cycles
-  dexCoreStorage.storage.voting_period = new BigNumber(2); // 2 cycles
 
   const dexCore: DexCore = await DexCore.originate(utils.tezos, dexCoreStorage);
 

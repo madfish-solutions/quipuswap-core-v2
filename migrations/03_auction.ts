@@ -24,7 +24,9 @@ module.exports = async () => {
   auctionStorage.storage.admin = accounts.dev.pkh;
   auctionStorage.storage.dex_core =
     DexCoreBuild["networks"][env.network]["dex_core"];
-  auctionStorage.storage.quipu_token = "KT1VowcKqZFGhdcDZA3UN1vrjBLmxV5bxgfJ"; // Hangzhounet QUIPU
+  auctionStorage.storage.quipu_token.token =
+    "KT19363aZDTjeRyoDkSLZhCk62pS4xfvxo6c"; // Ithaca QUIPU
+  auctionStorage.storage.quipu_token.id = new BigNumber(0); // Ithaca QUIPU
   auctionStorage.storage.auction_duration = new BigNumber(86400); // 24 hours
   auctionStorage.storage.min_bid = new BigNumber(10); // 0.000010 QUIPU tokens
 
