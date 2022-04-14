@@ -7,8 +7,8 @@ export default {
   buildDir: "build",
   migrationsDir: "migrations",
   contractsDir: "contracts/main",
-  ligoVersion: "next",
-  network: "development",
+  ligoVersion: "0.40.0",
+  network: "ithacanet",
   networks: {
     development: {
       rpc: "http://localhost:8732",
