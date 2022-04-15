@@ -171,50 +171,62 @@ export class Auction {
     return operation;
   }
 
-  async launchAuction(params: LaunchAuction): Promise<TransactionOperation> {
+  async launchAuction(
+    params: LaunchAuction,
+    mutezAmount: number = 0
+  ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .launch_auction(params)
-      .send();
+      .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
 
     return operation;
   }
 
-  async placeBid(params: PlaceBid): Promise<TransactionOperation> {
+  async placeBid(
+    params: PlaceBid,
+    mutezAmount: number = 0
+  ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .place_bid(params)
-      .send();
+      .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
 
     return operation;
   }
 
-  async claim(auctionId: BigNumber): Promise<TransactionOperation> {
+  async claim(
+    auctionId: BigNumber,
+    mutezAmount: number = 0
+  ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
       .claim(auctionId.toString())
-      .send();
+      .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
 
     return operation;
   }
 
-  async setAdmin(admin: string): Promise<TransactionOperation> {
+  async setAdmin(
+    admin: string,
+    mutezAmount: number = 0
+  ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
       .set_admin(admin)
-      .send();
+      .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
 
     return operation;
   }
 
-  async confirmAdmin(): Promise<TransactionOperation> {
+  async confirmAdmin(mutezAmount: number = 0): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
       .confirm_admin([])
-      .send();
+      .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
 
@@ -222,21 +234,25 @@ export class Auction {
   }
 
   async setBaker(
-    baker: string | undefined | null
+    baker: string | undefined | null,
+    mutezAmount: number = 0
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
       .set_baker(baker)
-      .send();
+      .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
 
     return operation;
   }
 
-  async setFees(params: Fees): Promise<TransactionOperation> {
+  async setFees(
+    params: Fees,
+    mutezAmount: number = 0
+  ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .set_fees(params)
-      .send();
+      .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
 
@@ -244,21 +260,25 @@ export class Auction {
   }
 
   async setAuctionDuration(
-    auctionDuration: BigNumber
+    auctionDuration: BigNumber,
+    mutezAmount: number = 0
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
       .set_auction_duration(auctionDuration.toString())
-      .send();
+      .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
 
     return operation;
   }
 
-  async setMinBid(minBid: BigNumber): Promise<TransactionOperation> {
+  async setMinBid(
+    minBid: BigNumber,
+    mutezAmount: number = 0
+  ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
       .set_min_bid(minBid.toString())
-      .send();
+      .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
 
@@ -266,41 +286,48 @@ export class Auction {
   }
 
   async updateWhitelist(
-    params: UpdateWhitelist
+    params: UpdateWhitelist,
+    mutezAmount: number = 0
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .update_whitelist(params)
-      .send();
+      .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
 
     return operation;
   }
 
-  async withdrawDevFee(params: WithdrawFee): Promise<TransactionOperation> {
+  async withdrawDevFee(
+    params: WithdrawFee,
+    mutezAmount: number = 0
+  ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .withdraw_dev_fee(params)
-      .send();
+      .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
 
     return operation;
   }
 
-  async withdrawPublicFee(params: WithdrawFee): Promise<TransactionOperation> {
+  async withdrawPublicFee(
+    params: WithdrawFee,
+    mutezAmount: number = 0
+  ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .withdraw_public_fee(params)
-      .send();
+      .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
 
     return operation;
   }
 
-  async burnBidFee(): Promise<TransactionOperation> {
+  async burnBidFee(mutezAmount: number = 0): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
       .burn_bid_fee([])
-      .send();
+      .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
 

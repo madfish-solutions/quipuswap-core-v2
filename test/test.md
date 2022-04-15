@@ -475,6 +475,7 @@
 
 2. `launch_auction`:
 
+   - ✅ should fail if positive TEZ tokens amount were passed;
    - ✅ should fail if token for auction is whitelisted;
    - ✅ should fail if token public fee balance is less than the number of tokens that are put up for auction;
    - ✅ should fail if the first bid is less than min bid;
@@ -484,6 +485,7 @@
 
 3. `place_bid`:
 
+   - ✅ should fail if positive TEZ tokens amount were passed;
    - ✅ should fail if auction not found;
    - ✅ should fail if auction is finished;
    - ✅ should fail if a new bid is less than or equal to current bid;
@@ -495,6 +497,7 @@
 
 4. `claim`:
 
+   - ✅ should fail if positive TEZ tokens amount were passed;
    - ✅ should fail if auction not found;
    - ✅ should fail if auction is not finished;
    - ✅ should burn current bid, transfer claimed tokens to user and change auction status to `finished`;
@@ -503,17 +506,20 @@
 5. `set_admin`:
 
    - ✅ should fail if not admin is trying to setup a new pending admin;
+   - ✅ should fail if positive TEZ tokens amount were passed;
    - ✅ should setup a new pending admin by an admin.
 
 6. `confirm_admin`:
 
    - ✅ should fail if pending admin is `None`;
    - ✅ should fail if not pending admin is trying to confirm a new admin;
+   - ✅ should fail if positive TEZ tokens amount were passed;
    - ✅ should confirm a new admin by pending admin.
 
 7. `set_baker`:
 
    - ✅ should fail if not admin is trying to setup a new baker;
+   - ✅ should fail if positive TEZ tokens amount were passed;
    - ✅ should setup a new baker and delegate for him;
    - ✅ should do nothing if a new baker is the same as the old one;
    - ✅ should remove a delegate if `None` was passed by an admin.
@@ -521,21 +527,25 @@
 8. `set_fees`:
 
    - ✅ should fail if not admin is trying to setup a new fees;
+   - ✅ should fail if positive TEZ tokens amount were passed;
    - ✅ should setup a new fees by an admin.
 
 9. `set_auction_duration`:
 
    - ✅ should fail if not admin is trying to setup a new auction duration;
+   - ✅ should fail if positive TEZ tokens amount were passed;
    - ✅ should setup a new auction duration by an admin.
 
 10. `set_min_bid`:
 
     - ✅ should fail if not admin is trying to setup a new min bid;
+    - ✅ should fail if positive TEZ tokens amount were passed;
     - ✅ should setup a new min bid by an admin.
 
 11. `update_whitelist`:
 
     - ✅ should fail if not admin is trying to update the whitelist for tokens;
+    - ✅ should fail if positive TEZ tokens amount were passed;
     - ✅ should add a new TEZ token to the whitelist by an admin;
     - ✅ should add a new FA1.2 token to the whitelist by an admin;
     - ✅ should add a new FA2 token to the whitelist by an admin;
@@ -546,6 +556,7 @@
 12. `withdraw_dev_fee`:
 
     - ✅ should fail if not admin is trying to withdraw dev fee;
+    - ✅ should fail if positive TEZ tokens amount were passed;
     - ✅ should withdraw TEZ dev fee by admin;
     - ✅ should withdraw FA1.2 dev fee by admin;
     - ✅ should withdraw FA2 dev fee by admin.
@@ -553,6 +564,7 @@
 13. `withdraw_public_fee`:
 
     - ✅ should fail if not admin is trying to withdraw public fee;
+    - ✅ should fail if positive TEZ tokens amount were passed;
     - ✅ should fail if admin is trying to withdraw not whitelisted token;
     - ✅ should withdraw TEZ public fee by admin;
     - ✅ should withdraw FA1.2 public fee by admin;
@@ -561,4 +573,5 @@
 14. `burn_bid_fee`:
 
     - ✅ should fail if not admin is trying to burn bid fee;
+    - ✅ should fail if positive TEZ tokens amount were passed;
     - ✅ should burn bid fee by admin.

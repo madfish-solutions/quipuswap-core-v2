@@ -30,6 +30,8 @@ function launch_auction(
 
     case action of [
     | Launch_auction(params) -> {
+        non_payable(Unit);
+
         assert_with_error(not Set.mem(params.token, s.whitelist), Auction.err_whitelisted_token);
 
         const token_balance_f : nat = unwrap_or(s.public_fee_balances_f[params.token], 0n);
@@ -63,6 +65,8 @@ function place_bid(
 
     case action of [
     | Place_bid(params) -> {
+        non_payable(Unit);
+
         var auction : auction_t := unwrap(s.auctions[params.auction_id], Auction.err_auction_not_found);
 
         assert_with_error(Tezos.now < auction.end_time, Auction.err_auction_finished);
@@ -94,6 +98,8 @@ function claim(
 
     case action of [
     | Claim(auction_id) -> {
+        non_payable(Unit);
+
         var auction : auction_t := unwrap(s.auctions[auction_id], Auction.err_auction_not_found);
 
         assert_with_error(Tezos.now >= auction.end_time, Auction.err_auction_not_finished);
@@ -123,6 +129,7 @@ function set_admin(
     case action of [
     | Set_admin(admin) -> {
         only_admin(s.admin);
+        non_payable(Unit);
 
         s.pending_admin := Some(admin);
       }
@@ -141,6 +148,8 @@ function confirm_admin(
 
         assert_with_error(Tezos.sender = pending_admin, Common.err_not_pending_admin);
 
+        non_payable(Unit);
+
         s.admin := pending_admin;
         s.pending_admin := (None : option(address));
       }
@@ -158,6 +167,7 @@ function set_baker(
     case action of [
     | Set_baker(baker) -> {
         only_admin(s.admin);
+        non_payable(Unit);
 
         if s.baker =/= baker
         then {
@@ -179,6 +189,7 @@ function set_fees(
     case action of [
     | Set_fees(fees) -> {
         only_admin(s.admin);
+        non_payable(Unit);
 
         s.fees := fees;
       }
@@ -194,6 +205,7 @@ function set_auction_duration(
     case action of [
     | Set_auction_duration(auction_duration) -> {
         only_admin(s.admin);
+        non_payable(Unit);
 
         s.auction_duration := auction_duration;
       }
@@ -209,6 +221,7 @@ function set_min_bid(
     case action of [
     | Set_min_bid(min_bid) -> {
         only_admin(s.admin);
+        non_payable(Unit);
 
         s.min_bid := min_bid;
       }
@@ -224,6 +237,7 @@ function update_whitelist(
     case action of [
     | Update_whitelist(params) -> {
         only_admin(s.admin);
+        non_payable(Unit);
 
         s.whitelist := Set.update(params.token, params.add, s.whitelist);
       }
@@ -241,6 +255,7 @@ function withdraw_dev_fee(
     case action of [
     | Withdraw_dev_fee(params) -> {
         only_admin(s.admin);
+        non_payable(Unit);
 
         const dev_fee_balance_f : nat = unwrap_or(s.dev_fee_balances_f[params.token], 0n);
         const dev_fee_balance : nat = dev_fee_balance_f / Constants.precision;
@@ -269,6 +284,7 @@ function withdraw_public_fee(
     case action of [
     | Withdraw_public_fee(params) -> {
         only_admin(s.admin);
+        non_payable(Unit);
         assert_with_error(Set.mem(params.token, s.whitelist), Auction.err_not_whitelisted_token);
 
         const public_fee_balance_f : nat = unwrap_or(s.public_fee_balances_f[params.token], 0n);
@@ -298,6 +314,7 @@ function burn_bid_fee(
     case action of [
     | Burn_bid_fee -> {
         only_admin(s.admin);
+        non_payable(Unit);
 
         if s.bid_fee_balance > 0n
         then {
