@@ -14,6 +14,7 @@ import { BigNumber } from "bignumber.js";
 import accounts from "../../../scripts/sandbox/accounts";
 
 import { bakerRegistryStorage } from "../../../storage/BakerRegistry";
+import { bucketStorage } from "../../../storage/test/Bucket";
 import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa2Storage } from "../../../storage/test/FA2";
 
@@ -34,8 +35,9 @@ chai.use(require("chai-bignumber")(BigNumber));
 describe("Bucket (vote - 1)", async () => {
   var bakerRegistry: BakerRegistry;
   var dexCore: DexCore;
-  var fa2Token1: FA2;
+  var bucket2: Bucket;
   var bucket: Bucket;
+  var fa2Token1: FA2;
   var utils: Utils;
 
   var alice: SBAccount = accounts.alice;
@@ -64,6 +66,11 @@ describe("Bucket (vote - 1)", async () => {
     dexCore = await DexCore.originate(utils.tezos, dexCoreStorage);
 
     await dexCore.setLambdas();
+
+    bucketStorage.baker_registry = bakerRegistry.contract.address;
+    bucketStorage.dex_core = alice.pkh;
+
+    bucket2 = await Bucket.originate(utils.tezos, bucketStorage);
   });
 
   it("should vote for bob, bob must become first current delegated", async () => {
@@ -144,6 +151,22 @@ describe("Bucket (vote - 1)", async () => {
 
     await rejects(bucket.vote(params), (err: Error) => {
       expect(err.message).to.equal(Common.ERR_NOT_DEX_CORE);
+
+      return true;
+    });
+  });
+
+  it("should fail if positive TEZ tokens amount were passed", async () => {
+    const params: Vote = {
+      voter: alice.pkh,
+      candidate: bob.pkh,
+      execute_voting: true,
+      votes: new BigNumber(0),
+      current_balance: new BigNumber(0),
+    };
+
+    await rejects(bucket2.vote(params, 1), (err: Error) => {
+      expect(err.message).to.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
 
       return true;
     });

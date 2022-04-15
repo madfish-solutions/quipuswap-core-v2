@@ -1,5 +1,6 @@
 import { BakerRegistry } from "../../helpers/BakerRegistry";
 import { Utils, zeroAddress } from "../../helpers/Utils";
+import { Common } from "../../helpers/Errors";
 
 import { rejects, ok, strictEqual } from "assert";
 
@@ -45,6 +46,14 @@ describe("BakerRegistry", async () => {
     });
   });
 
+  it("should fail if positive TEZ tokens amount were passed", async () => {
+    await rejects(bakerRegistry.register(alice.pkh, 1), (err: Error) => {
+      ok(err.message === Common.ERR_NON_PAYABLE_ENTRYPOINT);
+
+      return true;
+    });
+  });
+
   it("should do nothing if baker is registered", async () => {
     await bakerRegistry.validate(bob.pkh);
     await bakerRegistry.updateStorage([bob.pkh]);
@@ -66,6 +75,14 @@ describe("BakerRegistry", async () => {
         err.message ===
           "(permanent) proto.011-PtHangz2.contract.manager.unregistered_delegate"
       );
+
+      return true;
+    });
+  });
+
+  it("should fail if positive TEZ tokens amount were passed", async () => {
+    await rejects(bakerRegistry.validate(alice.pkh, 1), (err: Error) => {
+      ok(err.message === Common.ERR_NON_PAYABLE_ENTRYPOINT);
 
       return true;
     });

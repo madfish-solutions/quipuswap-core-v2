@@ -3,6 +3,8 @@ function register(
   var s                 : storage_t)
                         : return_t is
   block {
+    non_payable(Unit);
+
     s[baker] := True;
   } with (list [
     Tezos.set_delegate(Some(baker))
@@ -12,7 +14,9 @@ function validate(
   const baker           : baker_t;
   const s               : storage_t)
                         : return_t is
-  case s[baker] of [
-  | Some(_) -> ((nil : list(operation)), s)
-  | None    -> register(baker, s)
-  ]
+  block {
+    non_payable(Unit);
+  } with case s[baker] of [
+    | Some(_) -> ((nil : list(operation)), s)
+    | None    -> register(baker, s)
+    ]

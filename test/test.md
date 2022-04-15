@@ -6,12 +6,14 @@
 
     - ✅ should do nothing if baker is registered;
     - ✅ should register a new baker if baker is not registered;
-    - ✅ should fail if the baker is not registered and the address to register is not a baker.
+    - ✅ should fail if the baker is not registered and the address to register is not a baker;
+    - ✅ should fail if positive TEZ tokens amount were passed.
 
 2.  `register`:
 
     - ✅ should register a new baker;
-    - ✅ should fail if address to register is not a baker.
+    - ✅ should fail if address to register is not a baker;
+    - ✅ should fail if positive TEZ tokens amount were passed.
 
 ## Bucket
 
@@ -23,6 +25,7 @@
 2. `pour_out`:
 
    - ✅ should fail if not dex core is trying to pour out;
+   - ✅ should fail if positive TEZ tokens amount were passed;
    - ✅ should fail if bucket have not enough TEZ on contract's balance;
    - ✅ should pour out - 1;
    - ✅ should pour out - 2.
@@ -30,6 +33,7 @@
 3. `pour_over`:
 
    - ✅ should fail if not dex core is trying to pour over;
+   - ✅ should fail if positive TEZ tokens amount were passed;
    - ✅ should fail if `fill` entrypoint of a receiver not found;
    - ✅ should fail if bucket have not enough TEZ on contract's balance;
    - ✅ should pour over - 1;
@@ -38,6 +42,7 @@
 4. `withdraw_rewards`:
 
    - ✅ should fail if not dex core is trying to withdraw rewards;
+   - ✅ should fail if positive TEZ tokens amount were passed;
    - ✅ should withdraw user's rewards - 1;
    - ✅ should withdraw user's rewards - 2;
    - ✅ should update user rewards;
@@ -46,6 +51,7 @@
 5. `ban_baker`:
 
    - ✅ should fail if not dex core is trying to ban baker;
+   - ✅ should fail if positive TEZ tokens amount were passed;
    - ✅ should ban baker;
    - ✅ should unban baker.
 
@@ -53,6 +59,7 @@
 
    - ✅ should vote for bob, bob must become first current delegated;
    - ✅ should fail if not dex core is trying to vote;
+   - ✅ should fail if positive TEZ tokens amount were passed;
    - ✅ should vote for alice, alice must become next candidate;
    - ✅ should vote for alice, alice must not become current delegated;
    - ✅ should vote for alice, alice must become current delegated;

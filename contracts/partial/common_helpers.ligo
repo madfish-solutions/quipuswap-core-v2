@@ -3,21 +3,28 @@
                         : unit is
   block {
     assert_with_error(Tezos.sender = admin, Common.err_not_admin);
-  } with unit
+  } with Unit
 
 [@inline] function only_manager(
   const managers        : set(address))
                         : unit is
   block {
     assert_with_error(Set.mem(Tezos.sender, managers), Common.err_not_manager);
-  } with unit
+  } with Unit
 
 [@inline] function only_dex_core(
   const dex_core        : address)
                         : unit is
   block {
     assert_with_error(Tezos.sender = dex_core, Common.err_not_dex_core);
-  } with unit
+  } with Unit
+
+[@inline] function non_payable(
+  const _               : unit)
+                        : unit is
+  block {
+    assert_with_error(Tezos.amount = 0mutez, Common.err_non_payable_entrypoint);
+  } with Unit
 
 [@inline] function unwrap_or<t>(
   const param           : option(t);

@@ -79,4 +79,5 @@ module Common is {
   const err_contract_404                   : string = "409";
   const err_bucket_fill_entrypoint_404     : string = "410";
   const err_pending_admin_is_none          : string = "411";
+  const err_non_payable_entrypoint         : string = "412";
 }

@@ -79,6 +79,7 @@ export enum Common {
   ERR_CONTRACT_404 = "409",
   ERR_BUCKET_FILL_ENTRYPOINT_404 = "410",
   ERR_PENDING_ADMIN_IS_NONE = "411",
+  ERR_NON_PAYABLE_ENTRYPOINT = "412",
 }
 
 export enum FA2 {

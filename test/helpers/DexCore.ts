@@ -238,7 +238,10 @@ export class DexCore {
     return operation;
   }
 
-  async flashSwap(params: FlashSwap): Promise<TransactionOperation> {
+  async flashSwap(
+    params: FlashSwap,
+    mutezAmount: number = 0
+  ): Promise<TransactionOperation> {
     const ligo: string = getLigo(true);
     const stdout: string = execSync(
       `${ligo} compile parameter $PWD/contracts/test/lambdas.ligo 'Use(Flash_swap(record [ lambda = lambda; flash_swap_rule = ${
@@ -255,7 +258,8 @@ export class DexCore {
 
     const operation: TransactionOperation = await this.tezos.contract.transfer({
       to: this.contract.address,
-      amount: 0,
+      amount: mutezAmount,
+      mutez: true,
       parameter: {
         entrypoint: "use",
         value: JSON.parse(stdout).args[0],

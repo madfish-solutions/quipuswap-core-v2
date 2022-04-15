@@ -112,20 +112,26 @@ export class Bucket {
     return operation;
   }
 
-  async pourOut(params: PourOut): Promise<TransactionOperation> {
+  async pourOut(
+    params: PourOut,
+    mutezAmount: number = 0
+  ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .pour_out(params)
-      .send();
+      .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
 
     return operation;
   }
 
-  async pourOver(params: PourOver): Promise<TransactionOperation> {
+  async pourOver(
+    params: PourOver,
+    mutezAmount: number = 0
+  ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .pour_over(params)
-      .send();
+      .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
 
@@ -133,31 +139,38 @@ export class Bucket {
   }
 
   async withdrawRewards(
-    params: WithdrawRewards
+    params: WithdrawRewards,
+    mutezAmount: number = 0
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .withdraw_rewards(params)
-      .send();
+      .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
 
     return operation;
   }
 
-  async banBaker(params: BanBaker): Promise<TransactionOperation> {
+  async banBaker(
+    params: BanBaker,
+    mutezAmount: number = 0
+  ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .ban_baker(params)
-      .send();
+      .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
 
     return operation;
   }
 
-  async vote(params: Vote): Promise<TransactionOperation> {
+  async vote(
+    params: Vote,
+    mutezAmount: number = 0
+  ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .vote(params)
-      .send();
+      .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
 
