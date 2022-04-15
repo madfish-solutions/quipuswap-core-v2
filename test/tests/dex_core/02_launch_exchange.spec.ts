@@ -1,4 +1,4 @@
-import { DexCore as DexCoreErrors } from "../../helpers/Errors";
+import { Common, DexCore as DexCoreErrors } from "../../helpers/Errors";
 import { BakerRegistry } from "../../helpers/BakerRegistry";
 import { Auction } from "../../helpers/Auction";
 import { DexCore } from "../../helpers/DexCore";
@@ -358,6 +358,28 @@ describe("DexCore (launch exchange)", async () => {
 
     await rejects(dexCore.launchExchange(params), (err: Error) => {
       expect(err.message).to.equal(DexCoreErrors.ERR_ZERO_B_IN);
+
+      return true;
+    });
+  });
+
+  it("should fail if token B isn't TEZ and positive TEZ tokens amount were passed", async () => {
+    const params: LaunchExchange = {
+      pair: {
+        token_a: { fa12: fa12Token1.contract.address },
+        token_b: {
+          fa2: { token: fa2Token1.contract.address, id: new BigNumber(0) },
+        },
+      },
+      token_a_in: new BigNumber(1),
+      token_b_in: new BigNumber(1),
+      shares_receiver: alice.pkh,
+      candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
+    };
+
+    await rejects(dexCore.launchExchange(params, 1), (err: Error) => {
+      expect(err.message).to.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
 
       return true;
     });

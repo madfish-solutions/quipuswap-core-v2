@@ -122,6 +122,7 @@
    - ✅ should fail if TEZ token B zero amount in was passed;
    - ✅ should fail if TEZ token B wrong amount in was passed;
    - ✅ should fail if token B zero amount in was passed;
+   - ✅ should fail if token B isn't TEZ and positive TEZ tokens amount were passed;
    - ✅ should launch FA1.2/TEZ exchange;
    - ✅ should fail if pair already listed;
    - ✅ should launch FA2/TEZ exchange;
@@ -148,6 +149,7 @@
    - ✅ should fail if TEZ token mismatch;
    - ✅ should fail if low token A in;
    - ✅ should fail if low token B in;
+   - ✅ should fail if token B isn't TEZ and positive TEZ tokens amount were passed;
    - ✅ should invest FA1.2/TEZ liquidity;
    - ✅ should invest FA2/TEZ liquidity;
    - ✅ should invest FA1.2/FA1.2 liquidity;
@@ -165,6 +167,7 @@
 3. `divest_liquidity`:
 
    - ✅ should fail if reentrancy;
+   - ✅ should fail if positive TEZ tokens amount were passed;
    - ✅ should fail if action is outdated;
    - ✅ should fail if pair not listed;
    - ✅ should fail if pair does not have liquidity;
@@ -189,6 +192,7 @@
 4. `flash_swap`:
 
    - ✅ should fail if reentrancy;
+   - ✅ should fail if positive TEZ tokens amount were passed;
    - ✅ should fail if action is outdated;
    - ✅ should fail if user is trying to refer himself;
    - ✅ should fail if dust out;
@@ -218,6 +222,7 @@
    - ✅ should fail if a user expects too high min out;
    - ✅ should fail if user passed zero amount in;
    - ✅ should fail if user put a wrong route;
+   - ✅ should fail if from token isn't TEZ and positive TEZ tokens amount were passed;
    - ✅ should swap FA1.2 token to TEZ;
    - ✅ should swap FA2 token to TEZ;
    - ✅ should swap TEZ to FA1.2 token;
@@ -236,6 +241,7 @@
 6. `withdraw_profit`:
 
    - ✅ should fail if reentrancy;
+   - ✅ should fail if positive TEZ tokens amount were passed;
    - ✅ should fail if pair not listed;
    - ✅ should fail if pair does not have bucket contract (not TOK/TEZ pair);
    - ✅ should withdraw user's profit - 1;
@@ -244,18 +250,21 @@
 7. `claim_interface_fee`:
 
    - ✅ should fail if reentrancy;
+   - ✅ should fail if positive TEZ tokens amount were passed;
    - ✅ should claim FA1.2 interface fee and transfer it to a receiver;
    - ✅ should claim FA2 interface fee and transfer it to a receiver.
 
 8. `claim_interface_tez_fee`:
 
    - ✅ should fail if reentrancy;
+   - ✅ should fail if positive TEZ tokens amount were passed;
    - ✅ should fail if pair not listed;
    - ✅ should claim TEZ interface fee and transfer it to a receiver.
 
 9. `withdraw_auction_fee`:
 
    - ✅ should fail if reentrancy;
+   - ✅ should fail if positive TEZ tokens amount were passed;
    - ✅ should fail if user did not passed pair ID in time of withdrawing TEZ auction fee;
    - ✅ should fail if pair not listed in time of withdrawing TEZ auction fee;
    - ✅ should withdraw FA1.2 auction fee;
@@ -265,6 +274,7 @@
 10. `vote`:
 
     - ✅ should fail if reentrancy;
+    - ✅ should fail if positive TEZ tokens amount were passed;
     - ✅ should fail if pair not listed;
     - ✅ should fail if voter balance is negative;
     - ✅ should fail if pair does not have bucket contract (not TOK/TEZ pair);
@@ -273,27 +283,32 @@
 11. `set_admin`:
 
     - ✅ should fail if not admin is trying to setup new pending admin;
+    - ✅ should fail if positive TEZ tokens amount were passed;
     - ✅ should setup new pending admin by admin.
 
 12. `confirm_admin`:
 
     - ✅ should fail if pending admin is `None`;
     - ✅ should fail if not pending admin is trying to confirm new admin;
+    - ✅ should fail if positive TEZ tokens amount were passed;
     - ✅ should confirm new admin by pending admin.
 
 13. `set_flash_swaps_proxy`:
 
     - ✅ should fail if not admin is trying to setup new flash swaps proxy;
+    - ✅ should fail if positive TEZ tokens amount were passed;
     - ✅ should setup new flash swaps proxy.
 
 14. `set_auction`:
 
     - ✅ should fail if not admin is trying to setup new auction;
+    - ✅ should fail if positive TEZ tokens amount were passed;
     - ✅ should setup new auction.
 
 15. `add_managers`:
 
     - ✅ should fail if not admin is trying to add new manager;
+    - ✅ should fail if positive TEZ tokens amount were passed;
     - ✅ should add one manager;
     - ✅ should remove one manager;
     - ✅ should add a group of managers;
@@ -303,16 +318,19 @@
 16. `set_fees`:
 
     - ✅ should fail if not admin is trying to set fees;
+    - ✅ should fail if positive TEZ tokens amount were passed;
     - ✅ should update fees.
 
 17. `set_collecting_period`:
 
     - ✅ should fail if not admin is trying to setup new collecting period;
+    - ✅ should fail if positive TEZ tokens amount were passed;
     - ✅ should setup new collecting period.
 
 18. `update_token_metadata`:
 
     - ✅ should fail if not manager is trying to update token metadata;
+    - ✅ should fail if positive TEZ tokens amount were passed;
     - ✅ should fail if pair not listed;
     - ✅ should update existing fields in token metadata;
     - ✅ should set new fields in token metadata;
@@ -321,6 +339,7 @@
 19. `ban`:
 
     - ✅ should fail if not admin is trying to ban baker;
+    - ✅ should fail if positive TEZ tokens amount were passed;
     - ✅ should fail if pair not listed;
     - ✅ should fail if bucket not found (not TEZ/TOK pair);
     - ✅ should ban baker;
@@ -328,6 +347,7 @@
 
 20. `permit`:
 
+    - ✅ should fail if positive TEZ tokens amount were passed;
     - ✅ should generate permit payload and submit it to the contract by alice - 1;
     - ✅ should generate permit payload and submit it to the contract by alice - 2;
     - ✅ should generate permit payload and submit it to the contract by bob;
@@ -341,6 +361,7 @@
 
 21. `ser_expiry`:
 
+    - ✅ should fail if positive TEZ tokens amount were passed;
     - ✅ should fail if not issuer is trying to set expiry - 1;
     - ✅ should fail if not issuer is trying to set expiry - 2;
     - ✅ should fail if not issuer is trying to set expiry - 3;
@@ -355,6 +376,7 @@
 22. `transfer`:
 
     - ✅ should fail if reentrancy;
+    - ✅ should fail if positive TEZ tokens amount were passed;
     - ✅ should fail if token ID from request not found;
     - ✅ should fail if one token ID from list of requests not found;
     - ✅ should fail if not operator is trying to transfer tokens;
@@ -371,6 +393,7 @@
 
 23. `update_operators`:
 
+    - ✅ should fail if positive TEZ tokens amount were passed;
     - ✅ should fail if token ID from request not found;
     - ✅ should fail if one token ID from list of requests not found;
     - ✅ should fail if not owner of tokens is trying to update operator;

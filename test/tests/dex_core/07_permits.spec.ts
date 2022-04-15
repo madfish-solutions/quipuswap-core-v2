@@ -6,6 +6,7 @@ import { FA12 } from "../../helpers/FA12";
 import {
   Permits as PermitsErrors,
   FA2 as FA2Errors,
+  Common,
 } from "../../helpers/Errors";
 import {
   defaulPermitExpiryLimit,
@@ -100,6 +101,37 @@ describe("DexCore (permits)", async () => {
       });
 
     await confirmOperation(utils.tezos, transferOperation.hash);
+  });
+
+  it("should fail if positive TEZ tokens amount were passed", async () => {
+    const transferParams: Transfer[] = [
+      {
+        from_: alice.pkh,
+        txs: [
+          {
+            to_: bob.pkh,
+            token_id: new BigNumber(0),
+            amount: new BigNumber(10),
+          },
+        ],
+      },
+    ];
+    const [signerKey, signature, permitHash]: [string, string, string] =
+      await dexCore.createPermitPayload(
+        await Utils.createTezos(alice.sk),
+        dexCore.contract,
+        "transfer",
+        transferParams
+      );
+
+    await rejects(
+      dexCore.permit(signerKey, signature, permitHash, 1),
+      (err: Error) => {
+        expect(err.message).to.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
+
+        return true;
+      }
+    );
   });
 
   it(`should generate permit payload and submit it to the contract by alice - 1`, async () => {
@@ -354,6 +386,20 @@ describe("DexCore (permits)", async () => {
         return true;
       }
     );
+  });
+
+  it("should fail if positive TEZ tokens amount were passed", async () => {
+    const expiry: SetExpiry = {
+      issuer: carol.pkh,
+      expiry: new BigNumber(1),
+      permit_hash: undefined,
+    };
+
+    await rejects(dexCore.setExpiry(expiry, 1), (err: Error) => {
+      expect(err.message).to.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
+
+      return true;
+    });
   });
 
   it("should fail if not issuer is trying to set expiry - 1", async () => {
