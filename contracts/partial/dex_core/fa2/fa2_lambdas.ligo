@@ -157,6 +157,8 @@ function transfer(
 
     case action of [
     | Transfer(params) -> {
+        non_payable(Unit);
+
         result.1 := transfer_sender_check(params, action, s);
         result := List.fold(iterate_transfer, params, result);
       }
@@ -171,6 +173,8 @@ function update_operators(
   block {
     case action of [
     | Update_operators(params) -> {
+        non_payable(Unit);
+
         s := List.fold(update_operator, params, s);
       }
     | _ -> skip
@@ -186,6 +190,8 @@ function balance_of(
 
     case action of [
     | Balance_of(params) -> {
+        non_payable(Unit);
+
         function look_up_balance(
           const l         : list(balance_response_t);
           const request   : balance_request_t)

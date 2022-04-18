@@ -224,11 +224,14 @@ export class DexCore {
   }
 
   async divestLiquidity(
-    params: DivestLiquidity
+    params: DivestLiquidity,
+    mutezAmount: number = 0
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .divest_liquidity(params)
       .send({
+        amount: mutezAmount,
+        mutez: true,
         fee: 1000000,
         gasLimit: 1040000,
       });
@@ -238,7 +241,10 @@ export class DexCore {
     return operation;
   }
 
-  async flashSwap(params: FlashSwap): Promise<TransactionOperation> {
+  async flashSwap(
+    params: FlashSwap,
+    mutezAmount: number = 0
+  ): Promise<TransactionOperation> {
     const ligo: string = getLigo(true);
     const stdout: string = execSync(
       `${ligo} compile parameter $PWD/contracts/test/lambdas.ligo 'Use(Flash_swap(record [ lambda = lambda; flash_swap_rule = ${
@@ -255,7 +261,8 @@ export class DexCore {
 
     const operation: TransactionOperation = await this.tezos.contract.transfer({
       to: this.contract.address,
-      amount: 0,
+      amount: mutezAmount,
+      mutez: true,
       parameter: {
         entrypoint: "use",
         value: JSON.parse(stdout).args[0],
@@ -283,10 +290,15 @@ export class DexCore {
     return operation;
   }
 
-  async withdrawProfit(params: WithdrawProfit): Promise<TransactionOperation> {
+  async withdrawProfit(
+    params: WithdrawProfit,
+    mutezAmount: number = 0
+  ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .withdraw_profit(params)
       .send({
+        amount: mutezAmount,
+        mutez: true,
         fee: 1000000,
         gasLimit: 1040000,
       });
@@ -296,10 +308,13 @@ export class DexCore {
     return operation;
   }
 
-  async claimInterfaceFee(params: ClaimFee): Promise<TransactionOperation> {
+  async claimInterfaceFee(
+    params: ClaimFee,
+    mutezAmount: number = 0
+  ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .claim_interface_fee(params)
-      .send();
+      .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
 
@@ -307,11 +322,12 @@ export class DexCore {
   }
 
   async claimInterfaceTezFee(
-    params: ClaimTezFee
+    params: ClaimTezFee,
+    mutezAmount: number = 0
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .claim_interface_tez_fee(params)
-      .send();
+      .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
 
@@ -319,41 +335,48 @@ export class DexCore {
   }
 
   async withdrawAuctionFee(
-    params: WithdrawAuctionFee
+    params: WithdrawAuctionFee,
+    mutezAmount: number = 0
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .withdraw_auction_fee(params)
-      .send();
+      .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
 
     return operation;
   }
 
-  async vote(params: DexVote): Promise<TransactionOperation> {
+  async vote(
+    params: DexVote,
+    mutezAmount: number = 0
+  ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .vote(params)
-      .send();
+      .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
 
     return operation;
   }
 
-  async setAdmin(admin: string): Promise<TransactionOperation> {
+  async setAdmin(
+    admin: string,
+    mutezAmount: number = 0
+  ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
       .set_admin(admin)
-      .send();
+      .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
 
     return operation;
   }
 
-  async confirmAdmin(): Promise<TransactionOperation> {
+  async confirmAdmin(mutezAmount: number = 0): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
       .confirm_admin([])
-      .send();
+      .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
 
@@ -361,41 +384,51 @@ export class DexCore {
   }
 
   async setFlashSwapsProxy(
-    flashSwapsProxy: string
+    flashSwapsProxy: string,
+    mutezAmount: number = 0
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
       .set_flash_swaps_proxy(flashSwapsProxy)
-      .send();
+      .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
 
     return operation;
   }
 
-  async setAuction(auction: string): Promise<TransactionOperation> {
+  async setAuction(
+    auction: string,
+    mutezAmount: number = 0
+  ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
       .set_auction(auction)
-      .send();
+      .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
 
     return operation;
   }
 
-  async addManagers(params: AddManager[]): Promise<TransactionOperation> {
+  async addManagers(
+    params: AddManager[],
+    mutezAmount: number = 0
+  ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
       .add_managers(params)
-      .send();
+      .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
 
     return operation;
   }
 
-  async setFees(params: Fees): Promise<TransactionOperation> {
+  async setFees(
+    params: Fees,
+    mutezAmount: number = 0
+  ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .set_fees(params)
-      .send();
+      .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
 
@@ -403,11 +436,12 @@ export class DexCore {
   }
 
   async setCollectingPeriod(
-    collectingPeriod: BigNumber
+    collectingPeriod: BigNumber,
+    mutezAmount: number = 0
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
       .set_collecting_period(collectingPeriod.toString())
-      .send();
+      .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
 
@@ -415,21 +449,25 @@ export class DexCore {
   }
 
   async updateTokenMetadata(
-    params: UpdateTokenMetadata
+    params: UpdateTokenMetadata,
+    mutezAmount: number = 0
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .update_token_metadata(params)
-      .send();
+      .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
 
     return operation;
   }
 
-  async ban(params: Ban): Promise<TransactionOperation> {
+  async ban(
+    params: Ban,
+    mutezAmount: number = 0
+  ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .ban(params)
-      .send();
+      .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
 
@@ -439,31 +477,40 @@ export class DexCore {
   async permit(
     key: string,
     signature: string,
-    permitHash: string
+    permitHash: string,
+    mutezAmount: number = 0
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
       .permit(key, signature, permitHash)
-      .send();
+      .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
 
     return operation;
   }
 
-  async setExpiry(params: SetExpiry): Promise<TransactionOperation> {
+  async setExpiry(
+    params: SetExpiry,
+    mutezAmount: number = 0
+  ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .set_expiry(params)
-      .send();
+      .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
 
     return operation;
   }
 
-  async transfer(params: Transfer[]): Promise<TransactionOperation> {
+  async transfer(
+    params: Transfer[],
+    mutezAmount: number = 0
+  ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
       .transfer(params)
       .send({
+        amount: mutezAmount,
+        mutez: true,
         fee: 1000000,
         gasLimit: 1040000,
       });
@@ -474,11 +521,12 @@ export class DexCore {
   }
 
   async updateOperators(
-    params: UpdateOperator[]
+    params: UpdateOperator[],
+    mutezAmount: number = 0
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
       .update_operators(params)
-      .send();
+      .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
 

@@ -1,4 +1,4 @@
-import { DexCore as DexCoreErrors } from "../../helpers/Errors";
+import { Common, DexCore as DexCoreErrors } from "../../helpers/Errors";
 import { BakerRegistry } from "../../helpers/BakerRegistry";
 import { Auction } from "../../helpers/Auction";
 import { DexCore } from "../../helpers/DexCore";
@@ -298,7 +298,7 @@ describe("DexCore (invest liquidity)", async () => {
         investParams.token_b_in.toNumber() - 1
       ),
       (err: Error) => {
-        expect(err.message).to.equal(DexCoreErrors.ERR_TEZ_AMOUNT_MISMATCH);
+        expect(err.message).to.equal(DexCoreErrors.ERR_WRONG_TEZ_AMOUNT);
 
         return true;
       }
@@ -367,6 +367,35 @@ describe("DexCore (invest liquidity)", async () => {
         return true;
       }
     );
+  });
+
+  it("should fail if token B isn't TEZ and positive TEZ tokens amount were passed", async () => {
+    const pairId: BigNumber = new BigNumber(2);
+
+    await dexCore.updateStorage({
+      pairs: [pairId.toFixed()],
+    });
+
+    const shares: BigNumber = new BigNumber(100);
+    const requiredTokens: RequiredTokens = DexCore.getRequiredTokens(
+      shares,
+      dexCore.storage.storage.pairs[pairId.toFixed()]
+    );
+    const investParams: InvestLiquidity = {
+      pair_id: pairId,
+      token_a_in: requiredTokens.tokens_a_required,
+      token_b_in: requiredTokens.tokens_b_required,
+      shares: shares,
+      shares_receiver: alice.pkh,
+      candidate: alice.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
+    };
+
+    await rejects(dexCore.investLiquidity(investParams, 1), (err: Error) => {
+      expect(err.message).to.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
+
+      return true;
+    });
   });
 
   it("should invest FA1.2/TEZ liquidity", async () => {

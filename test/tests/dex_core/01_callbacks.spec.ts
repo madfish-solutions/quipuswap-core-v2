@@ -18,9 +18,9 @@ import { BakerRegistry } from "../../helpers/BakerRegistry";
 import { SBAccount } from "../../types/Common";
 import { FA12 } from "../../helpers/FA12";
 import {
+  FlashSwapCallback,
   LaunchCallback,
   LaunchExchange,
-  FlashSwapCallback,
 } from "../../types/DexCore";
 
 chai.use(require("chai-bignumber")(BigNumber));

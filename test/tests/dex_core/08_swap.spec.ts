@@ -1,4 +1,4 @@
-import { DexCore as DexCoreErrors } from "../../helpers/Errors";
+import { Common, DexCore as DexCoreErrors } from "../../helpers/Errors";
 import { BakerRegistry } from "../../helpers/BakerRegistry";
 import { PRECISION } from "../../helpers/Constants";
 import { Auction } from "../../helpers/Auction";
@@ -411,6 +411,23 @@ describe("DexCore (swap)", async () => {
 
     await rejects(dexCore.swap(swapParams), (err: Error) => {
       expect(err.message).to.equal(DexCoreErrors.ERR_WRONG_ROUTE);
+
+      return true;
+    });
+  });
+
+  it("should fail if from token isn't TEZ and positive TEZ tokens amount were passed", async () => {
+    const swapParams: Swap = {
+      swaps: [{ direction: { a_to_b: undefined }, pair_id: new BigNumber(0) }],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
+      receiver: alice.pkh,
+      referrer: bob.pkh,
+      amount_in: new BigNumber(5),
+      min_amount_out: new BigNumber(0),
+    };
+
+    await rejects(dexCore.swap(swapParams, 1), (err: Error) => {
+      expect(err.message).to.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
 
       return true;
     });

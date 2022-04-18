@@ -60,8 +60,16 @@ describe("Auction (admin methods)", async () => {
     });
   });
 
-  it("should setup a new pending admin by an admin", async () => {
+  it("should fail if positive TEZ tokens amount were passed", async () => {
     await utils.setProvider(alice.sk);
+    await rejects(auction.setAdmin(bob.pkh, 1), (err: Error) => {
+      expect(err.message).to.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
+
+      return true;
+    });
+  });
+
+  it("should setup a new pending admin by an admin", async () => {
     await auction.setAdmin(bob.pkh);
     await auction.updateStorage();
 
@@ -77,8 +85,16 @@ describe("Auction (admin methods)", async () => {
     });
   });
 
-  it("should confirm a new admin by pending admin", async () => {
+  it("should fail if positive TEZ tokens amount were passed", async () => {
     await utils.setProvider(bob.sk);
+    await rejects(auction.confirmAdmin(1), (err: Error) => {
+      expect(err.message).to.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
+
+      return true;
+    });
+  });
+
+  it("should confirm a new admin by pending admin", async () => {
     await auction.confirmAdmin();
     await auction.updateStorage();
 
@@ -95,12 +111,20 @@ describe("Auction (admin methods)", async () => {
     });
   });
 
+  it("should fail if positive TEZ tokens amount were passed", async () => {
+    await utils.setProvider(bob.sk);
+    await rejects(auction.setBaker(alice.pkh, 1), (err: Error) => {
+      expect(err.message).to.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
+
+      return true;
+    });
+  });
+
   it("should setup a new baker and delegate for him", async () => {
     expect(
       await utils.tezos.rpc.getDelegate(auction.contract.address)
     ).to.equal(null);
 
-    await utils.setProvider(bob.sk);
     await auction.setBaker(alice.pkh);
     await auction.updateStorage();
 
@@ -144,13 +168,26 @@ describe("Auction (admin methods)", async () => {
     });
   });
 
+  it("should fail if positive TEZ tokens amount were passed", async () => {
+    const fees: Fees = {
+      dev_fee_f: new BigNumber(666),
+      bid_fee_f: new BigNumber(666),
+    };
+
+    await utils.setProvider(bob.sk);
+    await rejects(auction.setFees(fees, 1), (err: Error) => {
+      expect(err.message).to.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
+
+      return true;
+    });
+  });
+
   it("should setup a new fees by an admin", async () => {
     const fees: Fees = {
       dev_fee_f: new BigNumber(666),
       bid_fee_f: new BigNumber(13),
     };
 
-    await utils.setProvider(bob.sk);
     await auction.setFees(fees);
     await auction.updateStorage();
 
@@ -173,10 +210,23 @@ describe("Auction (admin methods)", async () => {
     });
   });
 
-  it("should setup a new auction duration by an admin", async () => {
+  it("should fail if positive TEZ tokens amount were passed", async () => {
     const auctionDuration: BigNumber = new BigNumber(666);
 
     await utils.setProvider(bob.sk);
+    await rejects(
+      auction.setAuctionDuration(auctionDuration, 1),
+      (err: Error) => {
+        expect(err.message).to.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
+
+        return true;
+      }
+    );
+  });
+
+  it("should setup a new auction duration by an admin", async () => {
+    const auctionDuration: BigNumber = new BigNumber(666);
+
     await auction.setAuctionDuration(auctionDuration);
     await auction.updateStorage();
 
@@ -196,10 +246,20 @@ describe("Auction (admin methods)", async () => {
     });
   });
 
-  it("should setup a new min bid by an admin", async () => {
+  it("should fail if positive TEZ tokens amount were passed", async () => {
     const minBid: BigNumber = new BigNumber(666);
 
     await utils.setProvider(bob.sk);
+    await rejects(auction.setMinBid(minBid, 1), (err: Error) => {
+      expect(err.message).to.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
+
+      return true;
+    });
+  });
+
+  it("should setup a new min bid by an admin", async () => {
+    const minBid: BigNumber = new BigNumber(666);
+
     await auction.setMinBid(minBid);
     await auction.updateStorage();
 
@@ -222,7 +282,7 @@ describe("Auction (admin methods)", async () => {
     });
   });
 
-  it("should add a new TEZ token to the whitelist by an admin", async () => {
+  it("should fail if positive TEZ tokens amount were passed", async () => {
     const params: UpdateWhitelist = {
       token: {
         tez: undefined,
@@ -231,6 +291,21 @@ describe("Auction (admin methods)", async () => {
     };
 
     await utils.setProvider(bob.sk);
+    await rejects(auction.updateWhitelist(params, 1), (err: Error) => {
+      expect(err.message).to.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
+
+      return true;
+    });
+  });
+
+  it("should add a new TEZ token to the whitelist by an admin", async () => {
+    const params: UpdateWhitelist = {
+      token: {
+        tez: undefined,
+      },
+      add: true,
+    };
+
     await auction.updateWhitelist(params);
     await auction.updateStorage();
 

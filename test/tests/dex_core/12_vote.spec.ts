@@ -1,5 +1,5 @@
+import { Common, DexCore as DexCoreErrors } from "../../helpers/Errors";
 import { defaultCollectingPeriod, Utils } from "../../helpers/Utils";
-import { DexCore as DexCoreErrors } from "../../helpers/Errors";
 import { BakerRegistry } from "../../helpers/BakerRegistry";
 import { Auction } from "../../helpers/Auction";
 import { DexCore } from "../../helpers/DexCore";
@@ -140,6 +140,19 @@ describe("DexCore (vote)", async () => {
 
     await rejects(dexCore2.vote(voteParams), (err: Error) => {
       expect(err.message).to.equal(DexCoreErrors.ERR_REENTRANCY);
+
+      return true;
+    });
+  });
+
+  it("should fail if positive TEZ tokens amount were passed", async () => {
+    const voteParams: DexVote = {
+      pair_id: new BigNumber(0),
+      candidate: alice.pkh,
+    };
+
+    await rejects(dexCore.vote(voteParams, 1), (err: Error) => {
+      expect(err.message).to.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
 
       return true;
     });

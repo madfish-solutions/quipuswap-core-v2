@@ -40,10 +40,9 @@ module DexCore is {
   const err_not_entered                               : string = "138";
   const err_too_few_swaps                             : string = "139";
   const err_can_not_perform_voting                    : string = "140";
-  const err_tez_amount_mismatch                       : string = "141";
-  const err_wrong_reserves_state                      : string = "142";
-  const err_no_pair_id                                : string = "143";
-  const err_action_outdated                           : string = "144";
+  const err_wrong_reserves_state                      : string = "141";
+  const err_no_pair_id                                : string = "142";
+  const err_action_outdated                           : string = "143";
 }
 
 module Bucket is {
@@ -74,11 +73,10 @@ module Common is {
   const err_fa12_transfer_entrypoint_404   : string = "404";
   const err_fa2_transfer_entrypoint_404    : string = "405";
   const err_not_a_nat                      : string = "406";
-  const err_fa12_balance_of_entrypoint_404 : string = "407";
-  const err_fa2_balance_of_entrypoint_404  : string = "408";
-  const err_wrong_token_type               : string = "409";
-  const err_div_by_zero                    : string = "410";
-  const err_contract_404                   : string = "411";
-  const err_bucket_fill_entrypoint_404     : string = "412";
-  const err_pending_admin_is_none          : string = "413";
+  const err_wrong_token_type               : string = "407";
+  const err_div_by_zero                    : string = "408";
+  const err_contract_404                   : string = "409";
+  const err_bucket_fill_entrypoint_404     : string = "410";
+  const err_pending_admin_is_none          : string = "411";
+  const err_non_payable_entrypoint         : string = "412";
 }

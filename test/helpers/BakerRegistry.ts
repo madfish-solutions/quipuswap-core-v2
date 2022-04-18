@@ -89,20 +89,26 @@ export class BakerRegistry {
     }, Promise.resolve({}));
   }
 
-  async validate(baker: string): Promise<TransactionOperation> {
+  async validate(
+    baker: string,
+    mutezAmount: number = 0
+  ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
       .validate(baker)
-      .send();
+      .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
 
     return operation;
   }
 
-  async register(baker: string): Promise<TransactionOperation> {
+  async register(
+    baker: string,
+    mutezAmount: number = 0
+  ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
       .register(baker)
-      .send();
+      .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
 

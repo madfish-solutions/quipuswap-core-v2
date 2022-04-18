@@ -84,13 +84,26 @@ describe("Bucket (fill, pour out, pour over, ban baker)", async () => {
     });
   });
 
+  it("should fail if positive TEZ tokens amount were passed", async () => {
+    const pourOut: PourOut = {
+      receiver: alice.pkh,
+      amt: new BigNumber(100),
+    };
+
+    await utils.setProvider(bob.sk);
+    await rejects(bucket.pourOut(pourOut, 1), (err: Error) => {
+      expect(err.message).to.be.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
+
+      return true;
+    });
+  });
+
   it("should fail if bucket have not enough TEZ on contract's balance", async () => {
     const pourOut: PourOut = {
       receiver: alice.pkh,
       amt: new BigNumber(100_000),
     };
 
-    await utils.setProvider(bob.sk);
     await rejects(bucket.pourOut(pourOut), (err: Error) => {
       expect(err.message).to.equal(
         "(temporary) proto.011-PtHangz2.contract.balance_too_low"
@@ -159,13 +172,26 @@ describe("Bucket (fill, pour out, pour over, ban baker)", async () => {
     });
   });
 
-  it("should fail if `fill` entrypoint of a receiver not found", async () => {
+  it("should fail if positive TEZ tokens amount were passed", async () => {
     const pourOver: PourOver = {
       bucket: alice.pkh,
       amt: new BigNumber(100),
     };
 
     await utils.setProvider(bob.sk);
+    await rejects(bucket.pourOver(pourOver, 1), (err: Error) => {
+      expect(err.message).to.be.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
+
+      return true;
+    });
+  });
+
+  it("should fail if `fill` entrypoint of a receiver not found", async () => {
+    const pourOver: PourOver = {
+      bucket: alice.pkh,
+      amt: new BigNumber(100),
+    };
+
     await rejects(bucket.pourOver(pourOver), (err: Error) => {
       expect(err.message).to.equal(Common.ERR_BUCKET_FILL_ENTRYPOINT_404);
 
@@ -250,13 +276,26 @@ describe("Bucket (fill, pour out, pour over, ban baker)", async () => {
     });
   });
 
-  it("should ban baker", async () => {
+  it("should fail if positive TEZ tokens amount were passed", async () => {
     const banBaker: BanBaker = {
       baker: alice.pkh,
       ban_period: new BigNumber(666),
     };
 
     await utils.setProvider(bob.sk);
+    await rejects(bucket.banBaker(banBaker, 1), (err: Error) => {
+      expect(err.message).to.be.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
+
+      return true;
+    });
+  });
+
+  it("should ban baker", async () => {
+    const banBaker: BanBaker = {
+      baker: alice.pkh,
+      ban_period: new BigNumber(666),
+    };
+
     await bucket.banBaker(banBaker);
     await bucket.updateStorage({ bakers: [alice.pkh] });
 

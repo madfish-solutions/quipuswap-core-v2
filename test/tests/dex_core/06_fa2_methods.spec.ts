@@ -1,6 +1,6 @@
 import { TransactionOperation } from "@taquito/taquito";
 
-import { DexCore as DexCoreErrors } from "../../helpers/Errors";
+import { Common, DexCore as DexCoreErrors } from "../../helpers/Errors";
 import { BakerRegistry } from "../../helpers/BakerRegistry";
 import { FA2 as FA2Errors } from "../../helpers/Errors";
 import { Auction } from "../../helpers/Auction";
@@ -194,6 +194,27 @@ describe("DexCore (FA2 methods)", async () => {
     });
   });
 
+  it("should fail if positive TEZ tokens amount were passed", async () => {
+    const params: Transfer[] = [
+      {
+        from_: zeroAddress,
+        txs: [
+          {
+            to_: zeroAddress,
+            token_id: new BigNumber(0),
+            amount: new BigNumber(0),
+          },
+        ],
+      },
+    ];
+
+    await rejects(dexCore.transfer(params, 1), (err: Error) => {
+      expect(err.message).to.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
+
+      return true;
+    });
+  });
+
   it("should fail if token ID from request not found", async () => {
     const params: BalanceRequest[] = [
       { owner: alice.pkh, token_id: new BigNumber(3) },
@@ -309,6 +330,24 @@ describe("DexCore (FA2 methods)", async () => {
       .read();
 
     expect(result[0].balance).to.be.bignumber.equal(new BigNumber(0));
+  });
+
+  it("should fail if positive TEZ tokens amount were passed", async () => {
+    const params: UpdateOperator[] = [
+      {
+        add_operator: {
+          owner: alice.pkh,
+          operator: dexCore.contract.address,
+          token_id: new BigNumber(3),
+        },
+      },
+    ];
+
+    await rejects(dexCore.updateOperators(params, 1), (err: Error) => {
+      expect(err.message).to.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
+
+      return true;
+    });
   });
 
   it("should fail if token ID from request not found", async () => {

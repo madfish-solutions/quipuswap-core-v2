@@ -9,6 +9,7 @@ function flash_swap_callback(
     | Flash_swap_callback(params) -> {
         only_dex_core(Tezos.self_address);
         only_entered(s.entered);
+        non_payable(Unit);
 
         var pair : pair_t := unwrap(s.pairs[params.pair_id], DexCore.err_pair_not_listed);
         const flash_swap_result : flash_swap_res_t = calculate_flash_swap_result(
@@ -113,6 +114,7 @@ function launch_callback(
     | Launch_callback(params) -> {
         only_dex_core(Tezos.self_address);
         only_entered(s.entered);
+        non_payable(Unit);
 
         ops := get_vote_op(params.vote_params, params.bucket) # ops;
       }
@@ -131,6 +133,7 @@ function close(
     | Close(_) -> {
         only_dex_core(Tezos.self_address);
         only_entered(s.entered);
+        non_payable(Unit);
 
         s.entered := False;
       }

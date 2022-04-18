@@ -11,6 +11,8 @@ import chai, { expect } from "chai";
 
 import { BigNumber } from "bignumber.js";
 
+import { confirmOperation } from "../../../scripts/confirmation";
+
 import accounts from "../../../scripts/sandbox/accounts";
 
 import { auctionStorage } from "../../../storage/Auction";
@@ -71,6 +73,19 @@ describe("Auction (main methods)", async () => {
     await auction.setLambdas();
   });
 
+  it("should fail if positive TEZ tokens amount were passed", async () => {
+    const params: ReceiveFee = {
+      token: { tez: undefined },
+      fee: new BigNumber(0),
+    };
+
+    await rejects(auction.receiveFee(params, 1), (err: Error) => {
+      expect(err.message).to.be.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
+
+      return true;
+    });
+  });
+
   it("should fail if not dex core is trying to send fees", async () => {
     const params: ReceiveFee = {
       token: { tez: undefined },
@@ -92,7 +107,15 @@ describe("Auction (main methods)", async () => {
     };
 
     await utils.setProvider(alice.sk);
-    await auction.receiveFee(params, params.fee.toNumber());
+
+    const operation = await utils.tezos.contract.transfer({
+      to: auction.contract.address,
+      amount: params.fee.toNumber(),
+      mutez: true,
+    });
+
+    await confirmOperation(utils.tezos, operation.hash);
+    await auction.receiveFee(params);
     await auction.updateStorage({
       dev_fee_balances_f: [params.token],
       public_fee_balances_f: [params.token],
@@ -201,6 +224,20 @@ describe("Auction (main methods)", async () => {
     expect(
       auction.storage.storage.public_fee_balances_f[params.token.toString()]
     ).to.be.bignumber.equal(receiveFees.publicFee);
+  });
+
+  it("should fail if positive TEZ tokens amount were passed", async () => {
+    const params: LaunchAuction = {
+      token: { fa12: fa12Whitelisted.contract.address },
+      amt: new BigNumber(0),
+      bid: new BigNumber(0),
+    };
+
+    await rejects(auction.launchAuction(params, 1), (err: Error) => {
+      expect(err.message).to.be.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
+
+      return true;
+    });
   });
 
   it("should fail if token for auction is whitelisted", async () => {
@@ -504,6 +541,19 @@ describe("Auction (main methods)", async () => {
     );
   });
 
+  it("should fail if positive TEZ tokens amount were passed", async () => {
+    const params: PlaceBid = {
+      auction_id: new BigNumber(666),
+      bid: new BigNumber(0),
+    };
+
+    await rejects(auction.placeBid(params, 1), (err: Error) => {
+      expect(err.message).to.be.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
+
+      return true;
+    });
+  });
+
   it("should fail if auction not found", async () => {
     const params: PlaceBid = {
       auction_id: new BigNumber(666),
@@ -714,6 +764,14 @@ describe("Auction (main methods)", async () => {
     );
   });
 
+  it("should fail if positive TEZ tokens amount were passed", async () => {
+    await rejects(auction.claim(new BigNumber(666), 1), (err: Error) => {
+      expect(err.message).to.be.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
+
+      return true;
+    });
+  });
+
   it("should fail if auction not found", async () => {
     await rejects(auction.claim(new BigNumber(666)), (err: Error) => {
       expect(err.message).to.equal(AuctionErrors.ERR_AUCTION_NOT_FOUND);
@@ -743,6 +801,20 @@ describe("Auction (main methods)", async () => {
     });
   });
 
+  it("should fail if positive TEZ tokens amount were passed", async () => {
+    const params: WithdrawFee = {
+      token: { tez: undefined },
+      receiver: alice.pkh,
+    };
+
+    await utils.setProvider(alice.sk);
+    await rejects(auction.withdrawDevFee(params, 1), (err: Error) => {
+      expect(err.message).to.be.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
+
+      return true;
+    });
+  });
+
   it("should withdraw TEZ dev fee by admin", async () => {
     const params: WithdrawFee = {
       token: { tez: undefined },
@@ -759,7 +831,6 @@ describe("Auction (main methods)", async () => {
       params.receiver
     );
 
-    await utils.setProvider(alice.sk);
     await auction.withdrawDevFee(params);
     await auction.updateStorage({
       dev_fee_balances_f: [params.token],
@@ -898,13 +969,26 @@ describe("Auction (main methods)", async () => {
     });
   });
 
+  it("should fail if positive TEZ tokens amount were passed", async () => {
+    const params: WithdrawFee = {
+      token: { tez: undefined },
+      receiver: alice.pkh,
+    };
+
+    await utils.setProvider(alice.sk);
+    await rejects(auction.withdrawPublicFee(params, 1), (err: Error) => {
+      expect(err.message).to.be.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
+
+      return true;
+    });
+  });
+
   it("should fail if admin is trying to withdraw not whitelisted token", async () => {
     const params: WithdrawFee = {
       token: { tez: undefined },
       receiver: bob.pkh,
     };
 
-    await utils.setProvider(alice.sk);
     await rejects(auction.withdrawPublicFee(params), (err: Error) => {
       expect(err.message).to.equal(AuctionErrors.ERR_NOT_WHITELISTED_TOKEN);
 
@@ -1087,6 +1171,15 @@ describe("Auction (main methods)", async () => {
     });
   });
 
+  it("should fail if positive TEZ tokens amount were passed", async () => {
+    await utils.setProvider(alice.sk);
+    await rejects(auction.burnBidFee(1), (err: Error) => {
+      expect(err.message).to.be.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
+
+      return true;
+    });
+  });
+
   it("should burn bid fee by admin", async () => {
     await auction.updateStorage();
     await quipuToken.updateStorage({
@@ -1104,7 +1197,6 @@ describe("Auction (main methods)", async () => {
       new BigNumber(0)
     );
 
-    await utils.setProvider(alice.sk);
     await auction.burnBidFee();
     await auction.updateStorage();
     await quipuToken.updateStorage({
