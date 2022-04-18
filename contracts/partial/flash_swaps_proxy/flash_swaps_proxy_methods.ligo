@@ -4,4 +4,5 @@ function default(
                         : return_t is
   block {
     only_dex_core(s.dex_core);
+    non_payable(Unit);
   } with (lambda(Unit), s)

@@ -112,8 +112,16 @@ describe("DexCore (admin methods)", async () => {
     });
   });
 
-  it("should setup new pending admin by admin", async () => {
+  it("should fail if positive TEZ tokens amount were passed", async () => {
     await utils.setProvider(alice.sk);
+    await rejects(dexCore.setAdmin(bob.pkh, 1), (err: Error) => {
+      expect(err.message).to.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
+
+      return true;
+    });
+  });
+
+  it("should setup new pending admin by admin", async () => {
     await dexCore.setAdmin(bob.pkh);
     await dexCore.updateStorage();
 
@@ -124,6 +132,15 @@ describe("DexCore (admin methods)", async () => {
   it("should fail if not pending admin is trying to confirm new admin", async () => {
     await rejects(dexCore.confirmAdmin(), (err: Error) => {
       expect(err.message).to.equal(Common.ERR_NOT_PENDING_ADMIN);
+
+      return true;
+    });
+  });
+
+  it("should fail if positive TEZ tokens amount were passed", async () => {
+    await utils.setProvider(bob.sk);
+    await rejects(dexCore.confirmAdmin(1), (err: Error) => {
+      expect(err.message).to.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
 
       return true;
     });
@@ -150,10 +167,21 @@ describe("DexCore (admin methods)", async () => {
     );
   });
 
+  it("should fail if positive TEZ tokens amount were passed", async () => {
+    await utils.setProvider(bob.sk);
+    await rejects(
+      dexCore.setFlashSwapsProxy(flashSwapsProxy.contract.address, 1),
+      (err: Error) => {
+        expect(err.message).to.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
+
+        return true;
+      }
+    );
+  });
+
   it("should setup new flash swaps proxy", async () => {
     expect(dexCore.storage.storage.flash_swaps_proxy).to.equal(zeroAddress);
 
-    await utils.setProvider(bob.sk);
     await dexCore.setFlashSwapsProxy(flashSwapsProxy.contract.address);
     await dexCore.updateStorage();
 
@@ -174,10 +202,21 @@ describe("DexCore (admin methods)", async () => {
     );
   });
 
+  it("should fail if positive TEZ tokens amount were passed", async () => {
+    await utils.setProvider(bob.sk);
+    await rejects(
+      dexCore.setAuction(auction.contract.address, 1),
+      (err: Error) => {
+        expect(err.message).to.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
+
+        return true;
+      }
+    );
+  });
+
   it("should setup new auction", async () => {
     expect(dexCore.storage.storage.auction).to.equal(zeroAddress);
 
-    await utils.setProvider(bob.sk);
     await dexCore.setAuction(auction.contract.address);
     await dexCore.updateStorage();
 
@@ -193,10 +232,18 @@ describe("DexCore (admin methods)", async () => {
     });
   });
 
+  it("should fail if positive TEZ tokens amount were passed", async () => {
+    await utils.setProvider(bob.sk);
+    await rejects(dexCore.addManagers([], 1), (err: Error) => {
+      expect(err.message).to.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
+
+      return true;
+    });
+  });
+
   it("should add one manager", async () => {
     const addManagerParams: AddManager[] = [{ manager: bob.pkh, add: true }];
 
-    await utils.setProvider(bob.sk);
     await dexCore.addManagers(addManagerParams);
     await dexCore.updateStorage();
 
@@ -289,7 +336,7 @@ describe("DexCore (admin methods)", async () => {
     });
   });
 
-  it("should update fees", async () => {
+  it("should fail if positive TEZ tokens amount were passed", async () => {
     const fees: Fees = {
       interface_fee: new BigNumber(100),
       swap_fee: new BigNumber(666),
@@ -298,6 +345,21 @@ describe("DexCore (admin methods)", async () => {
     };
 
     await utils.setProvider(bob.sk);
+    await rejects(dexCore.setFees(fees, 1), (err: Error) => {
+      expect(err.message).to.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
+
+      return true;
+    });
+  });
+
+  it("should update fees", async () => {
+    const fees: Fees = {
+      interface_fee: new BigNumber(100),
+      swap_fee: new BigNumber(666),
+      auction_fee: new BigNumber(13),
+      withdraw_fee_reward: new BigNumber(21),
+    };
+
     await dexCore.setFees(fees);
     await dexCore.updateStorage();
 
@@ -329,12 +391,25 @@ describe("DexCore (admin methods)", async () => {
     );
   });
 
+  it("should fail if positive TEZ tokens amount were passed", async () => {
+    const collectingPeriod: BigNumber = new BigNumber(666);
+
+    await utils.setProvider(bob.sk);
+    await rejects(
+      dexCore.setCollectingPeriod(collectingPeriod, 1),
+      (err: Error) => {
+        expect(err.message).to.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
+
+        return true;
+      }
+    );
+  });
+
   it("should setup new collecting period", async () => {
     expect(dexCore.storage.storage.collecting_period).to.be.bignumber.equal(0);
 
     const collectingPeriod: BigNumber = new BigNumber(666);
 
-    await utils.setProvider(bob.sk);
     await dexCore.setCollectingPeriod(collectingPeriod);
     await dexCore.updateStorage();
 
@@ -362,7 +437,7 @@ describe("DexCore (admin methods)", async () => {
     );
   });
 
-  it("should fail if pair not listed", async () => {
+  it("should fail if positive TEZ tokens amount were passed", async () => {
     const updateTokenMetadata: UpdateTokenMetadata = {
       token_id: new BigNumber(666),
       token_info: [
@@ -371,6 +446,24 @@ describe("DexCore (admin methods)", async () => {
     };
 
     await utils.setProvider(bob.sk);
+    await rejects(
+      dexCore.updateTokenMetadata(updateTokenMetadata, 1),
+      (err: Error) => {
+        expect(err.message).to.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
+
+        return true;
+      }
+    );
+  });
+
+  it("should fail if pair not listed", async () => {
+    const updateTokenMetadata: UpdateTokenMetadata = {
+      token_id: new BigNumber(666),
+      token_info: [
+        { key: "NAME", value: Buffer.from("Quipu LP Token").toString("hex") },
+      ],
+    };
+
     await rejects(
       dexCore.updateTokenMetadata(updateTokenMetadata),
       (err: Error) => {
@@ -581,13 +674,26 @@ describe("DexCore (admin methods)", async () => {
     });
   });
 
+  it("should fail if positive TEZ tokens amount were passed", async () => {
+    const ban: Ban = {
+      pair_id: new BigNumber(0),
+      ban_params: { baker: alice.pkh, ban_period: new BigNumber(666) },
+    };
+
+    await utils.setProvider(bob.sk);
+    await rejects(dexCore.ban(ban, 1), (err: Error) => {
+      expect(err.message).to.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
+
+      return true;
+    });
+  });
+
   it("should fail if pair not listed", async () => {
     const ban: Ban = {
       pair_id: new BigNumber(666),
       ban_params: { baker: alice.pkh, ban_period: new BigNumber(666) },
     };
 
-    await utils.setProvider(bob.sk);
     await rejects(dexCore.ban(ban), (err: Error) => {
       expect(err.message).to.equal(DexCoreErrors.ERR_PAIR_NOT_LISTED);
 

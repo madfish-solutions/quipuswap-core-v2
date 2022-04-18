@@ -3,6 +3,8 @@ function call_auction(
   var s                 : full_storage_t)
                         : full_return_t is
   block {
+    non_payable(Unit);
+
     const id : nat = case action of [
     (* AUCTION *)
     | Receive_fee(_)          -> 0n

@@ -1,4 +1,4 @@
-import { DexCore as DexCoreErrors } from "../../helpers/Errors";
+import { Common, DexCore as DexCoreErrors } from "../../helpers/Errors";
 import { FlashSwapsProxy } from "../../helpers/FlashSwapsProxy";
 import { FlashSwapAgent } from "../../helpers/FlashSwapAgent";
 import { BakerRegistry } from "../../helpers/BakerRegistry";
@@ -259,6 +259,23 @@ describe("DexCore (flash swap)", async () => {
 
     await rejects(dexCore2.flashSwap(params), (err: Error) => {
       expect(err.message).to.equal(DexCoreErrors.ERR_REENTRANCY);
+
+      return true;
+    });
+  });
+
+  it("should fail if positive TEZ tokens amount were passed", async () => {
+    const params: FlashSwap = {
+      flash_swap_rule: "Loan_a_return_a",
+      pair_id: new BigNumber(0),
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000),
+      receiver: zeroAddress,
+      referrer: zeroAddress,
+      amount_out: new BigNumber(0),
+    };
+
+    await rejects(dexCore.flashSwap(params, 1), (err: Error) => {
+      expect(err.message).to.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
 
       return true;
     });

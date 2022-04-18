@@ -5,6 +5,8 @@ function permit(
   block {
     case action of [
     | Permit(param) -> {
+      non_payable(Unit);
+
       const key : key = param.0;
       const signature : signature = param.1.0;
       const permit : blake2b_hash_t = param.1.1;
@@ -40,6 +42,8 @@ function set_expiry(
   block {
     case action of [
     | Set_expiry(param) -> {
+      non_payable(Unit);
+
       const owner : address = param.issuer;
       const new_expiry : seconds_t = param.expiry;
       const specific_permit_or_default : option(blake2b_hash_t) = param.permit_hash;

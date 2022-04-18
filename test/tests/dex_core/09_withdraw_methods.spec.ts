@@ -1,4 +1,4 @@
-import { DexCore as DexCoreErrors } from "../../helpers/Errors";
+import { Common, DexCore as DexCoreErrors } from "../../helpers/Errors";
 import { BakerRegistry } from "../../helpers/BakerRegistry";
 import { PRECISION } from "../../helpers/Constants";
 import { Auction } from "../../helpers/Auction";
@@ -147,6 +147,19 @@ describe("DexCore (withdraw methods)", async () => {
 
     await rejects(dexCore2.withdrawProfit(params), (err: Error) => {
       expect(err.message).to.equal(DexCoreErrors.ERR_REENTRANCY);
+
+      return true;
+    });
+  });
+
+  it("should fail if positive TEZ tokens amount were passed", async () => {
+    const params: WithdrawProfit = {
+      receiver: alice.pkh,
+      pair_id: new BigNumber(0),
+    };
+
+    await rejects(dexCore.withdrawProfit(params, 1), (err: Error) => {
+      expect(err.message).to.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
 
       return true;
     });
@@ -323,6 +336,19 @@ describe("DexCore (withdraw methods)", async () => {
     });
   });
 
+  it("should fail if positive TEZ tokens amount were passed", async () => {
+    const claimParams: ClaimFee = {
+      token: { fa12: fa12Token1.contract.address },
+      receiver: alice.pkh,
+    };
+
+    await rejects(dexCore.claimInterfaceFee(claimParams, 1), (err: Error) => {
+      expect(err.message).to.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
+
+      return true;
+    });
+  });
+
   it("should claim FA1.2 interface fee and transfer it to a receiver", async () => {
     const token: Token = { fa12: fa12Token1.contract.address };
     const receiver: string = carol.pkh;
@@ -468,6 +494,22 @@ describe("DexCore (withdraw methods)", async () => {
     });
   });
 
+  it("should fail if positive TEZ tokens amount were passed", async () => {
+    const claimParams: ClaimTezFee = {
+      pair_id: new BigNumber(0),
+      receiver: alice.pkh,
+    };
+
+    await rejects(
+      dexCore.claimInterfaceTezFee(claimParams, 1),
+      (err: Error) => {
+        expect(err.message).to.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
+
+        return true;
+      }
+    );
+  });
+
   it("should fail if pair not listed", async () => {
     const claimParams: ClaimTezFee = {
       pair_id: new BigNumber(666),
@@ -561,6 +603,19 @@ describe("DexCore (withdraw methods)", async () => {
 
     await rejects(dexCore2.withdrawAuctionFee(params), (err: Error) => {
       expect(err.message).to.equal(DexCoreErrors.ERR_REENTRANCY);
+
+      return true;
+    });
+  });
+
+  it("should fail if positive TEZ tokens amount were passed", async () => {
+    const params: WithdrawAuctionFee = {
+      pair_id: undefined,
+      token: { fa12: fa12Token1.contract.address },
+    };
+
+    await rejects(dexCore.withdrawAuctionFee(params, 1), (err: Error) => {
+      expect(err.message).to.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
 
       return true;
     });

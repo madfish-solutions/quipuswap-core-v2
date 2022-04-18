@@ -43,7 +43,7 @@ function launch_exchange(
 
         if params.pair.token_b = Tez
         then assert_with_error(Tezos.amount / 1mutez = params.token_b_in, DexCore.err_wrong_tez_amount)
-        else skip;
+        else non_payable(Unit);
 
         assert_with_error(pair.total_supply = 0n, DexCore.err_pair_listed);
 
@@ -144,10 +144,10 @@ function invest_liquidity(
         const tokens_a_required : nat = ceil_div(params.shares * pair.token_a_pool, pair.total_supply);
         const tokens_b_required : nat = ceil_div(params.shares * pair.token_b_pool, pair.total_supply);
 
-        assert_with_error(
-          tokens.token_b =/= Tez or params.token_b_in = Tezos.amount / 1mutez,
-          DexCore.err_tez_amount_mismatch
-        );
+        if tokens.token_b = Tez
+        then assert_with_error(params.token_b_in = Tezos.amount / 1mutez, DexCore.err_wrong_tez_amount)
+        else non_payable(Unit);
+
         assert_with_error(tokens_a_required <= params.token_a_in, DexCore.err_low_token_a_in);
         assert_with_error(tokens_b_required <= params.token_b_in, DexCore.err_low_token_b_in);
 
@@ -209,6 +209,8 @@ function divest_liquidity(
 
     case action of [
     | Divest_liquidity(params) -> {
+        non_payable(Unit);
+
         assert_with_error(params.deadline >= Tezos.now, DexCore.err_action_outdated);
 
         const pair : pair_t = unwrap(s.pairs[params.pair_id], DexCore.err_pair_not_listed);
@@ -288,6 +290,8 @@ function flash_swap(
 
     case action of [
     | Flash_swap(params) -> {
+        non_payable(Unit);
+
         assert_with_error(params.deadline >= Tezos.now, DexCore.err_action_outdated);
         assert_with_error(params.referrer =/= Tezos.sender, DexCore.err_can_not_refer_yourself);
         assert_with_error(params.amount_out > 0n, DexCore.err_dust_out);
@@ -347,7 +351,9 @@ function swap(
         | B_to_a -> tokens.token_b
         ];
 
-        assert_with_error(token =/= Tez or params.amount_in = Tezos.amount / 1mutez, DexCore.err_wrong_tez_amount);
+        if token = Tez
+        then assert_with_error(params.amount_in = Tezos.amount / 1mutez, DexCore.err_wrong_tez_amount)
+        else non_payable(Unit);
 
         var tmp : tmp_swap_t := List.fold(
           swap_internal,
@@ -393,6 +399,8 @@ function withdraw_profit(
 
     case action of [
     | Withdraw_profit(params) -> {
+        non_payable(Unit);
+
         const pair : pair_t = unwrap(s.pairs[params.pair_id], DexCore.err_pair_not_listed);
         const user_balance : nat = unwrap_or(s.ledger[(Tezos.sender, params.pair_id)], 0n);
 
@@ -421,6 +429,8 @@ function claim_interface_fee(
 
     case action of [
     | Claim_interface_fee(params) -> {
+        non_payable(Unit);
+
         const interface_fee_f : nat = unwrap_or(s.interface_fee[(params.token, Tezos.sender)], 0n);
         const value : nat = interface_fee_f / Constants.precision;
 
@@ -450,6 +460,8 @@ function claim_interface_tez_fee(
 
     case action of [
     | Claim_interface_tez_fee(params) -> {
+        non_payable(Unit);
+
         const pair : pair_t = unwrap(s.pairs[params.pair_id], DexCore.err_pair_not_listed);
         const interface_fee_f : nat = unwrap_or(s.interface_tez_fee[(params.pair_id, Tezos.sender)], 0n);
         const value : nat = interface_fee_f / Constants.precision;
@@ -485,6 +497,8 @@ function withdraw_auction_fee(
 
     case action of [
     | Withdraw_auction_fee(params) -> {
+        non_payable(Unit);
+
         const auction_fee_f : nat = unwrap_or(
           if params.token = Tez
           then s.auction_tez_fee[unwrap(params.pair_id, DexCore.err_no_pair_id)]
@@ -535,6 +549,8 @@ function vote(
 
     case action of [
     | Vote(params) -> {
+        non_payable(Unit);
+
         const pair : pair_t = unwrap(s.pairs[params.pair_id], DexCore.err_pair_not_listed);
         const voter_balance : nat = unwrap_or(s.ledger[(Tezos.sender, params.pair_id)], 0n);
 
@@ -565,6 +581,7 @@ function set_admin(
     case action of [
     | Set_admin(admin) -> {
         only_admin(s.admin);
+        non_payable(Unit);
 
         s.pending_admin := Some(admin);
       }
@@ -583,6 +600,8 @@ function confirm_admin(
 
         assert_with_error(Tezos.sender = pending_admin, Common.err_not_pending_admin);
 
+        non_payable(Unit);
+
         s.admin := pending_admin;
         s.pending_admin := (None : option(address));
       }
@@ -598,6 +617,7 @@ function set_flash_swaps_proxy(
     case action of [
     | Set_flash_swaps_proxy(flash_swaps_proxy) -> {
         only_admin(s.admin);
+        non_payable(Unit);
 
         s.flash_swaps_proxy := flash_swaps_proxy;
       }
@@ -613,6 +633,7 @@ function set_auction(
     case action of [
     | Set_auction(auction) -> {
         only_admin(s.admin);
+        non_payable(Unit);
 
         s.auction := auction;
       }
@@ -628,6 +649,7 @@ function add_managers(
     case action of [
     | Add_managers(params) -> {
         only_admin(s.admin);
+        non_payable(Unit);
 
         function add_manager(
           var s         : storage_t;
@@ -651,6 +673,7 @@ function set_fees(
     case action of [
     | Set_fees(fees) -> {
         only_admin(s.admin);
+        non_payable(Unit);
 
         s.fees := fees;
       }
@@ -666,6 +689,7 @@ function set_collecting_period(
     case action of [
     | Set_collecting_period(collecting_period) -> {
         only_admin(s.admin);
+        non_payable(Unit);
 
         s.collecting_period := collecting_period;
       }
@@ -681,6 +705,7 @@ function update_token_metadata(
     case action of [
     | Update_token_metadata(params) -> {
         only_manager(s.managers);
+        non_payable(Unit);
 
         function upd_token_metadata(
           var metadata  : token_metadata_t;
@@ -710,6 +735,7 @@ function ban(
     case action of [
       Ban(params) -> {
         only_admin(s.admin);
+        non_payable(Unit);
 
         const pair : pair_t = unwrap(s.pairs[params.pair_id], DexCore.err_pair_not_listed);
 

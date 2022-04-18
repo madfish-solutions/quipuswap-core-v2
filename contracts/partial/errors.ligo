@@ -40,10 +40,9 @@ module DexCore is {
   const err_not_entered                               : string = "138";
   const err_too_few_swaps                             : string = "139";
   const err_can_not_perform_voting                    : string = "140";
-  const err_tez_amount_mismatch                       : string = "141";
-  const err_wrong_reserves_state                      : string = "142";
-  const err_no_pair_id                                : string = "143";
-  const err_action_outdated                           : string = "144";
+  const err_wrong_reserves_state                      : string = "141";
+  const err_no_pair_id                                : string = "142";
+  const err_action_outdated                           : string = "143";
 }
 
 module Bucket is {
@@ -79,4 +78,5 @@ module Common is {
   const err_contract_404                   : string = "409";
   const err_bucket_fill_entrypoint_404     : string = "410";
   const err_pending_admin_is_none          : string = "411";
+  const err_non_payable_entrypoint         : string = "412";
 }

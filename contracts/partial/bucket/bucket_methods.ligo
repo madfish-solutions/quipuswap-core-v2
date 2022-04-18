@@ -10,6 +10,7 @@ function pour_out(
                         : return_t is
   block {
     only_dex_core(s.dex_core);
+    non_payable(Unit);
   } with (list [transfer_tez(params.receiver, params.amt)], s)
 
 function pour_over(
@@ -18,6 +19,7 @@ function pour_over(
                         : return_t is
   block {
     only_dex_core(s.dex_core);
+    non_payable(Unit);
   } with (list [get_fill_op(params.amt * 1mutez, params.bucket)], s)
 
 function withdraw_rewards(
@@ -26,6 +28,7 @@ function withdraw_rewards(
                         : return_t is
   block {
     only_dex_core(s.dex_core);
+    non_payable(Unit);
 
     s := update_rewards(s);
     s := update_user_reward(params.user, params.current_balance, params.new_balance, s);
@@ -57,6 +60,7 @@ function ban_baker(
                         : return_t is
   block {
     only_dex_core(s.dex_core);
+    non_payable(Unit);
 
     var baker : baker_t := unwrap_or(s.bakers[params.baker], Constants.default_baker);
 
@@ -72,6 +76,7 @@ function vote(
                         : return_t is
   block {
     only_dex_core(s.dex_core);
+    non_payable(Unit);
 
     s := update_rewards(s);
     s := update_user_reward(params.voter, params.current_balance, params.votes, s);

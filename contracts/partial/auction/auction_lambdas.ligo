@@ -123,7 +123,6 @@ function set_admin(
     case action of [
     | Set_admin(admin) -> {
         only_admin(s.admin);
-
         s.pending_admin := Some(admin);
       }
     | _ -> skip

@@ -13,6 +13,7 @@ import { BigNumber } from "bignumber.js";
 import accounts from "../../../scripts/sandbox/accounts";
 
 import { bakerRegistryStorage } from "../../../storage/BakerRegistry";
+import { bucketStorage } from "../../../storage/test/Bucket";
 import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa2Storage } from "../../../storage/test/FA2";
 
@@ -37,8 +38,9 @@ chai.use(require("chai-bignumber")(BigNumber));
 describe.skip("Bucket (withdraw rewards)", async () => {
   var bakerRegistry: BakerRegistry;
   var dexCore: DexCore;
-  var fa2Token1: FA2;
+  var bucket2: Bucket;
   var bucket: Bucket;
+  var fa2Token1: FA2;
   var utils: Utils;
 
   var alice: SBAccount = accounts.alice;
@@ -102,6 +104,11 @@ describe.skip("Bucket (withdraw rewards)", async () => {
       dexCore.storage.storage.pairs[pairId.toFixed()].bucket,
       dexCore.tezos
     );
+
+    bucketStorage.baker_registry = bakerRegistry.contract.address;
+    bucketStorage.dex_core = alice.pkh;
+
+    bucket2 = await Bucket.originate(utils.tezos, bucketStorage);
   });
 
   it("should fail if not dex core is trying to withdraw rewards", async () => {
@@ -114,6 +121,21 @@ describe.skip("Bucket (withdraw rewards)", async () => {
 
     await rejects(bucket.withdrawRewards(params), (err: Error) => {
       expect(err.message).to.equal(Common.ERR_NOT_DEX_CORE);
+
+      return true;
+    });
+  });
+
+  it("should fail if positive TEZ tokens amount were passed", async () => {
+    const params: WithdrawRewards = {
+      receiver: alice.pkh,
+      user: alice.pkh,
+      current_balance: new BigNumber(0),
+      new_balance: new BigNumber(0),
+    };
+
+    await rejects(bucket2.withdrawRewards(params, 1), (err: Error) => {
+      expect(err.message).to.be.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
 
       return true;
     });
