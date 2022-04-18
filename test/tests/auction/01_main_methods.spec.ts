@@ -11,6 +11,8 @@ import chai, { expect } from "chai";
 
 import { BigNumber } from "bignumber.js";
 
+import { confirmOperation } from "../../../scripts/confirmation";
+
 import accounts from "../../../scripts/sandbox/accounts";
 
 import { auctionStorage } from "../../../storage/Auction";
@@ -71,6 +73,19 @@ describe("Auction (main methods)", async () => {
     await auction.setLambdas();
   });
 
+  it("should fail if positive TEZ tokens amount were passed", async () => {
+    const params: ReceiveFee = {
+      token: { tez: undefined },
+      fee: new BigNumber(0),
+    };
+
+    await rejects(auction.receiveFee(params, 1), (err: Error) => {
+      expect(err.message).to.be.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
+
+      return true;
+    });
+  });
+
   it("should fail if not dex core is trying to send fees", async () => {
     const params: ReceiveFee = {
       token: { tez: undefined },
@@ -92,7 +107,15 @@ describe("Auction (main methods)", async () => {
     };
 
     await utils.setProvider(alice.sk);
-    await auction.receiveFee(params, params.fee.toNumber());
+
+    const operation = await utils.tezos.contract.transfer({
+      to: auction.contract.address,
+      amount: params.fee.toNumber(),
+      mutez: true,
+    });
+
+    await confirmOperation(utils.tezos, operation.hash);
+    await auction.receiveFee(params);
     await auction.updateStorage({
       dev_fee_balances_f: [params.token],
       public_fee_balances_f: [params.token],

@@ -491,6 +491,7 @@
 
 1. `receive_fee`:
 
+   - ✅ should fail if positive TEZ tokens amount were passed;
    - ✅ should fail if not dex core is trying to send fees;
    - ✅ should receive TEZ tokens as fee and correctly update dev and public fee balances;
    - ✅ should receive FA1.2 tokens as fee and correctly update dev and public fee balances;
