@@ -191,7 +191,7 @@ describe("DexCore (withdraw methods)", async () => {
     });
   });
 
-  it.skip("should withdraw user's profit - 1", async () => {
+  it("should withdraw user's profit - 1", async () => {
     const pairId: BigNumber = new BigNumber(1);
     const amount: BigNumber = new BigNumber(100);
     const receiver: string = bob.pkh;
@@ -207,7 +207,7 @@ describe("DexCore (withdraw methods)", async () => {
     );
 
     await bucket.default(amount.toNumber());
-    await utils.bakeBlocks(4);
+    await utils.bakeBlocks(5);
     await dexCore.updateStorage({
       pairs: [pairId],
       ledger: [[user, pairId]],
@@ -216,6 +216,7 @@ describe("DexCore (withdraw methods)", async () => {
       users_rewards: [user],
     });
 
+    const prevBucketStorage: BucketStorage = bucket.storage;
     const withdrawProfitParams: WithdrawProfit = {
       receiver: receiver,
       pair_id: pairId,
@@ -227,6 +228,7 @@ describe("DexCore (withdraw methods)", async () => {
       bucket.storage,
       dexCore.storage,
       dexCore.storage.storage.pairs[pairId.toFixed()].total_supply,
+      prevBucketStorage.next_reward,
       utils
     );
     const expectedUserRewardsInfo: UpdateUserRewards =
@@ -256,7 +258,7 @@ describe("DexCore (withdraw methods)", async () => {
     ).to.be.bignumber.equal(expectedUserRewardsInfo.rewardPaid_f);
   });
 
-  it.skip("should withdraw user's profit - 2", async () => {
+  it("should withdraw user's profit - 2", async () => {
     const pairId: BigNumber = new BigNumber(1);
     const receiver: string = bob.pkh;
     const user: string = alice.pkh;
@@ -280,6 +282,7 @@ describe("DexCore (withdraw methods)", async () => {
       users_rewards: [user],
     });
 
+    const prevBucketStorage: BucketStorage = bucket.storage;
     const withdrawProfitParams: WithdrawProfit = {
       receiver: receiver,
       pair_id: pairId,
@@ -287,11 +290,11 @@ describe("DexCore (withdraw methods)", async () => {
 
     await dexCore.withdrawProfit(withdrawProfitParams);
 
-    const prevBucketStorage: BucketStorage = bucket.storage;
     const expectedRewardsInfo: UpdateRewards = await Bucket.updateRewards(
       prevBucketStorage,
       dexCore.storage,
       dexCore.storage.storage.pairs[pairId.toFixed()].total_supply,
+      prevBucketStorage.next_reward,
       utils
     );
     const expectedUserRewardsInfo: UpdateUserRewards =

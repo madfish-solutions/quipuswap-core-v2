@@ -196,6 +196,7 @@ export class Bucket {
     bucketStorage: BucketStorage,
     dexCoreStorage: DexCoreStorage,
     totalSupply: BigNumber,
+    nextReward: BigNumber,
     utils: Utils
   ): Promise<UpdateRewards> {
     const level: BigNumber = await utils.getLastBlock();
@@ -221,7 +222,7 @@ export class Bucket {
           .integerValue(BigNumber.ROUND_DOWN)
           .plus(1)
           .multipliedBy(collectingPeriod);
-        const rewardPerBlock: BigNumber = bucketStorage.next_reward
+        const rewardPerBlock: BigNumber = nextReward
           .multipliedBy(PRECISION)
           .dividedBy(periodDuration)
           .integerValue(BigNumber.ROUND_DOWN);
