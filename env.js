@@ -7,7 +7,7 @@ export default {
   buildDir: "build",
   migrationsDir: "migrations",
   contractsDir: "contracts/main",
-  ligoVersion: "next",
+  ligoVersion: "0.40.0",
   network: "development",
   networks: {
     development: {
@@ -15,17 +15,11 @@ export default {
       network_id: "*",
       secretKey: accounts.alice.sk,
     },
-    hangzhounet: {
-      rpc: "https://hangzhounet.api.tez.ie/",
-      port: 443,
-      network_id: "*",
-      secretKey: accounts.dev.sk,
-    },
     ithacanet: {
       rpc: "https://rpc.ithacanet.teztnets.xyz",
       port: 443,
       network_id: "*",
-      secretKey: accounts.ithacanet_dev.sk,
+      secretKey: accounts.dev.sk,
     },
     mainnet: {
       rpc: "https://mainnet.api.tez.ie",

@@ -38,5 +38,24 @@ export const dexCoreStorage: DexCoreStorage = {
     collecting_period: new BigNumber(0),
   },
   dex_core_lambdas: MichelsonMap.fromLiteral({}),
-  metadata: MichelsonMap.fromLiteral({}),
+  metadata: MichelsonMap.fromLiteral({
+    "": Buffer.from("tezos-storage:core", "ascii").toString("hex"),
+    core: Buffer.from(
+      JSON.stringify({
+        name: "QuipuSwap Exchange 2.0",
+        version: "v1.0.0",
+        description:
+          "Decentralized exchange for the Tezos based-assets featured with flash loans and price oracle.",
+        authors: ["Madfish.Solutions <https://www.madfish.solutions>"],
+        source: {
+          tools: ["Ligo", "Flextesa"],
+        },
+        homepage: "https://quipuswap.com",
+        interfaces: ["TZIP-16"],
+        errors: [],
+        views: [],
+      }),
+      "ascii"
+    ).toString("hex"),
+  }),
 };

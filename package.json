@@ -12,8 +12,6 @@
     "compile-lambdas": "yarn compile-auction-lambdas && yarn compile-dex-core-lambdas",
     "compile": "yarn pre-compile && ts-node scripts/cli.ts compile -f json",
     "full-compile": "yarn clean && yarn compile && yarn compile-lambdas",
-    "migrate": "yarn compile && ts-node scripts/cli.ts migrate",
-    "migrate-hangzhounet": "yarn compile && ts-node scripts/cli.ts migrate -n hangzhounet",
     "migrate-ithacanet": "yarn compile && ts-node scripts/cli.ts migrate -n ithacanet",
     "migrate-mainnet": "yarn compile && ts-node scripts/cli.ts migrate -n mainnet",
     "test-compile": "ts-node scripts/cli.ts compile -f json -p contracts/test -o test/contracts -c flash_swap_agent",
