@@ -63,6 +63,7 @@ export enum Auction {
   ERR_LOW_BID = "308",
   ERR_AUCTION_FINISHED = "309",
   ERR_AUCTION_NOT_FINISHED = "310",
+  ERR_SENDER_IS_NOT_AN_ACCOUNT_ADDRESS = "311",
 }
 
 export enum Common {

@@ -63,6 +63,8 @@ function place_bid(
 
     case action of [
     | Place_bid(params) -> {
+        assert_with_error(Tezos.source = Tezos.sender, Auction.err_sender_is_not_an_account_address);
+
         var auction : auction_t := unwrap(s.auctions[params.auction_id], Auction.err_auction_not_found);
 
         assert_with_error(Tezos.now < auction.end_time, Auction.err_auction_finished);

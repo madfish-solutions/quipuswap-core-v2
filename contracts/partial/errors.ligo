@@ -52,17 +52,18 @@ module Bucket is {
 }
 
 module Auction is {
-  const err_unknown_func          : string = "300";
-  const err_cant_unpack_lambda    : string = "301";
-  const err_high_func_index       : string = "302";
-  const err_func_set              : string = "303";
-  const err_auction_not_found     : string = "304";
-  const err_whitelisted_token     : string = "305";
-  const err_not_whitelisted_token : string = "306";
-  const err_insufficient_balance  : string = "307";
-  const err_low_bid               : string = "308";
-  const err_auction_finished      : string = "309";
-  const err_auction_not_finished  : string = "310";
+  const err_unknown_func                     : string = "300";
+  const err_cant_unpack_lambda               : string = "301";
+  const err_high_func_index                  : string = "302";
+  const err_func_set                         : string = "303";
+  const err_auction_not_found                : string = "304";
+  const err_whitelisted_token                : string = "305";
+  const err_not_whitelisted_token            : string = "306";
+  const err_insufficient_balance             : string = "307";
+  const err_low_bid                          : string = "308";
+  const err_auction_finished                 : string = "309";
+  const err_auction_not_finished             : string = "310";
+  const err_sender_is_not_an_account_address : string = "311";
 }
 
 module Common is {
