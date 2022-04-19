@@ -3,6 +3,7 @@ import fs from "fs";
 import { execSync } from "child_process";
 
 import { OriginationOperation, TezosToolkit } from "@taquito/taquito";
+import { InMemorySigner } from "@taquito/signer";
 
 import { confirmOperation } from "./confirmation";
 
@@ -152,7 +153,8 @@ export const compileLambdas = async (
 export const migrate = async (
   tezos: TezosToolkit,
   contract: string,
-  storage: any
+  storage: any,
+  network: string
 ) => {
   try {
     const artifacts: any = JSON.parse(
@@ -162,6 +164,9 @@ export const migrate = async (
       .originate({
         code: artifacts.michelson,
         storage: storage,
+        fee: 1000000,
+        gasLimit: 1040000,
+        storageLimit: 20000,
       })
       .catch((e) => {
         console.error(e);
@@ -171,7 +176,7 @@ export const migrate = async (
 
     await confirmOperation(tezos, operation.hash);
 
-    artifacts.networks[env.network] = { [contract]: operation.contractAddress };
+    artifacts.networks[network] = { [contract]: operation.contractAddress };
 
     if (!fs.existsSync(env.buildDir)) {
       fs.mkdirSync(env.buildDir);
@@ -188,13 +193,13 @@ export const migrate = async (
   }
 };
 
-export const getDeployedAddress = (contract: string) => {
+export const getDeployedAddress = (contract: string, network: string) => {
   try {
     const artifacts: any = JSON.parse(
       fs.readFileSync(`${env.buildDir}/${contract}.json`).toString()
     );
 
-    return artifacts.networks[env.network][contract];
+    return artifacts.networks[network][contract];
   } catch (e) {
     console.error(e);
   }
@@ -210,10 +215,17 @@ export const runMigrations = async (
     const networkConfig: any = env.networks[network];
     const tezos: TezosToolkit = new TezosToolkit(networkConfig.rpc);
 
+    tezos.setProvider({
+      config: {
+        confirmationPollingTimeoutSecond: env.confirmationPollingTimeoutSecond,
+      },
+      signer: await InMemorySigner.fromSecretKey(networkConfig.secretKey),
+    });
+
     for (let i: number = from; i < to; ++i) {
       const execMigration: any = require(`../${env.migrationsDir}/${migrations[i]}.ts`);
 
-      await execMigration(tezos);
+      await execMigration(tezos, network);
     }
   } catch (e) {
     console.error(e);
