@@ -345,6 +345,7 @@ class LocalChain():
 
         self.balance = 0
         self.now = 0
+        self.level = 0
         self.payouts = {}
         self.contract_balances = {}
         self.last_res = None
@@ -359,7 +360,8 @@ class LocalChain():
             now=self.now,
             sender=sender,
             source=source,
-            view_results=view_results
+            view_results=view_results,
+            level=self.level
         )
         self.balance = new_balance
         self.storage = res.storage
@@ -402,7 +404,8 @@ class LocalChain():
             now=self.now,
             sender=sender,
             source=source,
-            view_results=view_results
+            view_results=view_results,
+            level=self.level
         )
         return res
 
@@ -417,3 +420,4 @@ class LocalChain():
 
     def advance_blocks(self, count=1):
         self.now += count * BLOCK_TIME
+        self.level += count
