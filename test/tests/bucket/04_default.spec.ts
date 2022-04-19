@@ -166,7 +166,9 @@ describe("Bucket (default)", async () => {
     expect(bucket.storage.reward_per_block).to.be.bignumber.equal(
       expectedRewardsInfo.rewardPerBlock
     );
-    expect(bucket.storage.next_reward).to.be.bignumber.equal(new BigNumber(0));
+    expect(bucket.storage.next_reward).to.be.bignumber.equal(
+      prevBucketStorage.next_reward.plus(amount)
+    );
     expect(bucket.storage.last_update_level).to.be.bignumber.equal(
       expectedRewardsInfo.lastUpdateLevel
     );
