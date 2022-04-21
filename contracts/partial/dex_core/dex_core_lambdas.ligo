@@ -295,6 +295,7 @@ function swap(
 
         const first_swap : swap_slice_t = unwrap(List.head_opt(params.swaps), DexCore.err_empty_route);
         const tokens : tokens_t = unwrap(s.tokens[first_swap.pair_id], DexCore.err_pair_not_listed);
+        const pair : pair_t = unwrap(s.pairs[first_swap.pair_id], DexCore.err_pair_not_listed);
         const token : token_t = case first_swap.direction of [
         | A_to_b -> tokens.token_a
         | B_to_a -> tokens.token_b
@@ -336,10 +337,16 @@ function swap(
 
               ops := call_flash_swap_callback(flash_swap_callback_params) # ops;
             }
-          | None    -> assert_with_error(params.amount_in = Tezos.amount / 1mutez, DexCore.err_wrong_tez_amount)
+          | None    -> {
+              assert_with_error(params.amount_in = Tezos.amount / 1mutez, DexCore.err_wrong_tez_amount);
+
+              ops := get_fill_op(params.amount_in * 1mutez, unwrap(pair.bucket, DexCore.err_bucket_404)) # ops;
+            }
           ];
         }
         else {
+          non_payable(Unit);
+
           ops := transfer_token(Tezos.sender, Tezos.self_address, params.amount_in, token) # ops;
           ops := concat_lists(forward_ops, ops);
         };

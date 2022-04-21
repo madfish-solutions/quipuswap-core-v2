@@ -186,12 +186,14 @@ describe("DexCore (oracle part)", async () => {
     });
 
     const swapParams: Swap = {
+      lambda: undefined,
       swaps: [{ direction: { a_to_b: undefined }, pair_id: pairId }],
       deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(1000),
       min_amount_out: new BigNumber(0),
+      flash: false,
     };
     const prevPair: Pair = dexCore.storage.storage.pairs[pairId.toFixed()];
 
@@ -268,12 +270,14 @@ describe("DexCore (oracle part)", async () => {
     });
 
     const swapParams: Swap = {
+      lambda: undefined,
       swaps: [{ direction: { b_to_a: undefined }, pair_id: pairId }],
       deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(555),
       min_amount_out: new BigNumber(0),
+      flash: false,
     };
     const prevPair: Pair = dexCore.storage.storage.pairs[pairId.toFixed()];
 

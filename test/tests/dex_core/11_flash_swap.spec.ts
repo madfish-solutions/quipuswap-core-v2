@@ -30,12 +30,8 @@ import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa12Storage } from "../../../storage/test/FA12";
 import { fa2Storage } from "../../../storage/test/FA2";
 
+import { Swap, LaunchExchange } from "../../types/DexCore";
 import { SBAccount } from "../../types/Common";
-import {
-  CalculateFlashSwap,
-  LaunchExchange,
-  FlashSwap,
-} from "../../types/DexCore";
 
 import fs from "fs";
 
@@ -51,7 +47,7 @@ function updateParameters(
   );
 }
 
-describe("DexCore (flash swap)", async () => {
+describe.skip("DexCore (flash swap)", async () => {
   var flashSwapsProxy: FlashSwapsProxy;
   var flashSwapAgent: FlashSwapAgent;
   var bakerRegistry: BakerRegistry;

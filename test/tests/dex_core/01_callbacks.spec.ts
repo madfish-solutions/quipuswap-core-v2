@@ -1,6 +1,6 @@
-import { Utils, zeroAddress } from "../../helpers/Utils";
 import { DexCore } from "../../helpers/DexCore";
 import { Common } from "../../helpers/Errors";
+import { Utils } from "../../helpers/Utils";
 
 import { rejects } from "assert";
 
@@ -55,15 +55,9 @@ describe("DexCore (callbacks)", async () => {
 
   it("should fail if not dex core is trying to call it", async () => {
     const params: FlashSwapCallback = {
-      flash_swap_rule: { loan_a_return_a: undefined },
       pair_id: new BigNumber(0),
-      return_token: { fa12: zeroAddress },
-      referrer: zeroAddress,
-      sender: zeroAddress,
-      swap_token_pool: new BigNumber(0),
-      return_token_pool: new BigNumber(0),
-      amount_out: new BigNumber(0),
       prev_tez_balance: new BigNumber(0),
+      amount_in: new BigNumber(0),
     };
 
     await rejects(dexCore.flashSwapCallback(params), (err: Error) => {
