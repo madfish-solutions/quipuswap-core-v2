@@ -324,14 +324,20 @@ function swap(
 
         if token = Tez
         then {
-          const flash_swap_callback_params : flash_swap_1_t = record [
-            pair_id          = first_swap.pair_id;
-            prev_tez_balance = Tezos.balance / 1mutez;
-            amount_in        = params.amount_in;
-          ];
-
           ops := concat_lists(forward_ops, ops);
-          ops := call_flash_swap_callback(flash_swap_callback_params) # ops;
+
+          case params.lambda of [
+          | Some(_) -> {
+              const flash_swap_callback_params : flash_swap_1_t = record [
+                pair_id          = first_swap.pair_id;
+                prev_tez_balance = Tezos.balance / 1mutez;
+                amount_in        = params.amount_in;
+              ];
+
+              ops := call_flash_swap_callback(flash_swap_callback_params) # ops;
+            }
+          | None    -> assert_with_error(params.amount_in = Tezos.amount / 1mutez, DexCore.err_wrong_tez_amount)
+          ];
         }
         else {
           ops := transfer_token(Tezos.sender, Tezos.self_address, params.amount_in, token) # ops;
