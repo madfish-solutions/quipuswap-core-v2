@@ -1,4 +1,5 @@
 
+from asyncio import trsock
 from unittest import TestCase
 import json
 from pprint import pprint
@@ -92,6 +93,58 @@ class AuctionTest(TestCase):
             chain.execute(self.ct.launch_auction(token_a_fa2, 10, 34))
         self.assertEqual(error.exception.args[-1], Errors.MIN_BID)
     
+    def test_dev_fee(self):
+        storage = self.init_storage.copy()
+        storage["storage"]["fees"] = {
+            "bid_fee_f" : 0,
+            "dev_fee_f" : int(0.03 * 1e18)
+        }
+        chain = LocalChain(storage=storage)
+
+        res = chain.execute(self.ct.receive_fee(token_a_fa2, 10), sender=dex_core)
+
+        res = chain.execute(self.ct.withdraw_dev_fee(token_a_fa2, alice), sender=admin)
+        transfers = parse_transfers(res)
+        self.assertEqual(len(transfers), 0)
+        # self.assertEqual(transfers[0]["amount"], 0)
+
+        res = chain.execute(self.ct.receive_fee(token_a_fa2, 3_000), sender=dex_core)
+        res = chain.execute(self.ct.receive_fee(token_a_fa2, 7_000), sender=dex_core)
+        res = chain.execute(self.ct.withdraw_dev_fee(token_a_fa2, alice), sender=admin)
+        transfers = parse_transfers(res)
+        self.assertEqual(len(transfers), 1)
+        self.assertEqual(transfers[0]["amount"], 300)
+        self.assertEqual(transfers[0]["destination"], alice)
+        self.assertEqual(transfers[0]["source"], contract_self_address)
+        self.assertEqual(transfers[0]["token_address"], token_a_address)
+        self.assertEqual(transfers[0]["token_id"], 0)
+
+        res = chain.execute(self.ct.withdraw_dev_fee(token_a_fa2, alice), sender=admin)
+        transfers = parse_transfers(res)
+        self.assertEqual(parse_transfers(res), 0)
+
+
+    def test_bid_fee_zero(self):
+        storage = self.init_storage.copy()
+        storage["storage"]["fees"] = {
+            "bid_fee_f" : int(0.03 * 1e18),
+            "dev_fee_f" : 0
+        }
+        storage["storage"]["min_bid"] = 0
+        chain = LocalChain(storage=storage)
+
+        res = chain.execute(self.ct.receive_fee(token_a_fa2, 999), sender=dex_core)
+
+        res = chain.execute(self.ct.launch_auction(token_a_fa2, 199, 0), sender=alice)
+
+        res = chain.execute(self.ct.place_bid(0, 100), sender=bob)
+        transfers = parse_transfers(res)
+        self.assertEqual(transfers[0]["amount"], 0)
+
+        res = chain.interpret(self.ct.burn_bid_fee(), sender=admin)
+        transfers = parse_transfers(res)
+        self.assertEqual(len(transfers), 0)
+
     # TODO
     def test_bid_fee(self):
         storage = self.init_storage.copy()
@@ -125,8 +178,7 @@ class AuctionTest(TestCase):
         # no fee to burn due to small amounts
         res = chain.interpret(self.ct.burn_bid_fee(), sender=admin)
         transfers = parse_transfers(res)
-        self.assertEqual(len(transfers), 1)
-        self.assertEqual(transfers[0]["amount"], 33)
+        self.assertEqual(len(transfers), 0)
 
         res = chain.execute(self.ct.place_bid(0, 1_000), sender=alice)
 
@@ -148,7 +200,7 @@ class AuctionTest(TestCase):
         res = chain.execute(self.ct.burn_bid_fee(), sender=admin)
         transfers = parse_transfers(res)
         self.assertEqual(len(transfers), 1)
-        self.assertEqual(transfers[0]["amount"], 33)
+        self.assertEqual(transfers[0]["amount"], 22)
         self.assertEqual(transfers[0]["destination"], burn)
         self.assertEqual(transfers[0]["source"], contract_self_address)
 
