@@ -277,56 +277,6 @@ function divest_liquidity(
     ]
   } with (ops, s)
 
-function flash_swap(
-  const action          : action_t;
-  var s                 : storage_t)
-                        : return_t is
-  block {
-    s.entered := check_reentrancy(s.entered);
-
-    var ops : list(operation) := list [
-      get_close_op(Unit);
-    ];
-
-    case action of [
-    | Flash_swap(params) -> {
-        non_payable(Unit);
-
-        assert_with_error(params.deadline >= Tezos.now, DexCore.err_action_outdated);
-        assert_with_error(params.referrer =/= Tezos.sender, DexCore.err_can_not_refer_yourself);
-        assert_with_error(params.amount_out > 0n, DexCore.err_dust_out);
-
-        const pair : pair_t = unwrap(s.pairs[params.pair_id], DexCore.err_pair_not_listed);
-        const tokens : tokens_t = unwrap(s.tokens[params.pair_id], DexCore.err_pair_not_listed);
-        const flash_swap_data : flash_swap_data_t = form_flash_swap_data(pair, tokens, params.flash_swap_rule);
-
-        assert_with_error(params.amount_out <= flash_swap_data.swap_token_pool, DexCore.err_insufficient_liquidity);
-
-        const flash_swap_callback_params : flash_swap_1_t = record [
-          flash_swap_rule   = params.flash_swap_rule;
-          pair_id           = params.pair_id;
-          return_token      = flash_swap_data.return_token;
-          referrer          = params.referrer;
-          sender            = Tezos.sender;
-          swap_token_pool   = flash_swap_data.swap_token_pool;
-          return_token_pool = flash_swap_data.return_token_pool;
-          amount_out        = params.amount_out;
-          prev_tez_balance  = Tezos.balance / 1mutez;
-        ];
-
-        ops := call_flash_swap_callback(flash_swap_callback_params) # ops;
-        ops := call_flash_swaps_proxy(params.lambda, s.flash_swaps_proxy) # ops;
-        ops := pour_out_or_transfer_tokens(
-          params.receiver,
-          params.amount_out,
-          flash_swap_data.swap_token,
-          pair.bucket
-        ) # ops;
-      }
-    | _ -> skip
-    ]
-  } with (ops, s)
-
 function swap(
   const action          : action_t;
   var s                 : storage_t)
@@ -345,17 +295,11 @@ function swap(
 
         const first_swap : swap_slice_t = unwrap(List.head_opt(params.swaps), DexCore.err_empty_route);
         const tokens : tokens_t = unwrap(s.tokens[first_swap.pair_id], DexCore.err_pair_not_listed);
-        const pair : pair_t = unwrap(s.pairs[first_swap.pair_id], DexCore.err_pair_not_listed);
         const token : token_t = case first_swap.direction of [
         | A_to_b -> tokens.token_a
         | B_to_a -> tokens.token_b
         ];
-
-        if token = Tez
-        then assert_with_error(params.amount_in = Tezos.amount / 1mutez, DexCore.err_wrong_tez_amount)
-        else non_payable(Unit);
-
-        var tmp : tmp_swap_t := List.fold(
+        const tmp : tmp_swap_t = List.fold(
           swap_internal,
           params.swaps,
           record [
@@ -378,9 +322,28 @@ function swap(
 
         s := tmp.s;
 
+        if token = Tez
+        then {
+          const flash_swap_callback_params : flash_swap_1_t = record [
+            pair_id          = first_swap.pair_id;
+            prev_tez_balance = Tezos.balance / 1mutez;
+            amount_in        = params.amount_in;
+          ];
+
+          ops := concat_lists(forward_ops, ops);
+          ops := call_flash_swap_callback(flash_swap_callback_params) # ops;
+        }
+        else {
+          ops := transfer_token(Tezos.sender, Tezos.self_address, params.amount_in, token) # ops;
+          ops := concat_lists(forward_ops, ops);
+        };
+
+        case params.lambda of [
+        | Some(lambda) -> ops := call_flash_swaps_proxy(lambda, s.flash_swaps_proxy) # ops
+        | None         -> skip
+        ];
+
         ops := unwrap(tmp.last_operation, DexCore.err_too_few_swaps) # ops;
-        ops := concat_lists(forward_ops, ops);
-        ops := fill_or_transfer_tokens(params.amount_in, token, pair.bucket) # ops;
       }
     | _ -> skip
     ]
