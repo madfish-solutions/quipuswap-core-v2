@@ -121,7 +121,7 @@ class AuctionTest(TestCase):
 
         res = chain.execute(self.ct.withdraw_dev_fee(token_a_fa2, alice), sender=admin)
         transfers = parse_transfers(res)
-        self.assertEqual(parse_transfers(res), 0)
+        self.assertEqual(len(parse_transfers(res)), 0)
 
 
     def test_bid_fee_zero(self):
