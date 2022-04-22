@@ -202,18 +202,14 @@
    - ✅ should fail if from token isn't TEZ and positive TEZ tokens amount were passed;
    - ✅ should fail if pair does not have a liquidity;
    - ✅ should fail if wrong flash swap returns in TEZ token;
-
-   - ✅ should flash swap FA1.2 token and return the same token with fee;
-   - ✅ should flash swap FA1.2 token and return opposite FA1.2 token with fee;
-   - ✅ should flash swap FA1.2 token and return opposite FA2 token with fee;
-   - ✅ should flash swap FA1.2 token and return opposite TEZ token with fee;
-   - ✅ should flash swap FA2 token and return the same token with fee;
-   - ✅ should flash swap FA2 token and return opposite FA1.2 token with fee;
-   - ✅ should flash swap FA2 token and return opposite FA2 token with fee;
-   - ✅ should flash swap FA2 token and return opposite TEZ token with fee;
-   - ✅ should flash swap TEZ token and return the same token with fee;
-   - ✅ should flash swap TEZ token and return opposite FA1.2 token with fee;
-   - ✅ should flash swap TEZ token and return opposite FA2 token with fee.
+   - ✅ should flash swap FA1.2 token and return opposite FA1.2 token;
+   - ✅ should flash swap FA1.2 token and return opposite FA2 token;
+   - ✅ should flash swap FA1.2 token and return opposite TEZ token;
+   - ✅ should flash swap FA2 token and return opposite FA1.2 token;
+   - ✅ should flash swap FA2 token and return opposite FA2 token;
+   - ✅ should flash swap FA2 token and return opposite TEZ token;
+   - ✅ should flash swap TEZ token and return opposite FA1.2 token;
+   - ✅ should flash swap TEZ token and return opposite FA2 token.
 
 5. `swap`:
 
