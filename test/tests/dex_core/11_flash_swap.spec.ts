@@ -30,7 +30,7 @@ import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa12Storage } from "../../../storage/test/FA12";
 import { fa2Storage } from "../../../storage/test/FA2";
 
-import { SBAccount } from "../../types/Common";
+import { SBAccount, Token } from "../../types/Common";
 import {
   DivestLiquidity,
   LaunchExchange,
@@ -1463,5 +1463,151 @@ describe("DexCore (flash swap)", async () => {
 
       return true;
     });
+  });
+
+  it("should properly update TOK fee during flash swap", async () => {
+    const pairId: BigNumber = new BigNumber(0);
+    const params: Swap = {
+      lambda: undefined,
+      swaps: [{ direction: { a_to_b: undefined }, pair_id: pairId }],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
+      receiver: bob.pkh,
+      referrer: bob.pkh,
+      amount_in: new BigNumber(1000),
+      min_amount_out: new BigNumber(1),
+      flash: true,
+    };
+    const tokenA: FA12 = await FA12.init(
+      fa12Token1.contract.address,
+      utils.tezos
+    );
+    const token: Token = { fa12: fa12Token1.contract.address };
+
+    await dexCore.updateStorage({
+      pairs: [pairId],
+      interface_fee: [[token, params.referrer]],
+      auction_fee: [token],
+    });
+
+    const prevTokenAPool: BigNumber =
+      dexCore.storage.storage.pairs[pairId.toFixed()].token_a_pool;
+    const prevTokenBPool: BigNumber =
+      dexCore.storage.storage.pairs[pairId.toFixed()].token_b_pool;
+    const prevInterfaceFee: BigNumber =
+      dexCore.storage.storage.interface_fee[
+        `${token.toString()},${params.referrer}`
+      ];
+    const prevAuctionFee: BigNumber =
+      dexCore.storage.storage.auction_fee[token.toString()];
+
+    await tokenA.approve(dexCore.contract.address, params.amount_in);
+    await dexCore.swap(params);
+    await dexCore.updateStorage({
+      interface_fee: [[token, params.referrer]],
+      auction_fee: [token],
+    });
+
+    const currInterfaceFee: BigNumber =
+      dexCore.storage.storage.interface_fee[
+        `${token.toString()},${params.referrer}`
+      ];
+    const currAuctionFee: BigNumber =
+      dexCore.storage.storage.auction_fee[token.toString()];
+    const swapResult: CalculateSwap = DexCore.calculateSwap(
+      dexCore.storage.storage.fees,
+      params.amount_in,
+      prevTokenAPool,
+      prevTokenBPool
+    );
+
+    expect(currInterfaceFee).to.be.bignumber.equal(
+      prevInterfaceFee.plus(swapResult.interfaceFee)
+    );
+    expect(currAuctionFee).to.be.bignumber.equal(
+      prevAuctionFee.plus(swapResult.auctionFee)
+    );
+  });
+
+  it("should properly update TEZ fee during flash swap", async () => {
+    const pairId: BigNumber = new BigNumber(0);
+    const params: Swap = {
+      lambda: undefined,
+      swaps: [{ direction: { b_to_a: undefined }, pair_id: pairId }],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
+      receiver: bob.pkh,
+      referrer: bob.pkh,
+      amount_in: new BigNumber(1000),
+      min_amount_out: new BigNumber(1),
+      flash: true,
+    };
+
+    await dexCore.updateStorage({
+      pairs: [pairId],
+      interface_tez_fee: [[pairId, params.referrer]],
+      auction_tez_fee: [pairId],
+    });
+
+    const prevTokenAPool: BigNumber =
+      dexCore.storage.storage.pairs[pairId.toFixed()].token_a_pool;
+    const prevTokenBPool: BigNumber =
+      dexCore.storage.storage.pairs[pairId.toFixed()].token_b_pool;
+    const prevInterfaceTezFee: BigNumber =
+      dexCore.storage.storage.interface_tez_fee[
+        `${pairId.toString()},${params.referrer}`
+      ];
+    const prevAuctionTezFee: BigNumber =
+      dexCore.storage.storage.auction_tez_fee[pairId.toString()];
+
+    await dexCore.swap(params);
+    await dexCore.updateStorage({
+      interface_tez_fee: [[pairId, params.referrer]],
+      auction_tez_fee: [pairId],
+    });
+
+    const currInterfaceTezFee: BigNumber =
+      dexCore.storage.storage.interface_tez_fee[
+        `${pairId.toString()},${params.referrer}`
+      ];
+    const currAuctionTezFee: BigNumber =
+      dexCore.storage.storage.auction_tez_fee[pairId.toString()];
+    const swapResult: CalculateSwap = DexCore.calculateSwap(
+      dexCore.storage.storage.fees,
+      params.amount_in,
+      prevTokenAPool,
+      prevTokenBPool
+    );
+
+    expect(currInterfaceTezFee).to.be.bignumber.equal(
+      prevInterfaceTezFee.plus(swapResult.interfaceFee)
+    );
+    expect(currAuctionTezFee).to.be.bignumber.equal(
+      prevAuctionTezFee.plus(swapResult.auctionFee)
+    );
+  });
+
+  it("should flash swap using FA1.2 -> FA2 -> TEZ route", async () => {
+    const pairIds: BigNumber[] = [new BigNumber(4), new BigNumber(1)];
+    const params: Swap = {
+      lambda: undefined,
+      swaps: [
+        { direction: { a_to_b: undefined }, pair_id: pairIds[0] },
+        { direction: { a_to_b: undefined }, pair_id: pairIds[1] },
+      ],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
+      receiver: alice.pkh,
+      referrer: bob.pkh,
+      amount_in: new BigNumber(1000),
+      min_amount_out: new BigNumber(1),
+      flash: true,
+    };
+    const tokenA: FA12 = await FA12.init(
+      fa12Token1.contract.address,
+      utils.tezos
+    );
+    const value: number = Math.round(Math.random() * 100 + 1);
+
+    await updateParameters(flashSwapAgent.contract.address, value);
+    await tokenA.approve(dexCore.contract.address, params.amount_in);
+    await dexCore.swap(params);
   });
 });

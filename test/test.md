@@ -209,7 +209,10 @@
    - ✅ should flash swap FA2 token and return opposite FA2 token;
    - ✅ should flash swap FA2 token and return opposite TEZ token;
    - ✅ should flash swap TEZ token and return opposite FA1.2 token;
-   - ✅ should flash swap TEZ token and return opposite FA2 token.
+   - ✅ should flash swap TEZ token and return opposite FA2 token;
+   - ✅ should properly update TOK fee during flash swap;
+   - ✅ should properly update TEZ fee during flash swap;
+   - ✅ should flash swap using FA1.2 -> FA2 -> TEZ route.
 
 5. `swap`:
 
@@ -485,7 +488,8 @@
     - ✅ should calculate cumulative prices and update last block timestamp in time of liquidity investment;
     - ✅ should calculate cumulative prices and update last block timestamp in time of swap - 1;
     - ✅ should calculate cumulative prices and update last block timestamp in time of liquidity divestment;
-    - ✅ should calculate cumulative prices and update last block timestamp in time of swap - 2.
+    - ✅ should calculate cumulative prices and update last block timestamp in time of swap - 2;
+    - ✅ should calculate cumulative prices and update last block timestamp in time of flash swap.
 
 ## Auction
 
