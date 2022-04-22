@@ -51,6 +51,7 @@ import {
   ClaimTezFee,
   AddManager,
   SetExpiry,
+  SwapSlice,
   ClaimFee,
   DexVote,
   Swap,
@@ -238,6 +239,20 @@ export class DexCore {
     return operation;
   }
 
+  parseSwaps(swaps: SwapSlice[]): string {
+    let result: string = "list [ ";
+
+    for (const swap of swaps) {
+      const direction: string =
+        Object.keys(swap.direction)[0].charAt(0).toUpperCase() +
+        Object.keys(swap.direction)[0].substring(1);
+
+      result += `record [ direction = ${direction}; pair_id = ${swap.pair_id.toFixed()}n; ]; `;
+    }
+
+    return result + " ]";
+  }
+
   async swap(
     params: Swap,
     mutezAmount: number = 0
@@ -247,9 +262,9 @@ export class DexCore {
     if (params.flash) {
       const ligo: string = getLigo(true);
       const stdout: string = execSync(
-        `${ligo} compile parameter $PWD/contracts/test/lambdas.ligo 'Use(Swap(record [ lambda = lambda; swaps = ${
+        `${ligo} compile parameter $PWD/contracts/test/lambdas.ligo 'Use(Swap(record [ lambda = Some(lambda); swaps = ${this.parseSwaps(
           params.swaps
-        }; deadline = (${params.deadline} : timestamp); receiver = ("${
+        )}; deadline = (${params.deadline} : timestamp); receiver = ("${
           params.receiver
         }" : address); referrer = ("${
           params.referrer

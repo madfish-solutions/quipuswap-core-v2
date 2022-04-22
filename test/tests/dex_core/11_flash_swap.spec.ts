@@ -30,8 +30,13 @@ import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa12Storage } from "../../../storage/test/FA12";
 import { fa2Storage } from "../../../storage/test/FA2";
 
-import { Swap, LaunchExchange } from "../../types/DexCore";
 import { SBAccount } from "../../types/Common";
+import {
+  DivestLiquidity,
+  LaunchExchange,
+  TokensPerShare,
+  Swap,
+} from "../../types/DexCore";
 
 import fs from "fs";
 
@@ -47,7 +52,7 @@ function updateParameters(
   );
 }
 
-describe.skip("DexCore (flash swap)", async () => {
+describe.only("DexCore (flash swap)", async () => {
   var flashSwapsProxy: FlashSwapsProxy;
   var flashSwapAgent: FlashSwapAgent;
   var bakerRegistry: BakerRegistry;
@@ -244,50 +249,37 @@ describe.skip("DexCore (flash swap)", async () => {
   });
 
   it("should fail if reentrancy", async () => {
-    const params: FlashSwap = {
-      flash_swap_rule: "Loan_a_return_a",
-      pair_id: new BigNumber(0),
+    const params: Swap = {
+      lambda: undefined,
+      swaps: [],
       deadline: String((await utils.getLastBlockTimestamp()) / 1000),
       receiver: zeroAddress,
       referrer: zeroAddress,
-      amount_out: new BigNumber(0),
+      amount_in: new BigNumber(0),
+      min_amount_out: new BigNumber(0),
+      flash: true,
     };
 
-    await rejects(dexCore2.flashSwap(params), (err: Error) => {
+    await rejects(dexCore2.swap(params), (err: Error) => {
       expect(err.message).to.equal(DexCoreErrors.ERR_REENTRANCY);
 
       return true;
     });
   });
 
-  it("should fail if positive TEZ tokens amount were passed", async () => {
-    const params: FlashSwap = {
-      flash_swap_rule: "Loan_a_return_a",
-      pair_id: new BigNumber(0),
-      deadline: String((await utils.getLastBlockTimestamp()) / 1000),
-      receiver: zeroAddress,
-      referrer: zeroAddress,
-      amount_out: new BigNumber(0),
-    };
-
-    await rejects(dexCore.flashSwap(params, 1), (err: Error) => {
-      expect(err.message).to.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
-
-      return true;
-    });
-  });
-
   it("should fail if action is outdated", async () => {
-    const params: FlashSwap = {
-      flash_swap_rule: "Loan_a_return_a",
-      pair_id: new BigNumber(0),
+    const params: Swap = {
+      lambda: undefined,
+      swaps: [],
       deadline: String((await utils.getLastBlockTimestamp()) / 1000),
       receiver: alice.pkh,
       referrer: alice.pkh,
-      amount_out: new BigNumber(1),
+      amount_in: new BigNumber(0),
+      min_amount_out: new BigNumber(0),
+      flash: true,
     };
 
-    await rejects(dexCore.flashSwap(params), (err: Error) => {
+    await rejects(dexCore.swap(params), (err: Error) => {
       expect(err.message).to.equal(DexCoreErrors.ERR_ACTION_OUTDATED);
 
       return true;
@@ -295,68 +287,180 @@ describe.skip("DexCore (flash swap)", async () => {
   });
 
   it("should fail if user is trying to refer himself", async () => {
-    const params: FlashSwap = {
-      flash_swap_rule: "Loan_a_return_a",
-      pair_id: new BigNumber(0),
+    const params: Swap = {
+      lambda: undefined,
+      swaps: [],
       deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: alice.pkh,
-      amount_out: new BigNumber(1),
+      amount_in: new BigNumber(0),
+      min_amount_out: new BigNumber(0),
+      flash: true,
     };
 
-    await rejects(dexCore.flashSwap(params), (err: Error) => {
+    await rejects(dexCore.swap(params), (err: Error) => {
       expect(err.message).to.equal(DexCoreErrors.ERR_CAN_NOT_REFER_YOURSELF);
 
       return true;
     });
   });
 
-  it("should fail if dust out", async () => {
-    const params: FlashSwap = {
-      flash_swap_rule: "Loan_a_return_a",
-      pair_id: new BigNumber(0),
+  it("should fail if empty route", async () => {
+    const params: Swap = {
+      lambda: undefined,
+      swaps: [],
       deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
-      amount_out: new BigNumber(0),
+      amount_in: new BigNumber(0),
+      min_amount_out: new BigNumber(0),
+      flash: true,
     };
 
-    await rejects(dexCore.flashSwap(params), (err: Error) => {
-      expect(err.message).to.equal(DexCoreErrors.ERR_DUST_OUT);
+    await rejects(dexCore.swap(params), (err: Error) => {
+      expect(err.message).to.equal(DexCoreErrors.ERR_EMPTY_ROUTE);
 
       return true;
     });
   });
 
   it("should fail if pair not listed", async () => {
-    const params: FlashSwap = {
-      flash_swap_rule: "Loan_a_return_a",
-      pair_id: new BigNumber(666),
+    const params: Swap = {
+      lambda: undefined,
+      swaps: [
+        { direction: { a_to_b: undefined }, pair_id: new BigNumber(666) },
+      ],
       deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
-      amount_out: new BigNumber(1),
+      amount_in: new BigNumber(0),
+      min_amount_out: new BigNumber(0),
+      flash: true,
     };
 
-    await rejects(dexCore.flashSwap(params), (err: Error) => {
+    await rejects(dexCore.swap(params), (err: Error) => {
       expect(err.message).to.equal(DexCoreErrors.ERR_PAIR_NOT_LISTED);
 
       return true;
     });
   });
 
-  it("should fail if insufficient out token liquidity", async () => {
-    const params: FlashSwap = {
-      flash_swap_rule: "Loan_a_return_a",
-      pair_id: new BigNumber(0),
+  it("should fail if a user expects too high min out", async () => {
+    const params: Swap = {
+      lambda: undefined,
+      swaps: [{ direction: { a_to_b: undefined }, pair_id: new BigNumber(0) }],
       deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
-      amount_out: new BigNumber(5_000_001),
+      amount_in: new BigNumber(5),
+      min_amount_out: new BigNumber(5),
+      flash: true,
     };
 
-    await rejects(dexCore.flashSwap(params), (err: Error) => {
-      expect(err.message).to.equal(DexCoreErrors.ERR_INSUFFICIENT_LIQUIDITY);
+    await rejects(dexCore.swap(params), (err: Error) => {
+      expect(err.message).to.equal(DexCoreErrors.ERR_HIGH_MIN_OUT);
+
+      return true;
+    });
+  });
+
+  it("should fail if user passed zero amount in", async () => {
+    const swapParams: Swap = {
+      lambda: undefined,
+      swaps: [{ direction: { a_to_b: undefined }, pair_id: new BigNumber(0) }],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
+      receiver: alice.pkh,
+      referrer: bob.pkh,
+      amount_in: new BigNumber(0),
+      min_amount_out: new BigNumber(0),
+      flash: true,
+    };
+
+    await rejects(dexCore.swap(swapParams), (err: Error) => {
+      expect(err.message).to.equal(DexCoreErrors.ERR_ZERO_IN);
+
+      return true;
+    });
+  });
+
+  it("should fail if user put a wrong route", async () => {
+    const swapParams: Swap = {
+      lambda: undefined,
+      swaps: [
+        { direction: { a_to_b: undefined }, pair_id: new BigNumber(0) },
+        { direction: { a_to_b: undefined }, pair_id: new BigNumber(0) },
+      ],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
+      receiver: alice.pkh,
+      referrer: bob.pkh,
+      amount_in: new BigNumber(5),
+      min_amount_out: new BigNumber(0),
+      flash: true,
+    };
+
+    await rejects(dexCore.swap(swapParams), (err: Error) => {
+      expect(err.message).to.equal(DexCoreErrors.ERR_WRONG_ROUTE);
+
+      return true;
+    });
+  });
+
+  it("should fail if from token isn't TEZ and positive TEZ tokens amount were passed", async () => {
+    const params: Swap = {
+      lambda: undefined,
+      swaps: [{ direction: { a_to_b: undefined }, pair_id: new BigNumber(0) }],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
+      receiver: alice.pkh,
+      referrer: bob.pkh,
+      amount_in: new BigNumber(5),
+      min_amount_out: new BigNumber(0),
+      flash: true,
+    };
+
+    await rejects(dexCore.swap(params, 1), (err: Error) => {
+      expect(err.message).to.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
+
+      return true;
+    });
+  });
+
+  it("should fail if pair does not have a liquidity", async () => {
+    const pairId: BigNumber = new BigNumber(0);
+    const shares: BigNumber = new BigNumber(5_000_000);
+
+    await dexCore.updateStorage({
+      pairs: [pairId.toFixed()],
+    });
+
+    const divestedTokens: TokensPerShare = DexCore.getTokensPerShare(
+      shares,
+      dexCore.storage.storage.pairs[pairId.toFixed()]
+    );
+    const divestParams: DivestLiquidity = {
+      pair_id: pairId,
+      min_token_a_out: divestedTokens.token_a_amt,
+      min_token_b_out: divestedTokens.token_b_amt,
+      shares: shares,
+      liquidity_receiver: alice.pkh,
+      candidate: bob.pkh,
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
+    };
+
+    await dexCore.divestLiquidity(divestParams);
+
+    const swapParams: Swap = {
+      lambda: undefined,
+      swaps: [{ direction: { a_to_b: undefined }, pair_id: pairId }],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
+      receiver: alice.pkh,
+      referrer: bob.pkh,
+      amount_in: new BigNumber(100),
+      min_amount_out: new BigNumber(0),
+      flash: true,
+    };
+
+    await rejects(dexCore.swap(swapParams), (err: Error) => {
+      expect(err.message).to.equal(DexCoreErrors.ERR_NO_LIQUIDITY);
 
       return true;
     });
@@ -410,7 +514,7 @@ describe.skip("DexCore (flash swap)", async () => {
 
     await updateParameters(flashSwapAgent.contract.address, value);
     await tokenA.approve(dexCore.contract.address, flashSwapResults.returns);
-    await dexCore.flashSwap(params);
+    await dexCore.swap(params);
     await dexCore.updateStorage({
       pairs: [params.pair_id],
     });
@@ -528,7 +632,7 @@ describe.skip("DexCore (flash swap)", async () => {
 
     await updateParameters(flashSwapAgent.contract.address, value);
     await tokenA.approve(dexCore.contract.address, flashSwapResults.returns);
-    await dexCore.flashSwap(params);
+    await dexCore.swap(params);
     await dexCore.updateStorage({
       pairs: [params.pair_id],
     });
@@ -659,7 +763,7 @@ describe.skip("DexCore (flash swap)", async () => {
     const value: number = Math.round(Math.random() * 100 + 1);
 
     await updateParameters(flashSwapAgent.contract.address, value);
-    await dexCore.flashSwap(params);
+    await dexCore.swap(params);
     await dexCore.updateStorage({
       pairs: [params.pair_id],
     });
@@ -782,7 +886,7 @@ describe.skip("DexCore (flash swap)", async () => {
     const value: number = Math.round(Math.random() * 100 + 1);
 
     await updateParameters(flashSwapAgent.contract.address, value);
-    await dexCore.flashSwap(params);
+    await dexCore.swap(params);
     await dexCore.updateStorage({
       pairs: [params.pair_id],
     });
@@ -883,7 +987,7 @@ describe.skip("DexCore (flash swap)", async () => {
     const value: number = Math.round(Math.random() * 100 + 1);
 
     await updateParameters(flashSwapAgent.contract.address, value);
-    await dexCore.flashSwap(params);
+    await dexCore.swap(params);
     await dexCore.updateStorage({
       pairs: [params.pair_id],
     });
@@ -992,7 +1096,7 @@ describe.skip("DexCore (flash swap)", async () => {
 
     await updateParameters(flashSwapAgent.contract.address, value);
     await tokenA.approve(dexCore.contract.address, flashSwapResults.returns);
-    await dexCore.flashSwap(params);
+    await dexCore.swap(params);
     await dexCore.updateStorage({
       pairs: [params.pair_id],
     });
@@ -1132,7 +1236,7 @@ describe.skip("DexCore (flash swap)", async () => {
     const value: number = Math.round(Math.random() * 100 + 1);
 
     await updateParameters(flashSwapAgent.contract.address, value);
-    await dexCore.flashSwap(params);
+    await dexCore.swap(params);
     await dexCore.updateStorage({
       pairs: [params.pair_id],
     });
@@ -1252,7 +1356,7 @@ describe.skip("DexCore (flash swap)", async () => {
     const value: number = Math.round(Math.random() * 100 + 1);
 
     await updateParameters(flashSwapAgent.contract.address, value);
-    await dexCore.flashSwap(params);
+    await dexCore.swap(params);
     await dexCore.updateStorage({
       pairs: [params.pair_id],
     });
@@ -1351,7 +1455,7 @@ describe.skip("DexCore (flash swap)", async () => {
     const value: number = Math.round(Math.random() * 100 + 1);
 
     await updateParameters(flashSwapAgent.contract.address, value);
-    await dexCore.flashSwap(params);
+    await dexCore.swap(params);
     await dexCore.updateStorage({
       pairs: [params.pair_id],
     });
@@ -1443,7 +1547,7 @@ describe.skip("DexCore (flash swap)", async () => {
 
     await updateParameters(flashSwapAgent.contract.address, value);
     await tokenA.approve(dexCore.contract.address, flashSwapResults.returns);
-    await dexCore.flashSwap(params);
+    await dexCore.swap(params);
     await dexCore.updateStorage({
       pairs: [params.pair_id],
     });
@@ -1547,7 +1651,7 @@ describe.skip("DexCore (flash swap)", async () => {
     const value: number = Math.round(Math.random() * 100 + 1);
 
     await updateParameters(flashSwapAgent.contract.address, value);
-    await dexCore.flashSwap(params);
+    await dexCore.swap(params);
     await dexCore.updateStorage({
       pairs: [params.pair_id],
     });
@@ -1603,18 +1707,20 @@ describe.skip("DexCore (flash swap)", async () => {
   });
 
   it("should fail if wrong flash swap returns in TEZ token", async () => {
-    const params: FlashSwap = {
-      flash_swap_rule: "Loan_a_return_b",
-      pair_id: new BigNumber(0),
+    const params: Swap = {
+      lambda: undefined,
+      swaps: [{ direction: { b_to_a: undefined }, pair_id: new BigNumber(0) }],
       deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
-      amount_out: new BigNumber(10000),
+      amount_in: new BigNumber(10000),
+      min_amount_out: new BigNumber(0),
+      flash: true,
     };
     const value: number = Math.round(Math.random() * 100 + 1);
 
     await updateParameters(flashSwapAgent.contract.address, value);
-    await rejects(dexCore.flashSwap(params), (err: Error) => {
+    await rejects(dexCore.swap(params), (err: Error) => {
       expect(err.message).to.equal(DexCoreErrors.ERR_WRONG_FLASH_SWAP_RETURNS);
 
       return true;

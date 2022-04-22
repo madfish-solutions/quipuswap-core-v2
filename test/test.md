@@ -192,13 +192,17 @@
 4. `flash_swap`:
 
    - ✅ should fail if reentrancy;
-   - ✅ should fail if positive TEZ tokens amount were passed;
    - ✅ should fail if action is outdated;
    - ✅ should fail if user is trying to refer himself;
-   - ✅ should fail if dust out;
+   - ✅ should fail if empty route;
    - ✅ should fail if pair not listed;
-   - ✅ should fail if insufficient out token liquidity;
+   - ✅ should fail if a user expects too high min out;
+   - ✅ should fail if user passed zero amount in;
+   - ✅ should fail if user put a wrong route;
+   - ✅ should fail if from token isn't TEZ and positive TEZ tokens amount were passed;
+   - ✅ should fail if pair does not have a liquidity;
    - ✅ should fail if wrong flash swap returns in TEZ token;
+
    - ✅ should flash swap FA1.2 token and return the same token with fee;
    - ✅ should flash swap FA1.2 token and return opposite FA1.2 token with fee;
    - ✅ should flash swap FA1.2 token and return opposite FA2 token with fee;

@@ -22,7 +22,7 @@ import fs from "fs";
 
 chai.use(require("chai-bignumber")(BigNumber));
 
-describe.skip("FlashSwapsProxy", async () => {
+describe("FlashSwapsProxy", async () => {
   var flashSwapsProxy: FlashSwapsProxy;
   var flashSwapAgent: FlashSwapAgent;
   var dexCore: DexCore;
@@ -106,7 +106,16 @@ describe.skip("FlashSwapsProxy", async () => {
   });
 
   it("should call default entrypoint by dex core", async () => {
-    const params: Swap = {};
+    const params: Swap = {
+      lambda: undefined,
+      swaps: [{ direction: { a_to_b: undefined }, pair_id: new BigNumber(0) }],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
+      receiver: bob.pkh,
+      referrer: bob.pkh,
+      amount_in: new BigNumber(100),
+      min_amount_out: new BigNumber(1),
+      flash: true,
+    };
     const tokenA: FA12 = await FA12.init(
       Utils.getMinFA12Token(
         fa12Token1.contract.address,
