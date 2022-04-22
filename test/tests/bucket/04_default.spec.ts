@@ -26,7 +26,7 @@ import {
 
 chai.use(require("chai-bignumber")(BigNumber));
 
-describe.skip("Bucket (default)", async () => {
+describe("Bucket (default)", async () => {
   var bakerRegistry: BakerRegistry;
   var dexCore: DexCore;
   var fa2Token1: FA2;
@@ -115,6 +115,7 @@ describe.skip("Bucket (default)", async () => {
       prevBucketStorage,
       prevDexCoreStorage,
       prevPair.total_supply,
+      prevBucketStorage.next_reward.plus(amount),
       utils
     );
 
@@ -155,6 +156,7 @@ describe.skip("Bucket (default)", async () => {
       prevBucketStorage,
       prevDexCoreStorage,
       prevPair.total_supply,
+      prevBucketStorage.next_reward.plus(amount),
       utils
     );
 
@@ -187,7 +189,7 @@ describe.skip("Bucket (default)", async () => {
     const prevDexCoreStorage: DexCoreStorage = dexCore.storage;
     const prevPair: Pair = dexCore.storage.storage.pairs[pairId.toFixed()];
 
-    await utils.bakeBlocks(1);
+    await utils.bakeBlocks(2);
     await bucket.default(amount.toNumber());
     await bucket.updateStorage();
 
@@ -195,6 +197,7 @@ describe.skip("Bucket (default)", async () => {
       prevBucketStorage,
       prevDexCoreStorage,
       prevPair.total_supply,
+      prevBucketStorage.next_reward.plus(amount),
       utils
     );
 
@@ -204,9 +207,7 @@ describe.skip("Bucket (default)", async () => {
     expect(bucket.storage.reward_per_block).to.be.bignumber.equal(
       expectedRewardsInfo.rewardPerBlock
     );
-    expect(bucket.storage.next_reward).to.be.bignumber.equal(
-      prevBucketStorage.next_reward.plus(amount)
-    );
+    expect(bucket.storage.next_reward).to.be.bignumber.equal(new BigNumber(0));
     expect(bucket.storage.last_update_level).to.be.bignumber.equal(
       expectedRewardsInfo.lastUpdateLevel
     );
@@ -235,6 +236,7 @@ describe.skip("Bucket (default)", async () => {
       prevBucketStorage,
       prevDexCoreStorage,
       prevPair.total_supply,
+      prevBucketStorage.next_reward.plus(amount),
       utils
     );
 
@@ -244,9 +246,7 @@ describe.skip("Bucket (default)", async () => {
     expect(bucket.storage.reward_per_block).to.be.bignumber.equal(
       expectedRewardsInfo.rewardPerBlock
     );
-    expect(bucket.storage.next_reward).to.be.bignumber.equal(
-      prevBucketStorage.next_reward.plus(amount)
-    );
+    expect(bucket.storage.next_reward).to.be.bignumber.equal(new BigNumber(0));
     expect(bucket.storage.last_update_level).to.be.bignumber.equal(
       expectedRewardsInfo.lastUpdateLevel
     );

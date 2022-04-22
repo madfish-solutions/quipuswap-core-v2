@@ -1,19 +1,16 @@
-import { BakerRegistry } from "../test/helpers/BakerRegistry";
-import { Utils } from "../test/helpers/Utils";
+import { TezosToolkit } from "@taquito/taquito";
 
 import { bakerRegistryStorage } from "../storage/BakerRegistry";
 
-import accounts from "../scripts/sandbox/accounts";
+import { migrate } from "../scripts/helpers";
 
-module.exports = async () => {
-  const utils: Utils = new Utils();
-
-  await utils.init(accounts.dev.sk);
-
-  const bakerRegistry: BakerRegistry = await BakerRegistry.originate(
-    utils.tezos,
-    bakerRegistryStorage
+module.exports = async (tezos: TezosToolkit, network: string) => {
+  const bakerRegistryAddress: string = await migrate(
+    tezos,
+    "baker_registry",
+    bakerRegistryStorage,
+    network
   );
 
-  console.log(`BakerRegistry: ${bakerRegistry.contract.address}`);
+  console.log(`BakerRegistry: ${bakerRegistryAddress}`);
 };

@@ -30,5 +30,24 @@ export const auctionStorage: AuctionStorage = {
     min_bid: new BigNumber(0),
   },
   auction_lambdas: MichelsonMap.fromLiteral({}),
-  metadata: MichelsonMap.fromLiteral({}),
+  metadata: MichelsonMap.fromLiteral({
+    "": Buffer.from("tezos-storage:core", "ascii").toString("hex"),
+    core: Buffer.from(
+      JSON.stringify({
+        name: "QuipuSwap Fee Auction",
+        version: "v1.0.0",
+        description:
+          "Auction for trading fees charged on QuipuSwap Exchange 2.0. Anyone can bid on protocol fees with QUIPU.",
+        authors: ["Madfish.Solutions <https://www.madfish.solutions>"],
+        source: {
+          tools: ["Ligo", "Flextesa"],
+        },
+        homepage: "https://quipuswap.com",
+        interfaces: ["TZIP-16"],
+        errors: [],
+        views: [],
+      }),
+      "ascii"
+    ).toString("hex"),
+  }),
 };

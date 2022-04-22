@@ -260,12 +260,14 @@ describe("DexCore (swap)", async () => {
 
   it("should fail if reentrancy", async () => {
     const swapParams: Swap = {
+      lambda: undefined,
       swaps: [],
       deadline: String((await utils.getLastBlockTimestamp()) / 1000),
       receiver: zeroAddress,
       referrer: zeroAddress,
       amount_in: new BigNumber(0),
       min_amount_out: new BigNumber(0),
+      flash: false,
     };
 
     await rejects(dexCore2.swap(swapParams), (err: Error) => {
@@ -277,12 +279,14 @@ describe("DexCore (swap)", async () => {
 
   it("should fail if action is outdated", async () => {
     const swapParams: Swap = {
+      lambda: undefined,
       swaps: [{ direction: { a_to_b: undefined }, pair_id: new BigNumber(0) }],
       deadline: String((await utils.getLastBlockTimestamp()) / 1000),
       receiver: alice.pkh,
       referrer: alice.pkh,
       amount_in: new BigNumber(1),
       min_amount_out: new BigNumber(1),
+      flash: false,
     };
 
     await rejects(dexCore.swap(swapParams), (err: Error) => {
@@ -294,12 +298,14 @@ describe("DexCore (swap)", async () => {
 
   it("should fail if user is trying to refer himself", async () => {
     const swapParams: Swap = {
+      lambda: undefined,
       swaps: [{ direction: { a_to_b: undefined }, pair_id: new BigNumber(0) }],
       deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: alice.pkh,
       amount_in: new BigNumber(1),
       min_amount_out: new BigNumber(1),
+      flash: false,
     };
 
     await rejects(dexCore.swap(swapParams), (err: Error) => {
@@ -311,12 +317,14 @@ describe("DexCore (swap)", async () => {
 
   it("should fail if empty route", async () => {
     const swapParams: Swap = {
+      lambda: undefined,
       swaps: [],
       deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(1),
       min_amount_out: new BigNumber(1),
+      flash: false,
     };
 
     await rejects(dexCore.swap(swapParams), (err: Error) => {
@@ -328,6 +336,7 @@ describe("DexCore (swap)", async () => {
 
   it("should fail if pair not listed", async () => {
     const swapParams: Swap = {
+      lambda: undefined,
       swaps: [
         { direction: { a_to_b: undefined }, pair_id: new BigNumber(666) },
       ],
@@ -336,6 +345,7 @@ describe("DexCore (swap)", async () => {
       referrer: bob.pkh,
       amount_in: new BigNumber(1),
       min_amount_out: new BigNumber(1),
+      flash: false,
     };
 
     await rejects(dexCore.swap(swapParams), (err: Error) => {
@@ -347,12 +357,14 @@ describe("DexCore (swap)", async () => {
 
   it("should fail if wrong TEZ amount was sent to swap", async () => {
     const swapParams: Swap = {
+      lambda: undefined,
       swaps: [{ direction: { b_to_a: undefined }, pair_id: new BigNumber(0) }],
       deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(1),
       min_amount_out: new BigNumber(0),
+      flash: false,
     };
 
     await rejects(dexCore.swap(swapParams), (err: Error) => {
@@ -364,12 +376,14 @@ describe("DexCore (swap)", async () => {
 
   it("should fail if a user expects too high min out", async () => {
     const swapParams: Swap = {
+      lambda: undefined,
       swaps: [{ direction: { a_to_b: undefined }, pair_id: new BigNumber(0) }],
       deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(5),
       min_amount_out: new BigNumber(5),
+      flash: false,
     };
 
     await rejects(dexCore.swap(swapParams), (err: Error) => {
@@ -381,12 +395,14 @@ describe("DexCore (swap)", async () => {
 
   it("should fail if user passed zero amount in", async () => {
     const swapParams: Swap = {
+      lambda: undefined,
       swaps: [{ direction: { a_to_b: undefined }, pair_id: new BigNumber(0) }],
       deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(0),
       min_amount_out: new BigNumber(0),
+      flash: false,
     };
 
     await rejects(dexCore.swap(swapParams), (err: Error) => {
@@ -398,6 +414,7 @@ describe("DexCore (swap)", async () => {
 
   it("should fail if user put a wrong route", async () => {
     const swapParams: Swap = {
+      lambda: undefined,
       swaps: [
         { direction: { a_to_b: undefined }, pair_id: new BigNumber(0) },
         { direction: { a_to_b: undefined }, pair_id: new BigNumber(0) },
@@ -407,6 +424,7 @@ describe("DexCore (swap)", async () => {
       referrer: bob.pkh,
       amount_in: new BigNumber(5),
       min_amount_out: new BigNumber(0),
+      flash: false,
     };
 
     await rejects(dexCore.swap(swapParams), (err: Error) => {
@@ -418,12 +436,14 @@ describe("DexCore (swap)", async () => {
 
   it("should fail if from token isn't TEZ and positive TEZ tokens amount were passed", async () => {
     const swapParams: Swap = {
+      lambda: undefined,
       swaps: [{ direction: { a_to_b: undefined }, pair_id: new BigNumber(0) }],
       deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(5),
       min_amount_out: new BigNumber(0),
+      flash: false,
     };
 
     await rejects(dexCore.swap(swapParams, 1), (err: Error) => {
@@ -437,12 +457,14 @@ describe("DexCore (swap)", async () => {
     const pairId: BigNumber = new BigNumber(0);
     const token: Token = { fa12: fa12Token1.contract.address };
     const swapParams: Swap = {
+      lambda: undefined,
       swaps: [{ direction: { a_to_b: undefined }, pair_id: pairId }],
       deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: bob.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(5),
       min_amount_out: new BigNumber(4),
+      flash: false,
     };
 
     await fa12Token1.updateStorage({
@@ -533,12 +555,14 @@ describe("DexCore (swap)", async () => {
       fa2: { token: fa2Token1.contract.address, id: new BigNumber(0) },
     };
     const swapParams: Swap = {
+      lambda: undefined,
       swaps: [{ direction: { a_to_b: undefined }, pair_id: pairId }],
       deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: bob.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(10),
       min_amount_out: new BigNumber(9),
+      flash: false,
     };
 
     await fa2Token1.updateStorage({
@@ -626,14 +650,15 @@ describe("DexCore (swap)", async () => {
 
   it("should swap TEZ to FA1.2 token", async () => {
     const pairId: BigNumber = new BigNumber(0);
-    const token: Token = { tez: undefined };
     const swapParams: Swap = {
+      lambda: undefined,
       swaps: [{ direction: { b_to_a: undefined }, pair_id: pairId }],
       deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(50),
       min_amount_out: new BigNumber(0),
+      flash: false,
     };
 
     await fa12Token1.updateStorage({
@@ -710,14 +735,15 @@ describe("DexCore (swap)", async () => {
 
   it("should swap TEZ to FA2 token", async () => {
     const pairId: BigNumber = new BigNumber(1);
-    const token: Token = { tez: undefined };
     const swapParams: Swap = {
+      lambda: undefined,
       swaps: [{ direction: { b_to_a: undefined }, pair_id: pairId }],
       deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(100),
       min_amount_out: new BigNumber(0),
+      flash: false,
     };
 
     await fa2Token1.updateStorage({
@@ -815,12 +841,14 @@ describe("DexCore (swap)", async () => {
     const token1Contract: FA12 = await FA12.init(token1.fa12, utils.tezos);
     const token2Contract: FA12 = await FA12.init(token2.fa12, utils.tezos);
     const swapParams: Swap = {
+      lambda: undefined,
       swaps: [{ direction: { a_to_b: undefined }, pair_id: pairId }],
       deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(400),
       min_amount_out: new BigNumber(0),
+      flash: false,
     };
 
     await token1Contract.updateStorage({
@@ -937,12 +965,14 @@ describe("DexCore (swap)", async () => {
     const pairId: BigNumber = new BigNumber(3);
     const token: Token = { fa12: fa12Token1.contract.address };
     const swapParams: Swap = {
+      lambda: undefined,
       swaps: [{ direction: { a_to_b: undefined }, pair_id: pairId }],
       deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(333),
       min_amount_out: new BigNumber(0),
+      flash: false,
     };
 
     await fa12Token1.updateStorage({
@@ -1053,12 +1083,14 @@ describe("DexCore (swap)", async () => {
       fa2: { token: fa2Token1.contract.address, id: new BigNumber(0) },
     };
     const swapParams: Swap = {
+      lambda: undefined,
       swaps: [{ direction: { b_to_a: undefined }, pair_id: pairId }],
       deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(666),
       min_amount_out: new BigNumber(0),
+      flash: false,
     };
 
     await fa12Token1.updateStorage({
@@ -1179,12 +1211,14 @@ describe("DexCore (swap)", async () => {
     const token1Contract: FA2 = await FA2.init(token1.fa2.token, utils.tezos);
     const token2Contract: FA2 = await FA2.init(token2.fa2.token, utils.tezos);
     const swapParams: Swap = {
+      lambda: undefined,
       swaps: [{ direction: { a_to_b: undefined }, pair_id: pairId }],
       deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(999),
       min_amount_out: new BigNumber(0),
+      flash: false,
     };
 
     await token1Contract.updateStorage({
@@ -1318,12 +1352,14 @@ describe("DexCore (swap)", async () => {
     await dexCore.divestLiquidity(divestParams);
 
     const swapParams: Swap = {
+      lambda: undefined,
       swaps: [{ direction: { a_to_b: undefined }, pair_id: pairId }],
       deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(100),
       min_amount_out: new BigNumber(0),
+      flash: false,
     };
 
     await rejects(dexCore.swap(swapParams), (err: Error) => {
@@ -1340,6 +1376,7 @@ describe("DexCore (swap)", async () => {
       fa2: { token: fa2Token1.contract.address, id: new BigNumber(0) },
     };
     const swapParams: Swap = {
+      lambda: undefined,
       swaps: [
         { direction: { a_to_b: undefined }, pair_id: pairIds[0] },
         { direction: { b_to_a: undefined }, pair_id: pairIds[1] },
@@ -1349,6 +1386,7 @@ describe("DexCore (swap)", async () => {
       referrer: bob.pkh,
       amount_in: new BigNumber(500),
       min_amount_out: new BigNumber(0),
+      flash: false,
     };
 
     await fa12Token1.updateStorage({
@@ -1529,6 +1567,7 @@ describe("DexCore (swap)", async () => {
     };
     const token3: Token = { fa12: fa12Token3.contract.address };
     const swapParams: Swap = {
+      lambda: undefined,
       swaps: [
         { direction: { a_to_b: undefined }, pair_id: pairIds[0] },
         { direction: { b_to_a: undefined }, pair_id: pairIds[1] },
@@ -1539,6 +1578,7 @@ describe("DexCore (swap)", async () => {
       referrer: bob.pkh,
       amount_in: new BigNumber(999),
       min_amount_out: new BigNumber(0),
+      flash: false,
     };
 
     await fa12Token1.updateStorage({
@@ -1788,6 +1828,7 @@ describe("DexCore (swap)", async () => {
       fa2: { token: fa2Token1.contract.address, id: new BigNumber(0) },
     };
     const swapParams: Swap = {
+      lambda: undefined,
       swaps: [
         { direction: { b_to_a: undefined }, pair_id: pairIds[0] },
         { direction: { a_to_b: undefined }, pair_id: pairIds[1] },
@@ -1798,6 +1839,7 @@ describe("DexCore (swap)", async () => {
       referrer: bob.pkh,
       amount_in: new BigNumber(100),
       min_amount_out: new BigNumber(0),
+      flash: false,
     };
 
     await dexCore.updateStorage({
@@ -2046,6 +2088,7 @@ describe("DexCore (swap)", async () => {
     const token1: Token = { fa12: fa12Token1.contract.address };
     const token2: Token = { tez: undefined };
     const swapParams: Swap = {
+      lambda: undefined,
       swaps: [
         { direction: { a_to_b: undefined }, pair_id: pairIds[0] },
         { direction: { b_to_a: undefined }, pair_id: pairIds[1] },
@@ -2055,6 +2098,7 @@ describe("DexCore (swap)", async () => {
       referrer: bob.pkh,
       amount_in: new BigNumber(100),
       min_amount_out: new BigNumber(0),
+      flash: false,
     };
 
     await dexCore.updateStorage({
@@ -2249,6 +2293,7 @@ describe("DexCore (swap)", async () => {
       fa2: { token: fa2Token1.contract.address, id: new BigNumber(0) },
     };
     const swapParams: Swap = {
+      lambda: undefined,
       swaps: [
         { direction: { a_to_b: undefined }, pair_id: pairIds[0] },
         { direction: { b_to_a: undefined }, pair_id: pairIds[1] },
@@ -2261,6 +2306,7 @@ describe("DexCore (swap)", async () => {
       referrer: bob.pkh,
       amount_in: new BigNumber(100),
       min_amount_out: new BigNumber(0),
+      flash: false,
     };
 
     await dexCore.updateStorage({

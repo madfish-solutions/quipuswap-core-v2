@@ -16,12 +16,6 @@ export type SwapSlice = {
   pair_id: BigNumber;
 };
 
-export type FlashSwapRule =
-  | "Loan_a_return_a"
-  | "Loan_a_return_b"
-  | "Loan_b_return_a"
-  | "Loan_b_return_b";
-
 export type LaunchExchange = {
   pair: Tokens;
   token_a_in: BigNumber;
@@ -51,22 +45,15 @@ export type DivestLiquidity = {
   deadline: string;
 };
 
-export type FlashSwap = {
-  flash_swap_rule: FlashSwapRule;
-  pair_id: BigNumber;
-  deadline: string;
-  receiver: string;
-  referrer: string;
-  amount_out: BigNumber;
-};
-
 export type Swap = {
+  lambda: undefined | null;
   swaps: SwapSlice[];
   deadline: string;
   receiver: string;
   referrer: string;
   amount_in: BigNumber;
   min_amount_out: BigNumber;
+  flash: boolean;
 };
 
 export type WithdrawProfit = {
@@ -133,15 +120,9 @@ export type LaunchCallback = {
 };
 
 export type FlashSwapCallback = {
-  flash_swap_rule: any;
   pair_id: BigNumber;
-  return_token: Token;
-  referrer: string;
-  sender: string;
-  swap_token_pool: BigNumber;
-  return_token_pool: BigNumber;
-  amount_out: BigNumber;
   prev_tez_balance: BigNumber;
+  amount_in: BigNumber;
 };
 
 export type CheckIsBannedBaker = {
@@ -230,13 +211,4 @@ export type CalculateSwap = {
   auctionFee: BigNumber;
   newFromPool: BigNumber;
   newToPool: BigNumber;
-};
-
-export type CalculateFlashSwap = {
-  interfaceFee: BigNumber;
-  auctionFee: BigNumber;
-  swapFee: BigNumber;
-  fullFee: BigNumber;
-  returns: BigNumber;
-  newReturnTokPool: BigNumber;
 };

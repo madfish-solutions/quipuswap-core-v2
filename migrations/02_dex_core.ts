@@ -1,21 +1,18 @@
+import { TezosToolkit } from "@taquito/taquito";
+
 import { DexCore } from "../test/helpers/DexCore";
-import { Utils } from "../test/helpers/Utils";
 
 import { dexCoreStorage } from "../storage/DexCore";
 
 import accounts from "../scripts/sandbox/accounts";
 
+import { migrate } from "../scripts/helpers";
+
 import { BigNumber } from "bignumber.js";
 
 import BakerRegistryBuild from "../build/baker_registry.json";
 
-import env from "../env";
-
-module.exports = async () => {
-  const utils: Utils = new Utils();
-
-  await utils.init(accounts.dev.sk);
-
+module.exports = async (tezos: TezosToolkit, network: string) => {
   dexCoreStorage.storage.managers = [accounts.dev.pkh];
   dexCoreStorage.storage.fees = {
     interface_fee: new BigNumber(0.3 * 10 ** 18),
@@ -25,15 +22,19 @@ module.exports = async () => {
   };
   dexCoreStorage.storage.admin = accounts.dev.pkh;
   dexCoreStorage.storage.baker_registry =
-    BakerRegistryBuild["networks"][env.network]["baker_registry"];
+    BakerRegistryBuild["networks"][network]["baker_registry"];
   dexCoreStorage.storage.default_expiry = new BigNumber(86400); // 24 hours
-  dexCoreStorage.storage.cycle_duration = new BigNumber(4096); // 4096 blocks
   dexCoreStorage.storage.collecting_period = new BigNumber(12); // 12 cycles
-  dexCoreStorage.storage.voting_period = new BigNumber(2); // 2 cycles
 
-  const dexCore: DexCore = await DexCore.originate(utils.tezos, dexCoreStorage);
+  const dexCoreAddress: string = await migrate(
+    tezos,
+    "dex_core",
+    dexCoreStorage,
+    network
+  );
+  const dexCore: DexCore = await DexCore.init(dexCoreAddress, tezos);
 
   await dexCore.setLambdas();
 
-  console.log(`DexCore: ${dexCore.contract.address}`);
+  console.log(`DexCore: ${dexCoreAddress}`);
 };

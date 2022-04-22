@@ -32,11 +32,10 @@ import { PRECISION } from "./Constants";
 
 import { Utils } from "./Utils";
 
-import { FA12Token, FA2Token, Token } from "test/types/Common";
 import { Transfer, UpdateOperator } from "test/types/FA2";
+import { FA12Token, FA2Token } from "test/types/Common";
 import {
   UpdateTokenMetadata,
-  CalculateFlashSwap,
   WithdrawAuctionFee,
   FlashSwapCallback,
   CumulativePrices,
@@ -49,11 +48,10 @@ import {
   RequiredTokens,
   TokensPerShare,
   CalculateSwap,
-  FlashSwapRule,
   ClaimTezFee,
   AddManager,
-  FlashSwap,
   SetExpiry,
+  SwapSlice,
   ClaimFee,
   DexVote,
   Swap,
@@ -241,49 +239,56 @@ export class DexCore {
     return operation;
   }
 
-  async flashSwap(
-    params: FlashSwap,
-    mutezAmount: number = 0
-  ): Promise<TransactionOperation> {
-    const ligo: string = getLigo(true);
-    const stdout: string = execSync(
-      `${ligo} compile parameter $PWD/contracts/test/lambdas.ligo 'Use(Flash_swap(record [ lambda = lambda; flash_swap_rule = ${
-        params.flash_swap_rule
-      }; pair_id = ${params.pair_id.toFixed()}n; deadline = (${
-        params.deadline
-      } : timestamp); receiver = ("${
-        params.receiver
-      }" : address); referrer = ("${
-        params.referrer
-      }" : address); amount_out = ${params.amount_out.toFixed()}n ] ))' -p hangzhou --michelson-format json`,
-      { maxBuffer: 1024 * 500 }
-    ).toString();
+  parseSwaps(swaps: SwapSlice[]): string {
+    let result: string = "list [ ";
 
-    const operation: TransactionOperation = await this.tezos.contract.transfer({
-      to: this.contract.address,
-      amount: mutezAmount,
-      mutez: true,
-      parameter: {
-        entrypoint: "use",
-        value: JSON.parse(stdout).args[0],
-      },
-      fee: 1000000,
-      gasLimit: 1040000,
-      storageLimit: 20000,
-    });
+    for (const swap of swaps) {
+      const direction: string =
+        Object.keys(swap.direction)[0].charAt(0).toUpperCase() +
+        Object.keys(swap.direction)[0].substring(1);
 
-    await confirmOperation(this.tezos, operation.hash);
+      result += `record [ direction = ${direction}; pair_id = ${swap.pair_id.toFixed()}n; ]; `;
+    }
 
-    return operation;
+    return result + " ]";
   }
 
   async swap(
     params: Swap,
     mutezAmount: number = 0
   ): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methodsObject
-      .swap(params)
-      .send({ amount: mutezAmount, mutez: true });
+    let operation: TransactionOperation;
+
+    if (params.flash) {
+      const ligo: string = getLigo(true);
+      const stdout: string = execSync(
+        `${ligo} compile parameter $PWD/contracts/test/lambdas.ligo 'Use(Swap(record [ lambda = Some(lambda); swaps = ${this.parseSwaps(
+          params.swaps
+        )}; deadline = (${params.deadline} : timestamp); receiver = ("${
+          params.receiver
+        }" : address); referrer = ("${
+          params.referrer
+        }" : address); amount_in = ${params.amount_in.toFixed()}n; min_amount_out = ${params.min_amount_out.toFixed()}n ] ))' -p hangzhou --michelson-format json`,
+        { maxBuffer: 1024 * 500 }
+      ).toString();
+
+      operation = await this.tezos.contract.transfer({
+        to: this.contract.address,
+        amount: mutezAmount,
+        mutez: true,
+        parameter: {
+          entrypoint: "use",
+          value: JSON.parse(stdout).args[0],
+        },
+        fee: 1000000,
+        gasLimit: 1040000,
+        storageLimit: 20000,
+      });
+    } else {
+      operation = await this.contract.methodsObject
+        .swap(params)
+        .send({ amount: mutezAmount, mutez: true });
+    }
 
     await confirmOperation(this.tezos, operation.hash);
 
@@ -789,118 +794,5 @@ export class DexCore {
       newFromPool,
       newToPool,
     };
-  }
-
-  static calculateOppositeTokenReturns(
-    fees: Fees,
-    amountOut: BigNumber,
-    swapTokPool: BigNumber,
-    returnTokPool: BigNumber
-  ): BigNumber {
-    const feeRate: BigNumber = fees.interface_fee
-      .plus(fees.swap_fee)
-      .plus(fees.auction_fee);
-    const rateWithoutFee: BigNumber = PRECISION.minus(feeRate);
-    const numerator: BigNumber = amountOut
-      .multipliedBy(swapTokPool)
-      .multipliedBy(PRECISION);
-    const demoninator: BigNumber = returnTokPool.minus(amountOut);
-    const fromIn: BigNumber = numerator
-      .dividedBy(demoninator)
-      .integerValue(BigNumber.ROUND_DOWN);
-    const fromInWithFee: BigNumber = fromIn
-      .dividedBy(rateWithoutFee)
-      .integerValue(BigNumber.ROUND_DOWN);
-
-    return fromInWithFee;
-  }
-
-  static calculateFlashSwapParams(
-    fees: Fees,
-    amountIn: BigNumber,
-    returnTokPool: BigNumber,
-    oppositeToken: boolean
-  ): CalculateFlashSwap {
-    const interfaceFee: BigNumber = amountIn.multipliedBy(fees.interface_fee);
-    const auctionFee: BigNumber = amountIn.multipliedBy(fees.auction_fee);
-    const swapFee: BigNumber = amountIn.multipliedBy(fees.swap_fee);
-    const fullFee: BigNumber = new BigNumber(
-      interfaceFee.plus(auctionFee).plus(swapFee)
-    )
-      .dividedBy(PRECISION)
-      .integerValue(BigNumber.ROUND_CEIL);
-    const returns: BigNumber = amountIn.plus(fullFee);
-    const amountToPool: BigNumber = oppositeToken
-      ? new BigNumber(
-          returns.multipliedBy(PRECISION).minus(interfaceFee).minus(auctionFee)
-        )
-          .dividedBy(PRECISION)
-          .integerValue(BigNumber.ROUND_DOWN)
-      : new BigNumber(
-          fullFee.multipliedBy(PRECISION).minus(interfaceFee).minus(auctionFee)
-        )
-          .dividedBy(PRECISION)
-          .integerValue(BigNumber.ROUND_DOWN);
-    const newReturnTokPool = returnTokPool.plus(amountToPool);
-
-    return {
-      interfaceFee: interfaceFee,
-      auctionFee: auctionFee,
-      swapFee: swapFee,
-      fullFee: fullFee,
-      returns: returns,
-      newReturnTokPool: newReturnTokPool,
-    };
-  }
-
-  static calculateFlashSwap(
-    flashSwapRule: FlashSwapRule,
-    fees: Fees,
-    amountOut: BigNumber,
-    swapTokPool: BigNumber,
-    returnTokPool: BigNumber
-  ): CalculateFlashSwap {
-    switch (flashSwapRule) {
-      case "Loan_a_return_a":
-        return DexCore.calculateFlashSwapParams(
-          fees,
-          amountOut,
-          returnTokPool,
-          false
-        );
-      case "Loan_a_return_b":
-        return DexCore.calculateFlashSwapParams(
-          fees,
-          DexCore.calculateOppositeTokenReturns(
-            fees,
-            amountOut,
-            swapTokPool,
-            returnTokPool
-          ),
-          returnTokPool,
-          true
-        );
-      case "Loan_b_return_a":
-        return DexCore.calculateFlashSwapParams(
-          fees,
-          DexCore.calculateOppositeTokenReturns(
-            fees,
-            amountOut,
-            swapTokPool,
-            returnTokPool
-          ),
-          returnTokPool,
-          true
-        );
-      case "Loan_b_return_b":
-        return DexCore.calculateFlashSwapParams(
-          fees,
-          amountOut,
-          returnTokPool,
-          false
-        );
-      default:
-        break;
-    }
   }
 }

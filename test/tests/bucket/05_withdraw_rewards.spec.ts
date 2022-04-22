@@ -35,7 +35,7 @@ import {
 
 chai.use(require("chai-bignumber")(BigNumber));
 
-describe.skip("Bucket (withdraw rewards)", async () => {
+describe("Bucket (withdraw rewards)", async () => {
   var bakerRegistry: BakerRegistry;
   var dexCore: DexCore;
   var bucket2: Bucket;
@@ -147,7 +147,7 @@ describe.skip("Bucket (withdraw rewards)", async () => {
     const user: string = alice.pkh;
 
     await bucket.default(amount.toNumber());
-    await utils.bakeBlocks(4);
+    await utils.bakeBlocks(6);
     await dexCore.updateStorage({
       pairs: [pairId],
       ledger: [[user, pairId]],
@@ -167,6 +167,7 @@ describe.skip("Bucket (withdraw rewards)", async () => {
       bucket.storage,
       dexCore.storage,
       dexCore.storage.storage.pairs[pairId.toFixed()].total_supply,
+      bucket.storage.next_reward,
       utils
     );
     const expectedUserRewardsInfo: UpdateUserRewards =
@@ -197,10 +198,11 @@ describe.skip("Bucket (withdraw rewards)", async () => {
   });
 
   it("should withdraw user's rewards - 2", async () => {
+    const amount: BigNumber = new BigNumber(400);
     const receiver: string = bob.pkh;
     const user: string = alice.pkh;
 
-    await bucket.default(400);
+    await bucket.default(amount.toNumber());
     await utils.bakeBlocks(5);
     await dexCore.updateStorage({
       pairs: [pairId],
@@ -222,6 +224,7 @@ describe.skip("Bucket (withdraw rewards)", async () => {
       prevBucketStorage,
       dexCore.storage,
       dexCore.storage.storage.pairs[pairId.toFixed()].total_supply,
+      prevBucketStorage.next_reward,
       utils
     );
     const expectedUserRewardsInfo: UpdateUserRewards =
@@ -254,8 +257,10 @@ describe.skip("Bucket (withdraw rewards)", async () => {
   });
 
   it("should update global rewards", async () => {
-    await bucket.default(200);
-    await utils.bakeBlocks(3);
+    const amount: BigNumber = new BigNumber(100);
+
+    await bucket.default(amount.toNumber());
+    await utils.bakeBlocks(4);
     await dexCore.updateStorage({
       pairs: [pairId],
     });
@@ -270,14 +275,16 @@ describe.skip("Bucket (withdraw rewards)", async () => {
     };
 
     await dexCore.withdrawProfit(withdrawProfitParams);
-    await bucket.updateStorage();
 
     const expectedRewardsInfo: UpdateRewards = await Bucket.updateRewards(
       prevBucketStorage,
       prevDexCoreStorage,
       prevPair.total_supply,
+      prevBucketStorage.next_reward,
       utils
     );
+
+    await bucket.updateStorage();
 
     expect(bucket.storage.reward_per_share).to.be.bignumber.equal(
       expectedRewardsInfo.rewardPerShare
@@ -285,9 +292,7 @@ describe.skip("Bucket (withdraw rewards)", async () => {
     expect(bucket.storage.reward_per_block).to.be.bignumber.equal(
       expectedRewardsInfo.rewardPerBlock
     );
-    expect(bucket.storage.next_reward).to.be.bignumber.equal(
-      prevBucketStorage.next_reward
-    );
+    expect(bucket.storage.next_reward).to.be.bignumber.equal(new BigNumber(0));
     expect(bucket.storage.last_update_level).to.be.bignumber.equal(
       expectedRewardsInfo.lastUpdateLevel
     );
@@ -297,9 +302,10 @@ describe.skip("Bucket (withdraw rewards)", async () => {
   });
 
   it("should update user rewards", async () => {
+    const amount: BigNumber = new BigNumber(200);
     const user: string = alice.pkh;
 
-    await bucket.default(200);
+    await bucket.default(amount.toNumber());
     await utils.bakeBlocks(5);
     await dexCore.updateStorage({
       pairs: [pairId],
@@ -323,6 +329,7 @@ describe.skip("Bucket (withdraw rewards)", async () => {
       prevBucketStorage,
       prevDexCoreStorage,
       prevPair.total_supply,
+      prevBucketStorage.next_reward,
       utils
     );
     const expectedUserRewardsInfo: UpdateUserRewards =
