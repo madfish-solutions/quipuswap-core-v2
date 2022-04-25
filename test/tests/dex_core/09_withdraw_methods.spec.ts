@@ -357,12 +357,14 @@ describe("DexCore (withdraw methods)", async () => {
     const receiver: string = carol.pkh;
     const referrer: string = bob.pkh;
     const swapParams: Swap = {
+      lambda: undefined,
       swaps: [{ direction: { a_to_b: undefined }, pair_id: new BigNumber(0) }],
       deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: receiver,
       referrer: referrer,
       amount_in: new BigNumber(333),
       min_amount_out: new BigNumber(0),
+      flash: false,
     };
 
     await fa12Token1.approve(dexCore.contract.address, swapParams.amount_in);
@@ -422,12 +424,14 @@ describe("DexCore (withdraw methods)", async () => {
     const receiver: string = alice.pkh;
     const referrer: string = bob.pkh;
     const swapParams: Swap = {
+      lambda: undefined,
       swaps: [{ direction: { b_to_a: undefined }, pair_id: new BigNumber(0) }],
       deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: receiver,
       referrer: referrer,
       amount_in: new BigNumber(333),
       min_amount_out: new BigNumber(0),
+      flash: false,
     };
 
     await utils.setProvider(alice.sk);
@@ -531,12 +535,14 @@ describe("DexCore (withdraw methods)", async () => {
     const receiver: string = alice.pkh;
     const referrer: string = bob.pkh;
     const swapParams: Swap = {
+      lambda: undefined,
       swaps: [{ direction: { b_to_a: undefined }, pair_id: new BigNumber(1) }],
       deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: receiver,
       referrer: referrer,
       amount_in: new BigNumber(333),
       min_amount_out: new BigNumber(0),
+      flash: false,
     };
 
     await utils.setProvider(alice.sk);

@@ -5,47 +5,10 @@ type tokens_t           is [@layout:comb] record [
   token_b                 : token_t;
 ]
 
-type flash_swap_rule_t  is
-| Loan_a_return_a
-| Loan_a_return_b
-| Loan_b_return_a
-| Loan_b_return_b
-
-type flash_swap_t       is [@layout:comb] record [
-  lambda                  : unit -> list(operation);
-  flash_swap_rule         : flash_swap_rule_t;
-  pair_id                 : token_id_t;
-  deadline                : timestamp;
-  receiver                : address;
-  referrer                : address;
-  amount_out              : nat;
-]
-
 type flash_swap_1_t     is [@layout:comb] record [
-  flash_swap_rule         : flash_swap_rule_t;
   pair_id                 : token_id_t;
-  return_token            : token_t;
-  referrer                : address;
-  sender                  : address;
-  swap_token_pool         : nat;
-  return_token_pool       : nat;
-  amount_out              : nat;
   prev_tez_balance        : nat;
-]
-
-type flash_swap_data_t  is [@layout:comb] record [
-  swap_token              : token_t;
-  return_token            : token_t;
-  swap_token_pool         : nat;
-  return_token_pool       : nat;
-]
-
-type flash_swap_res_t   is [@layout:comb] record [
-  returns                 : nat;
-  full_fee                : nat;
-  new_return_tok_pool     : nat;
-  interface_fee           : nat;
-  auction_fee             : nat;
+  amount_in               : nat;
 ]
 
 type fees_t             is [@layout:comb] record [
@@ -154,6 +117,7 @@ type swap_slice_t       is [@layout:comb] record [
 ]
 
 type swap_t             is [@layout:comb] record [
+  lambda                  : option(unit -> list(operation));
   swaps                   : list(swap_slice_t);
   deadline                : timestamp;
   receiver                : address;
@@ -280,7 +244,6 @@ type action_t           is
 | Launch_exchange         of launch_exchange_t
 | Invest_liquidity        of invest_liquidity_t
 | Divest_liquidity        of divest_liquidity_t
-| Flash_swap              of flash_swap_t
 | Swap                    of swap_t
 | Withdraw_profit         of withdraw_profit_t
 | Claim_interface_fee     of claim_fee_t
@@ -328,4 +291,4 @@ type full_action_t      is
 
 type deploy_bucket_t    is (option(key_hash) * tez * bucket_t) -> (operation * address)
 
-const dex_core_methods_max_index : nat = 26n;
+const dex_core_methods_max_index : nat = 25n;

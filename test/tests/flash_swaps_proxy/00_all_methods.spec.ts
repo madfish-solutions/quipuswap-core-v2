@@ -14,7 +14,7 @@ import { flashSwapsProxyStorage } from "../../../storage/FlashSwapsProxy";
 import { dexCoreStorage } from "../../../storage/DexCore";
 import { fa12Storage } from "../../../storage/test/FA12";
 
-import { FlashSwap, LaunchExchange } from "../../types/DexCore";
+import { Swap, LaunchExchange } from "../../types/DexCore";
 import { SBAccount } from "../../types/Common";
 import { FA12 } from "../../helpers/FA12";
 
@@ -106,13 +106,15 @@ describe("FlashSwapsProxy", async () => {
   });
 
   it("should call default entrypoint by dex core", async () => {
-    const params: FlashSwap = {
-      flash_swap_rule: "Loan_a_return_a",
-      pair_id: new BigNumber(0),
+    const params: Swap = {
+      lambda: undefined,
+      swaps: [{ direction: { a_to_b: undefined }, pair_id: new BigNumber(0) }],
       deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
-      receiver: alice.pkh,
+      receiver: bob.pkh,
       referrer: bob.pkh,
-      amount_out: new BigNumber(10),
+      amount_in: new BigNumber(100),
+      min_amount_out: new BigNumber(1),
+      flash: true,
     };
     const tokenA: FA12 = await FA12.init(
       Utils.getMinFA12Token(
@@ -123,6 +125,6 @@ describe("FlashSwapsProxy", async () => {
     );
 
     await tokenA.approve(dexCore.contract.address, new BigNumber(100));
-    await dexCore.flashSwap(params);
+    await dexCore.swap(params);
   });
 });

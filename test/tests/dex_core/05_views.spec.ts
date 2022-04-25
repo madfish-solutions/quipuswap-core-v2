@@ -821,12 +821,14 @@ describe("DexCore (views)", async () => {
   it("should return proper cumulative prices for pair", async () => {
     const pairs: BigNumber[] = [new BigNumber(3)];
     const swapParams: Swap = {
+      lambda: undefined,
       swaps: [{ direction: { a_to_b: undefined }, pair_id: pairs[0] }],
       deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(999),
       min_amount_out: new BigNumber(0),
+      flash: false,
     };
 
     await dexCore.swap(swapParams);
@@ -861,12 +863,14 @@ describe("DexCore (views)", async () => {
       new BigNumber(3),
     ];
     const swapParams: Swap = {
+      lambda: undefined,
       swaps: [{ direction: { a_to_b: undefined }, pair_id: pairs[2] }],
       deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(2999),
       min_amount_out: new BigNumber(0),
+      flash: false,
     };
 
     await dexCore.swap(swapParams);

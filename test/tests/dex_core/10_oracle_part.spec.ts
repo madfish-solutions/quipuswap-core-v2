@@ -1,4 +1,6 @@
 import { defaultCollectingPeriod, Utils } from "../../helpers/Utils";
+import { FlashSwapsProxy } from "../../helpers/FlashSwapsProxy";
+import { FlashSwapAgent } from "../../helpers/FlashSwapAgent";
 import { BakerRegistry } from "../../helpers/BakerRegistry";
 import { PRECISION } from "../../helpers/Constants";
 import { Auction } from "../../helpers/Auction";
@@ -11,6 +13,8 @@ import { BigNumber } from "bignumber.js";
 
 import accounts from "../../../scripts/sandbox/accounts";
 
+import { flashSwapAgentStorage } from "../../../storage/test/FlashSwapAgent";
+import { flashSwapsProxyStorage } from "../../../storage/FlashSwapsProxy";
 import { bakerRegistryStorage } from "../../../storage/BakerRegistry";
 import { auctionStorage } from "../../../storage/Auction";
 import { dexCoreStorage } from "../../../storage/DexCore";
@@ -28,9 +32,23 @@ import {
   Swap,
 } from "../../types/DexCore";
 
+import fs from "fs";
+
 chai.use(require("chai-bignumber")(BigNumber));
 
+function updateParameters(
+  flashSwapAgentAddress: string,
+  value: number
+): Promise<void> {
+  return fs.promises.writeFile(
+    "contracts/test/parameters.ligo",
+    `const agent : address = ("${flashSwapAgentAddress}" : address);\nconst val : nat = ${value}n;\n`
+  );
+}
+
 describe("DexCore (oracle part)", async () => {
+  var flashSwapsProxy: FlashSwapsProxy;
+  var flashSwapAgent: FlashSwapAgent;
   var bakerRegistry: BakerRegistry;
   var auction: Auction;
   var dexCore: DexCore;
@@ -76,6 +94,22 @@ describe("DexCore (oracle part)", async () => {
     auction = await Auction.originate(utils.tezos, auctionStorage);
 
     await auction.setLambdas();
+
+    flashSwapsProxyStorage.dex_core = dexCore.contract.address;
+
+    flashSwapsProxy = await FlashSwapsProxy.originate(
+      utils.tezos,
+      flashSwapsProxyStorage
+    );
+
+    await dexCore.setFlashSwapsProxy(flashSwapsProxy.contract.address);
+
+    flashSwapAgentStorage.dex_core = dexCore.contract.address;
+
+    flashSwapAgent = await FlashSwapAgent.originate(
+      utils.tezos,
+      flashSwapAgentStorage
+    );
   });
 
   it("should not calculate cumulative prices and should update last block timestamp in time of any exchange launch", async () => {
@@ -186,12 +220,14 @@ describe("DexCore (oracle part)", async () => {
     });
 
     const swapParams: Swap = {
+      lambda: undefined,
       swaps: [{ direction: { a_to_b: undefined }, pair_id: pairId }],
       deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(1000),
       min_amount_out: new BigNumber(0),
+      flash: false,
     };
     const prevPair: Pair = dexCore.storage.storage.pairs[pairId.toFixed()];
 
@@ -268,15 +304,59 @@ describe("DexCore (oracle part)", async () => {
     });
 
     const swapParams: Swap = {
+      lambda: undefined,
       swaps: [{ direction: { b_to_a: undefined }, pair_id: pairId }],
       deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
       receiver: alice.pkh,
       referrer: bob.pkh,
       amount_in: new BigNumber(555),
       min_amount_out: new BigNumber(0),
+      flash: false,
     };
     const prevPair: Pair = dexCore.storage.storage.pairs[pairId.toFixed()];
 
+    await dexCore.swap(swapParams);
+    await dexCore.updateStorage({
+      pairs: [pairId.toFixed()],
+    });
+
+    const cumulativePrices: CumulativePrices =
+      await DexCore.calculateCumulativePrices(prevPair, utils);
+
+    expect(
+      dexCore.storage.storage.pairs[pairId.toFixed()].token_a_price_cml
+    ).to.be.bignumber.equal(cumulativePrices.tokenACumulativePrice);
+    expect(
+      dexCore.storage.storage.pairs[pairId.toFixed()].token_b_price_cml
+    ).to.be.bignumber.equal(cumulativePrices.tokenBCumulativePrice);
+    expect(
+      Date.parse(
+        dexCore.storage.storage.pairs[pairId.toFixed()].last_block_timestamp
+      )
+    ).to.be.lte(await utils.getLastBlockTimestamp());
+  });
+
+  it("should calculate cumulative prices and update last block timestamp in time of flash swap", async () => {
+    const pairId: BigNumber = new BigNumber(0);
+
+    await dexCore.updateStorage({
+      pairs: [pairId.toFixed()],
+    });
+
+    const swapParams: Swap = {
+      lambda: undefined,
+      swaps: [{ direction: { b_to_a: undefined }, pair_id: pairId }],
+      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
+      receiver: alice.pkh,
+      referrer: bob.pkh,
+      amount_in: new BigNumber(555),
+      min_amount_out: new BigNumber(0),
+      flash: true,
+    };
+    const prevPair: Pair = dexCore.storage.storage.pairs[pairId.toFixed()];
+    const value: number = Math.round(Math.random() * 100 + 1);
+
+    await updateParameters(flashSwapAgent.contract.address, value);
     await dexCore.swap(swapParams);
     await dexCore.updateStorage({
       pairs: [pairId.toFixed()],
