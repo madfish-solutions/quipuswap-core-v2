@@ -30,8 +30,6 @@ type pour_over_t        is [@layout:comb] record [
 type withdraw_rewards_t is [@layout:comb] record [
   receiver                : contract(unit);
   user                    : address;
-  current_balance         : nat;
-  new_balance             : nat;
 ]
 
 type ban_baker_t        is [@layout:comb] record [
@@ -44,7 +42,6 @@ type vote_t             is [@layout:comb] record [
   candidate               : key_hash;
   execute_voting          : bool;
   votes                   : nat;
-  current_balance         : nat;
 ]
 
 type is_banned_baker_t  is key_hash
