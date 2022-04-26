@@ -1,6 +1,6 @@
-import { Utils, zeroAddress } from "../../helpers/Utils";
+import { Common, Auction as AuctionErrors } from "../../helpers/Errors";
 import { Auction } from "../../helpers/Auction";
-import { Common } from "../../helpers/Errors";
+import { Utils } from "../../helpers/Utils";
 import { FA2 } from "../../helpers/FA2";
 
 import { rejects } from "assert";
@@ -222,6 +222,24 @@ describe("Auction (admin methods)", async () => {
         return true;
       }
     );
+  });
+
+  it("should fail if admin is trying to set a negative auction duration", async () => {
+    let auctionDuration: BigNumber = new BigNumber(-666);
+
+    await rejects(auction.setAuctionDuration(auctionDuration), (err: Error) => {
+      expect(err.message).to.equal(AuctionErrors.ERR_WRONG_AUCTION_DURATION);
+
+      return true;
+    });
+
+    auctionDuration = new BigNumber(0);
+
+    await rejects(auction.setAuctionDuration(auctionDuration), (err: Error) => {
+      expect(err.message).to.equal(AuctionErrors.ERR_WRONG_AUCTION_DURATION);
+
+      return true;
+    });
   });
 
   it("should setup a new auction duration by an admin", async () => {

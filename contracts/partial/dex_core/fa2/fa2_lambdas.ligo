@@ -102,7 +102,6 @@ function iterate_transfer(
               candidate       = receiver_candidate;
               execute_voting  = True;
               votes           = new_receiver_balance;
-              current_balance = receiver_balance;
             ],
             unwrap(pair.bucket, DexCore.err_bucket_404)
           ) # ops;
@@ -112,7 +111,6 @@ function iterate_transfer(
               candidate       = sender_candidate;
               execute_voting  = False;
               votes           = new_sender_balance;
-              current_balance = sender_balance;
             ],
             unwrap(pair.bucket, DexCore.err_bucket_404)
           ) # ops;

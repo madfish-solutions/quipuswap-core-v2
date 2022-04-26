@@ -4,6 +4,7 @@ output/
 .vscode/
 venv/
 .idea/
+contracts/compiled/*.tz
 
 .DS_Store
 yarn.lock

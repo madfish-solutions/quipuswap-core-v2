@@ -78,7 +78,6 @@ function launch_exchange(
                 candidate       = params.candidate;
                 execute_voting  = True;
                 votes           = init_shares;
-                current_balance = 0n;
               ];
               bucket      = deploy_res.1;
             ];
@@ -97,7 +96,6 @@ function launch_exchange(
                 candidate       = params.candidate;
                 execute_voting  = True;
                 votes           = init_shares;
-                current_balance = 0n;
               ],
               unwrap(updated_pair.bucket, DexCore.err_bucket_404)
             ) # ops;
@@ -173,7 +171,6 @@ function invest_liquidity(
               candidate       = params.candidate;
               execute_voting  = True;
               votes           = receiver_balance + params.shares;
-              current_balance = receiver_balance;
             ],
             unwrap(updated_pair.bucket, DexCore.err_bucket_404)
           ) # ops;
@@ -258,7 +255,6 @@ function divest_liquidity(
               candidate       = params.candidate;
               execute_voting  = True;
               votes           = get_nat_or_fail(sender_balance - params.shares);
-              current_balance = sender_balance;
             ],
             unwrap(updated_pair.bucket, DexCore.err_bucket_404)
           ) # ops;
@@ -378,13 +374,10 @@ function withdraw_profit(
         non_payable(Unit);
 
         const pair : pair_t = unwrap(s.pairs[params.pair_id], DexCore.err_pair_not_listed);
-        const user_balance : nat = unwrap_or(s.ledger[(Tezos.sender, params.pair_id)], 0n);
 
         ops := get_withdraw_profit_op(
           Tezos.sender,
           params.receiver,
-          user_balance,
-          user_balance,
           unwrap(pair.bucket, DexCore.err_bucket_404)
         ) # ops;
       }
@@ -538,7 +531,6 @@ function vote(
             candidate       = params.candidate;
             execute_voting  = True;
             votes           = voter_balance;
-            current_balance = voter_balance;
           ],
           unwrap(pair.bucket, DexCore.err_bucket_404)
         ) # ops;

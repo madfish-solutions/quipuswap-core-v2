@@ -30,8 +30,10 @@ function withdraw_rewards(
     only_dex_core(s.dex_core);
     non_payable(Unit);
 
+    const user : user_t = unwrap_or(s.users[params.user], Constants.default_user);
+
     s := update_rewards(s);
-    s := update_user_reward(params.user, params.current_balance, params.new_balance, s);
+    s := update_user_reward(params.user, user.votes, user.votes, s);
 
     var user_reward_info : user_reward_info_t := unwrap_or(
       s.users_rewards[params.user],
@@ -78,10 +80,10 @@ function vote(
     only_dex_core(s.dex_core);
     non_payable(Unit);
 
-    s := update_rewards(s);
-    s := update_user_reward(params.voter, params.current_balance, params.votes, s);
-
     var user : user_t := unwrap_or(s.users[params.voter], Constants.default_user);
+
+    s := update_rewards(s);
+    s := update_user_reward(params.voter, user.votes, params.votes, s);
 
     case user.candidate of [
       None                 -> skip
