@@ -69,9 +69,9 @@ function place_bid(
         assert_with_error(params.bid > auction.current_bid, Auction.err_low_bid);
 
         const bid_fee_f : nat = auction.current_bid * s.fees.bid_fee_f;
-        const refund : nat = abs(auction.current_bid - (bid_fee_f / Constants.precision));
+        const refund : nat = get_nat_or_fail(auction.current_bid - (bid_fee_f / Constants.precision));
 
-        s.bid_fee_balance := s.bid_fee_balance + get_nat_or_fail(auction.current_bid - refund);
+        s.bid_fee_balance_f := s.bid_fee_balance_f + get_nat_or_fail((refund * Constants.precision) - bid_fee_f);
 
         ops := transfer_token(Tezos.sender, Tezos.self_address, params.bid, Fa2(s.quipu_token)) # ops;
         ops := transfer_token(Tezos.self_address, auction.current_bidder, refund, Fa2(s.quipu_token)) # ops;
@@ -194,6 +194,8 @@ function set_auction_duration(
     | Set_auction_duration(auction_duration) -> {
         only_admin(s.admin);
 
+        assert_with_error(auction_duration > 0, Auction.err_wrong_auction_duration);
+
         s.auction_duration := auction_duration;
       }
     | _ -> skip
@@ -242,10 +244,11 @@ function withdraw_dev_fee(
         only_admin(s.admin);
 
         const dev_fee_balance_f : nat = unwrap_or(s.dev_fee_balances_f[params.token], 0n);
-        const dev_fee_balance : nat = dev_fee_balance_f / Constants.precision;
 
         if dev_fee_balance_f > Constants.precision
         then {
+          const dev_fee_balance : nat = dev_fee_balance_f / Constants.precision;
+
           s.dev_fee_balances_f[params.token] := get_nat_or_fail(
             dev_fee_balance_f - (dev_fee_balance * Constants.precision)
           );
@@ -271,10 +274,11 @@ function withdraw_public_fee(
         assert_with_error(Set.mem(params.token, s.whitelist), Auction.err_not_whitelisted_token);
 
         const public_fee_balance_f : nat = unwrap_or(s.public_fee_balances_f[params.token], 0n);
-        const public_fee_balance : nat = public_fee_balance_f / Constants.precision;
 
         if public_fee_balance_f > Constants.precision
         then {
+          const public_fee_balance : nat = public_fee_balance_f / Constants.precision;
+
           s.public_fee_balances_f[params.token] := get_nat_or_fail(
             public_fee_balance_f - (public_fee_balance * Constants.precision)
           );
@@ -298,16 +302,18 @@ function burn_bid_fee(
     | Burn_bid_fee -> {
         only_admin(s.admin);
 
-        if s.bid_fee_balance > 0n
+        if s.bid_fee_balance_f > Constants.precision
         then {
+          const bid_fee_balance : nat = s.bid_fee_balance_f / Constants.precision;
+
+          s.bid_fee_balance_f := get_nat_or_fail(s.bid_fee_balance_f - (bid_fee_balance * Constants.precision));
+
           ops := transfer_token(
             Tezos.self_address,
             Constants.zero_address,
-            s.bid_fee_balance,
+            bid_fee_balance,
             Fa2(s.quipu_token)
           ) # ops;
-
-          s.bid_fee_balance := 0n;
         }
         else skip;
       }
