@@ -24,7 +24,7 @@ export const auctionStorage: AuctionStorage = {
     admin: zeroAddress,
     pending_admin: undefined,
     dex_core: zeroAddress,
-    bid_fee_balance: new BigNumber(0),
+    bid_fee_balance_f: new BigNumber(0),
     auctions_count: new BigNumber(0),
     auction_duration: new BigNumber(0),
     min_bid: new BigNumber(0),

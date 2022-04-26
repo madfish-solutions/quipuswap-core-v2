@@ -6,13 +6,8 @@
                    (address %voter)
                    (key_hash %candidate)
                    (bool %execute_voting)
-                   (nat %votes)
-                   (nat %current_balance)))
-            (pair %withdraw_rewards
-               (contract %receiver unit)
-               (address %user)
-               (nat %current_balance)
-               (nat %new_balance)))) ;
+                   (nat %votes)))
+            (pair %withdraw_rewards (contract %receiver unit) (address %user)))) ;
   storage
     (pair (big_map %users address (pair (option %candidate key_hash) (nat %votes)))
           (big_map %bakers
@@ -40,6 +35,9 @@
          PUSH timestamp 0 ;
          PAIR 3 ;
          PUSH nat 0 ;
+         NONE key_hash ;
+         PAIR ;
+         PUSH nat 0 ;
          PUSH nat 0 ;
          PAIR ;
          LAMBDA
@@ -60,7 +58,7 @@
              ADD ;
              COMPARE ;
              GT } ;
-         DUP 5 ;
+         DUP 6 ;
          LAMBDA
            (pair nat
                  (pair (big_map address (pair (option key_hash) nat))
@@ -328,15 +326,16 @@
              UPDATE 5 } ;
          SWAP ;
          APPLY ;
-         DIG 9 ;
+         DIG 10 ;
          UNPAIR ;
          IF_LEFT
            { DIG 2 ;
              DIG 4 ;
              DIG 6 ;
-             DIG 8 ;
+             DIG 7 ;
              DIG 9 ;
-             DROP 5 ;
+             DIG 10 ;
+             DROP 6 ;
              IF_LEFT
                { DIG 3 ;
                  DROP ;
@@ -433,7 +432,7 @@
            { IF_LEFT
                { DIG 5 ;
                  DIG 6 ;
-                 DIG 8 ;
+                 DIG 9 ;
                  DROP 3 ;
                  IF_LEFT
                    { DIG 2 ;
@@ -441,7 +440,8 @@
                      DIG 4 ;
                      DIG 5 ;
                      DIG 6 ;
-                     DROP 5 ;
+                     DIG 7 ;
+                     DROP 6 ;
                      DUG 2 ;
                      DUP ;
                      DUG 3 ;
@@ -473,7 +473,7 @@
                      TRANSFER_TOKENS ;
                      CONS ;
                      PAIR }
-                   { DIG 7 ;
+                   { DIG 8 ;
                      DUP 3 ;
                      GET 15 ;
                      SENDER ;
@@ -486,48 +486,44 @@
                      COMPARE ;
                      EQ ;
                      IF { DROP } { FAILWITH } ;
+                     DIG 5 ;
+                     DUP 3 ;
+                     CAR ;
+                     DUP 3 ;
+                     CAR ;
+                     GET ;
+                     IF_NONE {} { SWAP ; DROP } ;
+                     DIG 2 ;
+                     DIG 4 ;
                      SWAP ;
+                     EXEC ;
+                     DUP 3 ;
+                     GET 6 ;
+                     PAIR ;
+                     SWAP ;
+                     DUP ;
+                     DUG 2 ;
+                     CDR ;
+                     DUP 4 ;
+                     CAR ;
+                     PAIR ;
+                     PAIR ;
                      DIG 3 ;
                      SWAP ;
                      EXEC ;
                      SWAP ;
                      DUP ;
                      DUG 2 ;
-                     GET 7 ;
-                     PAIR ;
-                     SWAP ;
-                     DUP ;
-                     DUG 2 ;
-                     GET 8 ;
-                     DUP 3 ;
-                     CAR ;
-                     PAIR ;
-                     PAIR ;
-                     DIG 2 ;
-                     SWAP ;
-                     EXEC ;
-                     PUSH nat 0 ;
-                     NONE key_hash ;
-                     PAIR ;
-                     SWAP ;
-                     DUP ;
-                     DUG 2 ;
-                     CAR ;
-                     DUP 4 ;
-                     CAR ;
-                     GET ;
-                     IF_NONE {} { SWAP ; DROP } ;
-                     DUP ;
                      CAR ;
                      IF_NONE
-                       { SWAP }
+                       {}
                        { DUP 6 ;
-                         DUP 4 ;
+                         DUP 3 ;
                          GET 3 ;
                          DUP 3 ;
                          GET ;
                          IF_NONE {} { SWAP ; DROP } ;
-                         DUP 3 ;
+                         DUP 4 ;
                          CDR ;
                          SWAP ;
                          DUP ;
@@ -536,7 +532,7 @@
                          SUB ;
                          ISNAT ;
                          IF_NONE { PUSH string "406" ; FAILWITH } {} ;
-                         DIG 4 ;
+                         DIG 3 ;
                          DUP ;
                          GET 3 ;
                          DIG 3 ;
@@ -558,7 +554,7 @@
                      GET ;
                      IF_NONE {} { SWAP ; DROP } ;
                      DUP 4 ;
-                     GET 7 ;
+                     GET 6 ;
                      SWAP ;
                      DUP ;
                      DUG 2 ;
@@ -580,7 +576,7 @@
                      UPDATE 3 ;
                      DIG 3 ;
                      DUP 5 ;
-                     GET 7 ;
+                     GET 6 ;
                      UPDATE 2 ;
                      SWAP ;
                      DUP ;
@@ -748,10 +744,10 @@
                      CDR ;
                      PAIR } }
                { DIG 4 ;
-                 DIG 7 ;
-                 DIG 9 ;
+                 DIG 8 ;
+                 DIG 10 ;
                  DROP 3 ;
-                 DIG 7 ;
+                 DIG 8 ;
                  DUP 3 ;
                  GET 15 ;
                  SENDER ;
@@ -764,21 +760,26 @@
                  COMPARE ;
                  EQ ;
                  IF { DROP } { FAILWITH } ;
-                 SWAP ;
-                 DIG 3 ;
+                 DIG 6 ;
+                 DUP 3 ;
+                 CAR ;
+                 DUP 3 ;
+                 CDR ;
+                 GET ;
+                 IF_NONE {} { SWAP ; DROP } ;
+                 DIG 2 ;
+                 DIG 4 ;
                  SWAP ;
                  EXEC ;
                  SWAP ;
                  DUP ;
                  DUG 2 ;
-                 GET 6 ;
+                 CDR ;
                  PAIR ;
                  SWAP ;
-                 DUP ;
-                 DUG 2 ;
-                 GET 5 ;
+                 CDR ;
                  DUP 3 ;
-                 GET 3 ;
+                 CDR ;
                  PAIR ;
                  PAIR ;
                  DIG 2 ;
@@ -790,7 +791,7 @@
                  DUG 2 ;
                  GET 5 ;
                  DUP 4 ;
-                 GET 3 ;
+                 CDR ;
                  GET ;
                  IF_NONE {} { SWAP ; DROP } ;
                  NIL operation ;
@@ -863,7 +864,7 @@
                  CAR ;
                  CAR ;
                  DIG 4 ;
-                 GET 3 ;
+                 CDR ;
                  SWAP ;
                  SOME ;
                  SWAP ;

@@ -323,16 +323,12 @@ function get_bucket_withdraw_rewards_entrypoint(
 function get_withdraw_profit_op(
   const user            : address;
   const receiver        : contract(unit);
-  const current_balance : nat;
-  const new_balance     : nat;
   const bucket          : address)
                         : operation is
   Tezos.transaction(
     record [
-      user            = user;
-      receiver        = receiver;
-      current_balance = current_balance;
-      new_balance     = new_balance;
+      user     = user;
+      receiver = receiver;
     ],
     0mutez,
     get_bucket_withdraw_rewards_entrypoint(bucket)
