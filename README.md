@@ -9,7 +9,7 @@ price for oracles etc.
 
 # Requiremets
 
-- Installed [NodeJS](https://nodejs.org/en/) (tested with NodeJS v15+);
+- Installed [NodeJS](https://nodejs.org/en/) (tested with NodeJS v17+);
 - Installed [Yarn](https://classic.yarnpkg.com/lang/en/docs/install/#mac-stable);
 - Installed node modules:
 
@@ -75,7 +75,7 @@ By default, the contracts will be deployed to the `development` network (in the
 Docker container).
 
 Also, you can specify the network for deploying (possible networks:
-`hangzhounet`, `ithacanet`, `mainnet`):
+`ithacanet`, `mainnet`):
 
 ```shell
   yarn migrate -n [network_name]
@@ -84,7 +84,6 @@ Also, you can specify the network for deploying (possible networks:
 Or just execute one of this commands:
 
 ```shell
-  yarn migrate-hangzhounet
   yarn migrate-ithacanet
   yarn migrate-mainnet
 ```
