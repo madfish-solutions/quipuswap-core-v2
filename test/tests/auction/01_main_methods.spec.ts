@@ -701,7 +701,7 @@ describe("Auction (main methods)", async () => {
     );
 
     expect(currBidFeeBalance).to.be.bignumber.equal(
-      prevBidFeeBalance.plus(refund.multipliedBy(PRECISION).minus(bidFee))
+      prevBidFeeBalance.plus(bidFee)
     );
     expect(currBobQTBalance).to.be.bignumber.equal(
       prevBobQTBalance.plus(refund)

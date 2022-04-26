@@ -71,7 +71,7 @@ function place_bid(
         const bid_fee_f : nat = auction.current_bid * s.fees.bid_fee_f;
         const refund : nat = get_nat_or_fail(auction.current_bid - (bid_fee_f / Constants.precision));
 
-        s.bid_fee_balance_f := s.bid_fee_balance_f + get_nat_or_fail((refund * Constants.precision) - bid_fee_f);
+        s.bid_fee_balance_f := s.bid_fee_balance_f + bid_fee_f;
 
         ops := transfer_token(Tezos.sender, Tezos.self_address, params.bid, Fa2(s.quipu_token)) # ops;
         ops := transfer_token(Tezos.self_address, auction.current_bidder, refund, Fa2(s.quipu_token)) # ops;
