@@ -266,6 +266,33 @@ def parse_auction_receive_fee(op):
     
     return res
 
+def parse_flash_swap_callbacks(res):
+    ops = fetch_entrypoints(res, "flash_swap_callback")
+    results = []
+    
+    for op in ops:
+        args = op["parameters"]["value"]["args"]
+
+        result = {
+            "type": "flash_swap_callback",
+            "pair_id": int(args[0]["int"]),
+            "prev_tez_balance": int(args[1]["int"]),
+            "amount_in": int(args[2]["int"])
+        }
+
+        results.append(result)
+    
+    return results
+
+def fetch_entrypoints(res, name):
+    result = []
+    for op in res.operations:
+        if op["kind"] == "transaction":
+            entrypoint = op["parameters"]["entrypoint"]
+            if entrypoint == name:
+                result.append(op)
+    return result
+
 # calculates shares balance
 def calc_total_balance(res, address):
     ledger = res.storage["storage"]["ledger"][address]

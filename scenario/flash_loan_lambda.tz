@@ -1,0 +1,10 @@
+{ DROP ;
+  NIL operation ;
+  PUSH string "FlashSwapAgent/default-entrypoint-404" ;
+  PUSH address "KT1Jf4xtkJGZRi63ceRQMDGWvfVsiWh3XHkx" ;
+  CONTRACT nat ;
+  IF_NONE { FAILWITH } { SWAP ; DROP } ;
+  PUSH mutez 0 ;
+  PUSH nat 86 ;
+  TRANSFER_TOKENS ;
+  CONS }
