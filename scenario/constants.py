@@ -77,7 +77,7 @@ tez_pair_c = {
 
 vr = {
     f"{dex_core}%get_total_supply": [{"request": 0, "total_supply": 500_000}],
-    f"{dex_core}%get_collecting_period": 100,
+    f"{dex_core}%get_collecting_period": 10,
     f"{dex_core}%get_cycle_duration": 100,
     f"{dex_core}%get_voting_period": 100,
 }
@@ -112,3 +112,7 @@ class Errors:
     LOW_TOKEN_B_IN = "'112'"
     HIGH_MIN_OUT = "'116'"
     WRONG_TEZ_AMOUNT = "'120'"
+
+    AUCTION_INSUFFICIENT_BALANCE = "'307'"
+    MIN_BID = "'308'"
+    AUCTION_FINISHED = "'309'"

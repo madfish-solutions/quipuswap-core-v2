@@ -9,7 +9,7 @@ from helpers import *
 from pytezos import ContractInterface, MichelsonRuntimeError
 from initial_storage import dex_core_lambdas
 
-class TezPairTest(TestCase):
+class FeesTest(TestCase):
 
     @classmethod
     def setUpClass(cls):

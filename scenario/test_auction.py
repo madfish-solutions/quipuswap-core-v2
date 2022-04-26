@@ -92,7 +92,7 @@ class AuctionTest(TestCase):
         with self.assertRaises(MichelsonRuntimeError) as error:
             chain.execute(self.ct.launch_auction(token_a_fa2, 10, 34))
         self.assertEqual(error.exception.args[-1], Errors.MIN_BID)
-    
+   
     def test_dev_fee(self):
         storage = self.init_storage.copy()
         storage["storage"]["fees"] = {
@@ -208,3 +208,47 @@ class AuctionTest(TestCase):
         res = chain.execute(self.ct.burn_bid_fee(), sender=admin)
         transfers = parse_transfers(res)
         self.assertEqual(len(transfers), 0)
+
+    def test_set_auction_duration(self):
+        chain = LocalChain(storage=self.init_storage)
+
+        chain.execute(self.ct.receive_fee(token_a_fa2, 55), sender=dex_core)
+        chain.execute(self.ct.launch_auction(token_a_fa2, 55, 1_000), sender=alice)
+
+        chain.advance_blocks(7)
+
+        # pid still can be placed
+        chain.execute(self.ct.place_bid(0, 2_000), sender=bob)
+
+        res = chain.execute(self.ct.set_auction_duration(150), sender=admin)
+        self.assertEqual(res.operations, [])
+
+        chain.advance_blocks(3)
+
+        with self.assertRaises(MichelsonRuntimeError) as error:
+            chain.execute(self.ct.place_bid(0, 3_000), sender=bob)
+        self.assertEqual(error.exception.args[-1], Errors.AUCTION_FINISHED)
+
+        # another auction
+        chain.execute(self.ct.receive_fee(token_b_fa2, 420_420), sender=dex_core)
+        chain.execute(self.ct.launch_auction(token_b_fa2, 420_420, 1_000), sender=alice)
+
+        # 90 seconds since auction start
+        chain.advance_blocks(3)
+        chain.execute(self.ct.place_bid(1, 2_000), sender=bob)
+
+        # 180 seconds since auction start
+        chain.advance_blocks(3)
+        with self.assertRaises(MichelsonRuntimeError) as error:
+            chain.execute(self.ct.place_bid(1, 3_000), sender=bob)
+        self.assertEqual(error.exception.args[-1], Errors.AUCTION_FINISHED)
+
+
+
+        
+
+
+
+
+
+
