@@ -90,6 +90,7 @@ class StableSwapTest(TestCase):
             ],
             "amount_in" : 10_000,
             "min_amount_out" : 1,
+            "lambda" : None,
             "receiver" : julian,
             "referrer" : burn,
             "deadline" : 1
@@ -132,6 +133,7 @@ class StableSwapTest(TestCase):
             ],
             "amount_in" : 100,
             "min_amount_out" : 1,
+            "lambda" : None,
             "receiver" : me,
             "referrer" : burn,
             "deadline" : 1
@@ -148,6 +150,7 @@ class StableSwapTest(TestCase):
             ],
             "amount_in" : 100,
             "min_amount_out" : 1,
+            "lambda" : None,
             "receiver" : me,
             "referrer" : burn,
             "deadline" : 1
@@ -172,6 +175,7 @@ class StableSwapTest(TestCase):
             ],
             "amount_in" : 100,
             "min_amount_out" : 1,
+            "lambda" : None,
             "receiver" : me,
             "referrer" : burn,
             "deadline" : 1
@@ -191,6 +195,7 @@ class StableSwapTest(TestCase):
             ],
             "amount_in" : 1_000,
             "min_amount_out" : 1,
+            "lambda" : None,
             "receiver" : me,
             "referrer" : burn,
             "deadline" : 1
@@ -204,6 +209,7 @@ class StableSwapTest(TestCase):
             ],
             "amount_in" : 100,
             "min_amount_out" : 1,
+            "lambda" : None,
             "receiver" : me,
             "referrer" : burn,
             "deadline" : 1
@@ -238,6 +244,7 @@ class StableSwapTest(TestCase):
                 ],
                 "amount_in" : 100_000,
                 "min_amount_out" : 1,
+                "lambda" : None,
                 "receiver" : me,
                 "referrer" : burn,
                 "deadline" : 1
@@ -253,6 +260,7 @@ class StableSwapTest(TestCase):
                 ],
                 "amount_in" : amount_bought,
                 "min_amount_out" : 1,
+                "lambda" : None,
                 "receiver" : me,
                 "referrer" : burn,
                 "deadline" : 1
@@ -285,6 +293,7 @@ class StableSwapTest(TestCase):
                 ],
                 "amount_in" : 2,
                 "min_amount_out" : 1,
+                "lambda" : None,
                 "receiver" : me,
                 "referrer" : burn,
                 "deadline" : 1
@@ -308,6 +317,7 @@ class StableSwapTest(TestCase):
             ],
             "amount_in" : 10_000_000_000,
             "min_amount_out" : 1,
+            "lambda" : None,
             "receiver" : me,
             "referrer" : burn,
             "deadline" : 1
@@ -405,6 +415,7 @@ class StableSwapTest(TestCase):
             ],
             "amount_in" : 2,
             "min_amount_out" : 1,
+            "lambda" : None,
             "receiver" : me,
             "referrer" : burn,
             "deadline" : 1
@@ -501,6 +512,7 @@ class StableSwapTest(TestCase):
             ],
             "amount_in" : 4,
             "min_amount_out" : 1,
+            "lambda" : None,
             "receiver" : alice,
             "referrer" : burn,
             "deadline" : 1
@@ -552,6 +564,7 @@ class StableSwapTest(TestCase):
                 ],
                 "amount_in" : 10_000,
                 "min_amount_out" : 1,
+                "lambda" : None,
                 "receiver" : julian,
                 "referrer" : burn,
                 "deadline" : 1

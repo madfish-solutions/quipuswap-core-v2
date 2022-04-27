@@ -53,7 +53,8 @@ class TokenToTokenRouterTest(TestCase):
                 }
             ],
             "amount_in" : amount_in,
-            "min_amount_out" : 1, 
+            "min_amount_out" : 1,
+            "lambda" : None, 
             "receiver" : julian,
             "referrer" : burn,
             "deadline": 100_000
@@ -127,7 +128,8 @@ class TokenToTokenRouterTest(TestCase):
                 }
             ],
             "amount_in" : 10_000,
-            "min_amount_out" : 1, 
+            "min_amount_out" : 1,
+            "lambda" : None, 
             "receiver" : julian,
             "referrer" : burn,
             "deadline": 100_000
@@ -157,8 +159,10 @@ class TokenToTokenRouterTest(TestCase):
                     "direction": "b_to_a",
                 }
             ],
-            "amount_in" : 10_000,
-            "min_amount_out" : 1, 
+            "amount_in" : 1_000_000,
+            "min_amount_out" : 1,
+            "lambda" : None,
+            "lambda" : None, 
             "receiver" : julian,
             "referrer" : burn,
             "deadline": 100_000
@@ -186,7 +190,8 @@ class TokenToTokenRouterTest(TestCase):
                     }
                 ],
                 "amount_in" : 334,
-                "min_amount_out" : 1, 
+                "min_amount_out" : 1,
+                "lambda" : None, 
                 "receiver" : julian,
                 "referrer" : burn,
                 "deadline": 100_000
@@ -205,7 +210,8 @@ class TokenToTokenRouterTest(TestCase):
                     }
                 ],
                 "amount_in" : 334,
-                "min_amount_out" : 1, 
+                "min_amount_out" : 1,
+                "lambda" : None, 
                 "receiver" : julian,
                 "referrer" : burn,
                 "deadline": 100_000
@@ -227,7 +233,8 @@ class TokenToTokenRouterTest(TestCase):
                 }
             ],
             "amount_in" : 100_000_000_000,
-            "min_amount_out" : 1, 
+            "min_amount_out" : 1,
+            "lambda" : None, 
             "receiver" : julian,
             "referrer" : burn,
             "deadline": 100_000
@@ -250,7 +257,8 @@ class TokenToTokenRouterTest(TestCase):
                 }
             ],
             "amount_in" : 100_000_000,
-            "min_amount_out" : 1, 
+            "min_amount_out" : 1,
+            "lambda" : None, 
             "receiver" : julian,
             "referrer" : burn,
             "deadline": 100_000
@@ -277,7 +285,8 @@ class TokenToTokenRouterTest(TestCase):
                 }
             ],
             "amount_in" : 10_000_000_000,
-            "min_amount_out" : 1, 
+            "min_amount_out" : 1,
+            "lambda" : None, 
             "receiver" : julian,
             "referrer" : burn,
             "deadline": 100_000

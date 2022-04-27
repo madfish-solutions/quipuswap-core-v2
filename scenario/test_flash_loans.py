@@ -10,7 +10,7 @@ from helpers import *
 from pytezos import ContractInterface, MichelsonRuntimeError, micheline_to_michelson
 from initial_storage import dex_core_lambdas
 
-class FeesTest(TestCase):
+class FlashLoanTest(TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -122,6 +122,8 @@ class FeesTest(TestCase):
 
         transfers = parse_transfers(res)
 
+        out = calc_out(100_000, 1_000_000, 100_000_000, int(0.012 * 1e18))
+
         self.assertAlmostEqual(transfers[0]["amount"], 9_016_468, delta=1)
         self.assertEqual(transfers[0]["destination"], me)
         self.assertEqual(transfers[0]["source"], contract_self_address)
@@ -175,3 +177,134 @@ class FeesTest(TestCase):
             ), sender=contract_self_address)
 
         self.assertEqual(error.exception.args[-1], Errors.NOT_A_NAT)
+
+    def test_tez_flash_loan_ba_ab(self):
+        chain = LocalChain(storage=self.init_storage)
+        add_pool = self.dex.launch_exchange(tez_pair, 100_000_000, 1_000_000, me, dummy_candidate, 1)
+        res = chain.execute(add_pool, sender=admin, amount=1_000_000)
+
+        res = chain.execute(self.dex.set_fees({
+            "swap_fee" : int(0.003 * 1e18),
+            "interface_fee" : int(0.003 * 1e18),
+            "auction_fee" : int(0.003 * 1e18),
+            "withdraw_fee_reward" : int(0.003 * 1e18)
+        }), sender=admin)
+
+        # ask for tez
+        res = chain.execute(self.dex.swap({
+            "swaps" : [
+                {
+                    "pair_id": 0,
+                    "direction": "b_to_a",
+                },
+                {
+                    "pair_id": 0,
+                    "direction": "a_to_b",
+                }
+            ],
+            "amount_in" : 100_000,
+            "min_amount_out" : 1,
+            "lambda" : self.flash_lambda,
+            "receiver" : me,
+            "referrer" : alice,
+            "deadline" : 1
+        }), amount=0)
+
+        self.assertEqual(len(res.operations), 4)
+
+        transfers = parse_transfers(res)
+
+        self.assertAlmostEqual(transfers[0]["amount"], 98_314, delta=1)
+        self.assertEqual(transfers[0]["destination"], me)
+        self.assertEqual(transfers[0]["type"], "tez")
+        
+        # lambda invocation
+        self.assertAlmostEqual(transfers[1]["amount"], 0)
+        self.assertEqual(transfers[1]["destination"], flash_swaps_proxy)
+        self.assertEqual(transfers[1]["source"], contract_self_address)
+        self.assertEqual(transfers[1]["type"], "tez")
+
+        lambda_call = res.operations[1]
+        micheline = lambda_call["parameters"]["value"]
+        michelson = micheline_to_michelson(micheline)
+        self.assertEqual(michelson, self.flash_lambda)
+
+        lambda_callback = res.operations[2]
+        entrypoint = lambda_callback["parameters"]["entrypoint"]
+        self.assertEqual(entrypoint, "flash_swap_callback")
+
+        callbacks = parse_flash_swap_callbacks(res)
+        self.assertEqual(len(callbacks), 1)
+        callback = callbacks[0]
+        self.assertEqual(callback["pair_id"], 0)
+        self.assertEqual(callback["prev_tez_balance"], 1_000_000)
+        self.assertEqual(callback["amount_in"], 100_000)
+
+    def test_tez_flash_loan_ab_ba(self):
+        chain = LocalChain(storage=self.init_storage)
+        add_pool = self.dex.launch_exchange(tez_pair, 100_000_000, 1_000_000, me, dummy_candidate, 1)
+        res = chain.execute(add_pool, sender=admin, amount=1_000_000)
+
+        res = chain.execute(self.dex.set_fees({
+            "swap_fee" : int(0.003 * 1e18),
+            "interface_fee" : int(0.003 * 1e18),
+            "auction_fee" : int(0.003 * 1e18),
+            "withdraw_fee_reward" : int(0.003 * 1e18)
+        }), sender=admin)
+
+        # ask for tez
+        res = chain.execute(self.dex.swap({
+            "swaps" : [
+                {
+                    "pair_id": 0,
+                    "direction": "a_to_b",
+                },
+                {
+                    "pair_id": 0,
+                    "direction": "b_to_a",
+                }
+            ],
+            "amount_in" : 100_000,
+            "min_amount_out" : 1,
+            "lambda" : self.flash_lambda,
+            "receiver" : me,
+            "referrer" : alice,
+            "deadline" : 1
+        }), amount=0)
+
+        self.assertEqual(len(res.operations), 5)
+
+        transfers = parse_transfers(res)
+
+        self.assertAlmostEqual(transfers[0]["amount"], 98_207, delta=1)
+        self.assertEqual(transfers[0]["destination"], me)
+        self.assertEqual(transfers[0]["source"], contract_self_address)
+        self.assertEqual(transfers[0]["type"], "token")
+        self.assertEqual(transfers[0]["token_address"], token_a_address)
+        
+        # lambda invocation
+        self.assertAlmostEqual(transfers[1]["amount"], 0)
+        self.assertEqual(transfers[1]["destination"], flash_swaps_proxy)
+        self.assertEqual(transfers[1]["source"], contract_self_address)
+        self.assertEqual(transfers[1]["type"], "tez")
+
+        lambda_call = res.operations[1]
+        micheline = lambda_call["parameters"]["value"]
+        michelson = micheline_to_michelson(micheline)
+        self.assertEqual(michelson, self.flash_lambda)
+
+        # requesting users amount goes last
+        self.assertEqual(transfers[2]["amount"], 100_000)
+        self.assertEqual(transfers[2]["destination"], contract_self_address)
+        self.assertEqual(transfers[2]["source"], me)
+        self.assertEqual(transfers[2]["type"], "token")
+        self.assertEqual(transfers[2]["token_address"], token_a_address)
+
+        pour_over = res.operations[2]
+        self.assertEqual(pour_over["parameters"]["entrypoint"], "pour_over")
+        
+        pour_overs = parse_pour_overs(res)
+        self.assertEqual(len(pour_overs), 1)
+        self.assertEqual(pour_overs[0]["amount"], 990)
+        self.assertEqual(pour_overs[0]["destination"], bucket)
+        self.assertEqual(pour_overs[0]["source"], bucket)

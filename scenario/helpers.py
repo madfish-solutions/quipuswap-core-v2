@@ -45,26 +45,12 @@ def get_pool_stats(res):
 def calc_shares(token_a, token_b):
     return token_a if token_a < token_b else token_b
 
-def calc_tokens_out(res, tez_amount):
-    token_pool = res.storage["storage"]["token_pool"]
-    tez_pool = res.storage["storage"]["tez_pool"]
-    invariant = tez_pool * token_pool
+def calc_out(amount_in, pool_a, pool_b, fee):
+    tez_in_with_fee = amount_in * fee
+    numerator = tez_in_with_fee * pool_b
+    denominator = pool_a * int(1e18) + tez_in_with_fee
 
-    tez_pool = tez_pool + tez_amount
-
-    new_token_pool = invariant / abs(tez_pool - tez_amount / fee_rate)
-    tokens_out = abs(token_pool - new_token_pool)
-    return tokens_out
-
-def calc_tez_out(res, token_amount):
-    token_pool = res.storage["storage"]["token_pool"]
-    tez_pool = res.storage["storage"]["tez_pool"]
-    invariant = tez_pool * token_pool
-    
-    token_pool = token_pool + token_amount
-    new_tez_pool = invariant / abs(token_pool - token_amount / fee_rate)
-    tez_out = abs(tez_pool - new_tez_pool)
-    return tez_out
+    return numerator // denominator
 
 def calc_pool_rate(res, pair=-1):
     if pair != -1: #token to token case

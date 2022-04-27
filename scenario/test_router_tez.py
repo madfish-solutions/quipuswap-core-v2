@@ -50,6 +50,7 @@ class TokenToTezRouterTest(TestCase):
             ],
             "amount_in" : amount_in,
             "min_amount_out" : 1, 
+            "lambda" : None,
             "receiver" : julian,
             "referrer" : burn,
             "deadline": 100_000
@@ -124,6 +125,7 @@ class TokenToTezRouterTest(TestCase):
     #         ],
     #         "amount_in" : 10_000,
     #         "min_amount_out" : 1, 
+    #         "lambda" : None,
     #         "receiver" : julian,
     #         "referrer" : burn,
     #         "deadline": 100_000
@@ -158,6 +160,8 @@ class TokenToTezRouterTest(TestCase):
             ],
             "amount_in" : 10_000,
             "min_amount_out" : 1, 
+            "lambda" : None,
+            "lambda" : None, 
             "receiver" : julian,
             "referrer" : burn,
             "deadline": 100_000
@@ -194,11 +198,12 @@ class TokenToTezRouterTest(TestCase):
                 }
             ],
             "amount_in" : 10_000,
-            "min_amount_out" : 1, 
+            "min_amount_out" : 1,
+            "lambda" : None,
             "receiver" : julian,
             "referrer" : burn,
             "deadline": 100_000
-        }), amount=10_000)
+        }), amount=1_000_000)
         transfers = parse_transfers(res)
         token_out = next(v for v in transfers if v["destination"] == julian)
         self.assertEqual(token_out["amount"], 9939)
@@ -207,8 +212,8 @@ class TokenToTezRouterTest(TestCase):
 
     def test_ttez_router_impossible_path(self):
         chain = LocalChain(storage=self.init_storage)
-        chain.execute(self.dex.launch_exchange(pair_ab, 1111, 3333, me, dummy_candidate, 1), amount=100_000)
-        chain.execute(self.dex.launch_exchange(pair_cd, 5555, 7777, me, dummy_candidate, 1), amount=100_000)
+        chain.execute(self.dex.launch_exchange(tez_pair, 1111, 3333, me, dummy_candidate, 1), amount=3333)
+        chain.execute(self.dex.launch_exchange(tez_pair_b, 5555, 7777, me, dummy_candidate, 1), amount=7777)
 
         # can't find path
         with self.assertRaises(MichelsonRuntimeError):
@@ -225,6 +230,7 @@ class TokenToTezRouterTest(TestCase):
                 ],
                 "amount_in" : 334,
                 "min_amount_out" : 1, 
+                "lambda" : None,
                 "receiver" : julian,
                 "referrer" : burn,
                 "deadline": 100_000
@@ -244,6 +250,7 @@ class TokenToTezRouterTest(TestCase):
                 ],
                 "amount_in" : 334,
                 "min_amount_out" : 1, 
+                "lambda" : None,
                 "receiver" : julian,
                 "referrer" : burn,
                 "deadline": 100_000
@@ -252,9 +259,9 @@ class TokenToTezRouterTest(TestCase):
 
     def test_ttez_router_cant_overbuy(self):
         chain = LocalChain(storage=self.init_storage)
-        res = chain.execute(self.dex.launch_exchange(pair_ab, 100_000, 100_000, me, dummy_candidate, 1), amount=100_000)
-        res = chain.execute(self.dex.launch_exchange(pair_bc, 10_000, 10_000, me, dummy_candidate, 1), amount=100_000)
-        res = chain.execute(self.dex.launch_exchange(pair_ac, 1_000_000, 1_000_000, me, dummy_candidate, 1), amount=100_000)
+        res = chain.execute(self.dex.launch_exchange(tez_pair, 100_000, 100_000, me, dummy_candidate, 1), amount=100_000)
+        res = chain.execute(self.dex.launch_exchange(tez_pair_b, 10_000, 10_000, me, dummy_candidate, 1), amount=10_000)
+        res = chain.execute(self.dex.launch_exchange(tez_pair_c, 1_000_000, 1_000_000, me, dummy_candidate, 1), amount=1_000_000)
 
         # overbuy at the very beginning
         res = chain.interpret(self.dex.swap({
@@ -266,6 +273,7 @@ class TokenToTezRouterTest(TestCase):
             ],
             "amount_in" : 100_000_000_000,
             "min_amount_out" : 1, 
+            "lambda" : None,
             "receiver" : julian,
             "referrer" : burn,
             "deadline": 100_000
@@ -289,6 +297,7 @@ class TokenToTezRouterTest(TestCase):
             ],
             "amount_in" : 100_000_000,
             "min_amount_out" : 1, 
+            "lambda" : None,
             "receiver" : julian,
             "referrer" : burn,
             "deadline": 100_000
@@ -316,6 +325,7 @@ class TokenToTezRouterTest(TestCase):
             ],
             "amount_in" : 10_000_000_000,
             "min_amount_out" : 1, 
+            "lambda" : None,
             "receiver" : julian,
             "referrer" : burn,
             "deadline": 100_000
@@ -340,6 +350,7 @@ class TokenToTezRouterTest(TestCase):
                 ],
                 "amount_in" : 10,
                 "min_amount_out" : 1, 
+                "lambda" : None,
                 "receiver" : julian,
                 "referrer" : burn,
                 "deadline": 100_000
@@ -357,6 +368,7 @@ class TokenToTezRouterTest(TestCase):
                 ],
                 "amount_in" : 10,
                 "min_amount_out" : 1, 
+                "lambda" : None,
                 "receiver" : julian,
                 "referrer" : burn,
                 "deadline": 100_000
@@ -373,6 +385,7 @@ class TokenToTezRouterTest(TestCase):
                 ],
                 "amount_in" : 10,
                 "min_amount_out" : 1, 
+                "lambda" : None,
                 "receiver" : julian,
                 "referrer" : burn,
                 "deadline": 100_000

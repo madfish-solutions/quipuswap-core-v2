@@ -48,6 +48,7 @@ class FeesTest(TestCase):
             ],
             "amount_in" : 100_000,
             "min_amount_out" : 1,
+            "lambda" : None,
             "receiver" : me,
             "referrer" : alice,
             "deadline" : 1
@@ -88,6 +89,7 @@ class FeesTest(TestCase):
             ],
             "amount_in" : 1_000_000,
             "min_amount_out" : 1,
+            "lambda" : None,
             "receiver" : me,
             "referrer" : alice,
             "deadline" : 1
@@ -141,6 +143,7 @@ class FeesTest(TestCase):
             ],
             "amount_in" : 1_000_000,
             "min_amount_out" : 1,
+            "lambda" : None,
             "receiver" : me,
             "referrer" : alice,
             "deadline" : 1
@@ -209,6 +212,7 @@ class FeesTest(TestCase):
             ],
             "amount_in" : 2,
             "min_amount_out" : 1,
+            "lambda" : None,
             "receiver" : me,
             "referrer" : alice,
             "deadline" : 1
