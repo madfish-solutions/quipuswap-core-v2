@@ -107,7 +107,7 @@ fees = {
 }
 
 class Errors:
-    PAST_DEADLINE = "'144'"
+    PAST_DEADLINE = "'143'"
     DRAINED_PAIR = "'109'"
     LOW_TOKEN_A_IN = "'111'"
     LOW_TOKEN_B_IN = "'112'"

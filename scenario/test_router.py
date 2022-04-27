@@ -27,11 +27,11 @@ class TokenToTokenRouterTest(TestCase):
     
     def test_tt_token_to_token_router(self):
 
-        amount_in=10_000
+        amount_in=10_000_000
 
         chain = LocalChain(storage=self.init_storage)
-        res = chain.execute(self.dex.launch_exchange(pair_ab, 100_000, 300_000, me, dummy_candidate, 1))
-        res = chain.execute(self.dex.launch_exchange(pair_bc, 500_000, 700_000, me, dummy_candidate, 1))
+        res = chain.execute(self.dex.launch_exchange(pair_ab, 100_000_000, 300_000_000, me, dummy_candidate, 1))
+        res = chain.execute(self.dex.launch_exchange(pair_bc, 500_000_000, 700_000_000, me, dummy_candidate, 1))
 
         res = chain.execute(self.dex.set_fees({
             "interface_fee" : int(0.001 * 1e18),      
@@ -63,37 +63,43 @@ class TokenToTokenRouterTest(TestCase):
         transfers = parse_transfers(res)
         contract_in = next(v for v in transfers if v["destination"] == contract_self_address)
         self.assertEqual(contract_in["token_address"], token_a_address)
-        self.assertEqual(contract_in["amount"], 10_000)
+        self.assertEqual(contract_in["amount"], amount_in)
 
         routed_out = next(v for v in transfers if v["destination"] == julian)
         self.assertEqual(routed_out["token_address"], token_c_address)
 
         # same swap but one by one
-        res = chain.interpret(self.dex.swap(
-            swaps=[{
-                "pair_id": 0,
-                "direction": "a_to_b",
-            }],
-            amount_in=amount_in,
-            min_amount_out=1,
-            receiver=julian,
-            referrer=burn,
-            deadline=100_000
-        ))
+        res = chain.execute(self.dex.swap({
+            "swaps" : [
+                {
+                    "pair_id": 0, 
+                    "direction": "a_to_b",
+                }
+            ],
+            "amount_in" : amount_in,
+            "min_amount_out" : 1,
+            "lambda" : None, 
+            "receiver" : julian,
+            "referrer" : burn,
+            "deadline": 100_000
+        }))
         transfers = parse_transfers(res)
         token_b_out = next(v for v in transfers if v["destination"] == julian)
 
-        res = chain.interpret(self.dex.swap(
-             swaps=[{
-                "pair_id": 1,
-                "direction": "b_to_a",
-            }],
-            amount_in=token_b_out["amount"],
-            min_amount_out=1,
-            receiver=julian,
-            referrer=burn,
-            deadline=100_000,
-        ))
+        res = chain.interpret(self.dex.swap({
+            "swaps" : [
+                {
+                    "pair_id": 1, 
+                    "direction": "b_to_a",
+                }
+            ],
+            "amount_in" : token_b_out["amount"],
+            "min_amount_out" : 1,
+            "lambda" : None, 
+            "receiver" : julian,
+            "referrer" : burn,
+            "deadline": 100_000
+        }))
         transfers = parse_transfers(res)
         token_c_out = next(v for v in transfers if v["destination"] == julian)
         self.assertEqual(routed_out["amount"], token_c_out["amount"])
@@ -159,7 +165,7 @@ class TokenToTokenRouterTest(TestCase):
                     "direction": "b_to_a",
                 }
             ],
-            "amount_in" : 1_000_000,
+            "amount_in" : 10_000,
             "min_amount_out" : 1,
             "lambda" : None,
             "lambda" : None, 

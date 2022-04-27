@@ -261,7 +261,7 @@ class TokenToTezRouterTest(TestCase):
         chain = LocalChain(storage=self.init_storage)
         res = chain.execute(self.dex.launch_exchange(tez_pair, 100_000, 100_000, me, dummy_candidate, 1), amount=100_000)
         res = chain.execute(self.dex.launch_exchange(tez_pair_b, 10_000, 10_000, me, dummy_candidate, 1), amount=10_000)
-        res = chain.execute(self.dex.launch_exchange(tez_pair_c, 1_000_000, 1_000_000, me, dummy_candidate, 1), amount=1_000_000)
+        res = chain.execute(self.dex.launch_exchange(pair_bc, 1_000_000, 1_000_000, me, dummy_candidate, 1))
 
         # overbuy at the very beginning
         res = chain.interpret(self.dex.swap({
@@ -320,7 +320,7 @@ class TokenToTezRouterTest(TestCase):
                 },
                 {
                     "pair_id": 2, 
-                    "direction": "a_to_b",
+                    "direction": "b_to_a",
                 }
             ],
             "amount_in" : 10_000_000_000,
