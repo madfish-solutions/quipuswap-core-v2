@@ -50,9 +50,7 @@ function update_rewards(
   var s                 : storage_t)
                         : storage_t is
   block {
-    const total_supply : nat = get_pair_total_supply(s.dex_core, s.pair_id);
-
-    if total_supply > 0n
+    if s.total_supply > 0n
     then {
       const rewards_level : nat =
         if Tezos.level > s.collecting_period_end
@@ -60,7 +58,7 @@ function update_rewards(
         else Tezos.level;
       const new_reward : nat = get_nat_or_fail(rewards_level - s.last_update_level) * s.reward_per_block;
 
-      s.reward_per_share := s.reward_per_share + (new_reward / total_supply);
+      s.reward_per_share := s.reward_per_share + (new_reward / s.total_supply);
       s.last_update_level := Tezos.level;
 
       if Tezos.level > s.collecting_period_end
@@ -75,7 +73,7 @@ function update_rewards(
         const new_reward : nat = get_nat_or_fail(Tezos.level - s.collecting_period_end) * s.reward_per_block;
 
         s.collecting_period_end := s.collecting_period_end + period_duration;
-        s.reward_per_share := s.reward_per_share + (new_reward / total_supply);
+        s.reward_per_share := s.reward_per_share + (new_reward / s.total_supply);
         s.total_reward := s.total_reward + ((s.reward_per_block * period_duration) / Constants.precision);
         s.next_reward := 0n;
       }

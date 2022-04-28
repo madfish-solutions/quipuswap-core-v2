@@ -82,6 +82,9 @@ function vote(
 
     var user : user_t := unwrap_or(s.users[params.voter], Constants.default_user);
 
+    s.total_supply := get_nat_or_fail(s.total_supply - user.votes);
+    s.total_supply := s.total_supply + params.votes;
+
     s := update_rewards(s);
     s := update_user_reward(params.voter, user.votes, params.votes, s);
 
@@ -94,6 +97,7 @@ function vote(
       s.bakers[user_candidate] := candidate with record [ votes = candidate_new_votes ];
     }
     ];
+
 
     var user_candidate : baker_t := unwrap_or(s.bakers[params.candidate], Constants.default_baker);
     const user_candidate_votes : nat = user_candidate.votes + params.votes;
