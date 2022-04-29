@@ -23,5 +23,5 @@ export const bucketStorage: BucketStorage = {
   reward_per_block: new BigNumber(0),
   last_update_level: new BigNumber(0),
   collecting_period_end: new BigNumber(0),
-  voting_period_end: new BigNumber(0),
+  total_supply: new BigNumber(0),
 };
