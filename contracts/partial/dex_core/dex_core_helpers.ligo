@@ -301,14 +301,14 @@ function call_flash_swaps_proxy(
 
 function get_flash_swap_callback(
   const self            : address)
-                        : contract(flash_swap_1_t) is
+                        : contract(flash_swap_callback_t) is
   unwrap(
-    (Tezos.get_entrypoint_opt("%flash_swap_callback", self) : option(contract(flash_swap_1_t))),
+    (Tezos.get_entrypoint_opt("%flash_swap_callback", self) : option(contract(flash_swap_callback_t))),
     DexCore.err_flash_swap_callback_404
   )
 
 function call_flash_swap_callback(
-  const params          : flash_swap_1_t)
+  const params          : flash_swap_callback_t)
                         : operation is
   Tezos.transaction(params, 0mutez, get_flash_swap_callback(Tezos.self_address))
 

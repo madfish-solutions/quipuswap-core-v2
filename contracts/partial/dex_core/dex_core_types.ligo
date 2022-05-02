@@ -5,7 +5,7 @@ type tokens_t           is [@layout:comb] record [
   token_b                 : token_t;
 ]
 
-type flash_swap_1_t     is [@layout:comb] record [
+type flash_swap_callback_t is [@layout:comb] record [
   pair_id                 : token_id_t;
   prev_tez_balance        : nat;
   amount_in               : nat;
@@ -269,7 +269,7 @@ type action_t           is
 | Balance_of              of balance_of_t
 (* CALLBACKS *)
 | Launch_callback         of launch_callback_t
-| Flash_swap_callback     of flash_swap_1_t
+| Flash_swap_callback     of flash_swap_callback_t
 | Close                   of close_t
 
 type return_t           is list(operation) * storage_t
