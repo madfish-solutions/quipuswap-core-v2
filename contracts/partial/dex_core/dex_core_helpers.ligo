@@ -259,19 +259,7 @@ function swap_internal(
     tmp.s.pairs[params.pair_id] := calc_cumulative_prices(pair, updated_pair.token_a_pool, updated_pair.token_b_pool);
 
     if is_last_swap
-    then {
-      tmp.last_operation := Some(
-        if swap.to_.token = Tez
-        then get_pour_out_op(
-          record [
-            receiver = (Tezos.get_contract_with_error(tmp.receiver, Common.err_contract_404) : contract(unit));
-            amt      = out;
-          ],
-          unwrap(pair.bucket, DexCore.err_bucket_404)
-        )
-        else transfer_token(Tezos.self_address, tmp.receiver, out, swap.to_.token)
-      );
-    }
+    then tmp.last_operation := Some(pour_out_or_transfer_tokens(tmp.receiver, out, swap.to_.token, pair.bucket))
     else skip;
 
     tmp.counter := tmp.counter + 1n;
