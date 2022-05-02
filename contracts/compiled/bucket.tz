@@ -703,6 +703,9 @@
                                     DUP ;
                                     GET 11 ;
                                     UPDATE 9 ;
+                                    DUP ;
+                                    GET 9 ;
+                                    UPDATE 7 ;
                                     DIG 2 ;
                                     UPDATE 11 ;
                                     NIL operation ;

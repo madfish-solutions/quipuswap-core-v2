@@ -142,6 +142,7 @@ function vote(
         if s.next_candidate =/= Constants.zero_key_hash
         then {
           s.current_delegated := s.next_candidate;
+          s.previous_delegated := s.current_delegated;
           s.next_candidate := Constants.zero_key_hash;
 
           ops := list [
