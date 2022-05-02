@@ -139,22 +139,32 @@ function vote(
 
       if check_is_banned_baker(unwrap_or(s.bakers[s.current_delegated], Constants.default_baker))
       then {
-        ops := list [
-          Tezos.set_delegate((None : option(key_hash)))
-        ];
-
-        s.current_delegated := Constants.zero_key_hash;
-        s.previous_delegated := Constants.zero_key_hash;
-      }
-      else {
-        if s.current_delegated =/= s.previous_delegated
+        if s.next_candidate =/= Constants.zero_key_hash
         then {
+          s.current_delegated := s.next_candidate;
+          s.next_candidate := Constants.zero_key_hash;
+
           ops := list [
             get_baker_registry_validate_op(s.current_delegated, s.baker_registry);
             Tezos.set_delegate(Some(s.current_delegated))
           ];
+        }
+        else {
+          s.current_delegated := Constants.zero_key_hash;
+          s.previous_delegated := Constants.zero_key_hash;
 
+          ops := Tezos.set_delegate((None : option(key_hash))) # ops;
+        }
+      }
+      else {
+        if s.current_delegated =/= s.previous_delegated
+        then {
           s.previous_delegated := s.current_delegated;
+
+          ops := list [
+            get_baker_registry_validate_op(s.current_delegated, s.baker_registry);
+            Tezos.set_delegate(Some(s.current_delegated))
+          ];
         }
         else skip;
       };

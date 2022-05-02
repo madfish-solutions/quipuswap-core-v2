@@ -58,7 +58,18 @@
              ADD ;
              COMPARE ;
              GT } ;
-         DUP 6 ;
+         LAMBDA
+           (pair key_hash address)
+           operation
+           { UNPAIR ;
+             PUSH string "200" ;
+             DIG 2 ;
+             CONTRACT %validate key_hash ;
+             IF_NONE { FAILWITH } { SWAP ; DROP } ;
+             PUSH mutez 0 ;
+             DIG 2 ;
+             TRANSFER_TOKENS } ;
+         DUP 7 ;
          LAMBDA
            (pair nat
                  (pair (big_map address (pair (option key_hash) nat))
@@ -243,7 +254,7 @@
                 { DIG 2 ; DROP 2 } } ;
          SWAP ;
          APPLY ;
-         DUP 4 ;
+         DUP 5 ;
          LAMBDA
            (pair (pair nat nat)
                  (pair (pair address nat)
@@ -326,16 +337,17 @@
              UPDATE 5 } ;
          SWAP ;
          APPLY ;
-         DIG 10 ;
+         DIG 11 ;
          UNPAIR ;
          IF_LEFT
            { DIG 2 ;
              DIG 4 ;
-             DIG 6 ;
+             DIG 5 ;
              DIG 7 ;
-             DIG 9 ;
+             DIG 8 ;
              DIG 10 ;
-             DROP 6 ;
+             DIG 11 ;
+             DROP 7 ;
              IF_LEFT
                { DIG 3 ;
                  DROP ;
@@ -430,9 +442,9 @@
                      CONS ;
                      PAIR } } }
            { IF_LEFT
-               { DIG 5 ;
-                 DIG 6 ;
-                 DIG 9 ;
+               { DIG 6 ;
+                 DIG 7 ;
+                 DIG 10 ;
                  DROP 3 ;
                  IF_LEFT
                    { DIG 2 ;
@@ -441,7 +453,8 @@
                      DIG 5 ;
                      DIG 6 ;
                      DIG 7 ;
-                     DROP 6 ;
+                     DIG 8 ;
+                     DROP 7 ;
                      DUG 2 ;
                      DUP ;
                      DUG 3 ;
@@ -473,7 +486,7 @@
                      TRANSFER_TOKENS ;
                      CONS ;
                      PAIR }
-                   { DIG 8 ;
+                   { DIG 9 ;
                      DUP 3 ;
                      GET 15 ;
                      SENDER ;
@@ -486,7 +499,7 @@
                      COMPARE ;
                      EQ ;
                      IF { DROP } { FAILWITH } ;
-                     DIG 5 ;
+                     DIG 6 ;
                      DUP 3 ;
                      CAR ;
                      DUP 3 ;
@@ -517,7 +530,7 @@
                      CAR ;
                      IF_NONE
                        {}
-                       { DUP 6 ;
+                       { DUP 7 ;
                          DUP 3 ;
                          GET 3 ;
                          DUP 3 ;
@@ -544,7 +557,7 @@
                          SWAP ;
                          UPDATE ;
                          UPDATE 3 } ;
-                     DUP 5 ;
+                     DUP 6 ;
                      SWAP ;
                      DUP ;
                      DUG 2 ;
@@ -595,7 +608,7 @@
                      SWAP ;
                      UPDATE ;
                      UPDATE 1 ;
-                     DUP 6 ;
+                     DUP 7 ;
                      SWAP ;
                      DUP ;
                      DUG 2 ;
@@ -604,7 +617,7 @@
                      GET 9 ;
                      GET ;
                      IF_NONE {} { SWAP ; DROP } ;
-                     DUP 7 ;
+                     DUP 8 ;
                      DUP 3 ;
                      GET 3 ;
                      DUP 4 ;
@@ -655,18 +668,18 @@
                      NIL operation ;
                      DIG 2 ;
                      GET 5 ;
-                     IF { DUP 4 ;
+                     IF { DUP 5 ;
                           DUP 3 ;
                           GET 3 ;
                           DUP 4 ;
                           GET 11 ;
                           GET ;
                           IF_NONE {} { SWAP ; DROP } ;
-                          DUP 4 ;
+                          DUP 5 ;
                           SWAP ;
                           EXEC ;
-                          IF { SWAP ; DUP 5 ; UPDATE 11 } { SWAP } ;
-                          DIG 3 ;
+                          IF { SWAP ; DUP 6 ; UPDATE 11 } { SWAP } ;
+                          DIG 4 ;
                           SWAP ;
                           DUP ;
                           DUG 2 ;
@@ -675,34 +688,23 @@
                           GET 9 ;
                           GET ;
                           IF_NONE {} { SWAP ; DROP } ;
-                          DIG 3 ;
+                          DIG 4 ;
                           SWAP ;
                           EXEC ;
-                          IF { SWAP ;
-                               DROP ;
-                               NIL operation ;
-                               NONE key_hash ;
-                               SET_DELEGATE ;
-                               CONS ;
-                               SWAP ;
-                               DUP 3 ;
-                               UPDATE 9 ;
-                               DIG 2 ;
-                               UPDATE 7 ;
-                               SWAP ;
-                               PAIR }
-                             { DIG 2 ;
-                               DROP ;
-                               DUP ;
-                               GET 7 ;
+                          IF { DUP 4 ;
                                SWAP ;
                                DUP ;
                                DUG 2 ;
-                               GET 9 ;
+                               GET 11 ;
                                COMPARE ;
                                NEQ ;
                                IF { SWAP ;
                                     DROP ;
+                                    DUP ;
+                                    GET 11 ;
+                                    UPDATE 9 ;
+                                    DIG 2 ;
+                                    UPDATE 11 ;
                                     NIL operation ;
                                     SWAP ;
                                     DUP ;
@@ -717,36 +719,73 @@
                                     GET 13 ;
                                     DUP 3 ;
                                     GET 9 ;
-                                    PUSH string "200" ;
-                                    DIG 2 ;
-                                    CONTRACT %validate key_hash ;
-                                    IF_NONE { FAILWITH } { SWAP ; DROP } ;
-                                    PUSH mutez 0 ;
-                                    DIG 2 ;
-                                    TRANSFER_TOKENS ;
+                                    PAIR ;
+                                    DIG 3 ;
+                                    SWAP ;
+                                    EXEC ;
                                     CONS ;
                                     SWAP ;
+                                    PAIR }
+                                  { DIG 2 ;
+                                    DROP ;
+                                    SWAP ;
+                                    NONE key_hash ;
+                                    SET_DELEGATE ;
+                                    CONS ;
+                                    SWAP ;
+                                    DUP 3 ;
+                                    UPDATE 9 ;
+                                    DIG 2 ;
+                                    UPDATE 7 ;
+                                    PAIR } }
+                             { DIG 3 ;
+                               DROP ;
+                               DUP ;
+                               GET 7 ;
+                               SWAP ;
+                               DUP ;
+                               DUG 2 ;
+                               GET 9 ;
+                               COMPARE ;
+                               NEQ ;
+                               IF { SWAP ;
+                                    DROP ;
                                     DUP ;
                                     GET 9 ;
                                     UPDATE 7 ;
+                                    NIL operation ;
+                                    SWAP ;
+                                    DUP ;
+                                    DUG 2 ;
+                                    GET 9 ;
+                                    SOME ;
+                                    SET_DELEGATE ;
+                                    CONS ;
+                                    SWAP ;
+                                    DUP ;
+                                    DUG 2 ;
+                                    GET 13 ;
+                                    DUP 3 ;
+                                    GET 9 ;
+                                    PAIR ;
+                                    DIG 3 ;
+                                    SWAP ;
+                                    EXEC ;
+                                    CONS ;
                                     SWAP ;
                                     PAIR }
-                                  { SWAP ; PAIR } } ;
-                          DUP ;
-                          CAR ;
-                          SWAP ;
-                          CDR ;
-                          PAIR }
-                        { DIG 2 ; DIG 3 ; DIG 4 ; DROP 3 ; SWAP ; PAIR } ;
+                                  { DIG 2 ; DROP ; PAIR } } }
+                        { DIG 2 ; DIG 3 ; DIG 4 ; DIG 5 ; DROP 4 ; SWAP ; PAIR } ;
                      DUP ;
                      CAR ;
                      SWAP ;
                      CDR ;
                      PAIR } }
                { DIG 4 ;
-                 DIG 8 ;
-                 DIG 10 ;
-                 DROP 3 ;
+                 DIG 5 ;
+                 DIG 9 ;
+                 DIG 11 ;
+                 DROP 4 ;
                  DIG 8 ;
                  DUP 3 ;
                  GET 15 ;
