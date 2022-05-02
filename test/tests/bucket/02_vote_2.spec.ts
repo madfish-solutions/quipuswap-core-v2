@@ -358,7 +358,7 @@ describe("Bucket (vote - 2)", async () => {
     expect(
       bucket.storage.bakers[investParams.candidate].votes
     ).to.be.bignumber.equal(initialBakerBobInfo.votes.plus(shares));
-    expect(bucket.storage.previous_delegated).to.be.equal(alice.pkh);
+    expect(bucket.storage.previous_delegated).to.be.equal(bob.pkh);
     expect(bucket.storage.current_delegated).to.be.equal(bob.pkh);
     expect(bucket.storage.next_candidate).to.be.equal(zeroAddress);
     expect(await utils.tezos.rpc.getDelegate(bucket.contract.address)).to.equal(
