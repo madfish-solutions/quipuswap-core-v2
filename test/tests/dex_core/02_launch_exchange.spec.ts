@@ -1081,10 +1081,7 @@ describe("DexCore (launch exchange)", async () => {
       BigNumber.min(params.token_a_in, params.token_b_in)
     );
     expect(
-      Date.parse(bucket.storage.bakers[params.candidate].ban_start_time)
-    ).to.be.lte(await utils.getLastBlockTimestamp());
-    expect(
-      bucket.storage.bakers[params.candidate].ban_period
+      Date.parse(bucket.storage.bakers[params.candidate].ban_end_time)
     ).to.be.bignumber.equal(new BigNumber(0));
     expect(bucket.storage.bakers[params.candidate].votes).to.be.bignumber.equal(
       BigNumber.min(params.token_a_in, params.token_b_in)

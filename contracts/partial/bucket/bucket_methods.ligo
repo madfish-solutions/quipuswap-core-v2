@@ -66,8 +66,7 @@ function ban_baker(
 
     var baker : baker_t := unwrap_or(s.bakers[params.baker], Constants.default_baker);
 
-    baker.ban_period := params.ban_period;
-    baker.ban_start_time := Tezos.now;
+    baker.ban_end_time := Tezos.now + int(params.ban_period);
 
     s.bakers[params.baker] := baker;
   } with ((nil : list(operation)), s)
