@@ -39,9 +39,6 @@ class AuctionTest(TestCase):
 
         res = chain.execute(self.ct.receive_fee(token_a_fa2, 10), sender=dex_core)
 
-        pprint(chain.storage["storage"])
-        return
-
         res = chain.execute(self.ct.launch_auction(token_a_fa2, 10, 100), sender=alice)
         transfers = parse_transfers(res)
         self.assertEqual(len(transfers), 1)
@@ -217,9 +214,6 @@ class AuctionTest(TestCase):
         chain = LocalChain(storage=self.init_storage)
 
         chain.execute(self.ct.receive_fee(token_a_fa2, 55), sender=dex_core)
-
-        pprint(chain.storage["storage"])
-        return
 
         chain.execute(self.ct.launch_auction(token_a_fa2, 55, 1_000), sender=alice)
 
