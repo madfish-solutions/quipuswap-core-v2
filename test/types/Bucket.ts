@@ -8,8 +8,7 @@ export type User = {
 };
 
 export type Baker = {
-  ban_start_time: string;
-  ban_period: BigNumber;
+  ban_end_time: string;
   votes: BigNumber;
 };
 

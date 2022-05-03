@@ -1,7 +1,7 @@
 function check_is_banned_baker(
   const baker           : baker_t)
                         : bool is
-  baker.ban_start_time + int(baker.ban_period) > Tezos.now
+  baker.ban_end_time > Tezos.now
 
 function get_baker_registry_validate_entrypoint(
   const baker_registry  : address)
