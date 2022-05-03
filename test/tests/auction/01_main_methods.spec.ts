@@ -32,7 +32,7 @@ import {
 
 chai.use(require("chai-bignumber")(BigNumber));
 
-describe.skip("Auction (main methods)", async () => {
+describe("Auction (main methods)", async () => {
   var utils: Utils;
   var auction: Auction;
   var fa12Whitelisted: FA12;

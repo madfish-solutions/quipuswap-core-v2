@@ -15,7 +15,7 @@ module Constants is {
   ];
 
   const default_baker : baker_t = record [
-    ban_end_time = (0 : timestamp);
+    ban_end_time   = (0 : timestamp);
     votes          = 0n;
   ]
 

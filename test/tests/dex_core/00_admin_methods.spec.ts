@@ -746,10 +746,10 @@ describe("DexCore (admin methods)", async () => {
     await dexCore.ban(ban);
     await bucket.updateStorage({ bakers: [ban.ban_params.baker] });
 
-    const tezos_now = await utils.getLastBlockTimestamp()
+    const tezosNow = await utils.getLastBlockTimestamp()
 
     expect(Date.parse(bucket.storage.bakers[ban.ban_params.baker].ban_end_time)).to.be.bignumber.lte(
-      ban.ban_params.ban_period.multipliedBy(1000).plus(tezos_now)
+      ban.ban_params.ban_period.multipliedBy(1000).plus(tezosNow)
     );
   });
 
@@ -766,9 +766,9 @@ describe("DexCore (admin methods)", async () => {
     await dexCore.ban(ban);
     await bucket.updateStorage({ bakers: [ban.ban_params.baker] });
 
-    const tezos_now = await utils.getLastBlockTimestamp()
+    const tezosNow = await utils.getLastBlockTimestamp()
     expect(Date.parse(bucket.storage.bakers[ban.ban_params.baker].ban_end_time)).to.be.bignumber.lte(
-      tezos_now
+      tezosNow
     );
   });
 });

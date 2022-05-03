@@ -25,7 +25,7 @@ type receive_fee_t      is [@layout:comb] record [
 ]
 
 type baker_t            is [@layout:comb] record [
-  ban_end_time          : timestamp;
+  ban_end_time            : timestamp;
   votes                   : nat;
 ]
 
