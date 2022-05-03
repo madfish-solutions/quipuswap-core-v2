@@ -56,8 +56,10 @@ class TezPairTest(TestCase):
         }))
 
         trxs = parse_transfers(res)
-        self.assertEqual(trxs[0]["amount"], 10_000)
-        self.assertEqual(trxs[0]["destination"], contract_self_address)
+        self.assertEqual(trxs[0]["amount"], 9_523)
+        self.assertEqual(trxs[0]["destination"], julian)
+        self.assertEqual(trxs[1]["amount"], 10_000)
+        self.assertEqual(trxs[1]["destination"], contract_self_address)
 
         with self.assertRaises(MichelsonRuntimeError):
             res = chain.execute(self.dex.divest_liquidity(pair_id=0, min_token_a_out=1, min_token_b_out=1, shares=200_001, liquidity_receiver=me, candidate=dummy_candidate, deadline=1))

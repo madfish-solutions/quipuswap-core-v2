@@ -97,8 +97,8 @@ class StableSwapTest(TestCase):
         }))
 
         trxs = parse_transfers(res)
-        self.assertEqual(trxs[1]["amount"], 9_523)
-        self.assertEqual(trxs[1]["destination"], julian)
+        self.assertEqual(trxs[0]["amount"], 9_523)
+        self.assertEqual(trxs[0]["destination"], julian)
 
         with self.assertRaises(MichelsonRuntimeError):
             res = chain.execute(self.dex.divest_liquidity(pair_id=0, min_token_a_out=1, min_token_b_out=1, shares=200_001, liquidity_receiver=me, candidate=dummy_candidate, deadline=1))
@@ -324,7 +324,8 @@ class StableSwapTest(TestCase):
         }))
 
         transfers = parse_transfers(res)
-        self.assertEqual(transfers[1]["amount"], 9_090_909_090)
+        self.assertEqual(transfers[0]["amount"], 9_090_909_090)
+        self.assertEqual(transfers[1]["amount"], 10_000_000_000)
 
     def test_multiple_singular_invests(self):
         chain = LocalChain(storage=self.init_storage)

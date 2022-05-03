@@ -39,6 +39,9 @@ class AuctionTest(TestCase):
 
         res = chain.execute(self.ct.receive_fee(token_a_fa2, 10), sender=dex_core)
 
+        pprint(chain.storage["storage"])
+        return
+
         res = chain.execute(self.ct.launch_auction(token_a_fa2, 10, 100), sender=alice)
         transfers = parse_transfers(res)
         self.assertEqual(len(transfers), 1)
@@ -94,12 +97,12 @@ class AuctionTest(TestCase):
         self.assertEqual(error.exception.args[-1], Errors.MIN_BID)
    
     def test_dev_fee(self):
-        storage = self.init_storage.copy()
-        storage["storage"]["fees"] = {
+        chain = LocalChain(storage=self.init_storage)
+
+        res = chain.execute(self.ct.set_fees({
             "bid_fee_f" : 0,
             "dev_fee_f" : int(0.03 * 1e18)
-        }
-        chain = LocalChain(storage=storage)
+        }), sender=admin)
 
         res = chain.execute(self.ct.receive_fee(token_a_fa2, 10), sender=dex_core)
 
@@ -125,13 +128,14 @@ class AuctionTest(TestCase):
 
 
     def test_bid_fee_zero(self):
-        storage = self.init_storage.copy()
-        storage["storage"]["fees"] = {
-            "bid_fee_f" : int(0.03 * 1e18),
-            "dev_fee_f" : 0
-        }
-        storage["storage"]["min_bid"] = 0
-        chain = LocalChain(storage=storage)
+        chain = LocalChain(storage=self.init_storage)
+
+        res = chain.execute(self.ct.set_fees({
+            "bid_fee_f" : 0,
+            "dev_fee_f" : int(0.03 * 1e18)
+        }), sender=admin)
+
+        res = chain.execute(self.ct.set_min_bid(0), sender=admin)
 
         res = chain.execute(self.ct.receive_fee(token_a_fa2, 999), sender=dex_core)
 
@@ -147,14 +151,14 @@ class AuctionTest(TestCase):
 
     # TODO
     def test_bid_fee(self):
-        storage = self.init_storage.copy()
-        storage["storage"]["fees"] = {
-            "bid_fee_f" : int(0.02 * 1e18),
-            "dev_fee_f" : 0
-        }
-        storage["storage"]["min_bid"] = 1
+        chain = LocalChain(storage=self.init_storage)
 
-        chain = LocalChain(storage=storage)
+        res = chain.execute(self.ct.set_fees({
+            "bid_fee_f" : int(0.02 * 1e18),
+            "dev_fee_f" : 0,
+        }), sender=admin)
+
+        res = chain.execute(self.ct.set_min_bid(1), sender=admin)
 
         res = chain.execute(self.ct.receive_fee(token_a_fa2, 10), sender=dex_core)
 
@@ -213,6 +217,10 @@ class AuctionTest(TestCase):
         chain = LocalChain(storage=self.init_storage)
 
         chain.execute(self.ct.receive_fee(token_a_fa2, 55), sender=dex_core)
+
+        pprint(chain.storage["storage"])
+        return
+
         chain.execute(self.ct.launch_auction(token_a_fa2, 55, 1_000), sender=alice)
 
         chain.advance_blocks(7)

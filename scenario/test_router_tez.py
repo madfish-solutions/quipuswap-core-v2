@@ -33,7 +33,6 @@ class TokenToTezRouterTest(TestCase):
         chain = LocalChain(storage=self.init_storage)
         res = chain.execute(self.dex.launch_exchange(tez_pair, 100_000, 300_000, me, dummy_candidate, 1), amount=300_000)
         res = chain.execute(self.dex.launch_exchange(tez_pair_b, 500_000, 700_000, me, dummy_candidate, 1), amount=700_000)
-
         
 
         # interpret the call without applying it
@@ -54,7 +53,7 @@ class TokenToTezRouterTest(TestCase):
             "receiver" : julian,
             "referrer" : burn,
             "deadline": 100_000
-        }), amount=amount_in)
+        }))
 
         transfers = parse_transfers(res)
         contract_in = next(v for v in transfers if v["destination"] == contract_self_address)
@@ -63,32 +62,34 @@ class TokenToTezRouterTest(TestCase):
         self.assertEqual(routed_out["token_address"], token_b_address)
 
         # same swap but one by one
-        res = chain.interpret(self.dex.swap(
-            swaps=[{
+        res = chain.interpret(self.dex.swap({
+            "swaps" : [{
                 "pair_id": 0,
                 "direction": "a_to_b",
             }],
-            amount_in=amount_in,
-            min_amount_out=1,
-            receiver=julian,
-            referrer=burn,
-            deadline=100_000
-        ))
+            "amount_in" : amount_in,
+            "min_amount_out" : 1, 
+            "lambda" : None,
+            "receiver" : julian,
+            "referrer" : burn,
+            "deadline": 100_000
+        }))
         transfers = parse_transfers(res)
         token_b_out = next(v for v in transfers if v["destination"] == julian)
         out_amount = token_b_out["amount"]
 
-        res = chain.interpret(self.dex.swap(
-             swaps=[{
+        res = chain.interpret(self.dex.swap({
+            "swaps" : [{
                 "pair_id": 1,
                 "direction": "b_to_a",
             }],
-            amount_in=out_amount,
-            min_amount_out=1,
-            receiver=julian,
-            referrer=burn,
-            deadline=100_000,
-        ), amount=out_amount)
+            "amount_in" : out_amount,
+            "min_amount_out" : 1, 
+            "lambda" : None,
+            "receiver" : julian,
+            "referrer" : burn,
+            "deadline": 100_000
+        }), amount=out_amount)
         transfers = parse_transfers(res)
         token_c_out = next(v for v in transfers if v["destination"] == julian)
         self.assertEqual(routed_out["amount"], token_c_out["amount"])
@@ -203,7 +204,7 @@ class TokenToTezRouterTest(TestCase):
             "receiver" : julian,
             "referrer" : burn,
             "deadline": 100_000
-        }), amount=1_000_000)
+        }), amount=10_000)
         transfers = parse_transfers(res)
         token_out = next(v for v in transfers if v["destination"] == julian)
         self.assertEqual(token_out["amount"], 9939)

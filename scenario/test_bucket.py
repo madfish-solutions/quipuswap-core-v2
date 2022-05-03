@@ -26,11 +26,6 @@ class BucketTest(TestCase):
     def test_withdraw_rewards(self):
         pass
 
-    def test_ban_main_candidate(self):
-        chain = LocalChain(storage=self.init_storage)
-        
-        res = chain.execute(self.ct.vote(alice, carol, True, 50, 0), sender=dex_core, view_results=vr)
-
     def test_full_reward(self):
         chain = LocalChain(storage=self.init_storage)
 
