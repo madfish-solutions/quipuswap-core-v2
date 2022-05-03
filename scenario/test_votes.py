@@ -75,7 +75,7 @@ class VotingTest(TestCase):
         votes = parse_delegations(res)
         self.assertEqual(len(votes), 0) # carol stays delegate
     
-    def test_ban_baker(self):
+    def test_ban_current_baker(self):
         chain = LocalChain(storage=self.init_storage)
 
         res = chain.execute(self.ct.vote(alice, carol, True, 50), sender=dex_core)
@@ -91,3 +91,39 @@ class VotingTest(TestCase):
         res = chain.execute(self.ct.vote(bob, dave, True, 100), sender=dex_core)
         votes = parse_delegations(res)
         self.assertEqual(votes[0], carol) # 50 vs 100 banned
+
+    def test_ban_next_delegate(self):
+        chain = LocalChain(storage=self.init_storage)
+
+        res = chain.execute(self.ct.vote(alice, carol, True, 50), sender=dex_core)
+        votes = parse_delegations(res)
+        self.assertEqual(votes[0], carol) # 50 vs 0
+
+        res = chain.execute(self.ct.vote(bob, dave, True, 60), sender=dex_core)
+        votes = parse_delegations(res)
+        self.assertEqual(votes[0], dave) # 50 vs 60
+
+        res = chain.execute(self.ct.ban_baker(carol, 300), sender=dex_core)
+
+        res = chain.execute(self.ct.vote(bob, dave, True, 0), sender=dex_core)
+        votes = parse_delegations(res)
+        self.assertEqual(len(votes), 0) # 50 banned vs 0
+
+    def test_ban_both(self):
+        chain = LocalChain(storage=self.init_storage)
+
+        res = chain.execute(self.ct.vote(alice, carol, True, 50), sender=dex_core)
+        votes = parse_delegations(res)
+        self.assertEqual(votes[0], carol) # 50 vs 0
+
+        res = chain.execute(self.ct.vote(bob, dave, True, 60), sender=dex_core)
+        votes = parse_delegations(res)
+        self.assertEqual(votes[0], dave) # 50 vs 60
+
+        res = chain.execute(self.ct.ban_baker(dave, 300), sender=dex_core)
+        res = chain.execute(self.ct.ban_baker(carol, 300), sender=dex_core)
+
+        res = chain.execute(self.ct.vote(bob, dave, True, 0), sender=dex_core)
+        # TODO check delegation is undone
+        votes = parse_delegations(res)
+        self.assertEqual(len(votes), 0) # 50 banned vs 0
