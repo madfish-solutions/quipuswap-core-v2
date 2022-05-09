@@ -110,6 +110,7 @@ function get_bucket_initial_storage(
     reward_paid           = 0n;
     reward_per_share      = 0n;
     reward_per_block      = 0n;
+    total_supply          = 0n;
     last_update_level     = Tezos.level;
     collecting_period_end = Tezos.level + collect_period;
   ]

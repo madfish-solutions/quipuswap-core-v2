@@ -746,12 +746,11 @@ describe("DexCore (admin methods)", async () => {
     await dexCore.ban(ban);
     await bucket.updateStorage({ bakers: [ban.ban_params.baker] });
 
-    expect(
-      bucket.storage.bakers[ban.ban_params.baker].ban_period
-    ).to.be.bignumber.equal(ban.ban_params.ban_period);
-    expect(
-      Date.parse(bucket.storage.bakers[ban.ban_params.baker].ban_start_time)
-    ).to.be.lte(await utils.getLastBlockTimestamp());
+    const tezosNow = await utils.getLastBlockTimestamp()
+
+    expect(Date.parse(bucket.storage.bakers[ban.ban_params.baker].ban_end_time)).to.be.bignumber.lte(
+      ban.ban_params.ban_period.multipliedBy(1000).plus(tezosNow)
+    );
   });
 
   it("should unban baker", async () => {
@@ -767,11 +766,9 @@ describe("DexCore (admin methods)", async () => {
     await dexCore.ban(ban);
     await bucket.updateStorage({ bakers: [ban.ban_params.baker] });
 
-    expect(
-      bucket.storage.bakers[ban.ban_params.baker].ban_period
-    ).to.be.bignumber.equal(ban.ban_params.ban_period);
-    expect(
-      Date.parse(bucket.storage.bakers[ban.ban_params.baker].ban_start_time)
-    ).to.be.lte(await utils.getLastBlockTimestamp());
+    const tezosNow = await utils.getLastBlockTimestamp()
+    expect(Date.parse(bucket.storage.bakers[ban.ban_params.baker].ban_end_time)).to.be.bignumber.lte(
+      tezosNow
+    );
   });
 });

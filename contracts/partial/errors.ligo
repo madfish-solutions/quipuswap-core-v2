@@ -47,8 +47,7 @@ module DexCore is {
 
 module Bucket is {
   const err_baker_registry_validate_entrypoint_404  : string = "200";
-  const err_dex_core_get_total_supply_view_404      : string = "201";
-  const err_dex_core_get_collecting_period_view_404 : string = "202";
+  const err_dex_core_get_collecting_period_view_404 : string = "201";
 }
 
 module Auction is {

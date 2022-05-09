@@ -299,12 +299,11 @@ describe("Bucket (fill, pour out, pour over, ban baker)", async () => {
     await bucket.banBaker(banBaker);
     await bucket.updateStorage({ bakers: [alice.pkh] });
 
-    expect(bucket.storage.bakers[alice.pkh].ban_period).to.be.bignumber.equal(
-      banBaker.ban_period
+    const tezosNow = await utils.getLastBlockTimestamp() + 1000
+
+    expect(Date.parse(bucket.storage.bakers[alice.pkh].ban_end_time)).to.be.bignumber.lte(
+      banBaker.ban_period.multipliedBy(1000).plus(tezosNow)
     );
-    expect(
-      Date.parse(bucket.storage.bakers[alice.pkh].ban_start_time)
-    ).to.be.lte(await utils.getLastBlockTimestamp());
   });
 
   it("should unban baker", async () => {
@@ -316,11 +315,10 @@ describe("Bucket (fill, pour out, pour over, ban baker)", async () => {
     await bucket.banBaker(banBaker);
     await bucket.updateStorage({ bakers: [alice.pkh] });
 
-    expect(bucket.storage.bakers[alice.pkh].ban_period).to.be.bignumber.equal(
-      banBaker.ban_period
+    const tezosNow = await utils.getLastBlockTimestamp()
+
+    expect(Date.parse(bucket.storage.bakers[alice.pkh].ban_end_time)).to.be.bignumber.lte(
+      tezosNow
     );
-    expect(
-      Date.parse(bucket.storage.bakers[alice.pkh].ban_start_time)
-    ).to.be.lte(await utils.getLastBlockTimestamp());
   });
 });
