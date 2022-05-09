@@ -66,8 +66,7 @@ function ban_baker(
 
     var baker : baker_t := unwrap_or(s.bakers[params.baker], Constants.default_baker);
 
-    baker.ban_period := params.ban_period;
-    baker.ban_start_time := Tezos.now;
+    baker.ban_end_time := Tezos.now + int(params.ban_period);
 
     s.bakers[params.baker] := baker;
   } with ((nil : list(operation)), s)
@@ -82,6 +81,9 @@ function vote(
 
     var user : user_t := unwrap_or(s.users[params.voter], Constants.default_user);
 
+    s.total_supply := get_nat_or_fail(s.total_supply - user.votes);
+    s.total_supply := s.total_supply + params.votes;
+
     s := update_rewards(s);
     s := update_user_reward(params.voter, user.votes, params.votes, s);
 
@@ -94,6 +96,7 @@ function vote(
       s.bakers[user_candidate] := candidate with record [ votes = candidate_new_votes ];
     }
     ];
+
 
     var user_candidate : baker_t := unwrap_or(s.bakers[params.candidate], Constants.default_baker);
     const user_candidate_votes : nat = user_candidate.votes + params.votes;

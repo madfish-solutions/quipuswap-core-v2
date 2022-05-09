@@ -8,8 +8,7 @@ export type User = {
 };
 
 export type Baker = {
-  ban_start_time: string;
-  ban_period: BigNumber;
+  ban_end_time: string;
   votes: BigNumber;
 };
 
@@ -60,6 +59,7 @@ export type BucketStorage = {
   reward_per_block: BigNumber;
   last_update_level: BigNumber;
   collecting_period_end: BigNumber;
+  total_supply: BigNumber;
 };
 
 export type UpdateRewards = {
