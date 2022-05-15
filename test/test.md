@@ -72,7 +72,8 @@
    - ✅ should transfer tokens from bob to alice, vote, bob must become current delegated;
    - ✅ should transfer tokens from bob to carol, vote, bob must remain current delegated;
    - ✅ should change next candidate to the `zero_address` if next candidate is banned;
-   - ✅ should remove delegate and set current delegated to the `zero_address` if current delegated is banned.
+   - ✅ should remove delegate and set current delegated to the `zero_address` if current delegated is banned;
+   - ✅ should vote for next candidate if current delegated is banned and next candidate isn't `zero_address`.
 
 7. `default`:
 
