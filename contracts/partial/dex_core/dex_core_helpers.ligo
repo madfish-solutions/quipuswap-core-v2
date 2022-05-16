@@ -110,6 +110,7 @@ function get_bucket_initial_storage(
     reward_paid           = 0n;
     reward_per_share      = 0n;
     reward_per_block      = 0n;
+    total_supply          = 0n;
     last_update_level     = Tezos.level;
     collecting_period_end = Tezos.level + collect_period;
   ]
@@ -259,19 +260,7 @@ function swap_internal(
     tmp.s.pairs[params.pair_id] := calc_cumulative_prices(pair, updated_pair.token_a_pool, updated_pair.token_b_pool);
 
     if is_last_swap
-    then {
-      tmp.last_operation := Some(
-        if swap.to_.token = Tez
-        then get_pour_out_op(
-          record [
-            receiver = (Tezos.get_contract_with_error(tmp.receiver, Common.err_contract_404) : contract(unit));
-            amt      = out;
-          ],
-          unwrap(pair.bucket, DexCore.err_bucket_404)
-        )
-        else transfer_token(Tezos.self_address, tmp.receiver, out, swap.to_.token)
-      );
-    }
+    then tmp.last_operation := Some(pour_out_or_transfer_tokens(tmp.receiver, out, swap.to_.token, pair.bucket))
     else skip;
 
     tmp.counter := tmp.counter + 1n;
@@ -301,14 +290,14 @@ function call_flash_swaps_proxy(
 
 function get_flash_swap_callback(
   const self            : address)
-                        : contract(flash_swap_1_t) is
+                        : contract(flash_swap_callback_t) is
   unwrap(
-    (Tezos.get_entrypoint_opt("%flash_swap_callback", self) : option(contract(flash_swap_1_t))),
+    (Tezos.get_entrypoint_opt("%flash_swap_callback", self) : option(contract(flash_swap_callback_t))),
     DexCore.err_flash_swap_callback_404
   )
 
 function call_flash_swap_callback(
-  const params          : flash_swap_1_t)
+  const params          : flash_swap_callback_t)
                         : operation is
   Tezos.transaction(params, 0mutez, get_flash_swap_callback(Tezos.self_address))
 

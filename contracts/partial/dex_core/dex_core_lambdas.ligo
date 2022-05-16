@@ -325,7 +325,7 @@ function swap(
 
           case params.lambda of [
           | Some(_) -> {
-              const flash_swap_callback_params : flash_swap_1_t = record [
+              const flash_swap_callback_params : flash_swap_callback_t = record [
                 pair_id          = first_swap.pair_id;
                 prev_tez_balance = Tezos.balance / 1mutez;
                 amount_in        = params.amount_in;
