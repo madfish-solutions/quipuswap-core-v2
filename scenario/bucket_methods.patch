@@ -1,0 +1,51 @@
+diff --git a/contracts/partial/dex_core/dex_core_lambdas.ligo b/contracts/partial/dex_core/dex_core_lambdas.ligo
+index 63d9235..d54a81f 100644
+--- a/contracts/partial/dex_core/dex_core_lambdas.ligo
++++ b/contracts/partial/dex_core/dex_core_lambdas.ligo
+@@ -64,26 +64,26 @@ function launch_exchange(
+ 
+           if params.pair.token_b = Tez
+           then {
+-            const deploy_res : (operation * address) = deploy_bucket(
+-              (None : option(key_hash)),
+-              Tezos.amount,
+-              get_bucket_initial_storage(s.baker_registry, token_id, s.collecting_period)
+-            );
+-
+-            updated_pair.bucket := Some(deploy_res.1);
+-
+-            const callback_params : launch_callback_t = record [
+-              vote_params = record [
+-                voter           = params.shares_receiver;
+-                candidate       = params.candidate;
+-                execute_voting  = True;
+-                votes           = init_shares;
+-              ];
+-              bucket      = deploy_res.1;
+-            ];
+-
+-            ops := get_launch_exchange_callback_op(callback_params) # ops;
+-            ops := deploy_res.0 # ops;
++            // const deploy_res : (operation * address) = deploy_bucket(
++            //   (None : option(key_hash)),
++            //   Tezos.amount,
++            //   get_bucket_initial_storage(s.baker_registry, token_id, s.collecting_period)
++            // );
++
++            updated_pair.bucket := Some(("KT19kgnqC5VWoxktLRdRUERbyUPku9YioE8W" : address));
++
++          //   const callback_params : launch_callback_t = record [
++          //     vote_params = record [
++          //       voter           = params.shares_receiver;
++          //       candidate       = params.candidate;
++          //       execute_voting  = True;
++          //       votes           = init_shares;
++          //     ];
++          //     bucket      = deploy_res.1;
++          //   ];
++
++          //   ops := get_launch_exchange_callback_op(callback_params) # ops;
++          //   ops := deploy_res.0 # ops;
+           }
+           else skip;
+         }
