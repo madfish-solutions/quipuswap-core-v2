@@ -23,9 +23,6 @@ class BucketTest(TestCase):
 
         cls.init_storage = storage
 
-    def test_withdraw_rewards(self):
-        pass
-
     def test_full_reward(self):
         chain = LocalChain(storage=self.init_storage)
 
@@ -38,7 +35,7 @@ class BucketTest(TestCase):
 
         res = chain.execute(self.ct.withdraw_rewards(alice, alice), view_results=vr, sender=dex_core)
         transfers = parse_transfers(res)
-        self.assertEqual(transfers[0]["amount"], 10000)
+        self.assertEqual(transfers[0]["amount"], 10_000)
         self.assertEqual(transfers[0]["destination"], alice)
         self.assertEqual(transfers[0]["type"], "tez")
 

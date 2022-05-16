@@ -181,13 +181,20 @@ def parse_transfer(op):
 
     return transfers
 
-def parse_delegations(res):
+def parse_validations(res):
     delegates = []
     for op in res.operations:
          if op["kind"] == "transaction":
             entrypoint = op["parameters"]["entrypoint"]
             if entrypoint == "validate":
                 delegates.append(op["parameters"]["value"]["string"])
+    return delegates
+
+def parse_delegations(res):
+    delegates = []
+    for op in res.operations:
+         if op["kind"] == "delegation":
+            delegates.append(op["delegate"])
     return delegates
 
 def parse_vote(op):
