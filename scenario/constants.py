@@ -10,7 +10,7 @@ FAR_FUTURE = int(1e10)
 MIN_RAMP_TIME=86_400
 
 dex_core = "KT18fp5rcTW7mbWDmzFwjLDUhs5MeJmagDSZ"
-bucket = "KT19kgnqC5VWoxktLRdRUERbyUPku9YioE8W"
+bucket = "KT1Mjjcb6tmSsLm7Cb3DSQszePjfchPM4Uxm"
 auction = "KT19kgnqC5VWoxktLRdRUERbyUPku9YioE8W"
 flash_swaps_proxy = "KT19kgnqC5VWoxktLRdRUERbyUPku9YioE8W"
 
