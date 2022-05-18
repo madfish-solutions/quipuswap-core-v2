@@ -136,42 +136,35 @@ function vote(
 
     if params.execute_voting
     then {
-      if check_is_banned_baker(unwrap_or(s.bakers[s.next_candidate], Constants.default_baker))
-      then s.next_candidate := Constants.zero_key_hash
-      else skip;
+      const next_candidate = 
+        if check_is_banned_baker(unwrap_or(s.bakers[s.next_candidate], Constants.default_baker))
+        then
+          Constants.zero_key_hash
+        else 
+          s.next_candidate;
 
-      if check_is_banned_baker(unwrap_or(s.bakers[s.current_delegated], Constants.default_baker))
+      const to_be_delegated = 
+        if check_is_banned_baker(unwrap_or(s.bakers[s.current_delegated], Constants.default_baker))
+        then
+          next_candidate
+        else 
+          s.current_delegated;
+
+      if to_be_delegated =/= s.previous_delegated
       then {
-        if s.next_candidate =/= Constants.zero_key_hash
-        then {
-          s.current_delegated := s.next_candidate;
-          s.previous_delegated := s.current_delegated;
-          s.next_candidate := Constants.zero_key_hash;
+        s.previous_delegated := to_be_delegated;
 
-          ops := list [
-            get_baker_registry_validate_op(s.current_delegated, s.baker_registry);
-            Tezos.set_delegate(Some(s.current_delegated))
-          ];
-        }
-        else {
-          s.current_delegated := Constants.zero_key_hash;
-          s.previous_delegated := Constants.zero_key_hash;
-
-          ops := Tezos.set_delegate((None : option(key_hash))) # ops;
-        }
+        ops := if to_be_delegated =/= Constants.zero_key_hash  then 
+          list [
+            get_baker_registry_validate_op(to_be_delegated, s.baker_registry);
+            Tezos.set_delegate(Some(to_be_delegated))
+          ]
+        else
+          list [
+            Tezos.set_delegate((None : option(key_hash)))
+          ]
       }
-      else {
-        if s.current_delegated =/= s.previous_delegated
-        then {
-          s.previous_delegated := s.current_delegated;
-
-          ops := list [
-            get_baker_registry_validate_op(s.current_delegated, s.baker_registry);
-            Tezos.set_delegate(Some(s.current_delegated))
-          ];
-        }
-        else skip;
-      };
+      else skip;
     }
     else skip;
   } with (ops, s)
