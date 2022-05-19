@@ -24,7 +24,7 @@ module.exports = async (tezos: TezosToolkit, network: string) => {
   dexCoreStorage.storage.baker_registry =
     BakerRegistryBuild["networks"][network]["baker_registry"];
   dexCoreStorage.storage.default_expiry = new BigNumber(86400); // 24 hours
-  dexCoreStorage.storage.collecting_period = new BigNumber(12); // 12 cycles
+  dexCoreStorage.storage.collecting_period = new BigNumber(86400); // 12 cycles
 
   const dexCoreAddress: string = await migrate(
     tezos,
