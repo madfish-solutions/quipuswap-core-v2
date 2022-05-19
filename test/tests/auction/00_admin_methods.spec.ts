@@ -120,7 +120,7 @@ describe("Auction (admin methods)", async () => {
     });
   });
 
-  it("should setup a new baker and delegate for him", async () => {
+  it.skip("should setup a new baker and delegate for him", async () => {
     expect(
       await utils.tezos.rpc.getDelegate(auction.contract.address)
     ).to.equal(null);
@@ -134,7 +134,7 @@ describe("Auction (admin methods)", async () => {
     ).to.equal(alice.pkh);
   });
 
-  it("should do nothing if a new baker is the same as the old one", async () => {
+  it.skip("should do nothing if a new baker is the same as the old one", async () => {
     await auction.setBaker(alice.pkh);
     await auction.updateStorage();
 
