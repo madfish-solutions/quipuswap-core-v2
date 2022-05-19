@@ -39,7 +39,7 @@ describe("BakerRegistry", async () => {
     await rejects(bakerRegistry.register(zeroAddress), (err: Error) => {
       ok(
         err.message ===
-          "(permanent) proto.011-PtHangz2.contract.manager.unregistered_delegate"
+          "(permanent) proto.013-PtJakart.contract.manager.unregistered_delegate"
       );
 
       return true;
@@ -73,7 +73,7 @@ describe("BakerRegistry", async () => {
     await rejects(bakerRegistry.validate(zeroAddress), (err: Error) => {
       ok(
         err.message ===
-          "(permanent) proto.011-PtHangz2.contract.manager.unregistered_delegate"
+          "(permanent) proto.013-PtJakart.contract.manager.unregistered_delegate"
       );
 
       return true;
