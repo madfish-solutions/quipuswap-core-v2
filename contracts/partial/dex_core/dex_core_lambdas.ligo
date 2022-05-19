@@ -302,13 +302,11 @@ function swap(
           record [
             s               = s;
             forwards        = (nil : list(forward_t));
-            last_operation  = (None : option(operation));
             token_in        = token;
             receiver        = params.receiver;
             referrer        = params.referrer;
-            from_bucket     = Constants.zero_address;
+            from_bucket     = (None : option(address));
             amount_in       = params.amount_in;
-            swaps_list_size = List.size(params.swaps);
             counter         = 0n;
           ]
         );
@@ -352,7 +350,7 @@ function swap(
         | None         -> skip
         ];
 
-        ops := unwrap(tmp.last_operation, DexCore.err_too_few_swaps) # ops;
+        ops := pour_out_or_transfer_tokens(tmp.receiver, tmp.amount_in, tmp.token_in, tmp.from_bucket) # ops;
       }
     | _ -> skip
     ]
