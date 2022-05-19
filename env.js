@@ -8,7 +8,7 @@ export default {
   migrationsDir: "migrations",
   contractsDir: "contracts/main",
   ligoVersion: "next",
-  network: "jakartanet",
+  network: "development",
   networks: {
     development: {
       rpc: "http://localhost:8732",

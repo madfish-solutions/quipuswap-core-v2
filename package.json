@@ -4,7 +4,7 @@
   "license": "MIT",
   "description": "Quipuswap Core V2",
   "scripts": {
-    "start-sandbox": "docker run --rm --name my-sandbox -e flextesa_node_cors_origin='*' -e block_time=1 --detach -p 8732:20000 oxheadalpha/flextesa:20211221 hangzbox start",
+    "start-sandbox": "docker run --rm --name my-sandbox -e block_time=1 --detach -p 8732:20000 oxheadalpha/flextesa:20220510 jakartabox start",
     "clean": "rm -rf ./build ./contracts/compiled",
     "pre-compile": "ts-node scripts/cli.ts compile -c bucket -o contracts/compiled",
     "compile-dex-core-lambdas": "ts-node scripts/cli.ts compile-lambda -j storage/json/DexCoreFunctions.json -c contracts/main/dex_core.ligo",
