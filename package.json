@@ -4,7 +4,7 @@
   "license": "MIT",
   "description": "Quipuswap Core V2",
   "scripts": {
-    "start-sandbox": "docker run --rm --name my-sandbox -e flextesa_node_cors_origin='*' -e block_time=1 --detach -p 8732:20000 oxheadalpha/flextesa:20211221 hangzbox start",
+    "start-sandbox": "docker run --rm --name my-sandbox -e block_time=1 --detach -p 8732:20000 oxheadalpha/flextesa:20220510 jakartabox start",
     "clean": "rm -rf ./build ./contracts/compiled",
     "pre-compile": "ts-node scripts/cli.ts compile -c bucket -o contracts/compiled",
     "compile-dex-core-lambdas": "ts-node scripts/cli.ts compile-lambda -j storage/json/DexCoreFunctions.json -c contracts/main/dex_core.ligo",
@@ -12,7 +12,7 @@
     "compile-lambdas": "yarn compile-auction-lambdas && yarn compile-dex-core-lambdas",
     "compile": "yarn pre-compile && ts-node scripts/cli.ts compile -f json",
     "full-compile": "yarn clean && yarn compile && yarn compile-lambdas",
-    "migrate-ithacanet": "yarn compile && ts-node scripts/cli.ts migrate -n ithacanet",
+    "migrate-jakartanet": "yarn compile && ts-node scripts/cli.ts migrate -n jakartanet",
     "migrate-mainnet": "yarn compile && ts-node scripts/cli.ts migrate -n mainnet",
     "test-compile": "ts-node scripts/cli.ts compile -f json -p contracts/test -o test/contracts -c flash_swap_agent",
     "test": "ts-mocha --bail"
@@ -22,13 +22,13 @@
     "url": "git+https://github.com/madfish-solutions/quipuswap-core-v2.git"
   },
   "dependencies": {
-    "@taquito/http-utils": "^12.0.0",
-    "@taquito/local-forging": "^12.0.0",
-    "@taquito/michel-codec": "^12.0.0",
-    "@taquito/michelson-encoder": "^12.0.0",
-    "@taquito/rpc": "^12.0.0",
-    "@taquito/signer": "^12.0.0",
-    "@taquito/taquito": "^12.0.0",
+    "@taquito/http-utils": "^12.1.1",
+    "@taquito/local-forging": "^12.1.1",
+    "@taquito/michel-codec": "^12.1.1",
+    "@taquito/michelson-encoder": "^12.1.1",
+    "@taquito/rpc": "^12.1.1",
+    "@taquito/signer": "^12.1.1",
+    "@taquito/taquito": "^12.1.1",
     "@types/expect": "^24.3.0",
     "@types/mocha": "^9.0.0",
     "assert": "^2.0.0",

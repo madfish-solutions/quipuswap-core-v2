@@ -229,16 +229,14 @@ function swap_internal(
 
     tmp.s := update_fees(tmp.s, params.pair_id, tmp.token_in, tmp.referrer, interface_fee, auction_fee);
 
-    const is_last_swap : bool = (tmp.counter = get_nat_or_fail(tmp.swaps_list_size - 1n));
-
-    if swap.to_.token = Tez and not is_last_swap
-    then tmp.from_bucket := unwrap(pair.bucket, DexCore.err_bucket_404)
+    if swap.to_.token = Tez
+    then tmp.from_bucket := pair.bucket
     else skip;
 
     if tmp.token_in = Tez and tmp.counter > 0n
     then {
       const forward : forward_t = record [
-        from_bucket = tmp.from_bucket;
+        from_bucket = unwrap(tmp.from_bucket, DexCore.err_bucket_404);
         to_bucket   = unwrap(pair.bucket, DexCore.err_bucket_404);
         amt         = tmp.amount_in;
       ];
@@ -258,10 +256,6 @@ function swap_internal(
     const updated_pair : pair_t = form_pools(swap.from_.pool, swap.to_.pool, pair, params.direction);
 
     tmp.s.pairs[params.pair_id] := calc_cumulative_prices(pair, updated_pair.token_a_pool, updated_pair.token_b_pool);
-
-    if is_last_swap
-    then tmp.last_operation := Some(pour_out_or_transfer_tokens(tmp.receiver, out, swap.to_.token, pair.bucket))
-    else skip;
 
     tmp.counter := tmp.counter + 1n;
   } with tmp

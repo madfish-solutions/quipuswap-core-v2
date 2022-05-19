@@ -97,13 +97,11 @@ type forward_t          is [@layout:comb] record [
 type tmp_swap_t         is [@layout:comb] record [
   s                       : storage_t;
   forwards                : list(forward_t);
-  last_operation          : option(operation);
   token_in                : token_t;
   receiver                : address;
   referrer                : address;
-  from_bucket             : address;
+  from_bucket             : option(address);
   amount_in               : nat;
-  swaps_list_size         : nat;
   counter                 : nat;
 ]
 

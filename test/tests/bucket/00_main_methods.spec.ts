@@ -106,7 +106,7 @@ describe("Bucket (fill, pour out, pour over, ban baker)", async () => {
 
     await rejects(bucket.pourOut(pourOut), (err: Error) => {
       expect(err.message).to.equal(
-        "(temporary) proto.011-PtHangz2.contract.balance_too_low"
+        "(temporary) proto.013-PtJakart.contract.balance_too_low"
       );
 
       return true;
@@ -207,7 +207,7 @@ describe("Bucket (fill, pour out, pour over, ban baker)", async () => {
 
     await rejects(bucket.pourOver(pourOver), (err: Error) => {
       expect(err.message).to.equal(
-        "(temporary) proto.011-PtHangz2.contract.balance_too_low"
+        "(temporary) proto.013-PtJakart.contract.balance_too_low"
       );
 
       return true;
@@ -299,9 +299,11 @@ describe("Bucket (fill, pour out, pour over, ban baker)", async () => {
     await bucket.banBaker(banBaker);
     await bucket.updateStorage({ bakers: [alice.pkh] });
 
-    const tezosNow = await utils.getLastBlockTimestamp() + 1000
+    const tezosNow = (await utils.getLastBlockTimestamp()) + 1000;
 
-    expect(Date.parse(bucket.storage.bakers[alice.pkh].ban_end_time)).to.be.bignumber.lte(
+    expect(
+      Date.parse(bucket.storage.bakers[alice.pkh].ban_end_time)
+    ).to.be.bignumber.lte(
       banBaker.ban_period.multipliedBy(1000).plus(tezosNow)
     );
   });
@@ -315,10 +317,10 @@ describe("Bucket (fill, pour out, pour over, ban baker)", async () => {
     await bucket.banBaker(banBaker);
     await bucket.updateStorage({ bakers: [alice.pkh] });
 
-    const tezosNow = await utils.getLastBlockTimestamp()
+    const tezosNow = await utils.getLastBlockTimestamp();
 
-    expect(Date.parse(bucket.storage.bakers[alice.pkh].ban_end_time)).to.be.bignumber.lte(
-      tezosNow
-    );
+    expect(
+      Date.parse(bucket.storage.bakers[alice.pkh].ban_end_time)
+    ).to.be.bignumber.lte(tezosNow);
   });
 });

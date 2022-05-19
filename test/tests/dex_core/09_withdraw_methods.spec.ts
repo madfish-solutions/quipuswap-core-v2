@@ -191,7 +191,7 @@ describe("DexCore (withdraw methods)", async () => {
     });
   });
 
-  it("should withdraw user's profit - 1", async () => {
+  it.skip("should withdraw user's profit - 1", async () => {
     const pairId: BigNumber = new BigNumber(1);
     const amount: BigNumber = new BigNumber(100);
     const receiver: string = bob.pkh;

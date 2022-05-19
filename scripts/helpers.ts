@@ -68,7 +68,7 @@ export const compile = async (
     const michelson: string = execSync(
       `${ligo} compile contract $PWD/${contractsDir}/${contract}.ligo ${
         format === "json" ? "--michelson-format json" : ""
-      } --protocol hangzhou`,
+      } --protocol jakarta`,
       { maxBuffer: 1024 * 500 }
     ).toString();
 
@@ -108,7 +108,7 @@ export const compileLambdas = async (
   contract: string,
   ligoVersion: string = env.ligoVersion
 ) => {
-  const ligo: string = getLigo(true, ligoVersion);
+  const ligo: string = getLigo(true, "0.40.0");
   const pwd: string = execSync("echo $PWD").toString();
   const lambdas: any = JSON.parse(
     fs.readFileSync(`${pwd.slice(0, pwd.length - 1)}/${json}`).toString()
@@ -124,7 +124,7 @@ export const compileLambdas = async (
     list += "]";
 
     const michelson: Buffer = execSync(
-      `${ligo} compile expression pascaligo '${list}' --michelson-format json --init-file $PWD/${contract} --protocol hangzhou`,
+      `${ligo} compile expression pascaligo '${list}' --michelson-format json --init-file $PWD/${contract} --protocol ithaca`,
       { maxBuffer: 1024 * 500 }
     );
 
