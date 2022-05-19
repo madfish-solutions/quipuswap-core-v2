@@ -262,13 +262,13 @@ export class DexCore {
     if (params.flash) {
       const ligo: string = getLigo(true);
       const stdout: string = execSync(
-        `${ligo} compile parameter $PWD/contracts/test/lambdas.ligo 'Use(Swap(record [ lambda = Some(lambda); swaps = ${this.parseSwaps(
+        `${ligo} compile parameter $PWD/contracts/test/lambdas.ligo 'Use(Swap((record [ lambda = Some(lambda); swaps = ${this.parseSwaps(
           params.swaps
         )}; deadline = (${params.deadline} : timestamp); receiver = ("${
           params.receiver
         }" : address); referrer = ("${
           params.referrer
-        }" : address); amount_in = ${params.amount_in.toFixed()}n; min_amount_out = ${params.min_amount_out.toFixed()}n ] ))' -p hangzhou --michelson-format json`,
+        }" : address); amount_in = ${params.amount_in.toFixed()}n; min_amount_out = ${params.min_amount_out.toFixed()}n ]: swap_t )))' -p jakarta --michelson-format json`,
         { maxBuffer: 1024 * 500 }
       ).toString();
 
