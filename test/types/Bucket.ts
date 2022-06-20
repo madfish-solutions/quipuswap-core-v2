@@ -65,7 +65,6 @@ export type BucketStorage = {
 export type UpdateRewards = {
   rewardPerShare: BigNumber;
   rewardPerBlock: BigNumber;
-  totalReward: BigNumber;
   lastUpdateLevel: BigNumber;
   collectingPeriodEnd: BigNumber;
 };

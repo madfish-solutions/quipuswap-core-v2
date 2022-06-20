@@ -259,7 +259,7 @@ describe("Auction (main methods)", async () => {
     const params: LaunchAuction = {
       token: { tez: undefined },
       amt: new BigNumber(10_000_000),
-      bid: new BigNumber(0),
+      bid: new BigNumber(10_000),
     };
 
     await rejects(auction.launchAuction(params), (err: Error) => {
