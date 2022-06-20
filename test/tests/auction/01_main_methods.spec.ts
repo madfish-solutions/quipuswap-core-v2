@@ -672,7 +672,7 @@ describe("Auction (main methods)", async () => {
       bidFee.dividedBy(PRECISION).integerValue(BigNumber.ROUND_DOWN)
     );
     const prevBidFeeBalance: BigNumber =
-      auction.storage.storage.bid_fee_balance_f;
+      auction.storage.storage.bid_fee_balance;
     const prevBobQTBalance: BigNumber = await quipuToken.getBalance(
       bob.pkh,
       new BigNumber(0)
@@ -690,7 +690,7 @@ describe("Auction (main methods)", async () => {
     });
 
     const currBidFeeBalance: BigNumber =
-      auction.storage.storage.bid_fee_balance_f;
+      auction.storage.storage.bid_fee_balance;
     const currBobQTBalance: BigNumber = await quipuToken.getBalance(
       bob.pkh,
       new BigNumber(0)
@@ -1043,7 +1043,7 @@ describe("Auction (main methods)", async () => {
       prevTokReceiverBalance.plus(
         prevTokPublicFeeBalance
           .dividedBy(PRECISION)
-          .integerValue(BigNumber.ROUND_DOWN)
+          .integerValue(BigNumber.ROUND_UP)
       )
     );
   });
@@ -1187,7 +1187,7 @@ describe("Auction (main methods)", async () => {
     });
 
     const prevBidFeeBalance: BigNumber =
-      auction.storage.storage.bid_fee_balance_f;
+      auction.storage.storage.bid_fee_balance;
     const prevAuctionQTBalance: BigNumber = await quipuToken.getBalance(
       auction.contract.address,
       new BigNumber(0)
@@ -1204,7 +1204,7 @@ describe("Auction (main methods)", async () => {
     });
 
     const currBidFeeBalance: BigNumber =
-      auction.storage.storage.bid_fee_balance_f;
+      auction.storage.storage.bid_fee_balance;
     const currAuctionQTBalance: BigNumber = await quipuToken.getBalance(
       auction.contract.address,
       new BigNumber(0)

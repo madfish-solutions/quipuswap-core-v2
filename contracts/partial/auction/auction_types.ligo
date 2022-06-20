@@ -27,7 +27,7 @@ type storage_t          is [@layout:comb] record [
   admin                   : address;
   pending_admin           : option(address);
   dex_core                : address;
-  bid_fee_balance_f       : nat;
+  bid_fee_balance         : nat;
   auctions_count          : nat;
   auction_duration        : int;
   min_bid                 : nat;

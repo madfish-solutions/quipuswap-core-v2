@@ -52,7 +52,7 @@ export type AuctionStorage = {
     admin: string;
     pending_admin: string | undefined | null;
     dex_core: string;
-    bid_fee_balance_f: BigNumber;
+    bid_fee_balance: BigNumber;
     auctions_count: BigNumber;
     auction_duration: BigNumber;
     min_bid: BigNumber;
