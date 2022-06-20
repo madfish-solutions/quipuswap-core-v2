@@ -783,6 +783,14 @@ describe("DexCore (permits)", async () => {
       .be.true;
 
     await utils.setProvider(carol.sk);
+
+    const wrongTransferParams = JSON.parse(JSON.stringify(transferParams));
+    wrongTransferParams[0].txs[0]["to_"] = carol.pkh;
+    await rejects(dexCore.transfer(wrongTransferParams), (err: Error) => {
+      expect(err.message).to.equal(FA2Errors.FA2_NOT_OPERATOR)
+      return true;
+    });
+
     await dexCore.transfer(transferParams);
     await dexCore.updateStorage({
       ledger: [
