@@ -40,6 +40,25 @@ class BucketTest(TestCase):
         self.assertEqual(transfers[0]["destination"], alice)
         self.assertEqual(transfers[0]["type"], "tez")
 
+
+    def test_reward_deposit_in_the_middle(self):
+        chain = LocalChain(storage=self.init_storage)
+
+        res = chain.execute(self.ct.vote(alice, carol, True, 100_000), sender=dex_core, view_results=vr)
+
+        res = chain.execute(self.ct.default(), amount=20_000, view_results=vr)
+        
+        chain.advance_blocks(12)
+
+        res = chain.execute(self.ct.vote(bob, carol, True, 100_000_000_000), sender=dex_core, view_results=vr)
+
+        chain.advance_blocks(5)
+
+        res = chain.execute(self.ct.withdraw_rewards(alice, alice), view_results=vr, sender=dex_core)
+        transfers = parse_transfers(res)
+        self.assertEqual(transfers[0]["amount"], 4_000) # still gets two blocks reward no matter what
+        self.assertEqual(transfers[0]["destination"], alice)
+        self.assertEqual(transfers[0]["type"], "tez")
         
     def test_partial_reward(self):
         chain = LocalChain(storage=self.init_storage)
