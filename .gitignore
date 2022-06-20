@@ -4,6 +4,7 @@ output/
 .vscode/
 venv/
 .idea/
+__pycache__/
 contracts/compiled/*.tz
 
 .DS_Store
