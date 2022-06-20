@@ -103,7 +103,7 @@ function iterate_transfer(
               execute_voting  = True;
               votes           = new_receiver_balance;
             ],
-            unwrap(pair.bucket, DexCore.err_bucket_404)
+            bucket
           ) # ops;
           ops := get_vote_op(
             record [
@@ -112,7 +112,7 @@ function iterate_transfer(
               execute_voting  = False;
               votes           = new_sender_balance;
             ],
-            unwrap(pair.bucket, DexCore.err_bucket_404)
+            bucket
           ) # ops;
         }
         else skip;

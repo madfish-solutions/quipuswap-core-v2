@@ -53,7 +53,6 @@ function update_rewards(
 
         s.collecting_period_end := s.collecting_period_end + period_duration;
         s.reward_per_share := s.reward_per_share + (new_reward / s.total_supply);
-        s.total_reward := s.total_reward + ((s.reward_per_block * period_duration) / Constants.precision);
         s.next_reward := 0n;
       }
       else skip;

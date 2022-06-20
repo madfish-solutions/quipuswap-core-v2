@@ -287,7 +287,6 @@ function swap(
     case action of [
     | Swap(params) -> {
         assert_with_error(params.deadline >= Tezos.now, DexCore.err_action_outdated);
-        assert_with_error(params.referrer =/= Tezos.sender, DexCore.err_can_not_refer_yourself);
 
         const first_swap : swap_slice_t = unwrap(List.head_opt(params.swaps), DexCore.err_empty_route);
         const tokens : tokens_t = unwrap(s.tokens[first_swap.pair_id], DexCore.err_pair_not_listed);

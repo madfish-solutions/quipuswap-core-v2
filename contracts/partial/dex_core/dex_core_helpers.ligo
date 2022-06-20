@@ -229,10 +229,6 @@ function swap_internal(
 
     tmp.s := update_fees(tmp.s, params.pair_id, tmp.token_in, tmp.referrer, interface_fee, auction_fee);
 
-    if swap.to_.token = Tez
-    then tmp.from_bucket := pair.bucket
-    else skip;
-
     if tmp.token_in = Tez and tmp.counter > 0n
     then {
       const forward : forward_t = record [
@@ -245,10 +241,14 @@ function swap_internal(
     }
     else skip;
 
+    tmp.from_bucket := if swap.to_.token = Tez
+      then
+        pair.bucket
+      else
+        (None : option(address));
+
     swap.to_.pool := get_nat_or_fail(swap.to_.pool - out);
-    swap.from_.pool := get_nat_or_fail(
-      swap.from_.pool + (tmp.amount_in * Constants.precision - interface_fee - auction_fee) / Constants.precision
-    );
+    swap.from_.pool := swap.from_.pool + ceil_div(get_nat_or_fail(tmp.amount_in * Constants.precision - interface_fee - auction_fee), Constants.precision);
 
     tmp.amount_in := out;
     tmp.token_in := swap.to_.token;
