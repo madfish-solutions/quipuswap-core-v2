@@ -92,6 +92,10 @@ class AuctionTest(TestCase):
         with self.assertRaises(MichelsonRuntimeError) as error:
             chain.execute(self.ct.launch_auction(token_a_fa2, 10, 34))
         self.assertEqual(error.exception.args[-1], Errors.MIN_BID)
+
+        with self.assertRaises(MichelsonRuntimeError) as error:
+            chain.execute(self.ct.launch_auction(token_a_fa2, 0, 42))
+        self.assertEqual(error.exception.args[-1], Errors.AUCTIONED_AMOUNT_LOW)
    
     def test_dev_fee(self):
         chain = LocalChain(storage=self.init_storage)

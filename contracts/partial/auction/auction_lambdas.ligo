@@ -31,11 +31,12 @@ function launch_auction(
     case action of [
     | Launch_auction(params) -> {
         assert_with_error(not Set.mem(params.token, s.whitelist), Auction.err_whitelisted_token);
+        assert_with_error(params.amt > 0n, Auction.err_auctioned_amount_too_low);
+        assert_with_error(params.bid >= s.min_bid, Auction.err_low_bid);
 
         const token_balance_f : nat = unwrap_or(s.public_fee_balances_f[params.token], 0n);
 
         assert_with_error(params.amt <= token_balance_f / Constants.precision, Auction.err_insufficient_balance);
-        assert_with_error(params.bid >= s.min_bid, Auction.err_low_bid);
 
         s.auctions[s.auctions_count] := record[
           status         = Active;

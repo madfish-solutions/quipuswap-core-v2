@@ -115,5 +115,6 @@ class Errors:
     AUCTION_INSUFFICIENT_BALANCE = "'307'"
     MIN_BID = "'308'"
     AUCTION_FINISHED = "'309'"
+    AUCTIONED_AMOUNT_LOW = "'312'"
     
     NOT_A_NAT = "'406'"
