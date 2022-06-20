@@ -92,6 +92,7 @@ class VotingTest(TestCase):
         votes = parse_validations(res)
         self.assertEqual(votes[0], carol) # 50 vs 100 banned
 
+    # TODO fix, since next_candidate is recalculated every time
     def test_ban_next_delegate(self):
         chain = LocalChain(storage=self.init_storage)
 
