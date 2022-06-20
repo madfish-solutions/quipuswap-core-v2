@@ -285,7 +285,6 @@ type full_return_t      is list(operation) * full_storage_t
 type full_action_t      is
 | Use                     of action_t
 | Setup_func              of setup_func_t
-| Default                 of default_t
 
 type deploy_bucket_t    is (option(key_hash) * tez * bucket_t) -> (operation * address)
 

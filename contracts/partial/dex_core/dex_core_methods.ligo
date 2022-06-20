@@ -61,10 +61,3 @@ function setup_func(
     | None    -> s.dex_core_lambdas[params.idx] := params.func_bytes
     ];
   } with ((nil : list(operation)), s)
-
-function default(
-  const s               : full_storage_t)
-                        : full_return_t is
-  block {
-    skip;
-  } with ((nil : list(operation)), s)
