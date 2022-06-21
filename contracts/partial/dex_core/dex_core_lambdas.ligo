@@ -672,19 +672,7 @@ function update_token_metadata(
         only_manager(s.managers);
         non_payable(Unit);
 
-        function upd_token_metadata(
-          var metadata  : token_metadata_t;
-          const pair    : metadata_pair_t)
-                        : token_metadata_t is
-          block {
-            metadata.token_info[pair.key] := pair.value;
-          } with metadata;
-
-        var metadata : token_metadata_t := unwrap(s.token_metadata[params.token_id], DexCore.err_pair_not_listed);
-
-        metadata := List.fold(upd_token_metadata, params.token_info, metadata);
-
-        s.token_metadata[params.token_id] := metadata;
+        s.token_metadata[params.token_id] := params;
       }
     | _ -> skip
     ]

@@ -100,7 +100,7 @@ export type MetadataPair = {
 
 export type UpdateTokenMetadata = {
   token_id: BigNumber;
-  token_info: MetadataPair[];
+  token_info: MichelsonMap<MichelsonMapKey, unknown>;
 };
 
 export type Ban = {

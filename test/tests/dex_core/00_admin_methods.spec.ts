@@ -34,6 +34,8 @@ import {
   Ban,
 } from "../../types/DexCore";
 
+import { MichelsonMap } from "@taquito/michelson-encoder";
+
 chai.use(require("chai-bignumber")(BigNumber));
 
 describe("DexCore (admin methods)", async () => {
@@ -421,9 +423,7 @@ describe("DexCore (admin methods)", async () => {
   it("should fail if not manager is trying to update token metadata", async () => {
     const updateTokenMetadata: UpdateTokenMetadata = {
       token_id: new BigNumber(666),
-      token_info: [
-        { key: "NAME", value: Buffer.from("Quipu LP Token").toString("hex") },
-      ],
+      token_info: MichelsonMap.fromLiteral({ "NAME" : Buffer.from("Quipu LP Token").toString("hex") }),
     };
 
     await utils.setProvider(dev.sk);
@@ -440,9 +440,7 @@ describe("DexCore (admin methods)", async () => {
   it("should fail if positive TEZ tokens amount were passed", async () => {
     const updateTokenMetadata: UpdateTokenMetadata = {
       token_id: new BigNumber(666),
-      token_info: [
-        { key: "NAME", value: Buffer.from("Quipu LP Token").toString("hex") },
-      ],
+      token_info: MichelsonMap.fromLiteral({ "NAME" : Buffer.from("Quipu LP Token").toString("hex") }),
     };
 
     await utils.setProvider(bob.sk);
@@ -459,9 +457,7 @@ describe("DexCore (admin methods)", async () => {
   it("should fail if pair not listed", async () => {
     const updateTokenMetadata: UpdateTokenMetadata = {
       token_id: new BigNumber(666),
-      token_info: [
-        { key: "NAME", value: Buffer.from("Quipu LP Token").toString("hex") },
-      ],
+      token_info: MichelsonMap.fromLiteral({ "NAME" : Buffer.from("Quipu LP Token").toString("hex") }),
     };
 
     await rejects(
@@ -490,14 +486,11 @@ describe("DexCore (admin methods)", async () => {
     };
     const updateTokenMetadata: UpdateTokenMetadata = {
       token_id: new BigNumber(0),
-      token_info: [
-        {
-          key: "name",
-          value: Buffer.from("Quipuswap Token").toString("hex"),
-        },
-        { key: "symbol", value: Buffer.from("QLPT").toString("hex") },
-        { key: "decimals", value: Buffer.from("18").toString("hex") },
-      ],
+      token_info: MichelsonMap.fromLiteral({
+        "name": Buffer.from("Quipu LP Token").toString("hex"),
+        "symbol": Buffer.from("QLPT").toString("hex"),
+        "decimals": Buffer.from("18").toString("hex"),
+      }),
     };
 
     await firstToken.approve(
@@ -526,7 +519,7 @@ describe("DexCore (admin methods)", async () => {
         ].token_info.get("name"),
         "hex"
       ).toString()
-    ).to.equal("Quipuswap Token");
+    ).to.equal("Quipu LP Token");
     expect(
       Buffer.from(
         await dexCore.storage.storage.token_metadata[
@@ -548,13 +541,10 @@ describe("DexCore (admin methods)", async () => {
   it("should set new fields in token metadata", async () => {
     const updateTokenMetadata: UpdateTokenMetadata = {
       token_id: new BigNumber(0),
-      token_info: [
-        {
-          key: "creator",
-          value: Buffer.from("Serhii Makov").toString("hex"),
-        },
-        { key: "version", value: Buffer.from("0.1.0").toString("hex") },
-      ],
+      token_info: MichelsonMap.fromLiteral({
+          "creator": Buffer.from("Serhii Makov").toString("hex"),
+          "version": Buffer.from("0.1.0").toString("hex"),
+      }),
     };
 
     await dexCore.updateTokenMetadata(updateTokenMetadata);
@@ -578,86 +568,6 @@ describe("DexCore (admin methods)", async () => {
         "hex"
       ).toString()
     ).to.equal("0.1.0");
-  });
-
-  it("should update existing and set new fields in token metadata", async () => {
-    const updateTokenMetadata: UpdateTokenMetadata = {
-      token_id: new BigNumber(0),
-      token_info: [
-        {
-          key: "name",
-          value: Buffer.from("Quipuswap LP Token").toString("hex"),
-        },
-        { key: "symbol", value: Buffer.from("QPT").toString("hex") },
-        { key: "decimals", value: Buffer.from("6").toString("hex") },
-        {
-          key: "blockchain",
-          value: Buffer.from("Tezos").toString("hex"),
-        },
-      ],
-    };
-
-    await dexCore.updateTokenMetadata(updateTokenMetadata);
-    await dexCore.updateStorage({
-      token_metadata: [updateTokenMetadata.token_id],
-    });
-
-    expect(
-      Buffer.from(
-        await dexCore.storage.storage.token_metadata[
-          updateTokenMetadata.token_id.toNumber()
-        ].token_info.get("name"),
-        "hex"
-      ).toString()
-    ).to.equal("Quipuswap LP Token");
-    expect(
-      Buffer.from(
-        await dexCore.storage.storage.token_metadata[
-          updateTokenMetadata.token_id.toNumber()
-        ].token_info.get("symbol"),
-        "hex"
-      ).toString()
-    ).to.equal("QPT");
-    expect(
-      Buffer.from(
-        await dexCore.storage.storage.token_metadata[
-          updateTokenMetadata.token_id.toNumber()
-        ].token_info.get("decimals"),
-        "hex"
-      ).toString()
-    ).to.equal("6");
-    expect(
-      Buffer.from(
-        await dexCore.storage.storage.token_metadata[
-          updateTokenMetadata.token_id.toNumber()
-        ].token_info.get("creator"),
-        "hex"
-      ).toString()
-    ).to.equal("Serhii Makov");
-    expect(
-      Buffer.from(
-        await dexCore.storage.storage.token_metadata[
-          updateTokenMetadata.token_id.toNumber()
-        ].token_info.get("version"),
-        "hex"
-      ).toString()
-    ).to.equal("0.1.0");
-    expect(
-      Buffer.from(
-        await dexCore.storage.storage.token_metadata[
-          updateTokenMetadata.token_id.toNumber()
-        ].token_info.get("blockchain"),
-        "hex"
-      ).toString()
-    ).to.equal("Tezos");
-    expect(
-      Buffer.from(
-        await dexCore.storage.storage.token_metadata[
-          updateTokenMetadata.token_id.toNumber()
-        ].token_info.get("shouldPreferSymbol"),
-        "hex"
-      ).toString()
-    ).to.equal("true");
   });
 
   it("should fail if not admin is trying to ban baker", async () => {

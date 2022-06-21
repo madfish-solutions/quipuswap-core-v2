@@ -173,9 +173,9 @@ type metadata_pair_t    is [@layout:comb] record [
   value                   : bytes;
 ]
 
-type upd_tok_meta_t     is [@layout:comb] record [
-  token_id                : token_id_t;
-  token_info              : list(metadata_pair_t);
+type upd_tok_meta_t    is [@layout:comb] record [
+  token_id                : nat;
+  token_info              : map(string, bytes);
 ]
 
 type ban_t              is [@layout:comb] record [
