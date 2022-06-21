@@ -667,10 +667,9 @@ describe("Auction (main methods)", async () => {
       auction.storage.storage.auctions[params.auction_id.toFixed()].current_bid;
     const bidFee: BigNumber = currentBid.multipliedBy(
       auction.storage.storage.fees.bid_fee_f
-    );
-    const refund: BigNumber = currentBid.minus(
-      bidFee.dividedBy(PRECISION).integerValue(BigNumber.ROUND_DOWN)
-    );
+    ).dividedBy(PRECISION).integerValue(BigNumber.ROUND_UP);
+
+    const refund: BigNumber = currentBid.minus(bidFee);
     const prevBidFeeBalance: BigNumber =
       auction.storage.storage.bid_fee_balance;
     const prevBobQTBalance: BigNumber = await quipuToken.getBalance(
@@ -730,7 +729,7 @@ describe("Auction (main methods)", async () => {
       auction.storage.storage.fees.bid_fee_f
     );
     const refund: BigNumber = currentBid.minus(
-      bidFee.dividedBy(PRECISION).integerValue(BigNumber.ROUND_DOWN)
+      bidFee.dividedBy(PRECISION).integerValue(BigNumber.ROUND_UP)
     );
     const prevBobQTBalance: BigNumber = await quipuToken.getBalance(
       bob.pkh,
@@ -1213,18 +1212,13 @@ describe("Auction (main methods)", async () => {
       zeroAddress,
       new BigNumber(0)
     );
-    const bidFee: BigNumber = prevBidFeeBalance
-      .dividedBy(PRECISION)
-      .integerValue(BigNumber.ROUND_DOWN);
 
-    expect(currBidFeeBalance).to.be.bignumber.equal(
-      prevBidFeeBalance.minus(bidFee.multipliedBy(PRECISION))
-    );
+    expect(currBidFeeBalance).to.be.bignumber.equal(0);
     expect(currAuctionQTBalance).to.be.bignumber.equal(
-      prevAuctionQTBalance.minus(bidFee)
+      prevAuctionQTBalance.minus(prevBidFeeBalance)
     );
     expect(currZeroAddressQTBalance).to.be.bignumber.equal(
-      prevZeroAddressQTBalance.plus(bidFee)
+      prevZeroAddressQTBalance.plus(prevBidFeeBalance)
     );
   });
 
