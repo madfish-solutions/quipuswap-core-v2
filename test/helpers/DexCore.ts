@@ -684,15 +684,17 @@ export class DexCore {
       return {
         tokenACumulativePrice: pair.token_a_price_cml.plus(
           pair.token_b_pool
+            .multipliedBy(timeElasped)
+            .multipliedBy(PRECISION)
             .dividedBy(pair.token_a_pool)
             .integerValue(BigNumber.ROUND_DOWN)
-            .multipliedBy(timeElasped)
         ),
         tokenBCumulativePrice: pair.token_b_price_cml.plus(
           pair.token_a_pool
+            .multipliedBy(timeElasped)
+            .multipliedBy(PRECISION)
             .dividedBy(pair.token_b_pool)
             .integerValue(BigNumber.ROUND_DOWN)
-            .multipliedBy(timeElasped)
         ),
       };
     }

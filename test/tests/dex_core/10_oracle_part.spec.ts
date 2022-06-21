@@ -94,22 +94,6 @@ describe("DexCore (oracle part)", async () => {
     auction = await Auction.originate(utils.tezos, auctionStorage);
 
     await auction.setLambdas();
-
-    flashSwapsProxyStorage.dex_core = dexCore.contract.address;
-
-    flashSwapsProxy = await FlashSwapsProxy.originate(
-      utils.tezos,
-      flashSwapsProxyStorage
-    );
-
-    await dexCore.setFlashSwapsProxy(flashSwapsProxy.contract.address);
-
-    flashSwapAgentStorage.dex_core = dexCore.contract.address;
-
-    flashSwapAgent = await FlashSwapAgent.originate(
-      utils.tezos,
-      flashSwapAgentStorage
-    );
   });
 
   it("should not calculate cumulative prices and should update last block timestamp in time of any exchange launch", async () => {
@@ -315,48 +299,6 @@ describe("DexCore (oracle part)", async () => {
     };
     const prevPair: Pair = dexCore.storage.storage.pairs[pairId.toFixed()];
 
-    await dexCore.swap(swapParams);
-    await dexCore.updateStorage({
-      pairs: [pairId.toFixed()],
-    });
-
-    const cumulativePrices: CumulativePrices =
-      await DexCore.calculateCumulativePrices(prevPair, utils);
-
-    expect(
-      dexCore.storage.storage.pairs[pairId.toFixed()].token_a_price_cml
-    ).to.be.bignumber.equal(cumulativePrices.tokenACumulativePrice);
-    expect(
-      dexCore.storage.storage.pairs[pairId.toFixed()].token_b_price_cml
-    ).to.be.bignumber.equal(cumulativePrices.tokenBCumulativePrice);
-    expect(
-      Date.parse(
-        dexCore.storage.storage.pairs[pairId.toFixed()].last_block_timestamp
-      )
-    ).to.be.lte(await utils.getLastBlockTimestamp());
-  });
-
-  it("should calculate cumulative prices and update last block timestamp in time of flash swap", async () => {
-    const pairId: BigNumber = new BigNumber(0);
-
-    await dexCore.updateStorage({
-      pairs: [pairId.toFixed()],
-    });
-
-    const swapParams: Swap = {
-      lambda: undefined,
-      swaps: [{ direction: { b_to_a: undefined }, pair_id: pairId }],
-      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
-      receiver: alice.pkh,
-      referrer: bob.pkh,
-      amount_in: new BigNumber(555),
-      min_amount_out: new BigNumber(0),
-      flash: true,
-    };
-    const prevPair: Pair = dexCore.storage.storage.pairs[pairId.toFixed()];
-    const value: number = Math.round(Math.random() * 100 + 1);
-
-    await updateParameters(flashSwapAgent.contract.address, value);
     await dexCore.swap(swapParams);
     await dexCore.updateStorage({
       pairs: [pairId.toFixed()],
