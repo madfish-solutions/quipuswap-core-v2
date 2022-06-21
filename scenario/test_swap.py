@@ -599,3 +599,25 @@ class StableSwapTest(TestCase):
         votes = parse_votes(res)
         self.assertEqual(votes[0]["amount"], 0)
         self.assertEqual(votes[0]["delegate"], julian)
+
+    def test_dex_cant_change_already_set_lambdas(self):
+        no_lambdas_storage = self.dex.storage.dummy()
+        no_lambdas_storage["storage"]["admin"] = admin 
+
+        chain = LocalChain(storage=no_lambdas_storage)
+        
+        with self.assertRaises(MichelsonRuntimeError) as error: 
+            chain.execute(self.dex.setup_func(0, dex_core_lambdas[0]), sender=alice)
+        self.assertEqual(Errors.ERR_NOT_ADMIN, error.exception.args[-1])
+
+        chain.execute(self.dex.setup_func(0, dex_core_lambdas[0]), sender=admin)
+
+        with self.assertRaises(MichelsonRuntimeError) as error:
+            chain.execute(self.dex.setup_func(0, dex_core_lambdas[0]), sender=admin)
+        self.assertEqual(Errors.FUNC_ALREADY_SET, error.exception.args[-1])
+
+        chain.execute(self.dex.setup_func(25, dex_core_lambdas[8]), sender=admin)
+
+        with self.assertRaises(MichelsonRuntimeError) as error:
+            chain.execute(self.dex.setup_func(26, dex_core_lambdas[8]), sender=admin)
+        self.assertEqual(Errors.EXCEEDS_MAX_LAMBDA_INDEX, error.exception.args[-1])

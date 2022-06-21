@@ -105,6 +105,9 @@ fees = {
 }
 
 class Errors:
+    FUNC_ALREADY_SET = "'101'"
+    EXCEEDS_MAX_LAMBDA_INDEX = "'102'"
+
     PAST_DEADLINE = "'143'"
     DRAINED_PAIR = "'109'"
     LOW_TOKEN_A_IN = "'111'"
@@ -112,9 +115,13 @@ class Errors:
     HIGH_MIN_OUT = "'116'"
     WRONG_TEZ_AMOUNT = "'120'"
 
+    AUCTION_EXCEEDS_MAX_LAMBDA_INDEX = "'302'"
+    AUCTION_FUNC_ALREADY_SET = "'303'"
+
     AUCTION_INSUFFICIENT_BALANCE = "'307'"
     MIN_BID = "'308'"
     AUCTION_FINISHED = "'309'"
     AUCTIONED_AMOUNT_LOW = "'312'"
     
+    ERR_NOT_ADMIN = "'400'"
     NOT_A_NAT = "'406'"

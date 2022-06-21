@@ -249,7 +249,27 @@ class AuctionTest(TestCase):
             chain.execute(self.ct.place_bid(1, 3_000), sender=bob)
         self.assertEqual(error.exception.args[-1], Errors.AUCTION_FINISHED)
 
+    def test_auction_cant_change_already_set_lambdas(self):
+        no_lambdas_storage = self.ct.storage.dummy()
+        no_lambdas_storage["storage"]["admin"] = admin 
 
+        chain = LocalChain(storage=no_lambdas_storage)
+        
+        with self.assertRaises(MichelsonRuntimeError) as error: 
+            chain.execute(self.ct.setup_func(0, auction_lambdas[0]), sender=alice)
+        self.assertEqual(Errors.ERR_NOT_ADMIN, error.exception.args[-1])
+
+        chain.execute(self.ct.setup_func(0, auction_lambdas[0]), sender=admin)
+
+        with self.assertRaises(MichelsonRuntimeError) as error:
+            chain.execute(self.ct.setup_func(0, auction_lambdas[0]), sender=admin)
+        self.assertEqual(Errors.AUCTION_FUNC_ALREADY_SET, error.exception.args[-1])
+
+        chain.execute(self.ct.setup_func(13, auction_lambdas[8]), sender=admin)
+
+        with self.assertRaises(MichelsonRuntimeError) as error:
+            chain.execute(self.ct.setup_func(14, auction_lambdas[8]), sender=admin)
+        self.assertEqual(Errors.AUCTION_EXCEEDS_MAX_LAMBDA_INDEX, error.exception.args[-1])
 
         
 
