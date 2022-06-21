@@ -66,6 +66,8 @@ function insert_permit(
 
     check_duplicates(default_expiry, user_permits.expiry, user_permits, permit);
 
+    assert_with_error(Map.size(user_permits.permits) < Constants.max_permits_per_user, "MAX_PERMITS_PER_USER_REACHED");
+
     const updated_user_permits : user_permits_t = user_permits with record [
       permits = Map.add(
         permit,
