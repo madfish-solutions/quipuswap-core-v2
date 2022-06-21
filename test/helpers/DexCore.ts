@@ -783,7 +783,8 @@ export class DexCore {
         .multipliedBy(PRECISION)
         .minus(interfaceFee)
         .minus(auctionFee)
-        .dividedToIntegerBy(PRECISION)
+        .dividedBy(PRECISION)
+        .integerValue(BigNumber.ROUND_UP)
     );
     const newToPool: BigNumber = toPool.minus(out);
 

@@ -1245,7 +1245,7 @@ describe("DexCore (launch exchange)", async () => {
       dexCore.storage.storage.baker_registry
     );
     expect(bucket.storage.last_update_level).to.be.bignumber.equal(
-      prevBucketStorage.last_update_level
+      prevBucketStorage.last_update_level.plus(1)
     );
     expect(bucket.storage.collecting_period_end).to.be.bignumber.equal(
       prevBucketStorage.collecting_period_end

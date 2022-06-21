@@ -334,8 +334,8 @@ class TezPairTest(TestCase):
             res = chain.execute(self.dex.divest_liquidity(pair_id=0, min_token_a_out=1, min_token_b_out=1, shares=all_shares, liquidity_receiver=me, candidate=dummy_candidate, deadline=1))
     
             transfers = parse_transfers(res)
-            self.assertAlmostEqual(transfers[0]["amount"], int(300 * ratio), delta=1)
-            self.assertAlmostEqual(transfers[1]["amount"], 300, delta=1)
+            self.assertAlmostEqual(transfers[0]["amount"], 300, delta=1)
+            self.assertAlmostEqual(transfers[1]["amount"], int(300 * ratio), delta=1)
 
 
     def test_tez_reinitialize(self):
@@ -416,12 +416,12 @@ class TezPairTest(TestCase):
         all_shares = get_shares(res, 0, me)
         res = chain.execute(self.dex.divest_liquidity(pair_id=0, min_token_a_out=1, min_token_b_out=1, shares=all_shares, liquidity_receiver=me, candidate=julian, deadline=1))
         transfers = parse_transfers(res)
-        self.assertEqual(transfers[0]["amount"], 1)
+        self.assertEqual(transfers[0]["amount"], 2_000_000)
         self.assertEqual(transfers[0]["destination"], me)
-        self.assertEqual(transfers[0]["type"], "tez")
-        self.assertEqual(transfers[1]["amount"], 2_000_000)
+        self.assertEqual(transfers[0]["type"], "token")
+        self.assertEqual(transfers[1]["amount"], 1)
         self.assertEqual(transfers[1]["destination"], me)
-        self.assertEqual(transfers[1]["type"], "token")
+        self.assertEqual(transfers[1]["type"], "tez")
 
 
     def test_tez_divest_small_a_big_b(self):
@@ -435,20 +435,20 @@ class TezPairTest(TestCase):
         
         res = chain.execute(self.dex.invest_liquidity(pair_id=0, token_a_in=1, token_b_in=3_600_000, shares=1, shares_receiver=me, candidate=julian, deadline=1), amount=3_600_000)
         transfers = parse_transfers(res)
-        change = transfers[0]["amount"]
-        token_in = transfers[1]["amount"]
-        self.assertEqual(change, 1_600_000)
+        token_in = transfers[0]["amount"]
+        change = transfers[1]["amount"]
         self.assertEqual(token_in, 1)
+        self.assertEqual(change, 1_600_000)
 
         all_shares = get_shares(res, 0, me)
         res = chain.execute(self.dex.divest_liquidity(pair_id=0, min_token_a_out=1, min_token_b_out=1, shares=all_shares, liquidity_receiver=me, candidate=julian, deadline=1))
         transfers = parse_transfers(res)
-        self.assertEqual(transfers[0]["amount"], 2_000_000)
+        self.assertEqual(transfers[0]["amount"], 1)
         self.assertEqual(transfers[0]["destination"], me)
-        self.assertEqual(transfers[0]["type"], "tez")
-        self.assertEqual(transfers[1]["amount"], 1)
+        self.assertEqual(transfers[0]["type"], "token")
+        self.assertEqual(transfers[1]["amount"], 2_000_000)
         self.assertEqual(transfers[1]["destination"], me)
-        self.assertEqual(transfers[1]["type"], "token")
+        self.assertEqual(transfers[1]["type"], "tez")
 
     def test_tez_invert_proportion(self):
         chain = LocalChain(storage=self.init_storage)
@@ -498,13 +498,14 @@ class TezPairTest(TestCase):
         res = chain.interpret(self.dex.invest_liquidity(pair_id=0, token_a_in=2, token_b_in=4, shares=2, shares_receiver=me, candidate=julian, deadline=1), amount=4)
         transfers = parse_transfers(res)
         self.assertEqual(len(transfers), 2)
-        self.assertEqual(transfers[0]["amount"], 1) # tez change
-        self.assertEqual(transfers[0]["type"], "tez")
-        self.assertEqual(transfers[0]["destination"], me)
 
-        self.assertEqual(transfers[1]["amount"], 2) # tokens taken``
-        self.assertEqual(transfers[1]["type"], "token")
-        self.assertEqual(transfers[1]["destination"], contract_self_address)
+        self.assertEqual(transfers[0]["amount"], 2) # tokens taken``
+        self.assertEqual(transfers[0]["type"], "token")
+        self.assertEqual(transfers[0]["destination"], contract_self_address)
+        
+        self.assertEqual(transfers[1]["amount"], 1) # tez change
+        self.assertEqual(transfers[1]["type"], "tez")
+        self.assertEqual(transfers[1]["destination"], me)
 
     def test_close_is_last_operation(self):
         chain = LocalChain(storage=self.init_storage)
@@ -541,3 +542,22 @@ class TezPairTest(TestCase):
         }), amount=1_000)
 
         self.assertEqual(res.operations[-1]["parameters"]["entrypoint"], "close")
+
+    def test_tez_divest_last(self):
+        chain = LocalChain(storage=self.init_storage)
+        res = chain.execute(self.dex.launch_exchange(tez_pair, 300, 300_000_000, admin, dummy_candidate, 1), amount=300_000_000)
+
+        # invest Tez change goes last
+        invest = self.dex.invest_liquidity(pair_id=0, token_a_in=100_000_000, token_b_in=100_000_000_001, shares=100_000, shares_receiver=me, candidate=dummy_candidate, deadline=1)
+        res = chain.execute(invest, amount=100_000_000_001)
+        transfers = parse_transfers(res)
+        self.assertEqual(len(transfers), 2)
+        self.assertEqual(transfers[1]["type"], "tez")
+        self.assertEqual(transfers[1]["amount"], 1)
+        self.assertEqual(transfers[1]["destination"], me)
+
+        # Tez divested last
+        res = chain.execute(self.dex.divest_liquidity(pair_id=0, min_token_a_out=1, min_token_b_out=1, shares=2, liquidity_receiver=me, candidate=dummy_candidate, deadline=1))
+        transfers = parse_transfers(res) 
+        self.assertEqual(len(transfers), 2)
+        self.assertEqual(transfers[1]["type"], "tez")

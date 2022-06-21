@@ -152,12 +152,12 @@ class FeesTest(TestCase):
         res = chain.execute(self.dex.withdraw_auction_fee(0, {"tez": None}), sender=alice)
         transfers = parse_transfers(res)
         self.assertEqual(len(transfers), 2)
-        self.assertEqual(transfers[0]["amount"], 9)
-        self.assertEqual(transfers[0]["destination"], alice)
+        self.assertEqual(transfers[0]["amount"], 2_991)
+        self.assertEqual(transfers[0]["destination"], auction)
         self.assertEqual(transfers[0]["type"], "tez")
 
-        self.assertEqual(transfers[1]["amount"], 2_991)
-        self.assertEqual(transfers[1]["destination"], auction)
+        self.assertEqual(transfers[1]["amount"], 9)
+        self.assertEqual(transfers[1]["destination"], alice)
         self.assertEqual(transfers[1]["type"], "tez")
 
         auction_receive_ops = parse_auction_ops(res)
@@ -168,13 +168,13 @@ class FeesTest(TestCase):
         res = chain.execute(self.dex.withdraw_auction_fee(None, token_a_fa2), sender=alice)
         transfers = parse_transfers(res)
         self.assertEqual(len(transfers), 2)
-        self.assertEqual(transfers[0]["amount"], 8)
-        self.assertEqual(transfers[0]["destination"], alice)
+        self.assertEqual(transfers[0]["amount"], 2_935)
+        self.assertEqual(transfers[0]["destination"], auction)
         self.assertEqual(transfers[0]["source"], contract_self_address)
         self.assertEqual(transfers[0]["token_address"], token_a_address)
-
-        self.assertEqual(transfers[1]["amount"], 2_935)
-        self.assertEqual(transfers[1]["destination"], auction)
+        
+        self.assertEqual(transfers[1]["amount"], 8)
+        self.assertEqual(transfers[1]["destination"], alice)
         self.assertEqual(transfers[1]["source"], contract_self_address)
         self.assertEqual(transfers[1]["token_address"], token_a_address)
 

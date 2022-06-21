@@ -38,7 +38,6 @@ function update_rewards(
       const new_reward : nat = get_nat_or_fail(rewards_level - s.last_update_level) * s.reward_per_block;
 
       s.reward_per_share := s.reward_per_share + (new_reward / s.total_supply);
-      s.last_update_level := Tezos.level;
 
       if Tezos.level > s.collecting_period_end
       then {
@@ -58,6 +57,7 @@ function update_rewards(
       else skip;
     }
     else skip;
+    s.last_update_level := Tezos.level;
   } with s
 
 function update_user_reward(

@@ -177,8 +177,6 @@ function invest_liquidity(
         }
         else skip;
 
-        ops := transfer_token(Tezos.sender, Tezos.self_address, tokens_a_required, tokens.token_a) # ops;
-        ops := fill_or_transfer_tokens(tokens_b_required, tokens.token_b, updated_pair.bucket) # ops;
 
         if Tezos.amount / 1mutez > tokens_b_required
         then {
@@ -188,6 +186,8 @@ function invest_liquidity(
           ) # ops;
         }
         else skip;
+        ops := fill_or_transfer_tokens(tokens_b_required, tokens.token_b, updated_pair.bucket) # ops;
+        ops := transfer_token(Tezos.sender, Tezos.self_address, tokens_a_required, tokens.token_a) # ops;
       }
     | _ -> skip
     ]
@@ -261,13 +261,13 @@ function divest_liquidity(
         }
         else skip;
 
-        ops := transfer_token(Tezos.self_address, params.liquidity_receiver, token_a_divested, tokens.token_a) # ops;
         ops := pour_out_or_transfer_tokens(
           params.liquidity_receiver,
           token_b_divested,
           tokens.token_b,
           updated_pair.bucket
         ) # ops;
+        ops := transfer_token(Tezos.self_address, params.liquidity_receiver, token_a_divested, tokens.token_a) # ops;
       }
     | _ -> skip
     ]
@@ -494,9 +494,10 @@ function withdraw_auction_fee(
           fee   = actual_auction_fee;
         ];
 
+        ops := pour_out_or_transfer_tokens(Tezos.sender, user_reward, params.token, bucket) # ops;
+        
         ops := get_auction_receive_fee_op(receive_fee_params, s.auction) # ops;
         ops := pour_out_or_transfer_tokens(s.auction, actual_auction_fee, params.token, bucket) # ops;
-        ops := pour_out_or_transfer_tokens(Tezos.sender, user_reward, params.token, bucket) # ops;
       }
     | _ -> skip
     ]
@@ -671,6 +672,8 @@ function update_token_metadata(
     | Update_token_metadata(params) -> {
         only_manager(s.managers);
         non_payable(Unit);
+
+        const _ = unwrap(s.token_metadata[params.token_id], DexCore.err_pair_not_listed);
 
         s.token_metadata[params.token_id] := params;
       }

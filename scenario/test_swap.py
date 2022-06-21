@@ -366,8 +366,8 @@ class StableSwapTest(TestCase):
             res = chain.execute(self.dex.divest_liquidity(pair_id=0, min_token_a_out=1, min_token_b_out=1, shares=all_shares, liquidity_receiver=me, candidate=dummy_candidate, deadline=1))
     
             transfers = parse_transfers(res)
-            self.assertAlmostEqual(transfers[0]["amount"], int(300 * ratio), delta=1)
-            self.assertAlmostEqual(transfers[1]["amount"], 300, delta=1)
+            self.assertAlmostEqual(transfers[0]["amount"], 300, delta=1)
+            self.assertAlmostEqual(transfers[1]["amount"], int(300 * ratio), delta=1)
 
     def test_reinitialize(self):
         chain = LocalChain(storage=self.init_storage)
@@ -435,8 +435,8 @@ class StableSwapTest(TestCase):
         res = chain.execute(self.dex.divest_liquidity(pair_id=0, min_token_a_out=1, min_token_b_out=1, shares=10, liquidity_receiver=me, candidate=dummy_candidate, deadline=1))
         
         transfers = parse_transfers(res) 
-        self.assertLessEqual(transfers[0]["amount"], 777_777_777)
-        self.assertLessEqual(transfers[1]["amount"], 42)
+        self.assertLessEqual(transfers[1]["amount"], 777_777_777)
+        self.assertLessEqual(transfers[0]["amount"], 42)
 
     def test_add_pool_same_coin(self):
         same_token_pair = {
@@ -466,14 +466,14 @@ class StableSwapTest(TestCase):
         res = chain.execute(self.dex.invest_liquidity(pair_id=0, token_a_in=2_000_000, token_b_in=1, shares=1, shares_receiver=me, candidate=julian, deadline=1))
 
         transfers = parse_transfers(res)
-        self.assertEqual(transfers[0]["amount"], 1)
-        self.assertEqual(transfers[1]["amount"], 2_000_000)
+        self.assertEqual(transfers[0]["amount"], 2_000_000)
+        self.assertEqual(transfers[1]["amount"], 1)
 
         all_shares = get_shares(res, 0, me)
         res = chain.execute(self.dex.divest_liquidity(pair_id=0, min_token_a_out=1, min_token_b_out=1, shares=all_shares, liquidity_receiver=me, candidate=julian, deadline=1))
         transfers = parse_transfers(res)
-        self.assertEqual(transfers[0]["amount"], 1)
-        self.assertEqual(transfers[1]["amount"], 2_000_000)
+        self.assertEqual(transfers[0]["amount"], 2_000_000)
+        self.assertEqual(transfers[1]["amount"], 1)
 
     def test_divest_small_a_big_b(self):
         chain = LocalChain(storage=self.init_storage)
@@ -484,14 +484,14 @@ class StableSwapTest(TestCase):
 
         res = chain.execute(self.dex.invest_liquidity(pair_id=0, token_a_in=1, token_b_in=3_600_000, shares=1, shares_receiver=me, candidate=julian, deadline=1))
         transfers = parse_transfers(res)
-        self.assertEqual(transfers[0]["amount"], 2_000_000)
-        self.assertEqual(transfers[1]["amount"], 1)
+        self.assertEqual(transfers[0]["amount"], 1)
+        self.assertEqual(transfers[1]["amount"], 2_000_000)
 
         all_shares = get_shares(res, 0, me)
         res = chain.execute(self.dex.divest_liquidity(pair_id=0, min_token_a_out=1, min_token_b_out=1, shares=all_shares, liquidity_receiver=me, candidate=julian, deadline=1))
         transfers = parse_transfers(res)
-        self.assertEqual(transfers[0]["amount"], 2_000_000)
-        self.assertEqual(transfers[1]["amount"], 1)
+        self.assertEqual(transfers[0]["amount"], 1)
+        self.assertEqual(transfers[1]["amount"], 2_000_000)
 
     def test_invert_proportion(self):
         chain = LocalChain(storage=self.init_storage)
