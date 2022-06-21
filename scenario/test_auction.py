@@ -67,11 +67,11 @@ class AuctionTest(TestCase):
 
         res = chain.execute(self.ct.claim(0))
         transfers = parse_transfers(res)
-        self.assertEqual(transfers[0]["amount"], 10)
-        self.assertEqual(transfers[0]["destination"], bob)
-        self.assertEqual(transfers[0]["source"], contract_self_address)
-        self.assertEqual(transfers[0]["token_address"], token_a_address)
-        self.assertEqual(transfers[0]["token_id"], 0)
+        self.assertEqual(transfers[1]["amount"], 10)
+        self.assertEqual(transfers[1]["destination"], bob)
+        self.assertEqual(transfers[1]["source"], contract_self_address)
+        self.assertEqual(transfers[1]["token_address"], token_a_address)
+        self.assertEqual(transfers[1]["token_id"], 0)
 
         with self.assertRaises(MichelsonRuntimeError) as error:
             chain.execute(self.ct.place_bid(0, 150), sender=bob)

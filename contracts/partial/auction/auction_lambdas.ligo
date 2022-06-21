@@ -100,13 +100,13 @@ function claim(
         assert_with_error(Tezos.now >= auction.end_time, Auction.err_auction_not_finished);
         assert_with_error(auction.status =/= Finished, Auction.err_auction_finished);
 
+        ops := transfer_token(Tezos.self_address, auction.current_bidder, auction.amt, auction.token) # ops;
         ops := transfer_token(
           Tezos.self_address,
           Constants.zero_address,
           auction.current_bid,
           Fa2(s.quipu_token)
         ) # ops;
-        ops := transfer_token(Tezos.self_address, auction.current_bidder, auction.amt, auction.token) # ops;
 
         s.auctions[auction_id] := auction with record[ status = Finished ];
       }
