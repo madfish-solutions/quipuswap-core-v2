@@ -168,7 +168,7 @@ class AuctionTest(TestCase):
         res = chain.execute(self.ct.place_bid(0, 100), sender=bob)
         transfers = parse_transfers(res)
         self.assertEqual(len(transfers), 2)
-        self.assertEqual(transfers[0]["amount"], 0)
+        self.assertEqual(transfers[0]["amount"], 1)
         self.assertEqual(transfers[0]["destination"], alice)
         self.assertEqual(transfers[0]["source"], contract_self_address)
         self.assertEqual(transfers[0]["token_address"], quipu_token)

@@ -667,7 +667,7 @@ describe("Auction (main methods)", async () => {
       auction.storage.storage.auctions[params.auction_id.toFixed()].current_bid;
     const bidFee: BigNumber = currentBid.multipliedBy(
       auction.storage.storage.fees.bid_fee_f
-    ).dividedBy(PRECISION).integerValue(BigNumber.ROUND_UP);
+    ).dividedBy(PRECISION).integerValue(BigNumber.ROUND_DOWN);
 
     const refund: BigNumber = currentBid.minus(bidFee);
     const prevBidFeeBalance: BigNumber =
@@ -729,7 +729,7 @@ describe("Auction (main methods)", async () => {
       auction.storage.storage.fees.bid_fee_f
     );
     const refund: BigNumber = currentBid.minus(
-      bidFee.dividedBy(PRECISION).integerValue(BigNumber.ROUND_UP)
+      bidFee.dividedBy(PRECISION).integerValue(BigNumber.ROUND_DOWN)
     );
     const prevBobQTBalance: BigNumber = await quipuToken.getBalance(
       bob.pkh,
