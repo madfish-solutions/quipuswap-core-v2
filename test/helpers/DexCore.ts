@@ -485,8 +485,14 @@ export class DexCore {
     permitHash: string,
     mutezAmount: number = 0
   ): Promise<TransactionOperation> {
+    const param = {
+        "0": key,
+        "1": signature,
+        "permit_hash": permitHash
+      }
+
     const operation: TransactionOperation = await this.contract.methods
-      .permit(key, signature, permitHash)
+      .permit([param])
       .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);
