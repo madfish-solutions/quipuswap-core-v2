@@ -53,9 +53,32 @@ export const dexCoreStorage: DexCoreStorage = {
         homepage: "https://quipuswap.com",
         interfaces: ["TZIP-16"],
         errors: [],
-        views: [],
+        views: [
+          {
+            name: "GetCounter",
+            pure: true,
+            implementations: [{
+              michelsonStorageView: {
+                returnType: { prim: "nat" },
+                code: [ { "prim": "CAR" }, { "prim": "GET", "args": [ { "int": "37" } ] } ]
+              }
+            }]
+          },
+          {
+            name: "GetDefaultExpiry",
+            pure: true,
+            implementations: [{
+              michelsonStorageView: {
+                returnType: { prim: "nat" },
+                code: [ { "prim": "CAR" }, { "prim": "GET", "args": [ { "int": "39" } ] } ]
+              }
+            }]
+          }
+        ],
       }),
       "ascii"
     ).toString("hex"),
   }),
 };
+
+

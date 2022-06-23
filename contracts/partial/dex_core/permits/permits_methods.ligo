@@ -153,3 +153,11 @@ function set_permit_expiry(
       } with Big_map.update(user, Some(updated_user_permits), permits)
     ]
   ]
+
+(*
+off-chain views
+to compile use:
+compile expression --michelson-format json pascaligo --init-file $PWD/contracts/main/dex_core.ligo get_counter
+*)
+function get_counter(const s : full_storage_t) : nat is s.storage.permits_counter;
+function get_default_expiry(const s : full_storage_t) : nat is s.storage.default_expiry;
