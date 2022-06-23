@@ -848,4 +848,77 @@ describe("DexCore (permits)", async () => {
       return true;
     });
   });
+
+  it(`should not allow bob to transfer from alice to carol`, async () => {
+    const tokenId: BigNumber = new BigNumber(0);
+    const amount: BigNumber = new BigNumber(321);
+    const transferParams: Transfer[] = [
+      {
+        from_: alice.pkh,
+        txs: [
+          {
+            to_: carol.pkh,
+            token_id: tokenId,
+            amount: amount,
+          },
+        ],
+      },
+    ];
+    const [signerKey, signature, permitHash]: [string, string, string] =
+      await dexCore.createPermitPayload(
+        await Utils.createTezos(bob.sk),
+        dexCore.contract,
+        "transfer",
+        transferParams
+      );
+
+    await dexCore.permit(signerKey, signature, permitHash);
+    await dexCore.updateStorage({
+      permits: [bob.pkh],
+    });
+
+    await utils.setProvider(carol.sk);
+
+    await rejects(dexCore.transfer(transferParams), (err: Error) => {
+      expect(err.message).to.equal(FA2Errors.FA2_NOT_OPERATOR)
+      return true;
+    });
+  });
+
+  it(`should not allow alice to transfer from alice to carol signed by bob`, async () => {
+    const tokenId: BigNumber = new BigNumber(0);
+    const amount: BigNumber = new BigNumber(430);
+    const transferParams: Transfer[] = [
+      {
+        from_: alice.pkh,
+        txs: [
+          {
+            to_: carol.pkh,
+            token_id: tokenId,
+            amount: amount,
+          },
+        ],
+      },
+    ];
+    const [signerKey, signature, permitHash]: [string, string, string] =
+      await dexCore.createPermitPayload(
+        await Utils.createTezos(bob.sk),
+        dexCore.contract,
+        "transfer",
+        transferParams
+      );
+    
+    await utils.setProvider(alice.sk);
+    await dexCore.permit(signerKey, signature, permitHash);
+    await dexCore.updateStorage({
+      permits: [bob.pkh],
+    });
+
+    await utils.setProvider(carol.sk);
+    await rejects(dexCore.transfer(transferParams), (err: Error) => {
+      expect(err.message).to.equal(FA2Errors.FA2_NOT_OPERATOR)
+      return true;
+    });
+    
+  });
 });
