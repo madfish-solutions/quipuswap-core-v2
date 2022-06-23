@@ -722,6 +722,14 @@ describe("DexCore (permits)", async () => {
         .expiry
     ).to.be.equal(null);
 
+    const expiry: SetExpiry = {
+      issuer: bob.pkh,
+      expiry: new BigNumber(1),
+      permit_hash: permitHash,
+    };
+
+    await dexCore.setExpiry(expiry);
+
     transferParams = [
       {
         from_: bob.pkh,
@@ -734,12 +742,18 @@ describe("DexCore (permits)", async () => {
         ],
       },
     ];
-    [signerKey, signature, permitHash] = await dexCore.createPermitPayload(
+    const [newSignerKey, newSignature, newPermitHash] = await dexCore.createPermitPayload(
       await Utils.createTezos(bob.sk),
       dexCore.contract,
       "transfer",
       transferParams
     );
+
+    // at this point old permit has expired and gets deleted
+    await dexCore.permit(newSignerKey, newSignature, newPermitHash);
+    await dexCore.updateStorage({
+      permits: [bob.pkh],
+    });
 
     expect(dexCore.storage.storage.permits[bob.pkh].permits.has(permitHash)).to
       .be.false;
@@ -760,7 +774,7 @@ describe("DexCore (permits)", async () => {
         ],
       },
     ];
-    const [_signerKey, _signature, permitHash]: [string, string, string] =
+    const [signerKey, signature, permitHash]: [string, string, string] =
       await dexCore.createPermitPayload(
         await Utils.createTezos(bob.sk),
         dexCore.contract,
@@ -768,6 +782,7 @@ describe("DexCore (permits)", async () => {
         transferParams
       );
 
+    await dexCore.permit(signerKey, signature, permitHash);
     await dexCore.updateStorage({
       ledger: [
         [alice.pkh, tokenId],
@@ -781,6 +796,8 @@ describe("DexCore (permits)", async () => {
 
     expect(dexCore.storage.storage.permits[bob.pkh].permits.has(permitHash)).to
       .be.true;
+
+    console.log("pkh before: ", await dexCore.tezos.signer.publicKeyHash())
 
     await utils.setProvider(carol.sk);
 
