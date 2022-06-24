@@ -600,7 +600,7 @@
     - ✅ should withdraw FA1.2 public fee by admin;
     - ✅ should withdraw FA2 public fee by admin.
 
-14. `burn_bid_fee`:
+14. `withdraw_bid_fee`:
 
     - ✅ should fail if not admin is trying to burn bid fee;
     - ✅ should fail if positive TEZ tokens amount were passed;

@@ -324,9 +324,12 @@ export class Auction {
     return operation;
   }
 
-  async burnBidFee(mutezAmount: number = 0): Promise<TransactionOperation> {
+  async burnBidFee(
+    mutezAmount: number = 0,
+    address: string = "tz1ZZZZZZZZZZZZZZZZZZZZZZZZZZZZNkiRg"
+  ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
-      .burn_bid_fee([])
+      .withdraw_bid_fee(address)
       .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);

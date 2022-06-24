@@ -292,7 +292,7 @@ function withdraw_public_fee(
     ]
   } with (ops, s)
 
-function burn_bid_fee(
+function withdraw_bid_fee(
   const action          : action_t;
   var s                 : storage_t)
                         : return_t is
@@ -300,14 +300,14 @@ function burn_bid_fee(
     var ops : list(operation) := nil;
 
     case action of [
-    | Burn_bid_fee -> {
+    | Withdraw_bid_fee(receiver) -> {
         only_admin(s.admin);
 
         if s.bid_fee_balance > 0n
         then {
           ops := transfer_token(
             Tezos.self_address,
-            Constants.zero_address,
+            receiver,
             s.bid_fee_balance,
             Fa2(s.quipu_token)
           ) # ops;

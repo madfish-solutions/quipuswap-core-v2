@@ -53,6 +53,6 @@
   },
   {
     "index": 13,
-    "name": "burn_bid_fee"
+    "name": "withdraw_bid_fee"
   }
 ]

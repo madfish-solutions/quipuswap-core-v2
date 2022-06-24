@@ -21,7 +21,7 @@ function call_auction(
     | Update_whitelist(_)     -> 10n
     | Withdraw_dev_fee(_)     -> 11n
     | Withdraw_public_fee(_)  -> 12n
-    | Burn_bid_fee(_)         -> 13n
+    | Withdraw_bid_fee(_)         -> 13n
     ];
 
     const lambda_bytes : bytes = unwrap(s.auction_lambdas[id], Auction.err_unknown_func);
