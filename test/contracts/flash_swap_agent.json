@@ -17,11 +17,15 @@
           "args": [
             {
               "prim": "address",
-              "annots": ["%dex_core"]
+              "annots": [
+                "%dex_core"
+              ]
             },
             {
               "prim": "nat",
-              "annots": ["%val"]
+              "annots": [
+                "%val"
+              ]
             }
           ]
         }
@@ -60,7 +64,7 @@
                 "prim": "string"
               },
               {
-                "string": "411"
+                "string": "409"
               }
             ]
           },
@@ -161,7 +165,7 @@
   "networks": {},
   "compiler": {
     "name": "ligo",
-    "version": "next"
+    "version": "0.45.0"
   },
   "networkType": "tezos"
 }

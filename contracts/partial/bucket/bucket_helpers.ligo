@@ -25,6 +25,14 @@ function get_baker_registry_validate_op(
     Bucket.err_dex_core_get_collecting_period_view_404
   )
 
+[@inline] function get_baker_rate(
+  const dex_core        : address)
+                        : nat is
+  unwrap(
+    (Tezos.call_view("get_baker_rate", Unit, dex_core) : option(nat)),
+    Bucket.err_dex_core_get_baker_rate_view_404
+  )
+
 function update_rewards(
   var s                 : storage_t)
                         : storage_t is

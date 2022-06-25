@@ -60,6 +60,7 @@ export type BucketStorage = {
   last_update_level: BigNumber;
   collecting_period_end: BigNumber;
   total_supply: BigNumber;
+  baker_fund: BigNumber;
 };
 
 export type UpdateRewards = {

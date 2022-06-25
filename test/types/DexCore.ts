@@ -155,6 +155,7 @@ export type DexCoreStorage = {
     entered: boolean;
     tokens_count: BigNumber;
     collecting_period: BigNumber;
+    baker_rate_f: BigNumber;
   };
   dex_core_lambdas: MichelsonMap<MichelsonMapKey, unknown>;
   metadata: MichelsonMap<MichelsonMapKey, unknown>;

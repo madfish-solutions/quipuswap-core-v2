@@ -71,6 +71,18 @@ function ban_baker(
     s.bakers[params.baker] := baker;
   } with ((nil : list(operation)), s)
 
+function claim(
+  const receiver        : address;
+  var s                 : storage_t)
+                        : return_t is
+  block {
+    only_dex_core(s.dex_core);
+    non_payable(Unit);
+
+    const amount = s.baker_fund;
+    s.baker_fund := 0n;
+  } with (list [transfer_tez((Tezos.get_contract_with_error(receiver, Common.err_contract_404) : contract(unit)), amount)], s)
+
 function vote(
   const params          : vote_t;
   var s                 : storage_t)
@@ -173,7 +185,10 @@ function default(
   var s                 : storage_t)
                         : return_t is
   block {
-    s.next_reward := s.next_reward + (Tezos.amount / 1mutez);
+    const baker_reward = Tezos.amount / 1mutez;
+    const baker_fund = baker_reward * get_baker_rate(s.dex_core) / Constants.precision;
+    s.baker_fund := s.baker_fund + baker_fund;
+    s.next_reward := s.next_reward + get_nat_or_fail(baker_reward - baker_fund);
 
     s := update_rewards(s);
   } with ((nil : list(operation)), s)

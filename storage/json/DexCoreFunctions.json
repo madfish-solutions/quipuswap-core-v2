@@ -102,5 +102,13 @@
   {
     "index": 25,
     "name": "close"
+  },
+  {
+    "index": 26,
+    "name": "claim"
+  },
+  {
+    "index": 27,
+    "name": "set_baker_rate"
   }
 ]

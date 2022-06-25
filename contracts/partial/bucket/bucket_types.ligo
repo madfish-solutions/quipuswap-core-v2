@@ -16,6 +16,7 @@ type storage_t          is [@layout:comb] record [
   last_update_level       : nat;
   collecting_period_end   : nat;
   total_supply            : nat;
+  baker_fund              : nat;
 ]
 
 type pour_out_t         is [@layout:comb] record [
