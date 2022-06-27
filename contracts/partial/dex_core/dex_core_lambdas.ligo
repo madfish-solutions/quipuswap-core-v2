@@ -397,6 +397,8 @@ function claim_interface_fee(
     | Claim_interface_fee(params) -> {
         non_payable(Unit);
 
+        assert_with_error(params.token =/= Tez, DexCore.err_cant_claim_tez_fees_by_this_ep);
+
         const interface_fee_f : nat = unwrap_or(s.interface_fee[(params.token, Tezos.sender)], 0n);
         const value : nat = interface_fee_f / Constants.precision;
 

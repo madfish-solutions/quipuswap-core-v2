@@ -44,6 +44,7 @@ module DexCore is {
   const err_no_pair_id                                : string = "142";
   const err_action_outdated                           : string = "143";
   const err_bucket_claim_entrypoint_404               : string = "144";
+  const err_cant_claim_tez_fees_by_this_ep            : string = "145";
 }
 
 module Bucket is {
