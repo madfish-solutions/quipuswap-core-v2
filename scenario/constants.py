@@ -79,6 +79,7 @@ tez_pair_c = {
 vr = {
     f"{dex_core}%get_total_supply": [{"request": 0, "total_supply": 100}],
     f"{dex_core}%get_collecting_period": 10,
+    f"{dex_core}%get_baker_rate": 0,
 }
 
 

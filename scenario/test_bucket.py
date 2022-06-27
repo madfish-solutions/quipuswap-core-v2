@@ -23,7 +23,7 @@ class BucketTest(TestCase):
 
         cls.init_storage = storage
 
-    @skip("delta 1 porblem. 19 instead of 20 blocks work fine")
+    @skip("delta 1 problem. 19 instead of 20 blocks work fine")
     def test_full_reward(self):
         chain = LocalChain(storage=self.init_storage)
 
@@ -159,3 +159,48 @@ class BucketTest(TestCase):
         res = chain.execute(self.ct.withdraw_rewards(bob, bob), view_results=vr, sender=dex_core)
         transfers = parse_transfers(res)
         self.assertEqual(transfers[0]["amount"], 35_000)
+
+    def test_bucket_claim(self):
+        chain = LocalChain(storage=self.init_storage)
+
+        lvr = vr.copy()
+        lvr[f"{dex_core}%get_baker_rate"] = int(1e18 * 0.01)
+
+        res = chain.execute(self.ct.vote(alice, carol, True, 50), sender=dex_core, view_results=lvr)
+        res = chain.execute(self.ct.vote(bob, carol, True, 50), sender=dex_core, view_results=lvr)
+
+        res = chain.execute(self.ct.default(), amount=20_000, view_results=lvr)
+
+        chain.advance_blocks(15)
+
+        res = chain.execute(self.ct.withdraw_rewards(alice, alice), view_results=lvr, sender=dex_core)
+        transfers = parse_transfers(res)
+        self.assertEqual(transfers[0]["amount"], 4_950)
+        self.assertEqual(transfers[0]["destination"], alice)
+        self.assertEqual(transfers[0]["type"], "tez")
+
+        res = chain.execute(self.ct.withdraw_rewards(bob, bob), view_results=lvr, sender=dex_core)
+        transfers = parse_transfers(res)
+        self.assertEqual(transfers[0]["amount"], 4_950)
+        self.assertEqual(transfers[0]["destination"], bob)
+        self.assertEqual(transfers[0]["type"], "tez")
+
+        with self.assertRaises(MichelsonRuntimeError):
+            res = chain.execute(self.ct.claim_baker_fund(admin), view_results=lvr, sender=bob)
+
+        res = chain.execute(self.ct.claim_baker_fund(admin), view_results=lvr, sender=dex_core)
+        transfers = parse_transfers(res)
+        self.assertEqual(transfers[0]["amount"], 200)
+        self.assertEqual(transfers[0]["destination"], admin)
+        self.assertEqual(transfers[0]["source"], contract_self_address)
+        self.assertEqual(transfers[0]["type"], "tez")
+
+        res = chain.execute(self.ct.claim_baker_fund(admin), view_results=lvr, sender=dex_core)
+        transfers = parse_transfers(res)
+        self.assertEqual(transfers[0]["amount"], 0)
+        self.assertEqual(transfers[0]["destination"], admin)
+        self.assertEqual(transfers[0]["source"], contract_self_address)
+        self.assertEqual(transfers[0]["type"], "tez")
+
+
+

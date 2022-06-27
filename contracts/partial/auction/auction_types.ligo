@@ -86,7 +86,7 @@ type action_t           is
 | Update_whitelist        of update_whitelist_t
 | Withdraw_dev_fee        of withdraw_fee_t
 | Withdraw_public_fee     of withdraw_fee_t
-| Withdraw_bid_fee            of withdraw_bid_fee_t
+| Withdraw_bid_fee        of withdraw_bid_fee_t
 
 type return_t           is list(operation) * storage_t
 
