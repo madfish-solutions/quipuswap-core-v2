@@ -43,12 +43,14 @@ module DexCore is {
   const err_wrong_reserves_state                      : string = "141";
   const err_no_pair_id                                : string = "142";
   const err_action_outdated                           : string = "143";
-  const err_cant_claim_tez_fees_by_this_ep            : string = "144";
+  const err_bucket_claim_entrypoint_404               : string = "144";
+  const err_cant_claim_tez_fees_by_this_ep            : string = "145";
 }
 
 module Bucket is {
   const err_baker_registry_validate_entrypoint_404  : string = "200";
   const err_dex_core_get_collecting_period_view_404 : string = "201";
+  const err_dex_core_get_baker_rate_view_404        : string = "202";
 }
 
 module Auction is {
@@ -81,4 +83,5 @@ module Common is {
   const err_bucket_fill_entrypoint_404     : string = "410";
   const err_pending_admin_is_none          : string = "411";
   const err_non_payable_entrypoint         : string = "412";
+  const err_rate_too_high                  : string = "413";
 }

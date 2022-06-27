@@ -24,6 +24,8 @@ function call_dex_core(
     | Set_collecting_period(_)   -> 15n
     | Update_token_metadata(_)   -> 16n
     | Ban(_)                     -> 17n
+    | Claim(_)                   -> 26n
+    | Set_baker_rate(_)          -> 27n
     (* PERMIT *)
     | Permit(_)                  -> 18n
     | Set_expiry(_)              -> 19n
@@ -60,4 +62,11 @@ function setup_func(
     | Some(_) -> failwith(DexCore.err_func_set)
     | None    -> s.dex_core_lambdas[params.idx] := params.func_bytes
     ];
+  } with ((nil : list(operation)), s)
+
+function default(
+  const s               : full_storage_t)
+                        : full_return_t is
+  block {
+    skip;
   } with ((nil : list(operation)), s)

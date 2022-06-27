@@ -619,5 +619,5 @@ class StableSwapTest(TestCase):
         chain.execute(self.dex.setup_func(25, dex_core_lambdas[8]), sender=admin)
 
         with self.assertRaises(MichelsonRuntimeError) as error:
-            chain.execute(self.dex.setup_func(26, dex_core_lambdas[8]), sender=admin)
+            chain.execute(self.dex.setup_func(28, dex_core_lambdas[8]), sender=admin)
         self.assertEqual(Errors.EXCEEDS_MAX_LAMBDA_INDEX, error.exception.args[-1])

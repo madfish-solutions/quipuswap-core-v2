@@ -33,6 +33,13 @@ function get_bucket_ban_baker_entrypoint(
     (Tezos.get_entrypoint_opt("%ban_baker", bucket) : option(contract(ban_baker_t))),
     DexCore.err_bucket_ban_baker_entrypoint_404
   )
+function get_bucket_claim_entrypoint(
+  const bucket          : address)
+                        : contract(address) is
+  unwrap(
+    (Tezos.get_entrypoint_opt("%claim_baker_fund", bucket) : option(contract(address))),
+    DexCore.err_bucket_claim_entrypoint_404
+  )
 
 function get_bucket_vote_entrypoint(
   const bucket          : address)
@@ -59,6 +66,12 @@ function get_ban_baker_op(
   const bucket          : address)
                         : operation is
   Tezos.transaction(ban_params, 0mutez, get_bucket_ban_baker_entrypoint(bucket))
+
+function get_claim_op(
+  const claim_params    : address;
+  const bucket          : address)
+                        : operation is
+  Tezos.transaction(claim_params, 0mutez, get_bucket_claim_entrypoint(bucket))
 
 function get_vote_op(
   const vote_params     : vote_t;
@@ -113,6 +126,7 @@ function get_bucket_initial_storage(
     total_supply          = 0n;
     last_update_level     = Tezos.level;
     collecting_period_end = Tezos.level + collect_period;
+    baker_fund            = 0n;
   ]
 
 function calc_cumulative_prices(

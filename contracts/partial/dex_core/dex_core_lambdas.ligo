@@ -541,6 +541,25 @@ function vote(
 
 (* ADMIN *)
 
+function claim(
+  const action          : action_t;
+  var s                 : storage_t)
+                        : return_t is
+  block {
+    var ops : list(operation) := nil;
+    case action of [
+    | Claim(params) -> {
+        only_admin(s.admin);
+        non_payable(Unit);
+
+        const pair : pair_t = unwrap(s.pairs[params.pair_id], DexCore.err_pair_not_listed);
+
+        ops := get_claim_op(params.receiver, unwrap(pair.bucket, DexCore.err_bucket_404)) # ops;
+      }
+    | _ -> skip
+    ]
+  } with (ops, s)
+
 function set_admin(
   const action          : action_t;
   var s                 : storage_t)
@@ -552,6 +571,23 @@ function set_admin(
         non_payable(Unit);
 
         s.pending_admin := Some(admin);
+      }
+    | _ -> skip
+    ]
+  } with ((nil : list(operation)), s)
+
+function set_baker_rate(
+  const action          : action_t;
+  var s                 : storage_t)
+                        : return_t is
+  block {
+    case action of [
+    | Set_baker_rate(rate) -> {
+        only_admin(s.admin);
+        non_payable(Unit);
+        assert_with_error(rate < Constants.precision, Common.err_rate_too_high);
+
+        s.baker_rate_f := rate;
       }
     | _ -> skip
     ]

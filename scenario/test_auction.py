@@ -146,7 +146,7 @@ class AuctionTest(TestCase):
         transfers = parse_transfers(res)
         self.assertEqual(transfers[0]["amount"], 0)
 
-        res = chain.interpret(self.ct.burn_bid_fee(), sender=admin)
+        res = chain.interpret(self.ct.withdraw_bid_fee(zero_address), sender=admin)
         transfers = parse_transfers(res)
         self.assertEqual(len(transfers), 0)
 
@@ -181,7 +181,7 @@ class AuctionTest(TestCase):
         self.assertEqual(transfers[1]["token_id"], 0)
 
         # no fee to burn due to small amounts
-        res = chain.interpret(self.ct.burn_bid_fee(), sender=admin)
+        res = chain.interpret(self.ct.withdraw_bid_fee(zero_address), sender=admin)
         transfers = parse_transfers(res)
         self.assertEqual(len(transfers), 0)
 
@@ -202,7 +202,7 @@ class AuctionTest(TestCase):
         self.assertEqual(transfers[1]["token_address"], quipu_token)
         self.assertEqual(transfers[1]["token_id"], 0)
 
-        res = chain.execute(self.ct.burn_bid_fee(), sender=admin)
+        res = chain.execute(self.ct.withdraw_bid_fee(zero_address), sender=admin)
         transfers = parse_transfers(res)
         self.assertEqual(len(transfers), 1)
         self.assertEqual(transfers[0]["amount"], 22)
@@ -210,7 +210,7 @@ class AuctionTest(TestCase):
         self.assertEqual(transfers[0]["source"], contract_self_address)
 
         # no more feee left to burn
-        res = chain.execute(self.ct.burn_bid_fee(), sender=admin)
+        res = chain.execute(self.ct.withdraw_bid_fee(zero_address), sender=admin)
         transfers = parse_transfers(res)
         self.assertEqual(len(transfers), 0)
 
