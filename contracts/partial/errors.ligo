@@ -43,6 +43,7 @@ module DexCore is {
   const err_wrong_reserves_state                      : string = "141";
   const err_no_pair_id                                : string = "142";
   const err_action_outdated                           : string = "143";
+  const err_cant_claim_tez_fees_by_this_ep            : string = "144";
 }
 
 module Bucket is {
