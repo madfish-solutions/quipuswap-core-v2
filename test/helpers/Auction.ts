@@ -44,25 +44,25 @@ export class Auction {
 
   static async init(
     auctionAddress: string,
-    tezos: TezosToolkit
+    tezos: TezosToolkit,
   ): Promise<Auction> {
     return new Auction(await tezos.contract.at(auctionAddress), tezos);
   }
 
   static async originate(
     tezos: TezosToolkit,
-    storage: AuctionStorage
+    storage: AuctionStorage,
   ): Promise<Auction> {
     const contract: string = "auction";
     let artifacts: any = JSON.parse(
-      fs.readFileSync(`${env.buildDir}/${contract}.json`).toString()
+      fs.readFileSync(`${env.buildDir}/${contract}.json`).toString(),
     );
     const operation: OriginationOperation = await tezos.contract
       .originate({
         code: artifacts.michelson,
         storage: storage,
       })
-      .catch((e) => {
+      .catch(e => {
         console.error(e);
 
         return null;
@@ -78,18 +78,18 @@ export class Auction {
 
     fs.writeFileSync(
       `${env.buildDir}/${contract}.json`,
-      JSON.stringify(artifacts, null, 2)
+      JSON.stringify(artifacts, null, 2),
     );
 
     return new Auction(
       await tezos.contract.at(operation.contractAddress),
-      tezos
+      tezos,
     );
   }
 
   calculateReceiveFees(amount: BigNumber): ReceiveFees {
     const devFee: BigNumber = amount.multipliedBy(
-      this.storage.storage.fees.dev_fee_f
+      this.storage.storage.fees.dev_fee_f,
     );
     const publicFee: BigNumber = amount.multipliedBy(PRECISION).minus(devFee);
 
@@ -123,7 +123,7 @@ export class Auction {
             };
           }
         },
-        Promise.resolve({})
+        Promise.resolve({}),
       );
     }
   }
@@ -160,7 +160,7 @@ export class Auction {
 
   async receiveFee(
     params: ReceiveFee,
-    mutezAmount: number = 0
+    mutezAmount: number = 0,
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .receive_fee(params)
@@ -173,7 +173,7 @@ export class Auction {
 
   async launchAuction(
     params: LaunchAuction,
-    mutezAmount: number = 0
+    mutezAmount: number = 0,
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .launch_auction(params)
@@ -186,7 +186,7 @@ export class Auction {
 
   async placeBid(
     params: PlaceBid,
-    mutezAmount: number = 0
+    mutezAmount: number = 0,
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .place_bid(params)
@@ -199,7 +199,7 @@ export class Auction {
 
   async claim(
     auctionId: BigNumber,
-    mutezAmount: number = 0
+    mutezAmount: number = 0,
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
       .claim(auctionId.toString())
@@ -212,7 +212,7 @@ export class Auction {
 
   async setAdmin(
     admin: string,
-    mutezAmount: number = 0
+    mutezAmount: number = 0,
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
       .set_admin(admin)
@@ -235,7 +235,7 @@ export class Auction {
 
   async setBaker(
     baker: string | undefined | null,
-    mutezAmount: number = 0
+    mutezAmount: number = 0,
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
       .set_baker(baker)
@@ -248,7 +248,7 @@ export class Auction {
 
   async setFees(
     params: Fees,
-    mutezAmount: number = 0
+    mutezAmount: number = 0,
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .set_fees(params)
@@ -261,7 +261,7 @@ export class Auction {
 
   async setAuctionDuration(
     auctionDuration: BigNumber,
-    mutezAmount: number = 0
+    mutezAmount: number = 0,
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
       .set_auction_duration(auctionDuration.toString())
@@ -274,7 +274,7 @@ export class Auction {
 
   async setMinBid(
     minBid: BigNumber,
-    mutezAmount: number = 0
+    mutezAmount: number = 0,
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
       .set_min_bid(minBid.toString())
@@ -287,7 +287,7 @@ export class Auction {
 
   async updateWhitelist(
     params: UpdateWhitelist,
-    mutezAmount: number = 0
+    mutezAmount: number = 0,
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .update_whitelist(params)
@@ -300,7 +300,7 @@ export class Auction {
 
   async withdrawDevFee(
     params: WithdrawFee,
-    mutezAmount: number = 0
+    mutezAmount: number = 0,
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .withdraw_dev_fee(params)
@@ -313,7 +313,7 @@ export class Auction {
 
   async withdrawPublicFee(
     params: WithdrawFee,
-    mutezAmount: number = 0
+    mutezAmount: number = 0,
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .withdraw_public_fee(params)
@@ -324,9 +324,9 @@ export class Auction {
     return operation;
   }
 
-  async burnBidFee(
+  async withdrawBidFee(
     mutezAmount: number = 0,
-    address: string = "tz1ZZZZZZZZZZZZZZZZZZZZZZZZZZZZNkiRg"
+    address: string = "tz1ZZZZZZZZZZZZZZZZZZZZZZZZZZZZNkiRg",
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
       .withdraw_bid_fee(address)

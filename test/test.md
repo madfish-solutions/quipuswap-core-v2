@@ -602,6 +602,6 @@
 
 14. `withdraw_bid_fee`:
 
-    - ✅ should fail if not admin is trying to burn bid fee;
+    - ✅ should fail if not admin is trying to withdraw bid fee;
     - ✅ should fail if positive TEZ tokens amount were passed;
-    - ✅ should burn bid fee by admin.
+    - ✅ should withdraw bid fee by admin.

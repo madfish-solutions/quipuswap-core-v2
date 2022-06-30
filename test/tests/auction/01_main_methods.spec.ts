@@ -1161,9 +1161,9 @@ describe("Auction (main methods)", async () => {
     );
   });
 
-  it("should fail if not admin is trying to burn bid fee", async () => {
+  it("should fail if not admin is trying to withdraw bid fee", async () => {
     await utils.setProvider(bob.sk);
-    await rejects(auction.burnBidFee(), (err: Error) => {
+    await rejects(auction.withdrawBidFee(), (err: Error) => {
       expect(err.message).to.equal(Common.ERR_NOT_ADMIN);
 
       return true;
@@ -1172,14 +1172,14 @@ describe("Auction (main methods)", async () => {
 
   it("should fail if positive TEZ tokens amount were passed", async () => {
     await utils.setProvider(alice.sk);
-    await rejects(auction.burnBidFee(1), (err: Error) => {
+    await rejects(auction.withdrawBidFee(1), (err: Error) => {
       expect(err.message).to.be.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
 
       return true;
     });
   });
 
-  it("should burn bid fee by admin", async () => {
+  it("should withdraw bid fee by admin", async () => {
     await auction.updateStorage();
     await quipuToken.updateStorage({
       account_info: [auction.contract.address, zeroAddress],
@@ -1196,7 +1196,7 @@ describe("Auction (main methods)", async () => {
       new BigNumber(0)
     );
 
-    await auction.burnBidFee();
+    await auction.withdrawBidFee();
     await auction.updateStorage();
     await quipuToken.updateStorage({
       account_info: [auction.contract.address, zeroAddress],
