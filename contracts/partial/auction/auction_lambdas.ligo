@@ -69,7 +69,7 @@ function place_bid(
         assert_with_error(Tezos.now < auction.end_time, Auction.err_auction_finished);
         assert_with_error(params.bid > auction.current_bid, Auction.err_low_bid);
 
-        const bid_fee : nat = auction.current_bid * s.fees.bid_fee_f / Constants.precision;
+        const bid_fee : nat = ceil_div(auction.current_bid * s.fees.bid_fee_f, Constants.precision);
         const refund : nat = get_nat_or_fail(auction.current_bid - bid_fee);
 
         s.bid_fee_balance := s.bid_fee_balance + bid_fee;
