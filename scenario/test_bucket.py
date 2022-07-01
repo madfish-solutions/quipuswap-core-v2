@@ -195,12 +195,9 @@ class BucketTest(TestCase):
         self.assertEqual(transfers[0]["source"], contract_self_address)
         self.assertEqual(transfers[0]["type"], "tez")
 
-        res = chain.execute(self.ct.claim_baker_fund(admin), view_results=lvr, sender=dex_core)
-        transfers = parse_transfers(res)
-        self.assertEqual(transfers[0]["amount"], 0)
-        self.assertEqual(transfers[0]["destination"], admin)
-        self.assertEqual(transfers[0]["source"], contract_self_address)
-        self.assertEqual(transfers[0]["type"], "tez")
+        # can't claim 0 tez
+        with self.assertRaises(MichelsonRuntimeError):
+            chain.execute(self.ct.claim_baker_fund(admin), view_results=lvr, sender=dex_core)
 
 
 

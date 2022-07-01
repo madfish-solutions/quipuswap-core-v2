@@ -80,6 +80,9 @@ function claim(
     non_payable(Unit);
 
     const amount = s.baker_fund;
+
+    assert_with_error(amount > 0n, Bucket.err_nothing_to_claim);
+
     s.baker_fund := 0n;
   } with (list [transfer_tez((Tezos.get_contract_with_error(receiver, Common.err_contract_404) : contract(unit)), amount)], s)
 

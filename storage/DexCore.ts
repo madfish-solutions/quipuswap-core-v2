@@ -52,7 +52,7 @@ export const dexCoreStorage: DexCoreStorage = {
           tools: ["Ligo", "Flextesa"],
         },
         homepage: "https://quipuswap.com",
-        interfaces: ["TZIP-16"],
+        interfaces: ["TZIP-016"],
         errors: [],
         views: [
           {
