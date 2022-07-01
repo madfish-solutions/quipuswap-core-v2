@@ -523,6 +523,7 @@
    - ✅ should make a new bid for FA2 tokens auction;
    - ✅ should charge a bid fee from a previous bidder and refund QUIPU tokens without bid fee to him;
    - ✅ should charge a new bid from a new bidder.
+   - ✅ should charge a new bid with extension auction.
 
 4. `claim`:
 

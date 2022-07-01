@@ -77,10 +77,16 @@ function place_bid(
         ops := transfer_token(Tezos.sender, Tezos.self_address, params.bid, Fa2(s.quipu_token)) # ops;
         ops := transfer_token(Tezos.self_address, auction.current_bidder, refund, Fa2(s.quipu_token)) # ops;
 
-        s.auctions[params.auction_id] := auction with record[
-          current_bid    = params.bid;
-          current_bidder = Tezos.sender;
-        ];
+        if Tezos.now >= auction.end_time - s.extension_trigger
+        then s.auctions[params.auction_id] := auction with record[
+            current_bid    = params.bid;
+            current_bidder = Tezos.sender;
+            end_time       = auction.end_time + s.auction_extension;
+          ]
+        else s.auctions[params.auction_id] := auction with record[
+            current_bid    = params.bid;
+            current_bidder = Tezos.sender;
+          ];
       }
     | _ -> skip
     ]
