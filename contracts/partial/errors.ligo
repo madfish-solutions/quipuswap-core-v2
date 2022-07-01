@@ -67,6 +67,8 @@ module Auction is {
   const err_auction_not_finished     : string = "310";
   const err_wrong_auction_duration   : string = "311";
   const err_auctioned_amount_too_low : string = "312";
+  const err_wrong_auction_extension  : string = "313";
+  const err_wrong_extension_trigger  : string = "314";
 }
 
 module Common is {

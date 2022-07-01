@@ -410,4 +410,111 @@ describe("Auction (admin methods)", async () => {
     expect(auction.storage.storage.whitelist.length).to.be.equal(0);
     expect(auction.storage.storage.whitelist).to.not.deep.include(params.token);
   });
+  it("should fail if not admin is trying to setup a new auction extension", async () => {
+    const auctionExtension: BigNumber = new BigNumber(666);
+
+    await utils.setProvider(alice.sk);
+    await rejects(auction.setAuctionExtension(auctionExtension), (err: Error) => {
+      expect(err.message).to.equal(Common.ERR_NOT_ADMIN);
+
+      return true;
+    });
+  });
+
+  it("should fail if positive TEZ tokens amount were passed", async () => {
+    const auctionExtension: BigNumber = new BigNumber(666);
+
+    await utils.setProvider(bob.sk);
+    await rejects(
+      auction.setAuctionExtension(auctionExtension, 1),
+      (err: Error) => {
+        expect(err.message).to.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
+
+        return true;
+      }
+    );
+  });
+
+  it("should fail if admin is trying to set a negative auction extension", async () => {
+    let auctionExtension: BigNumber = new BigNumber(-666);
+
+    await rejects(auction.setAuctionExtension(auctionExtension), (err: Error) => {
+      expect(err.message).to.equal(AuctionErrors.ERR_WRONG_AUCTION_EXTENSION);
+
+      return true;
+    });
+
+    auctionExtension = new BigNumber(0);
+
+    await rejects(auction.setAuctionExtension(auctionExtension), (err: Error) => {
+      expect(err.message).to.equal(AuctionErrors.ERR_WRONG_AUCTION_EXTENSION);
+
+      return true;
+    });
+  });
+
+  it("should setup a new auction extension by an admin", async () => {
+    const auctionExtension: BigNumber = new BigNumber(666);
+
+    await auction.setAuctionExtension(auctionExtension);
+    await auction.updateStorage();
+
+    expect(auction.storage.storage.auction_extension).to.be.bignumber.equal(
+      auctionExtension
+    );
+  });
+
+  it("should fail if not admin is trying to setup a new extension trigger", async () => {
+    const extensionTrigger: BigNumber = new BigNumber(666);
+
+    await utils.setProvider(alice.sk);
+    await rejects(auction.setExtensionTrigger(extensionTrigger), (err: Error) => {
+      expect(err.message).to.equal(Common.ERR_NOT_ADMIN);
+
+      return true;
+    });
+  });
+
+  it("should fail if positive TEZ tokens amount were passed", async () => {
+    const extensionTrigger: BigNumber = new BigNumber(666);
+
+    await utils.setProvider(bob.sk);
+    await rejects(
+      auction.setExtensionTrigger(extensionTrigger, 1),
+      (err: Error) => {
+        expect(err.message).to.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
+
+        return true;
+      }
+    );
+  });
+
+  it("should fail if admin is trying to set a negative extension trigger", async () => {
+    let extensionTrigger: BigNumber = new BigNumber(-666);
+
+    await rejects(auction.setExtensionTrigger(extensionTrigger), (err: Error) => {
+      expect(err.message).to.equal(AuctionErrors.ERR_WRONG_EXTENSION_TRIGGER);
+
+      return true;
+    });
+
+    extensionTrigger = new BigNumber(0);
+
+    await rejects(auction.setExtensionTrigger(extensionTrigger), (err: Error) => {
+      expect(err.message).to.equal(AuctionErrors.ERR_WRONG_EXTENSION_TRIGGER);
+
+      return true;
+    });
+  });
+
+  it("should setup a new extension trigger by an admin", async () => {
+    const extensionTrigger: BigNumber = new BigNumber(666);
+
+    await auction.setExtensionTrigger(extensionTrigger);
+    await auction.updateStorage();
+
+    expect(auction.storage.storage.extension_trigger).to.be.bignumber.equal(
+      extensionTrigger
+    );
+  });
 });

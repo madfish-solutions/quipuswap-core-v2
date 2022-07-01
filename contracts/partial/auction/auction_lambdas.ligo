@@ -319,3 +319,37 @@ function withdraw_bid_fee(
     | _ -> skip
     ]
   } with (ops, s)
+
+function set_auction_extension(
+  const action          : action_t;
+  var s                 : storage_t)
+                        : return_t is
+  block {
+    case action of [
+    | Set_auction_extension(auction_extension) -> {
+        only_admin(s.admin);
+
+        assert_with_error(auction_extension > 0, Auction.err_wrong_auction_extension);
+
+        s.auction_extension := auction_extension;
+      }
+    | _ -> skip
+    ]
+  } with ((nil : list(operation)), s)
+
+function set_extension_trigger(
+  const action          : action_t;
+  var s                 : storage_t)
+                        : return_t is
+  block {
+    case action of [
+    | Set_extension_trigger(extension_trigger) -> {
+        only_admin(s.admin);
+
+        assert_with_error(extension_trigger > 0, Auction.err_wrong_extension_trigger);
+
+        s.extension_trigger := extension_trigger;
+      }
+    | _ -> skip
+    ]
+  } with ((nil : list(operation)), s)

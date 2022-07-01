@@ -271,6 +271,31 @@ export class Auction {
 
     return operation;
   }
+  async setAuctionExtension(
+    auctionExtension: BigNumber,
+    mutezAmount: number = 0,
+  ): Promise<TransactionOperation> {
+    const operation: TransactionOperation = await this.contract.methods
+      .set_auction_extension(auctionExtension.toString())
+      .send({ amount: mutezAmount, mutez: true });
+
+    await confirmOperation(this.tezos, operation.hash);
+
+    return operation;
+  }
+
+  async setExtensionTrigger(
+    extensionTrigger: BigNumber,
+    mutezAmount: number = 0,
+  ): Promise<TransactionOperation> {
+    const operation: TransactionOperation = await this.contract.methods
+      .set_extension_trigger(extensionTrigger.toString())
+      .send({ amount: mutezAmount, mutez: true });
+
+    await confirmOperation(this.tezos, operation.hash);
+
+    return operation;
+  }
 
   async setMinBid(
     minBid: BigNumber,
