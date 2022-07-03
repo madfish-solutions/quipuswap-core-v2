@@ -6,6 +6,10 @@ import { zeroAddress } from "../test/helpers/Utils";
 
 import { AuctionStorage } from "../test/types/Auction";
 
+import auctionZIP16Errors from "./metadata/auctionZIP16Errors";
+
+import commonZIP16Errors from "./metadata/commonZIP16Errors";
+
 export const auctionStorage: AuctionStorage = {
   storage: {
     auctions: MichelsonMap.fromLiteral({}),
@@ -46,10 +50,10 @@ export const auctionStorage: AuctionStorage = {
         },
         homepage: "https://quipuswap.com",
         interfaces: ["TZIP-016"],
-        errors: [],
+        errors: commonZIP16Errors.concat(auctionZIP16Errors),
         views: [],
       }),
-      "ascii"
+      "ascii",
     ).toString("hex"),
   }),
 };
