@@ -130,6 +130,7 @@ def parse_pour_out(op):
         "type": "tez",
         "amount": int(args[1]["int"]),
         "destination": args[0]["string"],
+        "source": op["destination"]
     }
 
 def parse_pour_overs(res):

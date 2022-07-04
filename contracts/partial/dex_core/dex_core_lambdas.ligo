@@ -317,8 +317,6 @@ function swap(
 
         if token = Tez
         then {
-          ops := concat_lists(forward_ops, ops);
-
           case params.lambda of [
           | Some(_) -> {
               const flash_swap_callback_params : flash_swap_callback_t = record [
@@ -340,15 +338,18 @@ function swap(
           non_payable(Unit);
 
           ops := transfer_token(Tezos.sender, Tezos.self_address, params.amount_in, token) # ops;
-          ops := concat_lists(forward_ops, ops);
         };
+
+
 
         case params.lambda of [
         | Some(lambda) -> ops := call_flash_swaps_proxy(lambda, s.flash_swaps_proxy) # ops
         | None         -> skip
         ];
-
+        
         ops := pour_out_or_transfer_tokens(tmp.receiver, tmp.amount_in, tmp.token_in, tmp.from_bucket) # ops;
+
+        ops := concat_lists(forward_ops, ops);
       }
     | _ -> skip
     ]
