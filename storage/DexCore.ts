@@ -6,6 +6,10 @@ import { zeroAddress } from "../test/helpers/Utils";
 
 import { DexCoreStorage } from "../test/types/DexCore";
 
+import dexZIP16Errors from "./metadata/dexZIP16Errors";
+
+import commonZIP16Errors from "./metadata/commonZIP16Errors";
+
 export const dexCoreStorage: DexCoreStorage = {
   storage: {
     token_metadata: MichelsonMap.fromLiteral({}),
@@ -52,8 +56,8 @@ export const dexCoreStorage: DexCoreStorage = {
           tools: ["Ligo", "Flextesa"],
         },
         homepage: "https://quipuswap.com",
-        interfaces: ["TZIP-16"],
-        errors: [],
+        interfaces: ["TZIP-016"],
+        errors: commonZIP16Errors.concat(dexZIP16Errors),
         views: [
           {
             name: "GetCounter",
@@ -87,7 +91,7 @@ export const dexCoreStorage: DexCoreStorage = {
           },
         ],
       }),
-      "ascii"
+      "ascii",
     ).toString("hex"),
   }),
 };

@@ -28,6 +28,7 @@ import {
   WithdrawFee,
   ReceiveFee,
   PlaceBid,
+  AuctionStorage,
 } from "../../types/Auction";
 
 chai.use(require("chai-bignumber")(BigNumber));
@@ -667,7 +668,7 @@ describe("Auction (main methods)", async () => {
       auction.storage.storage.auctions[params.auction_id.toFixed()].current_bid;
     const bidFee: BigNumber = currentBid.multipliedBy(
       auction.storage.storage.fees.bid_fee_f
-    ).dividedBy(PRECISION).integerValue(BigNumber.ROUND_DOWN);
+    ).dividedBy(PRECISION).integerValue(BigNumber.ROUND_UP);
 
     const refund: BigNumber = currentBid.minus(bidFee);
     const prevBidFeeBalance: BigNumber =
@@ -729,7 +730,7 @@ describe("Auction (main methods)", async () => {
       auction.storage.storage.fees.bid_fee_f
     );
     const refund: BigNumber = currentBid.minus(
-      bidFee.dividedBy(PRECISION).integerValue(BigNumber.ROUND_DOWN)
+      bidFee.dividedBy(PRECISION).integerValue(BigNumber.ROUND_UP)
     );
     const prevBobQTBalance: BigNumber = await quipuToken.getBalance(
       bob.pkh,
@@ -760,6 +761,74 @@ describe("Auction (main methods)", async () => {
     );
     expect(currAuctionQTBalance).to.be.bignumber.equal(
       prevAuctionQTBalance.plus(params.bid.minus(refund))
+    );
+  });
+  it("should charge a new bid with extension auction", async () => {
+    const params: PlaceBid = {
+      auction_id: new BigNumber(0),
+      bid: new BigNumber(777),
+    };
+
+    await auction.updateStorage({
+      auctions: [params.auction_id],
+    });
+    await quipuToken.updateStorage({
+      account_info: [bob.pkh, auction.contract.address],
+    });
+
+    const currentBid: BigNumber =
+      auction.storage.storage.auctions[params.auction_id.toFixed()].current_bid;
+    const bidFee: BigNumber = currentBid.multipliedBy(
+      auction.storage.storage.fees.bid_fee_f
+    ).dividedBy(PRECISION).integerValue(BigNumber.ROUND_UP);
+
+    const refund: BigNumber = currentBid.minus(bidFee);
+    const prevBidFeeBalance: BigNumber =
+      auction.storage.storage.bid_fee_balance;
+    const prevBobQTBalance: BigNumber = await quipuToken.getBalance(
+      bob.pkh,
+      new BigNumber(0)
+    );
+    const prevAuctionQTBalance: BigNumber = await quipuToken.getBalance(
+      auction.contract.address,
+      new BigNumber(0)
+    );
+    const prevAuction =
+      auction.storage.storage.auctions[params.auction_id.toFixed()];
+    await utils.setProvider(alice.sk);
+    await auction.placeBid(params);
+    await utils.setProvider(bob.sk);
+    await auction.updateStorage({
+      auctions: [params.auction_id],
+    });
+    await quipuToken.updateStorage({
+      account_info: [bob.pkh, auction.contract.address],
+    });
+
+    const currBidFeeBalance: BigNumber =
+      auction.storage.storage.bid_fee_balance;
+    const currBobQTBalance: BigNumber = await quipuToken.getBalance(
+      bob.pkh,
+      new BigNumber(0)
+    );
+    const currAuctionQTBalance: BigNumber = await quipuToken.getBalance(
+      auction.contract.address,
+      new BigNumber(0)
+    );
+    const updatedAuction =
+      auction.storage.storage.auctions[params.auction_id.toFixed()];
+    expect(currBidFeeBalance).to.be.bignumber.equal(
+      prevBidFeeBalance.plus(bidFee)
+    );
+    expect(currBobQTBalance).to.be.bignumber.equal(
+      prevBobQTBalance.plus(refund)
+    );
+    expect(currAuctionQTBalance).to.be.bignumber.equal(
+      prevAuctionQTBalance.plus(params.bid.minus(refund))
+    );
+    expect(updatedAuction.end_time.toString()).to.equal(
+      (prevAuction.end_time + auction.storage.storage.auction_extension).toString()
+      .slice(0, -3)
     );
   });
 
@@ -1161,9 +1230,9 @@ describe("Auction (main methods)", async () => {
     );
   });
 
-  it("should fail if not admin is trying to burn bid fee", async () => {
+  it("should fail if not admin is trying to withdraw bid fee", async () => {
     await utils.setProvider(bob.sk);
-    await rejects(auction.burnBidFee(), (err: Error) => {
+    await rejects(auction.withdrawBidFee(), (err: Error) => {
       expect(err.message).to.equal(Common.ERR_NOT_ADMIN);
 
       return true;
@@ -1172,14 +1241,14 @@ describe("Auction (main methods)", async () => {
 
   it("should fail if positive TEZ tokens amount were passed", async () => {
     await utils.setProvider(alice.sk);
-    await rejects(auction.burnBidFee(1), (err: Error) => {
+    await rejects(auction.withdrawBidFee(1), (err: Error) => {
       expect(err.message).to.be.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
 
       return true;
     });
   });
 
-  it("should burn bid fee by admin", async () => {
+  it("should withdraw bid fee by admin", async () => {
     await auction.updateStorage();
     await quipuToken.updateStorage({
       account_info: [auction.contract.address, zeroAddress],
@@ -1196,7 +1265,7 @@ describe("Auction (main methods)", async () => {
       new BigNumber(0)
     );
 
-    await auction.burnBidFee();
+    await auction.withdrawBidFee();
     await auction.updateStorage();
     await quipuToken.updateStorage({
       account_info: [auction.contract.address, zeroAddress],

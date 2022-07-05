@@ -55,6 +55,8 @@ export type AuctionStorage = {
     bid_fee_balance: BigNumber;
     auctions_count: BigNumber;
     auction_duration: BigNumber;
+    auction_extension: BigNumber;
+    extension_trigger: BigNumber;
     min_bid: BigNumber;
   };
   auction_lambdas: MichelsonMap<MichelsonMapKey, unknown>;
