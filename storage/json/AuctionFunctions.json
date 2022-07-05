@@ -54,5 +54,13 @@
   {
     "index": 13,
     "name": "withdraw_bid_fee"
+  },
+  {
+    "index": 14,
+    "name": "set_auction_extension"
+  },
+  {
+    "index": 15,
+    "name": "set_extension_trigger"
   }
 ]

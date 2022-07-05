@@ -69,7 +69,7 @@ function place_bid(
         assert_with_error(Tezos.now < auction.end_time, Auction.err_auction_finished);
         assert_with_error(params.bid > auction.current_bid, Auction.err_low_bid);
 
-        const bid_fee : nat = auction.current_bid * s.fees.bid_fee_f / Constants.precision;
+        const bid_fee : nat = ceil_div(auction.current_bid * s.fees.bid_fee_f, Constants.precision);
         const refund : nat = get_nat_or_fail(auction.current_bid - bid_fee);
 
         s.bid_fee_balance := s.bid_fee_balance + bid_fee;
@@ -77,10 +77,16 @@ function place_bid(
         ops := transfer_token(Tezos.sender, Tezos.self_address, params.bid, Fa2(s.quipu_token)) # ops;
         ops := transfer_token(Tezos.self_address, auction.current_bidder, refund, Fa2(s.quipu_token)) # ops;
 
-        s.auctions[params.auction_id] := auction with record[
-          current_bid    = params.bid;
-          current_bidder = Tezos.sender;
-        ];
+        if Tezos.now >= auction.end_time - s.extension_trigger
+        then s.auctions[params.auction_id] := auction with record[
+            current_bid    = params.bid;
+            current_bidder = Tezos.sender;
+            end_time       = auction.end_time + s.auction_extension;
+          ]
+        else s.auctions[params.auction_id] := auction with record[
+            current_bid    = params.bid;
+            current_bidder = Tezos.sender;
+          ];
       }
     | _ -> skip
     ]
@@ -319,3 +325,37 @@ function withdraw_bid_fee(
     | _ -> skip
     ]
   } with (ops, s)
+
+function set_auction_extension(
+  const action          : action_t;
+  var s                 : storage_t)
+                        : return_t is
+  block {
+    case action of [
+    | Set_auction_extension(auction_extension) -> {
+        only_admin(s.admin);
+
+        assert_with_error(auction_extension > 0, Auction.err_wrong_auction_extension);
+
+        s.auction_extension := auction_extension;
+      }
+    | _ -> skip
+    ]
+  } with ((nil : list(operation)), s)
+
+function set_extension_trigger(
+  const action          : action_t;
+  var s                 : storage_t)
+                        : return_t is
+  block {
+    case action of [
+    | Set_extension_trigger(extension_trigger) -> {
+        only_admin(s.admin);
+
+        assert_with_error(extension_trigger > 0, Auction.err_wrong_extension_trigger);
+
+        s.extension_trigger := extension_trigger;
+      }
+    | _ -> skip
+    ]
+  } with ((nil : list(operation)), s)

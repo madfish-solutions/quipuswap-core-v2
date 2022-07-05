@@ -189,7 +189,7 @@ function default(
                         : return_t is
   block {
     const baker_reward = Tezos.amount / 1mutez;
-    const baker_fund = baker_reward * get_baker_rate(s.dex_core) / Constants.precision;
+    const baker_fund = ceil_div(baker_reward * get_baker_rate(s.dex_core), Constants.precision);
     s.baker_fund := s.baker_fund + baker_fund;
     s.next_reward := s.next_reward + get_nat_or_fail(baker_reward - baker_fund);
 

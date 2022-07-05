@@ -523,6 +523,7 @@
    - ✅ should make a new bid for FA2 tokens auction;
    - ✅ should charge a bid fee from a previous bidder and refund QUIPU tokens without bid fee to him;
    - ✅ should charge a new bid from a new bidder.
+   - ✅ should charge a new bid with extension auction.
 
 4. `claim`:
 
@@ -602,6 +603,13 @@
 
 14. `withdraw_bid_fee`:
 
-    - ✅ should fail if not admin is trying to burn bid fee;
+    - ✅ should fail if not admin is trying to withdraw bid fee;
     - ✅ should fail if positive TEZ tokens amount were passed;
-    - ✅ should burn bid fee by admin.
+    - ✅ should withdraw bid fee by admin.
+
+15. `set_auction_extension`:
+
+   - ✅ should fail if not admin is trying to setup a new auction duration;
+   - ✅ should fail if positive TEZ tokens amount were passed;
+   - ✅ should fail if admin is trying to set a negative auction duration;
+   - ✅ should setup a new auction duration by an admin.

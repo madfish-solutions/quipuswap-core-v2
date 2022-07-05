@@ -31,14 +31,14 @@ module DexCore is {
   const err_wrong_flash_swap_returns                  : string = "129";
   const err_can_not_refer_yourself                    : string = "130";
   const err_bucket_withdraw_rewards_entrypoint_404    : string = "131";
-  const err_insufficient_interface_fee_balance        : string = "132";
+
   const err_bucket_get_user_candidate_view_404        : string = "133";
   const err_launch_callback_404                       : string = "134";
   const err_auction_receive_fee_entrypoint_404        : string = "135";
   const err_reentrancy                                : string = "136";
   const err_close_entrypoint_404                      : string = "137";
   const err_not_entered                               : string = "138";
-  const err_too_few_swaps                             : string = "139";
+
   const err_can_not_perform_voting                    : string = "140";
   const err_wrong_reserves_state                      : string = "141";
   const err_no_pair_id                                : string = "142";
@@ -68,6 +68,8 @@ module Auction is {
   const err_auction_not_finished     : string = "310";
   const err_wrong_auction_duration   : string = "311";
   const err_auctioned_amount_too_low : string = "312";
+  const err_wrong_auction_extension  : string = "313";
+  const err_wrong_extension_trigger  : string = "314";
 }
 
 module Common is {
