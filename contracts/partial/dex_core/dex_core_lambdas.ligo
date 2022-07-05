@@ -163,6 +163,17 @@ function invest_liquidity(
 
         s.pairs[params.pair_id] := updated_pair;
 
+        if Tezos.amount / 1mutez > tokens_b_required
+        then {
+          ops := transfer_tez(
+            (Tezos.get_contract_with_error(Tezos.sender, Common.err_contract_404) : contract(unit)),
+            get_nat_or_fail(Tezos.amount / 1mutez - tokens_b_required)
+          ) # ops;
+        }
+        else skip;
+        ops := fill_or_transfer_tokens(tokens_b_required, tokens.token_b, updated_pair.bucket) # ops;
+        ops := transfer_token(Tezos.sender, Tezos.self_address, tokens_a_required, tokens.token_a) # ops;
+
         if tokens.token_b = Tez
         then {
           ops := get_vote_op(
@@ -176,18 +187,6 @@ function invest_liquidity(
           ) # ops;
         }
         else skip;
-
-
-        if Tezos.amount / 1mutez > tokens_b_required
-        then {
-          ops := transfer_tez(
-            (Tezos.get_contract_with_error(Tezos.sender, Common.err_contract_404) : contract(unit)),
-            get_nat_or_fail(Tezos.amount / 1mutez - tokens_b_required)
-          ) # ops;
-        }
-        else skip;
-        ops := fill_or_transfer_tokens(tokens_b_required, tokens.token_b, updated_pair.bucket) # ops;
-        ops := transfer_token(Tezos.sender, Tezos.self_address, tokens_a_required, tokens.token_a) # ops;
       }
     | _ -> skip
     ]
@@ -247,6 +246,14 @@ function divest_liquidity(
 
         const tokens : tokens_t = unwrap(s.tokens[params.pair_id], DexCore.err_pair_not_listed);
 
+        ops := pour_out_or_transfer_tokens(
+          params.liquidity_receiver,
+          token_b_divested,
+          tokens.token_b,
+          updated_pair.bucket
+        ) # ops;
+        ops := transfer_token(Tezos.self_address, params.liquidity_receiver, token_a_divested, tokens.token_a) # ops;
+
         if tokens.token_b = Tez
         then {
           ops := get_vote_op(
@@ -260,14 +267,6 @@ function divest_liquidity(
           ) # ops;
         }
         else skip;
-
-        ops := pour_out_or_transfer_tokens(
-          params.liquidity_receiver,
-          token_b_divested,
-          tokens.token_b,
-          updated_pair.bucket
-        ) # ops;
-        ops := transfer_token(Tezos.self_address, params.liquidity_receiver, token_a_divested, tokens.token_a) # ops;
       }
     | _ -> skip
     ]
@@ -318,8 +317,6 @@ function swap(
 
         if token = Tez
         then {
-          ops := concat_lists(forward_ops, ops);
-
           case params.lambda of [
           | Some(_) -> {
               const flash_swap_callback_params : flash_swap_callback_t = record [
@@ -341,15 +338,18 @@ function swap(
           non_payable(Unit);
 
           ops := transfer_token(Tezos.sender, Tezos.self_address, params.amount_in, token) # ops;
-          ops := concat_lists(forward_ops, ops);
         };
+
+
 
         case params.lambda of [
         | Some(lambda) -> ops := call_flash_swaps_proxy(lambda, s.flash_swaps_proxy) # ops
         | None         -> skip
         ];
-
+        
         ops := pour_out_or_transfer_tokens(tmp.receiver, tmp.amount_in, tmp.token_in, tmp.from_bucket) # ops;
+
+        ops := concat_lists(forward_ops, ops);
       }
     | _ -> skip
     ]
