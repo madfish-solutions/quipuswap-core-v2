@@ -55,7 +55,7 @@ function set_expiry(
       const new_expiry : seconds_t = param.expiry;
       const specific_permit_or_default : option(blake2b_hash_t) = param.permit_hash;
 
-      s := sender_check(owner, s, action, "NOT_PERMIT_ISSUER");
+      assert_with_error(owner = Tezos.sender, "NOT_PERMIT_ISSUER");
 
       if new_expiry > permit_expiry_limit
       then failwith("EXPIRY_TOO_BIG")
