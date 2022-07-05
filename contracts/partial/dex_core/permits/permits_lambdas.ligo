@@ -51,19 +51,16 @@ function set_expiry(
     | Set_expiry(param) -> {
       non_payable(Unit);
 
-      const owner : address = param.issuer;
       const new_expiry : seconds_t = param.expiry;
       const specific_permit_or_default : option(blake2b_hash_t) = param.permit_hash;
-
-      s := sender_check(owner, s, action, "NOT_PERMIT_ISSUER");
 
       if new_expiry > permit_expiry_limit
       then failwith("EXPIRY_TOO_BIG")
       else skip;
 
       const updated_permits : permits_t = case specific_permit_or_default of [
-      | None         -> set_user_default_expiry(owner, new_expiry, s.permits)
-      | Some(permit) -> set_permit_expiry(owner, permit, new_expiry, s.permits, s.default_expiry)
+      | None         -> set_user_default_expiry(Tezos.sender, new_expiry, s.permits)
+      | Some(permit) -> set_permit_expiry(Tezos.sender, permit, new_expiry, s.permits, s.default_expiry)
       ];
 
       s.permits := updated_permits;

@@ -29,7 +29,6 @@ type revoke_param_t     is blake2b_hash_t * address
 type revoke_params_t    is list(revoke_param_t)
 
 type set_expiry_t       is [@layout:comb] record [
-  issuer                  : address;
   expiry                  : seconds_t;
   permit_hash             : option(blake2b_hash_t);
 ]

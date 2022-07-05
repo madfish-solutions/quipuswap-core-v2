@@ -109,7 +109,6 @@ export type Ban = {
 };
 
 export type SetExpiry = {
-  issuer: string;
   expiry: BigNumber;
   permit_hash: string | undefined | null;
 };

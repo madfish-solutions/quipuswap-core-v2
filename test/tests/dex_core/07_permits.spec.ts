@@ -390,7 +390,6 @@ describe("DexCore (permits)", async () => {
 
   it("should fail if positive TEZ tokens amount were passed", async () => {
     const expiry: SetExpiry = {
-      issuer: carol.pkh,
       expiry: new BigNumber(1),
       permit_hash: undefined,
     };
@@ -402,101 +401,40 @@ describe("DexCore (permits)", async () => {
     });
   });
 
-  it("should fail if not issuer is trying to set expiry - 1", async () => {
-    const expiry: SetExpiry = {
-      issuer: carol.pkh,
-      expiry: new BigNumber(1),
-      permit_hash: undefined,
-    };
-
-    await rejects(dexCore.setExpiry(expiry), (err: Error) => {
-      expect(err.message).to.equal(PermitsErrors.NOT_PERMIT_ISSUER);
-
-      return true;
-    });
-  });
-
-  it("should fail if not issuer is trying to set expiry - 2", async () => {
-    const expiry: SetExpiry = {
-      issuer: alice.pkh,
-      expiry: new BigNumber(1),
-      permit_hash: undefined,
-    };
-
-    await rejects(dexCore.setExpiry(expiry), (err: Error) => {
-      expect(err.message).to.equal(PermitsErrors.NOT_PERMIT_ISSUER);
-
-      return true;
-    });
-  });
-
-  it("should fail if not issuer is trying to set expiry - 3", async () => {
-    const transferParams: Transfer[] = [
-      {
-        from_: alice.pkh,
-        txs: [
-          {
-            to_: carol.pkh,
-            token_id: new BigNumber(0),
-            amount: new BigNumber(100),
-          },
-        ],
-      },
-    ];
-    const [_signerKey, _signature, permitHash]: [string, string, string] =
-      await dexCore.createPermitPayload(
-        await Utils.createTezos(alice.sk),
-        dexCore.contract,
-        "transfer",
-        transferParams
-      );
-    const expiry: SetExpiry = {
-      issuer: alice.pkh,
-      expiry: new BigNumber(1),
-      permit_hash: permitHash,
-    };
-
-    await rejects(dexCore.setExpiry(expiry), (err: Error) => {
-      expect(err.message).to.equal(PermitsErrors.NOT_PERMIT_ISSUER);
-
-      return true;
-    });
-  });
-
   it("should set default expiry for a user with permits", async () => {
+    const issuer = bob.pkh
     const expiry: SetExpiry = {
-      issuer: bob.pkh,
       expiry: new BigNumber(2),
       permit_hash: undefined,
     };
 
     await dexCore.setExpiry(expiry);
-    await dexCore.updateStorage({ permits: [expiry.issuer] });
+    await dexCore.updateStorage({ permits: [issuer] });
 
     expect(
-      dexCore.storage.storage.permits[expiry.issuer].expiry
+      dexCore.storage.storage.permits[issuer].expiry
     ).to.be.bignumber.equal(expiry.expiry);
   });
 
   it("should set default expiry for a user without permits", async () => {
+    const issuer = carol.pkh
+
     const expiry: SetExpiry = {
-      issuer: carol.pkh,
       expiry: new BigNumber(10),
       permit_hash: undefined,
     };
 
     await utils.setProvider(carol.sk);
     await dexCore.setExpiry(expiry);
-    await dexCore.updateStorage({ permits: [expiry.issuer] });
+    await dexCore.updateStorage({ permits: [issuer] });
 
     expect(
-      dexCore.storage.storage.permits[expiry.issuer].expiry
+      dexCore.storage.storage.permits[issuer].expiry
     ).to.be.bignumber.equal(expiry.expiry);
   });
 
   it("should fail if user is trying to set default expiry that is bigger than max expiry", async () => {
     const expiry: SetExpiry = {
-      issuer: bob.pkh,
       expiry: defaulPermitExpiryLimit.plus(1),
       permit_hash: undefined,
     };
@@ -562,18 +500,18 @@ describe("DexCore (permits)", async () => {
         "transfer",
         transferParams
       );
+    const issuer = bob.pkh
     const expiry: SetExpiry = {
-      issuer: bob.pkh,
       expiry: defaulPermitExpiryLimit,
       permit_hash: permitHash,
     };
 
     await dexCore.setExpiry(expiry);
-    await dexCore.updateStorage({ permits: [expiry.issuer] });
+    await dexCore.updateStorage({ permits: [issuer] });
 
     expect(
       (
-        await dexCore.storage.storage.permits[expiry.issuer].permits.get(
+        await dexCore.storage.storage.permits[issuer].permits.get(
           permitHash
         )
       ).expiry
@@ -600,19 +538,19 @@ describe("DexCore (permits)", async () => {
         "transfer",
         transferParams
       );
+    const issuer = alice.pkh
     const expiry: SetExpiry = {
-      issuer: alice.pkh,
       expiry: defaulPermitExpiryLimit,
       permit_hash: permitHash,
     };
 
     await utils.setProvider(alice.sk);
     await dexCore.setExpiry(expiry);
-    await dexCore.updateStorage({ permits: [expiry.issuer] });
+    await dexCore.updateStorage({ permits: [issuer] });
 
     expect(
       (
-        await dexCore.storage.storage.permits[expiry.issuer].permits.get(
+        await dexCore.storage.storage.permits[issuer].permits.get(
           permitHash
         )
       ).expiry
@@ -639,17 +577,17 @@ describe("DexCore (permits)", async () => {
         "transfer",
         transferParams
       );
+    const issuer = alice.pkh,
     const expiry: SetExpiry = {
-      issuer: alice.pkh,
       expiry: new BigNumber(0),
       permit_hash: permitHash,
     };
 
     await dexCore.setExpiry(expiry);
-    await dexCore.updateStorage({ permits: [expiry.issuer] });
+    await dexCore.updateStorage({ permits: [issuer] });
 
     expect(
-      await dexCore.storage.storage.permits[expiry.issuer].permits.get(
+      await dexCore.storage.storage.permits[issuer].permits.get(
         permitHash
       )
     ).to.be.equal(undefined);
