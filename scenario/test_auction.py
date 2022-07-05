@@ -144,13 +144,13 @@ class AuctionTest(TestCase):
 
         res = chain.execute(self.ct.place_bid(0, 100), sender=bob)
         transfers = parse_transfers(res)
-        self.assertEqual(transfers[0]["amount"], 0)
+        self.assertEqual(len(transfers), 1)
+        self.assertEqual(transfers[0]["amount"], 100)
 
         res = chain.interpret(self.ct.withdraw_bid_fee(zero_address), sender=admin)
         transfers = parse_transfers(res)
         self.assertEqual(len(transfers), 0)
 
-    # TODO
     def test_bid_fee(self):
         chain = LocalChain(storage=self.init_storage)
 
@@ -167,23 +167,18 @@ class AuctionTest(TestCase):
 
         res = chain.execute(self.ct.place_bid(0, 100), sender=bob)
         transfers = parse_transfers(res)
-        self.assertEqual(len(transfers), 2)
-        self.assertEqual(transfers[0]["amount"], 1)
-        self.assertEqual(transfers[0]["destination"], alice)
-        self.assertEqual(transfers[0]["source"], contract_self_address)
+        self.assertEqual(len(transfers), 1)
+        self.assertEqual(transfers[0]["amount"], 100)
+        self.assertEqual(transfers[0]["destination"], contract_self_address)
+        self.assertEqual(transfers[0]["source"], bob)
         self.assertEqual(transfers[0]["token_address"], quipu_token)
         self.assertEqual(transfers[0]["token_id"], 0)
-
-        self.assertEqual(transfers[1]["amount"], 100)
-        self.assertEqual(transfers[1]["destination"], contract_self_address)
-        self.assertEqual(transfers[1]["source"], bob)
-        self.assertEqual(transfers[1]["token_address"], quipu_token)
-        self.assertEqual(transfers[1]["token_id"], 0)
 
         # no fee to burn due to small amounts
         res = chain.interpret(self.ct.withdraw_bid_fee(zero_address), sender=admin)
         transfers = parse_transfers(res)
-        self.assertEqual(len(transfers), 0)
+        self.assertEqual(len(transfers), 1)
+        self.assertEqual(transfers[0]["amount"], 1)
 
         res = chain.execute(self.ct.place_bid(0, 1_000), sender=alice)
 
@@ -205,7 +200,7 @@ class AuctionTest(TestCase):
         res = chain.execute(self.ct.withdraw_bid_fee(zero_address), sender=admin)
         transfers = parse_transfers(res)
         self.assertEqual(len(transfers), 1)
-        self.assertEqual(transfers[0]["amount"], 22)
+        self.assertEqual(transfers[0]["amount"], 23)
         self.assertEqual(transfers[0]["destination"], burn)
         self.assertEqual(transfers[0]["source"], contract_self_address)
 
@@ -268,7 +263,7 @@ class AuctionTest(TestCase):
         chain.execute(self.ct.setup_func(13, auction_lambdas[8]), sender=admin)
 
         with self.assertRaises(MichelsonRuntimeError) as error:
-            chain.execute(self.ct.setup_func(14, auction_lambdas[8]), sender=admin)
+            chain.execute(self.ct.setup_func(16, auction_lambdas[8]), sender=admin)
         self.assertEqual(Errors.AUCTION_EXCEEDS_MAX_LAMBDA_INDEX, error.exception.args[-1])
 
         
