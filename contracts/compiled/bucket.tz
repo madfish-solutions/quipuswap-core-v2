@@ -29,8 +29,7 @@
           (nat %collecting_period_end)
           (nat %total_supply)
           (nat %baker_fund)) ;
-  code { PUSH string "403" ;
-         PUSH key_hash "tz1ZZZZZZZZZZZZZZZZZZZZZZZZZZZZNkiRg" ;
+  code { PUSH key_hash "tz1ZZZZZZZZZZZZZZZZZZZZZZZZZZZZNkiRg" ;
          PUSH nat 1000000000000000000 ;
          PUSH nat 0 ;
          PUSH timestamp 0 ;
@@ -273,7 +272,7 @@
              UPDATE 5 } ;
          DUP 5 ;
          APPLY ;
-         DIG 10 ;
+         DIG 9 ;
          UNPAIR ;
          IF_LEFT
            { DIG 2 ;
@@ -294,7 +293,7 @@
                      SENDER ;
                      COMPARE ;
                      EQ ;
-                     DIG 4 ;
+                     PUSH string "403" ;
                      SWAP ;
                      IF { DROP } { FAILWITH } ;
                      PUSH string "412" ;
@@ -334,7 +333,7 @@
                      SENDER ;
                      COMPARE ;
                      EQ ;
-                     DIG 4 ;
+                     PUSH string "403" ;
                      SWAP ;
                      IF { DROP } { FAILWITH } ;
                      PUSH string "412" ;
@@ -344,11 +343,18 @@
                      EQ ;
                      IF { DROP } { FAILWITH } ;
                      DUP 2 ;
+                     GET 34 ;
+                     PUSH string "203" ;
+                     PUSH nat 0 ;
+                     DUP 3 ;
+                     COMPARE ;
+                     GT ;
+                     IF { DROP } { FAILWITH } ;
+                     DIG 2 ;
                      PUSH nat 0 ;
                      UPDATE 34 ;
                      NIL operation ;
-                     DIG 3 ;
-                     GET 34 ;
+                     DIG 2 ;
                      PUSH string "409" ;
                      DIG 4 ;
                      CONTRACT unit ;
@@ -360,8 +366,7 @@
                      CONS } }
                { DIG 3 ;
                  DIG 4 ;
-                 DIG 6 ;
-                 DROP 3 ;
+                 DROP 2 ;
                  IF_LEFT
                    { DROP ;
                      PUSH mutez 1 ;
@@ -422,7 +427,7 @@
                      SENDER ;
                      COMPARE ;
                      EQ ;
-                     DIG 4 ;
+                     PUSH string "403" ;
                      SWAP ;
                      IF { DROP } { FAILWITH } ;
                      PUSH string "412" ;
@@ -448,7 +453,7 @@
                      SENDER ;
                      COMPARE ;
                      EQ ;
-                     DIG 3 ;
+                     PUSH string "403" ;
                      SWAP ;
                      IF { DROP } { FAILWITH } ;
                      PUSH string "412" ;
@@ -483,7 +488,7 @@
                      SENDER ;
                      COMPARE ;
                      EQ ;
-                     DIG 9 ;
+                     PUSH string "403" ;
                      SWAP ;
                      IF { DROP } { FAILWITH } ;
                      PUSH string "412" ;
@@ -731,7 +736,7 @@
                      SENDER ;
                      COMPARE ;
                      EQ ;
-                     DIG 9 ;
+                     PUSH string "403" ;
                      SWAP ;
                      IF { DROP } { FAILWITH } ;
                      PUSH string "412" ;
