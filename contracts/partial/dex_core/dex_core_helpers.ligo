@@ -241,7 +241,7 @@ function swap_internal(
     const interface_fee : nat = tmp.amount_in * fees.interface_fee;
     const amount_with_swap_fee : nat = (from_in_with_fee + tmp.amount_in * fees.swap_fee) / Constants.precision;
     const auction_fee : nat = get_nat_or_fail(tmp.amount_in * Constants.precision - amount_with_swap_fee *
-      Constants.precision - interface_fee) / Constants.precision;
+      Constants.precision - interface_fee);
 
     tmp.s := update_fees(tmp.s, params.pair_id, tmp.token_in, tmp.referrer, interface_fee, auction_fee);
 
