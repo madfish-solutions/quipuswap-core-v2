@@ -230,20 +230,20 @@ function swap_internal(
     assert_with_error(swap.from_.token = tmp.token_in, DexCore.err_wrong_route);
 
     const fees : fees_t = tmp.s.fees;
-    const fee_rate_without_swap : nat = fees.interface_fee + fees.auction_fee;
-    const rate_without_fee : nat = get_nat_or_fail(Constants.precision - fees.swap_fee);
+    const fee_rate : nat = fees.interface_fee + fees.swap_fee + fees.auction_fee;
+    const rate_without_fee : nat = get_nat_or_fail(Constants.precision - fee_rate);
 
     const from_in_with_fee : nat = tmp.amount_in * rate_without_fee;
     const numerator : nat = from_in_with_fee * swap.to_.pool;
     const denominator : nat = swap.from_.pool * Constants.precision + from_in_with_fee;
-    var out : nat := numerator / denominator;
+    const out : nat = numerator / denominator;
 
-    const interface_fee : nat = ceil_div(out * fees.interface_fee, Constants.precision);
-    const auction_fee : nat = get_nat_or_fail(out - interface_fee);
+    const interface_fee : nat = tmp.amount_in * fees.interface_fee;
+    const amount_with_swap_fee : nat = (from_in_with_fee + tmp.amount_in * fees.swap_fee) / Constants.precision;
+    const auction_fee : nat = get_nat_or_fail(tmp.amount_in * Constants.precision - amount_with_swap_fee *
+      Constants.precision - interface_fee) / Constants.precision;
 
-    out := get_nat_or_fail(out - interface_fee + auction_fee);
-    tmp.s := update_fees(tmp.s, params.pair_id, tmp.token_in, tmp.referrer,
-        interface_fee * Constants.precision, auction_fee * Constants.precision);
+    tmp.s := update_fees(tmp.s, params.pair_id, tmp.token_in, tmp.referrer, interface_fee, auction_fee);
 
     if tmp.token_in = Tez and tmp.counter > 0n
     then {
@@ -264,7 +264,7 @@ function swap_internal(
         (None : option(address));
 
     swap.to_.pool := get_nat_or_fail(swap.to_.pool - out);
-    swap.from_.pool := swap.from_.pool + ceil_div(get_nat_or_fail(tmp.amount_in * Constants.precision - interface_fee - auction_fee), Constants.precision);
+    swap.from_.pool := swap.from_.pool + amount_with_swap_fee;
 
     tmp.amount_in := out;
     tmp.token_in := swap.to_.token;
