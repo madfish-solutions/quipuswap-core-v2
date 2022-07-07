@@ -140,9 +140,9 @@ function calc_cumulative_prices(
     if (time_elasped > 0n and pair.token_a_pool > 0n and pair.token_b_pool > 0n)
     then {
       (* price_cumulative = price_cumulative + (price_a * time_elasped) *)
-      pair.token_a_price_cml := pair.token_a_price_cml + pair.token_b_pool * Constants.precision * time_elasped / pair.token_a_pool;
+      pair.token_a_price_cml := pair.token_a_price_cml + pair.token_b_pool * Constants.precision / pair.token_a_pool * time_elasped;
       (* price_cumulative = price_cumulative + (price_b * time_elasped) *)
-      pair.token_b_price_cml := pair.token_b_price_cml + pair.token_a_pool * Constants.precision * time_elasped / pair.token_b_pool;
+      pair.token_b_price_cml := pair.token_b_price_cml + pair.token_a_pool * Constants.precision / pair.token_b_pool * time_elasped;
     }
     else skip;
 
@@ -239,7 +239,9 @@ function swap_internal(
     const out : nat = numerator / denominator;
 
     const interface_fee : nat = tmp.amount_in * fees.interface_fee;
-    const auction_fee : nat = tmp.amount_in * fees.auction_fee;
+    const amount_with_swap_fee : nat = (from_in_with_fee + tmp.amount_in * fees.swap_fee) / Constants.precision;
+    const auction_fee : nat = get_nat_or_fail(tmp.amount_in * Constants.precision - amount_with_swap_fee *
+      Constants.precision - interface_fee);
 
     tmp.s := update_fees(tmp.s, params.pair_id, tmp.token_in, tmp.referrer, interface_fee, auction_fee);
 
@@ -262,7 +264,7 @@ function swap_internal(
         (None : option(address));
 
     swap.to_.pool := get_nat_or_fail(swap.to_.pool - out);
-    swap.from_.pool := swap.from_.pool + ceil_div(get_nat_or_fail(tmp.amount_in * Constants.precision - interface_fee - auction_fee), Constants.precision);
+    swap.from_.pool := swap.from_.pool + amount_with_swap_fee;
 
     tmp.amount_in := out;
     tmp.token_in := swap.to_.token;

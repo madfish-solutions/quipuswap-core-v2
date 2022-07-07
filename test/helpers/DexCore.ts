@@ -59,6 +59,7 @@ import {
   Fees,
   Ban,
 } from "../types/DexCore";
+import { preProcessFile } from "typescript";
 
 const permitSchemaType: MichelsonV1Expression = {
   prim: "pair",
@@ -88,25 +89,25 @@ export class DexCore {
 
   static async init(
     dexCoreAddress: string,
-    tezos: TezosToolkit
+    tezos: TezosToolkit,
   ): Promise<DexCore> {
     return new DexCore(await tezos.contract.at(dexCoreAddress), tezos);
   }
 
   static async originate(
     tezos: TezosToolkit,
-    storage: DexCoreStorage
+    storage: DexCoreStorage,
   ): Promise<DexCore> {
     const contract: string = "dex_core";
     let artifacts: any = JSON.parse(
-      fs.readFileSync(`${env.buildDir}/${contract}.json`).toString()
+      fs.readFileSync(`${env.buildDir}/${contract}.json`).toString(),
     );
     const operation: OriginationOperation = await tezos.contract
       .originate({
         code: artifacts.michelson,
         storage: storage,
       })
-      .catch((e) => {
+      .catch(e => {
         console.error(e);
 
         return null;
@@ -122,12 +123,12 @@ export class DexCore {
 
     fs.writeFileSync(
       `${env.buildDir}/${contract}.json`,
-      JSON.stringify(artifacts, null, 2)
+      JSON.stringify(artifacts, null, 2),
     );
 
     return new DexCore(
       await tezos.contract.at(operation.contractAddress),
-      tezos
+      tezos,
     );
   }
 
@@ -155,7 +156,7 @@ export class DexCore {
             };
           }
         },
-        Promise.resolve({})
+        Promise.resolve({}),
       );
     }
   }
@@ -192,7 +193,7 @@ export class DexCore {
 
   async launchExchange(
     params: LaunchExchange,
-    mutezAmount: number = 0
+    mutezAmount: number = 0,
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .launch_exchange(params)
@@ -205,7 +206,7 @@ export class DexCore {
 
   async investLiquidity(
     params: InvestLiquidity,
-    mutezAmount: number = 0
+    mutezAmount: number = 0,
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .invest_liquidity(params)
@@ -223,7 +224,7 @@ export class DexCore {
 
   async divestLiquidity(
     params: DivestLiquidity,
-    mutezAmount: number = 0
+    mutezAmount: number = 0,
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .divest_liquidity(params)
@@ -255,7 +256,7 @@ export class DexCore {
 
   async swap(
     params: Swap,
-    mutezAmount: number = 0
+    mutezAmount: number = 0,
   ): Promise<TransactionOperation> {
     let operation: TransactionOperation;
 
@@ -263,13 +264,13 @@ export class DexCore {
       const ligo: string = getLigo(true);
       const stdout: string = execSync(
         `${ligo} compile parameter $PWD/contracts/test/lambdas.ligo 'Use(Swap((record [ lambda = Some(lambda); swaps = ${this.parseSwaps(
-          params.swaps
+          params.swaps,
         )}; deadline = (${params.deadline} : timestamp); receiver = ("${
           params.receiver
         }" : address); referrer = ("${
           params.referrer
         }" : address); amount_in = ${params.amount_in.toFixed()}n; min_amount_out = ${params.min_amount_out.toFixed()}n ]: swap_t )))' -p jakarta --michelson-format json`,
-        { maxBuffer: 1024 * 500 }
+        { maxBuffer: 1024 * 500 },
       ).toString();
 
       operation = await this.tezos.contract.transfer({
@@ -297,7 +298,7 @@ export class DexCore {
 
   async withdrawProfit(
     params: WithdrawProfit,
-    mutezAmount: number = 0
+    mutezAmount: number = 0,
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .withdraw_profit(params)
@@ -315,7 +316,7 @@ export class DexCore {
 
   async claimInterfaceFee(
     params: ClaimFee,
-    mutezAmount: number = 0
+    mutezAmount: number = 0,
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .claim_interface_fee(params)
@@ -328,7 +329,7 @@ export class DexCore {
 
   async claimInterfaceTezFee(
     params: ClaimTezFee,
-    mutezAmount: number = 0
+    mutezAmount: number = 0,
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .claim_interface_tez_fee(params)
@@ -341,7 +342,7 @@ export class DexCore {
 
   async withdrawAuctionFee(
     params: WithdrawAuctionFee,
-    mutezAmount: number = 0
+    mutezAmount: number = 0,
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .withdraw_auction_fee(params)
@@ -354,7 +355,7 @@ export class DexCore {
 
   async vote(
     params: DexVote,
-    mutezAmount: number = 0
+    mutezAmount: number = 0,
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .vote(params)
@@ -367,7 +368,7 @@ export class DexCore {
 
   async setAdmin(
     admin: string,
-    mutezAmount: number = 0
+    mutezAmount: number = 0,
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
       .set_admin(admin)
@@ -390,7 +391,7 @@ export class DexCore {
 
   async setFlashSwapsProxy(
     flashSwapsProxy: string,
-    mutezAmount: number = 0
+    mutezAmount: number = 0,
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
       .set_flash_swaps_proxy(flashSwapsProxy)
@@ -403,7 +404,7 @@ export class DexCore {
 
   async setAuction(
     auction: string,
-    mutezAmount: number = 0
+    mutezAmount: number = 0,
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
       .set_auction(auction)
@@ -416,7 +417,7 @@ export class DexCore {
 
   async addManagers(
     params: AddManager[],
-    mutezAmount: number = 0
+    mutezAmount: number = 0,
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
       .add_managers(params)
@@ -429,7 +430,7 @@ export class DexCore {
 
   async setFees(
     params: Fees,
-    mutezAmount: number = 0
+    mutezAmount: number = 0,
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .set_fees(params)
@@ -442,7 +443,7 @@ export class DexCore {
 
   async setCollectingPeriod(
     collectingPeriod: BigNumber,
-    mutezAmount: number = 0
+    mutezAmount: number = 0,
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
       .set_collecting_period(collectingPeriod.toString())
@@ -455,7 +456,7 @@ export class DexCore {
 
   async updateTokenMetadata(
     params: UpdateTokenMetadata,
-    mutezAmount: number = 0
+    mutezAmount: number = 0,
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .update_token_metadata(params)
@@ -468,7 +469,7 @@ export class DexCore {
 
   async ban(
     params: Ban,
-    mutezAmount: number = 0
+    mutezAmount: number = 0,
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .ban(params)
@@ -483,13 +484,13 @@ export class DexCore {
     key: string,
     signature: string,
     permitHash: string,
-    mutezAmount: number = 0
+    mutezAmount: number = 0,
   ): Promise<TransactionOperation> {
     const param = {
-        "0": key,
-        "1": signature,
-        "permit_hash": permitHash
-      }
+      "0": key,
+      "1": signature,
+      permit_hash: permitHash,
+    };
 
     const operation: TransactionOperation = await this.contract.methods
       .permit([param])
@@ -502,7 +503,7 @@ export class DexCore {
 
   async setExpiry(
     params: SetExpiry,
-    mutezAmount: number = 0
+    mutezAmount: number = 0,
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .set_expiry(params)
@@ -515,7 +516,7 @@ export class DexCore {
 
   async transfer(
     params: Transfer[],
-    mutezAmount: number = 0
+    mutezAmount: number = 0,
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
       .transfer(params)
@@ -533,7 +534,7 @@ export class DexCore {
 
   async updateOperators(
     params: UpdateOperator[],
-    mutezAmount: number = 0
+    mutezAmount: number = 0,
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methods
       .update_operators(params)
@@ -545,7 +546,7 @@ export class DexCore {
   }
 
   async flashSwapCallback(
-    params: FlashSwapCallback
+    params: FlashSwapCallback,
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .flash_swap_callback(params)
@@ -578,7 +579,7 @@ export class DexCore {
 
   static changeTokensOrderInPair(
     params: LaunchExchange,
-    wrongOrder: boolean
+    wrongOrder: boolean,
   ): LaunchExchange {
     let result: LaunchExchange = params;
 
@@ -589,11 +590,11 @@ export class DexCore {
       if (wrongOrder) {
         const tokenA: FA12Token = Utils.getMaxFA12Token(
           params.pair.token_a["fa12"],
-          params.pair.token_b["fa12"]
+          params.pair.token_b["fa12"],
         );
         const tokenB: FA12Token = Utils.getMinFA12Token(
           params.pair.token_a["fa12"],
-          params.pair.token_b["fa12"]
+          params.pair.token_b["fa12"],
         );
 
         result.pair.token_a["fa12"] = tokenA;
@@ -601,11 +602,11 @@ export class DexCore {
       } else {
         const tokenA: FA12Token = Utils.getMinFA12Token(
           params.pair.token_a["fa12"],
-          params.pair.token_b["fa12"]
+          params.pair.token_b["fa12"],
         );
         const tokenB: FA12Token = Utils.getMaxFA12Token(
           params.pair.token_a["fa12"],
-          params.pair.token_b["fa12"]
+          params.pair.token_b["fa12"],
         );
 
         result.pair.token_a["fa12"] = tokenA;
@@ -618,11 +619,11 @@ export class DexCore {
       if (wrongOrder) {
         const tokenA: FA2Token = Utils.getMaxFA2Token(
           params.pair.token_a["fa2"],
-          params.pair.token_b["fa2"]
+          params.pair.token_b["fa2"],
         );
         const tokenB: FA2Token = Utils.getMinFA2Token(
           params.pair.token_a["fa2"],
-          params.pair.token_b["fa2"]
+          params.pair.token_b["fa2"],
         );
 
         result.pair.token_a["fa2"] = tokenA;
@@ -630,11 +631,11 @@ export class DexCore {
       } else {
         const tokenA: FA2Token = Utils.getMinFA2Token(
           params.pair.token_a["fa2"],
-          params.pair.token_b["fa2"]
+          params.pair.token_b["fa2"],
         );
         const tokenB: FA2Token = Utils.getMaxFA2Token(
           params.pair.token_a["fa2"],
-          params.pair.token_b["fa2"]
+          params.pair.token_b["fa2"],
         );
 
         result.pair.token_a["fa2"] = tokenA;
@@ -673,11 +674,11 @@ export class DexCore {
 
   static async calculateCumulativePrices(
     pair: Pair,
-    utils: Utils
+    utils: Utils,
   ): Promise<CumulativePrices> {
     const timeElasped: BigNumber = new BigNumber(
       (await utils.getLastBlockTimestamp()) -
-        Date.parse(pair.last_block_timestamp)
+        Date.parse(pair.last_block_timestamp),
     )
       .dividedBy(1000)
       .integerValue(BigNumber.ROUND_DOWN);
@@ -693,14 +694,14 @@ export class DexCore {
             .multipliedBy(timeElasped)
             .multipliedBy(PRECISION)
             .dividedBy(pair.token_a_pool)
-            .integerValue(BigNumber.ROUND_DOWN)
+            .integerValue(BigNumber.ROUND_DOWN),
         ),
         tokenBCumulativePrice: pair.token_b_price_cml.plus(
           pair.token_a_pool
             .multipliedBy(timeElasped)
             .multipliedBy(PRECISION)
             .dividedBy(pair.token_b_pool)
-            .integerValue(BigNumber.ROUND_DOWN)
+            .integerValue(BigNumber.ROUND_DOWN),
         ),
       };
     }
@@ -721,7 +722,7 @@ export class DexCore {
     tezos: TezosToolkit,
     contract: any,
     entrypoint: string,
-    parameter: any
+    parameter: any,
   ): Promise<string> {
     const raw_packed: { packed: string; gas: BigNumber | "unaccounted" } =
       await tezos.rpc.packData({
@@ -736,7 +737,7 @@ export class DexCore {
     tezos: TezosToolkit,
     contract: Contract,
     entrypoint: string,
-    params: any
+    params: any,
   ): Promise<[string, string, string]> {
     const signerKey: string = await tezos.signer.publicKey();
     const permitCounter: BigNumber = await contract
@@ -746,7 +747,7 @@ export class DexCore {
       tezos,
       contract,
       entrypoint,
-      params
+      params,
     );
     const chainId: string = await tezos.rpc.getChainId();
     const bytesToSign: { packed: string; gas: BigNumber | "unaccounted" } =
@@ -761,7 +762,7 @@ export class DexCore {
       });
     const signature: string = await tezos.signer
       .sign(bytesToSign.packed)
-      .then((s) => s.prefixSig);
+      .then(s => s.prefixSig);
 
     return [signerKey, signature, paramHash];
   }
@@ -770,7 +771,7 @@ export class DexCore {
     fees: Fees,
     amountIn: BigNumber,
     fromPool: BigNumber,
-    toPool: BigNumber
+    toPool: BigNumber,
   ): CalculateSwap {
     const feeRate: BigNumber = fees.interface_fee
       .plus(fees.swap_fee)
@@ -785,15 +786,15 @@ export class DexCore {
       .dividedBy(denominator)
       .integerValue(BigNumber.ROUND_DOWN);
     const interfaceFee: BigNumber = amountIn.multipliedBy(fees.interface_fee);
-    const auctionFee: BigNumber = amountIn.multipliedBy(fees.auction_fee);
-    const newFromPool: BigNumber = fromPool.plus(
-      amountIn
-        .multipliedBy(PRECISION)
-        .minus(interfaceFee)
-        .minus(auctionFee)
-        .dividedBy(PRECISION)
-        .integerValue(BigNumber.ROUND_UP)
-    );
+    const amountWithSwapFee: BigNumber = fromInWithFee
+      .plus(amountIn.multipliedBy(fees.swap_fee))
+      .dividedBy(PRECISION)
+      .integerValue(BigNumber.ROUND_DOWN);
+    const auctionFee: BigNumber = amountIn
+      .multipliedBy(PRECISION)
+      .minus(amountWithSwapFee.multipliedBy(PRECISION))
+      .minus(interfaceFee);
+    const newFromPool: BigNumber = fromPool.plus(amountWithSwapFee);
     const newToPool: BigNumber = toPool.minus(out);
 
     return {
