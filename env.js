@@ -2,13 +2,13 @@ import accounts from "./scripts/sandbox/accounts";
 
 export default {
   confirmationPollingTimeoutSecond: 500000,
-  syncInterval: 5000, // 0 for tests, 5000 for deploying
-  confirmTimeout: 180000, // 90000 for tests, 180000 for deploying
+  syncInterval: 0, // 0 for tests, 5000 for deploying
+  confirmTimeout: 90000, // 90000 for tests, 180000 for deploying
   buildDir: "build",
   migrationsDir: "migrations",
   contractsDir: "contracts/main",
   ligoVersion: "0.45.0",
-  network: "ghostnet",
+  network: "development",
   networks: {
     development: {
       rpc: "http://localhost:8732",
