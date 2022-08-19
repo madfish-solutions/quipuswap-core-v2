@@ -147,3 +147,9 @@
   const s               : full_storage_t)
                         : nat is
   s.storage.collecting_period
+
+[@view] function get_baker_rate(
+  const _               : unit;
+  const s               : full_storage_t)
+                        : nat is
+  s.storage.baker_rate_f

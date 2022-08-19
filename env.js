@@ -7,13 +7,19 @@ export default {
   buildDir: "build",
   migrationsDir: "migrations",
   contractsDir: "contracts/main",
-  ligoVersion: "next",
+  ligoVersion: "0.45.0",
   network: "development",
   networks: {
     development: {
       rpc: "http://localhost:8732",
       network_id: "*",
       secretKey: accounts.alice.sk,
+    },
+    ghostnet: {
+      rpc: "https://rpc.ghostnet.teztnets.xyz",
+      port: 443,
+      network_id: "*",
+      secretKey: accounts.dev.sk,
     },
     jakartanet: {
       rpc: "https://jakartanet.tezos.marigold.dev",

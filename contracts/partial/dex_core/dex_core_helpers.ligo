@@ -33,6 +33,13 @@ function get_bucket_ban_baker_entrypoint(
     (Tezos.get_entrypoint_opt("%ban_baker", bucket) : option(contract(ban_baker_t))),
     DexCore.err_bucket_ban_baker_entrypoint_404
   )
+function get_bucket_claim_entrypoint(
+  const bucket          : address)
+                        : contract(address) is
+  unwrap(
+    (Tezos.get_entrypoint_opt("%claim_baker_fund", bucket) : option(contract(address))),
+    DexCore.err_bucket_claim_entrypoint_404
+  )
 
 function get_bucket_vote_entrypoint(
   const bucket          : address)
@@ -59,6 +66,12 @@ function get_ban_baker_op(
   const bucket          : address)
                         : operation is
   Tezos.transaction(ban_params, 0mutez, get_bucket_ban_baker_entrypoint(bucket))
+
+function get_claim_op(
+  const claim_params    : address;
+  const bucket          : address)
+                        : operation is
+  Tezos.transaction(claim_params, 0mutez, get_bucket_claim_entrypoint(bucket))
 
 function get_vote_op(
   const vote_params     : vote_t;
@@ -113,6 +126,7 @@ function get_bucket_initial_storage(
     total_supply          = 0n;
     last_update_level     = Tezos.level;
     collecting_period_end = Tezos.level + collect_period;
+    baker_fund            = 0n;
   ]
 
 function calc_cumulative_prices(
@@ -126,9 +140,9 @@ function calc_cumulative_prices(
     if (time_elasped > 0n and pair.token_a_pool > 0n and pair.token_b_pool > 0n)
     then {
       (* price_cumulative = price_cumulative + (price_a * time_elasped) *)
-      pair.token_a_price_cml := pair.token_a_price_cml + ((pair.token_b_pool / pair.token_a_pool) * time_elasped);
+      pair.token_a_price_cml := pair.token_a_price_cml + pair.token_b_pool * Constants.precision / pair.token_a_pool * time_elasped;
       (* price_cumulative = price_cumulative + (price_b * time_elasped) *)
-      pair.token_b_price_cml := pair.token_b_price_cml + ((pair.token_a_pool / pair.token_b_pool) * time_elasped);
+      pair.token_b_price_cml := pair.token_b_price_cml + pair.token_a_pool * Constants.precision / pair.token_b_pool * time_elasped;
     }
     else skip;
 
@@ -225,13 +239,11 @@ function swap_internal(
     const out : nat = numerator / denominator;
 
     const interface_fee : nat = tmp.amount_in * fees.interface_fee;
-    const auction_fee : nat = tmp.amount_in * fees.auction_fee;
+    const amount_with_swap_fee : nat = (from_in_with_fee + tmp.amount_in * fees.swap_fee) / Constants.precision;
+    const auction_fee : nat = get_nat_or_fail(tmp.amount_in * Constants.precision - amount_with_swap_fee *
+      Constants.precision - interface_fee);
 
     tmp.s := update_fees(tmp.s, params.pair_id, tmp.token_in, tmp.referrer, interface_fee, auction_fee);
-
-    if swap.to_.token = Tez
-    then tmp.from_bucket := pair.bucket
-    else skip;
 
     if tmp.token_in = Tez and tmp.counter > 0n
     then {
@@ -245,10 +257,14 @@ function swap_internal(
     }
     else skip;
 
+    tmp.from_bucket := if swap.to_.token = Tez
+      then
+        pair.bucket
+      else
+        (None : option(address));
+
     swap.to_.pool := get_nat_or_fail(swap.to_.pool - out);
-    swap.from_.pool := get_nat_or_fail(
-      swap.from_.pool + (tmp.amount_in * Constants.precision - interface_fee - auction_fee) / Constants.precision
-    );
+    swap.from_.pool := swap.from_.pool + amount_with_swap_fee;
 
     tmp.amount_in := out;
     tmp.token_in := swap.to_.token;

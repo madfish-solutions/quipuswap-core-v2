@@ -31,11 +31,12 @@ function launch_auction(
     case action of [
     | Launch_auction(params) -> {
         assert_with_error(not Set.mem(params.token, s.whitelist), Auction.err_whitelisted_token);
+        assert_with_error(params.amt > 0n, Auction.err_auctioned_amount_too_low);
+        assert_with_error(params.bid >= s.min_bid, Auction.err_low_bid);
 
         const token_balance_f : nat = unwrap_or(s.public_fee_balances_f[params.token], 0n);
 
         assert_with_error(params.amt <= token_balance_f / Constants.precision, Auction.err_insufficient_balance);
-        assert_with_error(params.bid >= s.min_bid, Auction.err_low_bid);
 
         s.auctions[s.auctions_count] := record[
           status         = Active;
@@ -68,18 +69,28 @@ function place_bid(
         assert_with_error(Tezos.now < auction.end_time, Auction.err_auction_finished);
         assert_with_error(params.bid > auction.current_bid, Auction.err_low_bid);
 
-        const bid_fee_f : nat = auction.current_bid * s.fees.bid_fee_f;
-        const refund : nat = get_nat_or_fail(auction.current_bid - (bid_fee_f / Constants.precision));
+        const bid_fee : nat = ceil_div(auction.current_bid * s.fees.bid_fee_f, Constants.precision);
+        const refund : nat = get_nat_or_fail(auction.current_bid - bid_fee);
 
-        s.bid_fee_balance_f := s.bid_fee_balance_f + bid_fee_f;
+        s.bid_fee_balance := s.bid_fee_balance + bid_fee;
 
         ops := transfer_token(Tezos.sender, Tezos.self_address, params.bid, Fa2(s.quipu_token)) # ops;
-        ops := transfer_token(Tezos.self_address, auction.current_bidder, refund, Fa2(s.quipu_token)) # ops;
+        
+        if refund > 0n then {
+          ops := transfer_token(Tezos.self_address, auction.current_bidder, refund, Fa2(s.quipu_token)) # ops;
+        }
+        else skip;
 
-        s.auctions[params.auction_id] := auction with record[
-          current_bid    = params.bid;
-          current_bidder = Tezos.sender;
-        ];
+        if Tezos.now >= auction.end_time - s.extension_trigger
+        then s.auctions[params.auction_id] := auction with record[
+            current_bid    = params.bid;
+            current_bidder = Tezos.sender;
+            end_time       = auction.end_time + s.auction_extension;
+          ]
+        else s.auctions[params.auction_id] := auction with record[
+            current_bid    = params.bid;
+            current_bidder = Tezos.sender;
+          ];
       }
     | _ -> skip
     ]
@@ -99,13 +110,13 @@ function claim(
         assert_with_error(Tezos.now >= auction.end_time, Auction.err_auction_not_finished);
         assert_with_error(auction.status =/= Finished, Auction.err_auction_finished);
 
+        ops := transfer_token(Tezos.self_address, auction.current_bidder, auction.amt, auction.token) # ops;
         ops := transfer_token(
           Tezos.self_address,
           Constants.zero_address,
           auction.current_bid,
           Fa2(s.quipu_token)
         ) # ops;
-        ops := transfer_token(Tezos.self_address, auction.current_bidder, auction.amt, auction.token) # ops;
 
         s.auctions[auction_id] := auction with record[ status = Finished ];
       }
@@ -291,7 +302,7 @@ function withdraw_public_fee(
     ]
   } with (ops, s)
 
-function burn_bid_fee(
+function withdraw_bid_fee(
   const action          : action_t;
   var s                 : storage_t)
                         : return_t is
@@ -299,24 +310,56 @@ function burn_bid_fee(
     var ops : list(operation) := nil;
 
     case action of [
-    | Burn_bid_fee -> {
+    | Withdraw_bid_fee(receiver) -> {
         only_admin(s.admin);
 
-        if s.bid_fee_balance_f > Constants.precision
+        if s.bid_fee_balance > 0n
         then {
-          const bid_fee_balance : nat = s.bid_fee_balance_f / Constants.precision;
-
-          s.bid_fee_balance_f := get_nat_or_fail(s.bid_fee_balance_f - (bid_fee_balance * Constants.precision));
-
           ops := transfer_token(
             Tezos.self_address,
-            Constants.zero_address,
-            bid_fee_balance,
+            receiver,
+            s.bid_fee_balance,
             Fa2(s.quipu_token)
           ) # ops;
+
+          s.bid_fee_balance := 0n;
         }
         else skip;
       }
     | _ -> skip
     ]
   } with (ops, s)
+
+function set_auction_extension(
+  const action          : action_t;
+  var s                 : storage_t)
+                        : return_t is
+  block {
+    case action of [
+    | Set_auction_extension(auction_extension) -> {
+        only_admin(s.admin);
+
+        assert_with_error(auction_extension > 0, Auction.err_wrong_auction_extension);
+
+        s.auction_extension := auction_extension;
+      }
+    | _ -> skip
+    ]
+  } with ((nil : list(operation)), s)
+
+function set_extension_trigger(
+  const action          : action_t;
+  var s                 : storage_t)
+                        : return_t is
+  block {
+    case action of [
+    | Set_extension_trigger(extension_trigger) -> {
+        only_admin(s.admin);
+
+        assert_with_error(extension_trigger > 0, Auction.err_wrong_extension_trigger);
+
+        s.extension_trigger := extension_trigger;
+      }
+    | _ -> skip
+    ]
+  } with ((nil : list(operation)), s)

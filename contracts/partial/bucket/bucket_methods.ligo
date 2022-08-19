@@ -71,6 +71,21 @@ function ban_baker(
     s.bakers[params.baker] := baker;
   } with ((nil : list(operation)), s)
 
+function claim(
+  const receiver        : address;
+  var s                 : storage_t)
+                        : return_t is
+  block {
+    only_dex_core(s.dex_core);
+    non_payable(Unit);
+
+    const amount = s.baker_fund;
+
+    assert_with_error(amount > 0n, Bucket.err_nothing_to_claim);
+
+    s.baker_fund := 0n;
+  } with (list [transfer_tez((Tezos.get_contract_with_error(receiver, Common.err_contract_404) : contract(unit)), amount)], s)
+
 function vote(
   const params          : vote_t;
   var s                 : storage_t)
@@ -81,11 +96,11 @@ function vote(
 
     var user : user_t := unwrap_or(s.users[params.voter], Constants.default_user);
 
-    s.total_supply := get_nat_or_fail(s.total_supply - user.votes);
-    s.total_supply := s.total_supply + params.votes;
-
     s := update_rewards(s);
     s := update_user_reward(params.voter, user.votes, params.votes, s);
+
+    s.total_supply := get_nat_or_fail(s.total_supply - user.votes);
+    s.total_supply := s.total_supply + params.votes;
 
     case user.candidate of [
       None                 -> skip
@@ -173,7 +188,10 @@ function default(
   var s                 : storage_t)
                         : return_t is
   block {
-    s.next_reward := s.next_reward + (Tezos.amount / 1mutez);
+    const baker_reward = Tezos.amount / 1mutez;
+    const baker_fund = ceil_div(baker_reward * get_baker_rate(s.dex_core), Constants.precision);
+    s.baker_fund := s.baker_fund + baker_fund;
+    s.next_reward := s.next_reward + get_nat_or_fail(baker_reward - baker_fund);
 
     s := update_rewards(s);
   } with ((nil : list(operation)), s)

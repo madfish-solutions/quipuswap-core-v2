@@ -24,4 +24,5 @@ export const bucketStorage: BucketStorage = {
   last_update_level: new BigNumber(0),
   collecting_period_end: new BigNumber(0),
   total_supply: new BigNumber(0),
+  baker_fund: new BigNumber(0),
 };

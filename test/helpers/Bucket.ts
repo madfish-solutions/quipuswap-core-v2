@@ -235,17 +235,9 @@ export class Bucket {
           newReward.dividedBy(totalSupply).integerValue(BigNumber.ROUND_DOWN)
         );
 
-        const totalReward: BigNumber = bucketStorage.total_reward.plus(
-          rewardPerBlock
-            .multipliedBy(periodDuration)
-            .dividedBy(PRECISION)
-            .integerValue(BigNumber.ROUND_DOWN)
-        );
-
         return {
           rewardPerShare: rewardPerShare,
           rewardPerBlock: rewardPerBlock,
-          totalReward: totalReward,
           lastUpdateLevel: level,
           collectingPeriodEnd: collectingPeriodEnd,
         };
@@ -254,7 +246,6 @@ export class Bucket {
       return {
         rewardPerShare: rewardPerShare,
         rewardPerBlock: bucketStorage.reward_per_block,
-        totalReward: bucketStorage.total_reward,
         lastUpdateLevel: level,
         collectingPeriodEnd: bucketStorage.collecting_period_end,
       };
@@ -263,7 +254,6 @@ export class Bucket {
     return {
       rewardPerShare: bucketStorage.reward_per_share,
       rewardPerBlock: bucketStorage.reward_per_block,
-      totalReward: bucketStorage.total_reward,
       lastUpdateLevel: bucketStorage.last_update_level,
       collectingPeriodEnd: bucketStorage.collecting_period_end,
     };

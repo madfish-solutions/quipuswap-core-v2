@@ -4,5 +4,6 @@ type action_t           is
 | Pour_over               of pour_over_t
 | Withdraw_rewards        of withdraw_rewards_t
 | Ban_baker               of ban_baker_t
+| Claim_baker_fund        of address
 | Vote                    of vote_t
 | Default                 of default_t

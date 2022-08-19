@@ -6,6 +6,10 @@ import { zeroAddress } from "../test/helpers/Utils";
 
 import { DexCoreStorage } from "../test/types/DexCore";
 
+import dexZIP16Errors from "./metadata/dexZIP16Errors";
+
+import commonZIP16Errors from "./metadata/commonZIP16Errors";
+
 export const dexCoreStorage: DexCoreStorage = {
   storage: {
     token_metadata: MichelsonMap.fromLiteral({}),
@@ -36,6 +40,7 @@ export const dexCoreStorage: DexCoreStorage = {
     entered: false,
     tokens_count: new BigNumber(0),
     collecting_period: new BigNumber(0),
+    baker_rate_f: new BigNumber(0),
   },
   dex_core_lambdas: MichelsonMap.fromLiteral({}),
   metadata: MichelsonMap.fromLiteral({
@@ -51,11 +56,42 @@ export const dexCoreStorage: DexCoreStorage = {
           tools: ["Ligo", "Flextesa"],
         },
         homepage: "https://quipuswap.com",
-        interfaces: ["TZIP-16"],
-        errors: [],
-        views: [],
+        interfaces: ["TZIP-016"],
+        errors: commonZIP16Errors.concat(dexZIP16Errors),
+        views: [
+          {
+            name: "GetCounter",
+            pure: true,
+            implementations: [
+              {
+                michelsonStorageView: {
+                  returnType: { prim: "nat" },
+                  code: [
+                    { prim: "CAR" },
+                    { prim: "GET", args: [{ int: "37" }] },
+                  ],
+                },
+              },
+            ],
+          },
+          {
+            name: "GetDefaultExpiry",
+            pure: true,
+            implementations: [
+              {
+                michelsonStorageView: {
+                  returnType: { prim: "nat" },
+                  code: [
+                    { prim: "CAR" },
+                    { prim: "GET", args: [{ int: "39" }] },
+                  ],
+                },
+              },
+            ],
+          },
+        ],
       }),
-      "ascii"
+      "ascii",
     ).toString("hex"),
   }),
 };

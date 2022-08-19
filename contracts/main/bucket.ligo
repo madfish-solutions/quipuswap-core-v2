@@ -26,6 +26,7 @@ function main(
   | Pour_over(params)        -> pour_over(params, s)
   | Withdraw_rewards(params) -> withdraw_rewards(params, s)
   | Ban_baker(params)        -> ban_baker(params, s)
+  | Claim_baker_fund(params) -> claim(params, s)
   | Vote(params)             -> vote(params, s)
   | Default                  -> default(s)
   ]

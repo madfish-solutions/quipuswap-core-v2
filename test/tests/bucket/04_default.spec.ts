@@ -295,7 +295,7 @@ describe("Bucket (default)", async () => {
       prevBucketStorage.next_reward.plus(amount)
     );
     expect(bucket.storage.last_update_level).to.be.bignumber.equal(
-      prevBucketStorage.last_update_level
+      prevBucketStorage.last_update_level.plus(1)
     );
     expect(bucket.storage.collecting_period_end).to.be.bignumber.equal(
       prevBucketStorage.collecting_period_end

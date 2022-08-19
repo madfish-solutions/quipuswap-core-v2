@@ -31,38 +31,45 @@ module DexCore is {
   const err_wrong_flash_swap_returns                  : string = "129";
   const err_can_not_refer_yourself                    : string = "130";
   const err_bucket_withdraw_rewards_entrypoint_404    : string = "131";
-  const err_insufficient_interface_fee_balance        : string = "132";
+
   const err_bucket_get_user_candidate_view_404        : string = "133";
   const err_launch_callback_404                       : string = "134";
   const err_auction_receive_fee_entrypoint_404        : string = "135";
   const err_reentrancy                                : string = "136";
   const err_close_entrypoint_404                      : string = "137";
   const err_not_entered                               : string = "138";
-  const err_too_few_swaps                             : string = "139";
+
   const err_can_not_perform_voting                    : string = "140";
   const err_wrong_reserves_state                      : string = "141";
   const err_no_pair_id                                : string = "142";
   const err_action_outdated                           : string = "143";
+  const err_bucket_claim_entrypoint_404               : string = "144";
+  const err_cant_claim_tez_fees_by_this_ep            : string = "145";
 }
 
 module Bucket is {
   const err_baker_registry_validate_entrypoint_404  : string = "200";
   const err_dex_core_get_collecting_period_view_404 : string = "201";
+  const err_dex_core_get_baker_rate_view_404        : string = "202";
+  const err_nothing_to_claim                        : string = "203";
 }
 
 module Auction is {
-  const err_unknown_func           : string = "300";
-  const err_cant_unpack_lambda     : string = "301";
-  const err_high_func_index        : string = "302";
-  const err_func_set               : string = "303";
-  const err_auction_not_found      : string = "304";
-  const err_whitelisted_token      : string = "305";
-  const err_not_whitelisted_token  : string = "306";
-  const err_insufficient_balance   : string = "307";
-  const err_low_bid                : string = "308";
-  const err_auction_finished       : string = "309";
-  const err_auction_not_finished   : string = "310";
-  const err_wrong_auction_duration : string = "311";
+  const err_unknown_func             : string = "300";
+  const err_cant_unpack_lambda       : string = "301";
+  const err_high_func_index          : string = "302";
+  const err_func_set                 : string = "303";
+  const err_auction_not_found        : string = "304";
+  const err_whitelisted_token        : string = "305";
+  const err_not_whitelisted_token    : string = "306";
+  const err_insufficient_balance     : string = "307";
+  const err_low_bid                  : string = "308";
+  const err_auction_finished         : string = "309";
+  const err_auction_not_finished     : string = "310";
+  const err_wrong_auction_duration   : string = "311";
+  const err_auctioned_amount_too_low : string = "312";
+  const err_wrong_auction_extension  : string = "313";
+  const err_wrong_extension_trigger  : string = "314";
 }
 
 module Common is {
@@ -79,4 +86,5 @@ module Common is {
   const err_bucket_fill_entrypoint_404     : string = "410";
   const err_pending_admin_is_none          : string = "411";
   const err_non_payable_entrypoint         : string = "412";
+  const err_rate_too_high                  : string = "413";
 }

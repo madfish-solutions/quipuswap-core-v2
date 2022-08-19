@@ -25,6 +25,14 @@ function get_baker_registry_validate_op(
     Bucket.err_dex_core_get_collecting_period_view_404
   )
 
+[@inline] function get_baker_rate(
+  const dex_core        : address)
+                        : nat is
+  unwrap(
+    (Tezos.call_view("get_baker_rate", Unit, dex_core) : option(nat)),
+    Bucket.err_dex_core_get_baker_rate_view_404
+  )
+
 function update_rewards(
   var s                 : storage_t)
                         : storage_t is
@@ -38,7 +46,6 @@ function update_rewards(
       const new_reward : nat = get_nat_or_fail(rewards_level - s.last_update_level) * s.reward_per_block;
 
       s.reward_per_share := s.reward_per_share + (new_reward / s.total_supply);
-      s.last_update_level := Tezos.level;
 
       if Tezos.level > s.collecting_period_end
       then {
@@ -53,12 +60,12 @@ function update_rewards(
 
         s.collecting_period_end := s.collecting_period_end + period_duration;
         s.reward_per_share := s.reward_per_share + (new_reward / s.total_supply);
-        s.total_reward := s.total_reward + ((s.reward_per_block * period_duration) / Constants.precision);
         s.next_reward := 0n;
       }
       else skip;
     }
     else skip;
+    s.last_update_level := Tezos.level;
   } with s
 
 function update_user_reward(

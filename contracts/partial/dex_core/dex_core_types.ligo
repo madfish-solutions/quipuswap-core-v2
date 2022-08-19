@@ -42,6 +42,7 @@ type storage_t          is [@layout:comb] record [
   entered                 : bool;
   tokens_count            : nat;
   collecting_period       : nat;
+  baker_rate_f            : nat;
 ]
 
 type launch_exchange_t  is [@layout:comb] record [
@@ -173,9 +174,9 @@ type metadata_pair_t    is [@layout:comb] record [
   value                   : bytes;
 ]
 
-type upd_tok_meta_t     is [@layout:comb] record [
-  token_id                : token_id_t;
-  token_info              : list(metadata_pair_t);
+type upd_tok_meta_t    is [@layout:comb] record [
+  token_id                : nat;
+  token_info              : map(string, bytes);
 ]
 
 type ban_t              is [@layout:comb] record [
@@ -226,6 +227,7 @@ type cum_prices_t       is [@layout:comb] record [
 ]
 
 type cum_prices_req_t   is token_id_t
+type set_baker_rate_t   is nat
 
 type cum_prices_res_t   is [@layout:comb] record [
   request                 : cum_prices_req_t;
@@ -258,6 +260,8 @@ type action_t           is
 | Set_collecting_period   of set_coll_period_t
 | Update_token_metadata   of upd_tok_meta_t
 | Ban                     of ban_t
+| Claim                   of claim_tez_fee_t
+| Set_baker_rate          of set_baker_rate_t
 (* PERMIT *)
 | Permit                  of permit_t
 | Set_expiry              of set_expiry_t
@@ -289,4 +293,4 @@ type full_action_t      is
 
 type deploy_bucket_t    is (option(key_hash) * tez * bucket_t) -> (operation * address)
 
-const dex_core_methods_max_index : nat = 25n;
+const dex_core_methods_max_index : nat = 27n;

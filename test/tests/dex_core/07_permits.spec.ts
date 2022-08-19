@@ -722,6 +722,14 @@ describe("DexCore (permits)", async () => {
         .expiry
     ).to.be.equal(null);
 
+    const expiry: SetExpiry = {
+      issuer: bob.pkh,
+      expiry: new BigNumber(1),
+      permit_hash: permitHash,
+    };
+
+    await dexCore.setExpiry(expiry);
+
     transferParams = [
       {
         from_: bob.pkh,
@@ -734,12 +742,18 @@ describe("DexCore (permits)", async () => {
         ],
       },
     ];
-    [signerKey, signature, permitHash] = await dexCore.createPermitPayload(
+    const [newSignerKey, newSignature, newPermitHash] = await dexCore.createPermitPayload(
       await Utils.createTezos(bob.sk),
       dexCore.contract,
       "transfer",
       transferParams
     );
+
+    // at this point old permit has expired and gets deleted
+    await dexCore.permit(newSignerKey, newSignature, newPermitHash);
+    await dexCore.updateStorage({
+      permits: [bob.pkh],
+    });
 
     expect(dexCore.storage.storage.permits[bob.pkh].permits.has(permitHash)).to
       .be.false;
@@ -760,7 +774,7 @@ describe("DexCore (permits)", async () => {
         ],
       },
     ];
-    const [_signerKey, _signature, permitHash]: [string, string, string] =
+    const [signerKey, signature, permitHash]: [string, string, string] =
       await dexCore.createPermitPayload(
         await Utils.createTezos(bob.sk),
         dexCore.contract,
@@ -768,6 +782,7 @@ describe("DexCore (permits)", async () => {
         transferParams
       );
 
+    await dexCore.permit(signerKey, signature, permitHash);
     await dexCore.updateStorage({
       ledger: [
         [alice.pkh, tokenId],
@@ -782,7 +797,17 @@ describe("DexCore (permits)", async () => {
     expect(dexCore.storage.storage.permits[bob.pkh].permits.has(permitHash)).to
       .be.true;
 
+    console.log("pkh before: ", await dexCore.tezos.signer.publicKeyHash())
+
     await utils.setProvider(carol.sk);
+
+    const wrongTransferParams = JSON.parse(JSON.stringify(transferParams));
+    wrongTransferParams[0].txs[0]["to_"] = carol.pkh;
+    await rejects(dexCore.transfer(wrongTransferParams), (err: Error) => {
+      expect(err.message).to.equal(FA2Errors.FA2_NOT_OPERATOR)
+      return true;
+    });
+
     await dexCore.transfer(transferParams);
     await dexCore.updateStorage({
       ledger: [
@@ -822,5 +847,78 @@ describe("DexCore (permits)", async () => {
 
       return true;
     });
+  });
+
+  it(`should not allow bob to transfer from alice to carol`, async () => {
+    const tokenId: BigNumber = new BigNumber(0);
+    const amount: BigNumber = new BigNumber(321);
+    const transferParams: Transfer[] = [
+      {
+        from_: alice.pkh,
+        txs: [
+          {
+            to_: carol.pkh,
+            token_id: tokenId,
+            amount: amount,
+          },
+        ],
+      },
+    ];
+    const [signerKey, signature, permitHash]: [string, string, string] =
+      await dexCore.createPermitPayload(
+        await Utils.createTezos(bob.sk),
+        dexCore.contract,
+        "transfer",
+        transferParams
+      );
+
+    await dexCore.permit(signerKey, signature, permitHash);
+    await dexCore.updateStorage({
+      permits: [bob.pkh],
+    });
+
+    await utils.setProvider(carol.sk);
+
+    await rejects(dexCore.transfer(transferParams), (err: Error) => {
+      expect(err.message).to.equal(FA2Errors.FA2_NOT_OPERATOR)
+      return true;
+    });
+  });
+
+  it(`should not allow alice to transfer from alice to carol signed by bob`, async () => {
+    const tokenId: BigNumber = new BigNumber(0);
+    const amount: BigNumber = new BigNumber(430);
+    const transferParams: Transfer[] = [
+      {
+        from_: alice.pkh,
+        txs: [
+          {
+            to_: carol.pkh,
+            token_id: tokenId,
+            amount: amount,
+          },
+        ],
+      },
+    ];
+    const [signerKey, signature, permitHash]: [string, string, string] =
+      await dexCore.createPermitPayload(
+        await Utils.createTezos(bob.sk),
+        dexCore.contract,
+        "transfer",
+        transferParams
+      );
+    
+    await utils.setProvider(alice.sk);
+    await dexCore.permit(signerKey, signature, permitHash);
+    await dexCore.updateStorage({
+      permits: [bob.pkh],
+    });
+
+    await utils.setProvider(carol.sk);
+    await rejects(dexCore.transfer(transferParams), (err: Error) => {
+      expect(err.message).to.equal(FA2Errors.FA2_NOT_OPERATOR)
+      return true;
+    });
+    
   });
 });

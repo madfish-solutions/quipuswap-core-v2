@@ -163,6 +163,17 @@ function invest_liquidity(
 
         s.pairs[params.pair_id] := updated_pair;
 
+        if Tezos.amount / 1mutez > tokens_b_required
+        then {
+          ops := transfer_tez(
+            (Tezos.get_contract_with_error(Tezos.sender, Common.err_contract_404) : contract(unit)),
+            get_nat_or_fail(Tezos.amount / 1mutez - tokens_b_required)
+          ) # ops;
+        }
+        else skip;
+        ops := fill_or_transfer_tokens(tokens_b_required, tokens.token_b, updated_pair.bucket) # ops;
+        ops := transfer_token(Tezos.sender, Tezos.self_address, tokens_a_required, tokens.token_a) # ops;
+
         if tokens.token_b = Tez
         then {
           ops := get_vote_op(
@@ -173,18 +184,6 @@ function invest_liquidity(
               votes           = receiver_balance + params.shares;
             ],
             unwrap(updated_pair.bucket, DexCore.err_bucket_404)
-          ) # ops;
-        }
-        else skip;
-
-        ops := transfer_token(Tezos.sender, Tezos.self_address, tokens_a_required, tokens.token_a) # ops;
-        ops := fill_or_transfer_tokens(tokens_b_required, tokens.token_b, updated_pair.bucket) # ops;
-
-        if Tezos.amount / 1mutez > tokens_b_required
-        then {
-          ops := transfer_tez(
-            (Tezos.get_contract_with_error(Tezos.sender, Common.err_contract_404) : contract(unit)),
-            get_nat_or_fail(Tezos.amount / 1mutez - tokens_b_required)
           ) # ops;
         }
         else skip;
@@ -247,6 +246,14 @@ function divest_liquidity(
 
         const tokens : tokens_t = unwrap(s.tokens[params.pair_id], DexCore.err_pair_not_listed);
 
+        ops := pour_out_or_transfer_tokens(
+          params.liquidity_receiver,
+          token_b_divested,
+          tokens.token_b,
+          updated_pair.bucket
+        ) # ops;
+        ops := transfer_token(Tezos.self_address, params.liquidity_receiver, token_a_divested, tokens.token_a) # ops;
+
         if tokens.token_b = Tez
         then {
           ops := get_vote_op(
@@ -260,14 +267,6 @@ function divest_liquidity(
           ) # ops;
         }
         else skip;
-
-        ops := transfer_token(Tezos.self_address, params.liquidity_receiver, token_a_divested, tokens.token_a) # ops;
-        ops := pour_out_or_transfer_tokens(
-          params.liquidity_receiver,
-          token_b_divested,
-          tokens.token_b,
-          updated_pair.bucket
-        ) # ops;
       }
     | _ -> skip
     ]
@@ -287,7 +286,6 @@ function swap(
     case action of [
     | Swap(params) -> {
         assert_with_error(params.deadline >= Tezos.now, DexCore.err_action_outdated);
-        assert_with_error(params.referrer =/= Tezos.sender, DexCore.err_can_not_refer_yourself);
 
         const first_swap : swap_slice_t = unwrap(List.head_opt(params.swaps), DexCore.err_empty_route);
         const tokens : tokens_t = unwrap(s.tokens[first_swap.pair_id], DexCore.err_pair_not_listed);
@@ -319,8 +317,6 @@ function swap(
 
         if token = Tez
         then {
-          ops := concat_lists(forward_ops, ops);
-
           case params.lambda of [
           | Some(_) -> {
               const flash_swap_callback_params : flash_swap_callback_t = record [
@@ -342,15 +338,18 @@ function swap(
           non_payable(Unit);
 
           ops := transfer_token(Tezos.sender, Tezos.self_address, params.amount_in, token) # ops;
-          ops := concat_lists(forward_ops, ops);
         };
+
+
 
         case params.lambda of [
         | Some(lambda) -> ops := call_flash_swaps_proxy(lambda, s.flash_swaps_proxy) # ops
         | None         -> skip
         ];
-
+        
         ops := pour_out_or_transfer_tokens(tmp.receiver, tmp.amount_in, tmp.token_in, tmp.from_bucket) # ops;
+
+        ops := concat_lists(forward_ops, ops);
       }
     | _ -> skip
     ]
@@ -397,6 +396,8 @@ function claim_interface_fee(
     case action of [
     | Claim_interface_fee(params) -> {
         non_payable(Unit);
+
+        assert_with_error(params.token =/= Tez, DexCore.err_cant_claim_tez_fees_by_this_ep);
 
         const interface_fee_f : nat = unwrap_or(s.interface_fee[(params.token, Tezos.sender)], 0n);
         const value : nat = interface_fee_f / Constants.precision;
@@ -495,9 +496,10 @@ function withdraw_auction_fee(
           fee   = actual_auction_fee;
         ];
 
+        ops := pour_out_or_transfer_tokens(Tezos.sender, user_reward, params.token, bucket) # ops;
+        
         ops := get_auction_receive_fee_op(receive_fee_params, s.auction) # ops;
         ops := pour_out_or_transfer_tokens(s.auction, actual_auction_fee, params.token, bucket) # ops;
-        ops := pour_out_or_transfer_tokens(Tezos.sender, user_reward, params.token, bucket) # ops;
       }
     | _ -> skip
     ]
@@ -539,6 +541,25 @@ function vote(
 
 (* ADMIN *)
 
+function claim(
+  const action          : action_t;
+  var s                 : storage_t)
+                        : return_t is
+  block {
+    var ops : list(operation) := nil;
+    case action of [
+    | Claim(params) -> {
+        only_admin(s.admin);
+        non_payable(Unit);
+
+        const pair : pair_t = unwrap(s.pairs[params.pair_id], DexCore.err_pair_not_listed);
+
+        ops := get_claim_op(params.receiver, unwrap(pair.bucket, DexCore.err_bucket_404)) # ops;
+      }
+    | _ -> skip
+    ]
+  } with (ops, s)
+
 function set_admin(
   const action          : action_t;
   var s                 : storage_t)
@@ -550,6 +571,23 @@ function set_admin(
         non_payable(Unit);
 
         s.pending_admin := Some(admin);
+      }
+    | _ -> skip
+    ]
+  } with ((nil : list(operation)), s)
+
+function set_baker_rate(
+  const action          : action_t;
+  var s                 : storage_t)
+                        : return_t is
+  block {
+    case action of [
+    | Set_baker_rate(rate) -> {
+        only_admin(s.admin);
+        non_payable(Unit);
+        assert_with_error(rate < Constants.precision, Common.err_rate_too_high);
+
+        s.baker_rate_f := rate;
       }
     | _ -> skip
     ]
@@ -673,19 +711,9 @@ function update_token_metadata(
         only_manager(s.managers);
         non_payable(Unit);
 
-        function upd_token_metadata(
-          var metadata  : token_metadata_t;
-          const pair    : metadata_pair_t)
-                        : token_metadata_t is
-          block {
-            metadata.token_info[pair.key] := pair.value;
-          } with metadata;
+        const _ = unwrap(s.token_metadata[params.token_id], DexCore.err_pair_not_listed);
 
-        var metadata : token_metadata_t := unwrap(s.token_metadata[params.token_id], DexCore.err_pair_not_listed);
-
-        metadata := List.fold(upd_token_metadata, params.token_info, metadata);
-
-        s.token_metadata[params.token_id] := metadata;
+        s.token_metadata[params.token_id] := params;
       }
     | _ -> skip
     ]

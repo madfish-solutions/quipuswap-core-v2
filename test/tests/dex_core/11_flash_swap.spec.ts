@@ -287,25 +287,6 @@ describe("DexCore (flash swap)", async () => {
     });
   });
 
-  it("should fail if user is trying to refer himself", async () => {
-    const params: Swap = {
-      lambda: undefined,
-      swaps: [],
-      deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
-      receiver: alice.pkh,
-      referrer: alice.pkh,
-      amount_in: new BigNumber(0),
-      min_amount_out: new BigNumber(0),
-      flash: true,
-    };
-
-    await rejects(dexCore.swap(params), (err: Error) => {
-      expect(err.message).to.equal(DexCoreErrors.ERR_CAN_NOT_REFER_YOURSELF);
-
-      return true;
-    });
-  });
-
   it("should fail if empty route", async () => {
     const params: Swap = {
       lambda: undefined,

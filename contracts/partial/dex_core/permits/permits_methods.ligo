@@ -66,6 +66,8 @@ function insert_permit(
 
     check_duplicates(default_expiry, user_permits.expiry, user_permits, permit);
 
+    assert_with_error(Map.size(user_permits.permits) < Constants.max_permits_per_user, "MAX_PERMITS_PER_USER_REACHED");
+
     const updated_user_permits : user_permits_t = user_permits with record [
       permits = Map.add(
         permit,
@@ -151,3 +153,11 @@ function set_permit_expiry(
       } with Big_map.update(user, Some(updated_user_permits), permits)
     ]
   ]
+
+(*
+off-chain views
+to compile use:
+compile expression --michelson-format json pascaligo --init-file $PWD/contracts/main/dex_core.ligo get_counter
+*)
+function get_counter(const s : full_storage_t) : nat is s.storage.permits_counter;
+function get_default_expiry(const s : full_storage_t) : nat is s.storage.default_expiry;

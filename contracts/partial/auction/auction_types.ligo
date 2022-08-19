@@ -27,9 +27,11 @@ type storage_t          is [@layout:comb] record [
   admin                   : address;
   pending_admin           : option(address);
   dex_core                : address;
-  bid_fee_balance_f       : nat;
+  bid_fee_balance         : nat;
   auctions_count          : nat;
   auction_duration        : int;
+  auction_extension       : int;
+  extension_trigger       : int;
   min_bid                 : nat;
 ]
 
@@ -58,6 +60,10 @@ type set_duration_t     is int
 
 type set_min_bid_t      is nat
 
+type set_auction_extension_t is int
+
+type set_extension_trigger_t is int
+
 type update_whitelist_t is [@layout:comb] record [
   token                   : token_t;
   add                     : bool;
@@ -68,7 +74,7 @@ type withdraw_fee_t     is [@layout:comb] record [
   receiver                : address;
 ]
 
-type burn_bid_fee_t     is unit
+type withdraw_bid_fee_t     is address
 
 type action_t           is
 (* AUCTION *)
@@ -83,10 +89,12 @@ type action_t           is
 | Set_fees                of set_fees_t
 | Set_auction_duration    of set_duration_t
 | Set_min_bid             of set_min_bid_t
+| Set_auction_extension   of set_auction_extension_t
+| Set_extension_trigger   of set_extension_trigger_t
 | Update_whitelist        of update_whitelist_t
 | Withdraw_dev_fee        of withdraw_fee_t
 | Withdraw_public_fee     of withdraw_fee_t
-| Burn_bid_fee            of burn_bid_fee_t
+| Withdraw_bid_fee        of withdraw_bid_fee_t
 
 type return_t           is list(operation) * storage_t
 
@@ -105,4 +113,4 @@ type full_action_t      is
 | Setup_func              of setup_func_t
 | Default                 of default_t
 
-const auction_methods_max_index : nat = 13n;
+const auction_methods_max_index : nat = 15n;

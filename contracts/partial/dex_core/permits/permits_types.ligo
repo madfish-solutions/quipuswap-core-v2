@@ -22,7 +22,7 @@ type permits_t          is big_map(address, user_permits_t)
 
 type permit_signature_t is michelson_pair(signature, "", blake2b_hash_t, "permit_hash")
 
-type permit_t           is key * permit_signature_t
+type permit_t           is list(key * permit_signature_t)
 
 type revoke_param_t     is blake2b_hash_t * address
 
