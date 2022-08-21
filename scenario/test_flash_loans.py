@@ -223,7 +223,7 @@ class FlashLoanTest(TestCase):
         self.assertEqual(transfers[0]["type"], "tez")
         
         # lambda invocation
-        self.assertAlmostEqual(transfers[1]["amount"], 0)
+        self.assertEqual(transfers[1]["amount"], 0)
         self.assertEqual(transfers[1]["destination"], flash_swaps_proxy)
         self.assertEqual(transfers[1]["source"], contract_self_address)
         self.assertEqual(transfers[1]["type"], "tez")
