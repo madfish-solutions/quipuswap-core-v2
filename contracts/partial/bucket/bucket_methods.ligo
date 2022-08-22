@@ -94,6 +94,8 @@ function vote(
     only_dex_core(s.dex_core);
     non_payable(Unit);
 
+    var ops: list(operation) := list [ get_baker_registry_validate_op(params.candidate, s.baker_registry) ];
+
     var user : user_t := unwrap_or(s.users[params.voter], Constants.default_user);
 
     s := update_rewards(s);
@@ -111,7 +113,6 @@ function vote(
       s.bakers[user_candidate] := candidate with record [ votes = candidate_new_votes ];
     }
     ];
-
 
     var user_candidate : baker_t := unwrap_or(s.bakers[params.candidate], Constants.default_baker);
     const user_candidate_votes : nat = user_candidate.votes + params.votes;
@@ -147,8 +148,6 @@ function vote(
     }
     else skip;
 
-    var ops: list(operation) := nil;
-
     if params.execute_voting
     then {
       const next_candidate = 
@@ -169,15 +168,12 @@ function vote(
       then {
         s.previous_delegated := to_be_delegated;
 
-        ops := if to_be_delegated =/= Constants.zero_key_hash  then 
-          list [
-            get_baker_registry_validate_op(to_be_delegated, s.baker_registry);
-            Tezos.set_delegate(Some(to_be_delegated))
-          ]
-        else
-          list [
-            Tezos.set_delegate((None : option(key_hash)))
-          ]
+        const delegate : option(key_hash) = if to_be_delegated =/= Constants.zero_key_hash then
+          Some(to_be_delegated)
+        else 
+          (None : option(key_hash));
+
+        ops := Tezos.set_delegate(delegate) # ops;
       }
       else skip;
     }
