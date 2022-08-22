@@ -495,8 +495,9 @@ function withdraw_auction_fee(
           token = params.token;
           fee   = actual_auction_fee;
         ];
-
-        ops := pour_out_or_transfer_tokens(Tezos.sender, user_reward, params.token, bucket) # ops;
+        if user_reward > 0n then {
+          ops := pour_out_or_transfer_tokens(Tezos.sender, user_reward, params.token, bucket) # ops;
+        } else skip;
         
         ops := get_auction_receive_fee_op(receive_fee_params, s.auction) # ops;
         ops := pour_out_or_transfer_tokens(s.auction, actual_auction_fee, params.token, bucket) # ops;
