@@ -694,14 +694,14 @@ export class DexCore {
             .multipliedBy(timeElasped)
             .multipliedBy(PRECISION)
             .dividedBy(pair.token_a_pool)
-            .integerValue(BigNumber.ROUND_DOWN),
+            .integerValue(BigNumber.ROUND_UP),
         ),
         tokenBCumulativePrice: pair.token_b_price_cml.plus(
           pair.token_a_pool
             .multipliedBy(timeElasped)
             .multipliedBy(PRECISION)
             .dividedBy(pair.token_b_pool)
-            .integerValue(BigNumber.ROUND_DOWN),
+            .integerValue(BigNumber.ROUND_UP),
         ),
       };
     }
