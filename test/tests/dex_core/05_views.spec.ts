@@ -847,10 +847,10 @@ describe("DexCore (views)", async () => {
     expect(cumulativePricesResponse[0].request).to.be.bignumber.equal(pairs[0]);
     expect(
       cumulativePricesResponse[0].cumulative_prices.token_a_price_cml
-    ).to.be.bignumber.equal(pair.token_a_price_cml);
+    ).to.be.bignumber.equal(pair.token_a_price_cml.div(PRECISION).integerValue(BigNumber.ROUND_UP));
     expect(
       cumulativePricesResponse[0].cumulative_prices.token_b_price_cml
-    ).to.be.bignumber.equal(pair.token_b_price_cml);
+    ).to.be.bignumber.equal(pair.token_b_price_cml.div(PRECISION).integerValue(BigNumber.ROUND_UP));
     expect(
       cumulativePricesResponse[0].cumulative_prices.last_block_timestamp
     ).to.be.equal(pair.last_block_timestamp);
@@ -897,10 +897,10 @@ describe("DexCore (views)", async () => {
       );
       expect(
         cumulativePricesResponse[j].cumulative_prices.token_a_price_cml
-      ).to.be.bignumber.equal(pair.token_a_price_cml);
+      ).to.be.bignumber.equal(pair.token_a_price_cml.div(PRECISION).integerValue(BigNumber.ROUND_UP));
       expect(
         cumulativePricesResponse[j].cumulative_prices.token_b_price_cml
-      ).to.be.bignumber.equal(pair.token_b_price_cml);
+      ).to.be.bignumber.equal(pair.token_b_price_cml.div(PRECISION).integerValue(BigNumber.ROUND_UP));
       expect(
         cumulativePricesResponse[j].cumulative_prices.last_block_timestamp
       ).to.be.equal(pair.last_block_timestamp);
