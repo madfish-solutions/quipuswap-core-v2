@@ -129,8 +129,8 @@
           request           = pair_id;
           cumulative_prices = record [
             last_block_timestamp = pair.last_block_timestamp;
-            token_a_price_cml    = pair.token_a_price_cml;
-            token_b_price_cml    = pair.token_b_price_cml;
+            token_a_price_cml    = ceil_div(pair.token_a_price_cml, Constants.precision);
+            token_b_price_cml    = ceil_div(pair.token_b_price_cml, Constants.precision)
           ];
         ];
       } with response # l;
