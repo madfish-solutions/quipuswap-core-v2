@@ -52,7 +52,7 @@ function get_bucket_fill_entrypoint(
     Common.err_bucket_fill_entrypoint_404
   )
 
-function get_fill_op(
+[@inline] function get_fill_op(
   const amt             : tez;
   const bucket          : address)
                         : operation is
