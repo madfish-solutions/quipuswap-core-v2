@@ -73,7 +73,7 @@ function get_claim_op(
                         : operation is
   Tezos.transaction(claim_params, 0mutez, get_bucket_claim_entrypoint(bucket))
 
-function get_vote_op(
+[@inline] function get_vote_op(
   const vote_params     : vote_t;
   const bucket          : address)
                         : operation is
@@ -129,7 +129,7 @@ function get_bucket_initial_storage(
     baker_fund            = 0n;
   ]
 
-function calc_cumulative_prices(
+[@inline] function calc_cumulative_prices(
   var pair              : pair_t;
   const new_tok_a_pool  : nat;
   const new_tok_b_pool  : nat)
@@ -367,7 +367,7 @@ function only_entered(
     assert_with_error(entered, DexCore.err_not_entered);
   } with unit
 
-function check_reentrancy(
+[@inline] function check_reentrancy(
   const entered         : bool)
                         : bool is
   if not entered
@@ -382,7 +382,7 @@ function get_close_entrypoint(
     DexCore.err_close_entrypoint_404
   )
 
-function get_close_op(
+[@inline] function get_close_op(
   const _               : unit)
                         : operation is
   Tezos.transaction(Unit, 0mutez, get_close_entrypoint(Tezos.self_address))
