@@ -44,7 +44,7 @@
   | None           -> (failwith(error) : t)
   ]
 
-function get_bucket_fill_entrypoint(
+[@inline] function get_bucket_fill_entrypoint(
   const bucket          : address)
                         : contract(fill_t) is
   unwrap(
