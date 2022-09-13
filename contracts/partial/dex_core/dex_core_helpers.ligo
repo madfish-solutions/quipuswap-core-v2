@@ -41,7 +41,7 @@ function get_bucket_claim_entrypoint(
     DexCore.err_bucket_claim_entrypoint_404
   )
 
-function get_bucket_vote_entrypoint(
+[@inline] function get_bucket_vote_entrypoint(
   const bucket          : address)
                         : contract(vote_t) is
   unwrap(
@@ -374,7 +374,7 @@ function only_entered(
   then True
   else failwith(DexCore.err_reentrancy)
 
-function get_close_entrypoint(
+[@inline] function get_close_entrypoint(
   const this            : address)
                         : contract(unit) is
   unwrap(
