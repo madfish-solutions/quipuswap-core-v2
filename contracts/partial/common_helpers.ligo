@@ -102,7 +102,7 @@ function wrap_fa2_transfer_trx(
     ]
   )
 
-function transfer_tez(
+[@inline] function transfer_tez(
   const to_             : contract(unit);
   const amt             : nat)
                         : operation is

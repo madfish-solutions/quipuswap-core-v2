@@ -1,4 +1,4 @@
-function has_expired(
+[@inline] function has_expired(
   const default_expiry  : seconds_t;
   const user_expiry_opt : option(seconds_t);
   const permit_info     : permit_info_t)
