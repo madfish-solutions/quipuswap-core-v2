@@ -10,7 +10,7 @@ function get_pair_info_or_default(
     const pair : pair_t = unwrap_or(pairs[token_id], Constants.default_pair);
   } with (pair, token_id)
 
-function get_bucket_pour_out_entrypoint(
+[@inline] function get_bucket_pour_out_entrypoint(
   const bucket          : address)
                         : contract(pour_out_t) is
   unwrap(
@@ -49,7 +49,7 @@ function get_bucket_claim_entrypoint(
     DexCore.err_bucket_vote_entrypoint_404
   )
 
-function get_pour_out_op(
+[@inline] function get_pour_out_op(
   const pour_out_params : pour_out_t;
   const bucket          : address)
                         : operation is
@@ -88,7 +88,7 @@ function fill_or_transfer_tokens(
   then get_fill_op(tokens_amt * 1mutez, unwrap(bucket_opt, DexCore.err_bucket_404))
   else transfer_token(Tezos.sender, Tezos.self_address, tokens_amt, token_type)
 
-function pour_out_or_transfer_tokens(
+[@inline] function pour_out_or_transfer_tokens(
   const receiver        : address;
   const tokens_amt      : nat;
   const token_type      : token_t;
@@ -360,7 +360,7 @@ function get_auction_receive_fee_op(
                         : operation is
   Tezos.transaction(params, 0mutez, get_auction_receive_fee_entrypoint(auction))
 
-function only_entered(
+[@inline] function only_entered(
   const entered         : bool)
                         : unit is
   block {
