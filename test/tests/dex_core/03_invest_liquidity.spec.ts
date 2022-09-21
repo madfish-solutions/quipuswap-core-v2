@@ -398,7 +398,7 @@ describe("DexCore (invest liquidity)", async () => {
     });
   });
 
-  it("should invest FA1.2/TEZ liquidity", async () => {
+  it("should invest FA1.2/TEZ liquidity without referral code", async () => {
     const pairId: BigNumber = new BigNumber(0);
     const sharesReceiver: string = alice.pkh;
 
@@ -453,7 +453,7 @@ describe("DexCore (invest liquidity)", async () => {
     );
   });
 
-  it("should invest FA2/TEZ liquidity", async () => {
+  it("should invest FA2/TEZ liquidity with referral code", async () => {
     const pairId: BigNumber = new BigNumber(1);
     const sharesReceiver: string = alice.pkh;
 
@@ -478,6 +478,7 @@ describe("DexCore (invest liquidity)", async () => {
       shares_receiver: sharesReceiver,
       candidate: alice.pkh,
       deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
+      referral_code: 42,
     };
 
     await dexCore.investLiquidity(

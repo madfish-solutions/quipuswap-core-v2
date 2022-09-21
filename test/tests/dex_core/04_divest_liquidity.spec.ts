@@ -380,7 +380,7 @@ describe("DexCore (divest liquidity)", async () => {
     });
   });
 
-  it("should divest FA1.2/TEZ liquidity", async () => {
+  it("should divest FA1.2/TEZ liquidity without referral code", async () => {
     const pairId: BigNumber = new BigNumber(0);
     const shares: BigNumber = new BigNumber(100);
     const liquidityReceiver: string = alice.pkh;
@@ -435,7 +435,7 @@ describe("DexCore (divest liquidity)", async () => {
     );
   });
 
-  it("should divest FA2/TEZ liquidity", async () => {
+  it("should divest FA2/TEZ liquidity with referral code", async () => {
     const pairId: BigNumber = new BigNumber(1);
     const shares: BigNumber = new BigNumber(100);
     const liquidityReceiver: string = alice.pkh;
@@ -462,6 +462,7 @@ describe("DexCore (divest liquidity)", async () => {
       liquidity_receiver: alice.pkh,
       candidate: alice.pkh,
       deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
+      referral_code: 42
     };
 
     await dexCore.divestLiquidity(divestParams);

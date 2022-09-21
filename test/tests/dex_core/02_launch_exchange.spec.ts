@@ -57,7 +57,7 @@ describe("DexCore (launch exchange)", async () => {
 
     bakerRegistry = await BakerRegistry.originate(
       utils.tezos,
-      bakerRegistryStorage
+      bakerRegistryStorage,
     );
 
     dexCoreStorage.storage.entered = false;
@@ -129,7 +129,7 @@ describe("DexCore (launch exchange)", async () => {
         expect(err.message).to.equal(DexCoreErrors.ERR_ACTION_OUTDATED);
 
         return true;
-      }
+      },
     );
   });
 
@@ -152,7 +152,7 @@ describe("DexCore (launch exchange)", async () => {
         expect(err.message).to.equal(DexCoreErrors.ERR_WRONG_PAIR_ORDER);
 
         return true;
-      }
+      },
     );
   });
 
@@ -175,7 +175,7 @@ describe("DexCore (launch exchange)", async () => {
         expect(err.message).to.equal(DexCoreErrors.ERR_WRONG_PAIR_ORDER);
 
         return true;
-      }
+      },
     );
   });
 
@@ -200,7 +200,7 @@ describe("DexCore (launch exchange)", async () => {
         expect(err.message).to.equal(DexCoreErrors.ERR_WRONG_PAIR_ORDER);
 
         return true;
-      }
+      },
     );
   });
 
@@ -291,7 +291,7 @@ describe("DexCore (launch exchange)", async () => {
         expect(err.message).to.equal(DexCoreErrors.ERR_ZERO_A_IN);
 
         return true;
-      }
+      },
     );
   });
 
@@ -314,7 +314,7 @@ describe("DexCore (launch exchange)", async () => {
         expect(err.message).to.equal(DexCoreErrors.ERR_ZERO_B_IN);
 
         return true;
-      }
+      },
     );
   });
 
@@ -337,7 +337,7 @@ describe("DexCore (launch exchange)", async () => {
         expect(err.message).to.equal(DexCoreErrors.ERR_WRONG_TEZ_AMOUNT);
 
         return true;
-      }
+      },
     );
   });
 
@@ -408,32 +408,32 @@ describe("DexCore (launch exchange)", async () => {
     });
 
     expect(dexCore.storage.storage.tokens_count).to.be.bignumber.equal(
-      expectedPairId.plus(1)
+      expectedPairId.plus(1),
     );
     expect(
       dexCore.storage.storage.ledger[
         `${params.shares_receiver},${expectedPairId.toFixed()}`
-      ]
+      ],
     ).to.be.bignumber.equal(
-      BigNumber.min(params.token_a_in, params.token_b_in)
+      BigNumber.min(params.token_a_in, params.token_b_in),
     );
     expect(
-      dexCore.storage.storage.tokens[expectedPairId.toFixed()].token_a
+      dexCore.storage.storage.tokens[expectedPairId.toFixed()].token_a,
     ).to.be.deep.equal(params.pair.token_a);
     expect(
       typeof dexCore.storage.storage.tokens[expectedPairId.toFixed()].token_b
-        .tez
+        .tez,
     ).to.be.equal("symbol");
     expect(
-      dexCore.storage.storage.pairs[expectedPairId.toFixed()].token_a_pool
+      dexCore.storage.storage.pairs[expectedPairId.toFixed()].token_a_pool,
     ).to.be.bignumber.equal(params.token_a_in);
     expect(
-      dexCore.storage.storage.pairs[expectedPairId.toFixed()].token_b_pool
+      dexCore.storage.storage.pairs[expectedPairId.toFixed()].token_b_pool,
     ).to.be.bignumber.equal(params.token_b_in);
     expect(
-      dexCore.storage.storage.pairs[expectedPairId.toFixed()].total_supply
+      dexCore.storage.storage.pairs[expectedPairId.toFixed()].total_supply,
     ).to.be.bignumber.equal(
-      BigNumber.min(params.token_a_in, params.token_b_in)
+      BigNumber.min(params.token_a_in, params.token_b_in),
     );
     expect(dexCore.storage.storage.pairs[expectedPairId.toFixed()].bucket).to
       .not.be.null;
@@ -458,11 +458,11 @@ describe("DexCore (launch exchange)", async () => {
         expect(err.message).to.equal(DexCoreErrors.ERR_PAIR_LISTED);
 
         return true;
-      }
+      },
     );
   });
 
-  it("should launch FA2/TEZ exchange", async () => {
+  it("should launch FA2/TEZ exchange without referral code", async () => {
     const params: LaunchExchange = {
       pair: {
         token_a: {
@@ -495,38 +495,38 @@ describe("DexCore (launch exchange)", async () => {
     });
 
     expect(dexCore.storage.storage.tokens_count).to.be.bignumber.equal(
-      expectedPairId.plus(1)
+      expectedPairId.plus(1),
     );
     expect(
       dexCore.storage.storage.ledger[
         `${params.shares_receiver},${expectedPairId.toFixed()}`
-      ]
+      ],
     ).to.be.bignumber.equal(
-      BigNumber.min(params.token_a_in, params.token_b_in)
+      BigNumber.min(params.token_a_in, params.token_b_in),
     );
     expect(
-      dexCore.storage.storage.tokens[expectedPairId.toFixed()].token_a
+      dexCore.storage.storage.tokens[expectedPairId.toFixed()].token_a,
     ).to.be.deep.equal(params.pair.token_a);
     expect(
       typeof dexCore.storage.storage.tokens[expectedPairId.toFixed()].token_b
-        .tez
+        .tez,
     ).to.be.equal("symbol");
     expect(
-      dexCore.storage.storage.pairs[expectedPairId.toFixed()].token_a_pool
+      dexCore.storage.storage.pairs[expectedPairId.toFixed()].token_a_pool,
     ).to.be.bignumber.equal(params.token_a_in);
     expect(
-      dexCore.storage.storage.pairs[expectedPairId.toFixed()].token_b_pool
+      dexCore.storage.storage.pairs[expectedPairId.toFixed()].token_b_pool,
     ).to.be.bignumber.equal(params.token_b_in);
     expect(
-      dexCore.storage.storage.pairs[expectedPairId.toFixed()].total_supply
+      dexCore.storage.storage.pairs[expectedPairId.toFixed()].total_supply,
     ).to.be.bignumber.equal(
-      BigNumber.min(params.token_a_in, params.token_b_in)
+      BigNumber.min(params.token_a_in, params.token_b_in),
     );
     expect(dexCore.storage.storage.pairs[expectedPairId.toFixed()].bucket).to
       .not.be.null;
   });
 
-  it("should launch FA1.2/FA1.2 exchange", async () => {
+  it("should launch FA1.2/FA1.2 exchange with referral code", async () => {
     let params: LaunchExchange = {
       pair: {
         token_a: { fa12: fa12Token1.contract.address },
@@ -537,6 +537,7 @@ describe("DexCore (launch exchange)", async () => {
       shares_receiver: alice.pkh,
       candidate: alice.pkh,
       deadline: String((await utils.getLastBlockTimestamp()) / 1000 + 100),
+      referral_code: 42,
     };
     const expectedPairId: BigNumber = new BigNumber(2);
 
@@ -552,28 +553,28 @@ describe("DexCore (launch exchange)", async () => {
     });
 
     expect(dexCore.storage.storage.tokens_count).to.be.bignumber.equal(
-      expectedPairId.plus(1)
+      expectedPairId.plus(1),
     );
     expect(
       dexCore.storage.storage.ledger[
         `${params.shares_receiver},${expectedPairId.toFixed()}`
-      ]
+      ],
     ).to.be.bignumber.equal(
-      BigNumber.min(params.token_a_in, params.token_b_in)
+      BigNumber.min(params.token_a_in, params.token_b_in),
     );
     expect(
-      dexCore.storage.storage.tokens[expectedPairId.toFixed()]
+      dexCore.storage.storage.tokens[expectedPairId.toFixed()],
     ).to.be.deep.equal(params.pair);
     expect(
-      dexCore.storage.storage.pairs[expectedPairId.toFixed()].token_a_pool
+      dexCore.storage.storage.pairs[expectedPairId.toFixed()].token_a_pool,
     ).to.be.bignumber.equal(params.token_a_in);
     expect(
-      dexCore.storage.storage.pairs[expectedPairId.toFixed()].token_b_pool
+      dexCore.storage.storage.pairs[expectedPairId.toFixed()].token_b_pool,
     ).to.be.bignumber.equal(params.token_b_in);
     expect(
-      dexCore.storage.storage.pairs[expectedPairId.toFixed()].total_supply
+      dexCore.storage.storage.pairs[expectedPairId.toFixed()].total_supply,
     ).to.be.bignumber.equal(
-      BigNumber.min(params.token_a_in, params.token_b_in)
+      BigNumber.min(params.token_a_in, params.token_b_in),
     );
     expect(dexCore.storage.storage.pairs[expectedPairId.toFixed()].bucket).to.be
       .null;
@@ -616,28 +617,28 @@ describe("DexCore (launch exchange)", async () => {
     });
 
     expect(dexCore.storage.storage.tokens_count).to.be.bignumber.equal(
-      expectedPairId.plus(1)
+      expectedPairId.plus(1),
     );
     expect(
       dexCore.storage.storage.ledger[
         `${params.shares_receiver},${expectedPairId.toFixed()}`
-      ]
+      ],
     ).to.be.bignumber.equal(
-      BigNumber.min(params.token_a_in, params.token_b_in)
+      BigNumber.min(params.token_a_in, params.token_b_in),
     );
     expect(
-      dexCore.storage.storage.tokens[expectedPairId.toFixed()]
+      dexCore.storage.storage.tokens[expectedPairId.toFixed()],
     ).to.be.deep.equal(params.pair);
     expect(
-      dexCore.storage.storage.pairs[expectedPairId.toFixed()].token_a_pool
+      dexCore.storage.storage.pairs[expectedPairId.toFixed()].token_a_pool,
     ).to.be.bignumber.equal(params.token_a_in);
     expect(
-      dexCore.storage.storage.pairs[expectedPairId.toFixed()].token_b_pool
+      dexCore.storage.storage.pairs[expectedPairId.toFixed()].token_b_pool,
     ).to.be.bignumber.equal(params.token_b_in);
     expect(
-      dexCore.storage.storage.pairs[expectedPairId.toFixed()].total_supply
+      dexCore.storage.storage.pairs[expectedPairId.toFixed()].total_supply,
     ).to.be.bignumber.equal(
-      BigNumber.min(params.token_a_in, params.token_b_in)
+      BigNumber.min(params.token_a_in, params.token_b_in),
     );
     expect(dexCore.storage.storage.pairs[expectedPairId.toFixed()].bucket).to.be
       .null;
@@ -668,28 +669,28 @@ describe("DexCore (launch exchange)", async () => {
     });
 
     expect(dexCore.storage.storage.tokens_count).to.be.bignumber.equal(
-      expectedPairId.plus(1)
+      expectedPairId.plus(1),
     );
     expect(
       dexCore.storage.storage.ledger[
         `${params.shares_receiver},${expectedPairId.toFixed()}`
-      ]
+      ],
     ).to.be.bignumber.equal(
-      BigNumber.min(params.token_a_in, params.token_b_in)
+      BigNumber.min(params.token_a_in, params.token_b_in),
     );
     expect(
-      dexCore.storage.storage.tokens[expectedPairId.toFixed()]
+      dexCore.storage.storage.tokens[expectedPairId.toFixed()],
     ).to.be.deep.equal(params.pair);
     expect(
-      dexCore.storage.storage.pairs[expectedPairId.toFixed()].token_a_pool
+      dexCore.storage.storage.pairs[expectedPairId.toFixed()].token_a_pool,
     ).to.be.bignumber.equal(params.token_a_in);
     expect(
-      dexCore.storage.storage.pairs[expectedPairId.toFixed()].token_b_pool
+      dexCore.storage.storage.pairs[expectedPairId.toFixed()].token_b_pool,
     ).to.be.bignumber.equal(params.token_b_in);
     expect(
-      dexCore.storage.storage.pairs[expectedPairId.toFixed()].total_supply
+      dexCore.storage.storage.pairs[expectedPairId.toFixed()].total_supply,
     ).to.be.bignumber.equal(
-      BigNumber.min(params.token_a_in, params.token_b_in)
+      BigNumber.min(params.token_a_in, params.token_b_in),
     );
     expect(dexCore.storage.storage.pairs[expectedPairId.toFixed()].bucket).to.be
       .null;
@@ -718,41 +719,41 @@ describe("DexCore (launch exchange)", async () => {
     });
 
     expect(
-      dexCore.storage.storage.token_metadata[expectedPairId.toFixed()].token_id
+      dexCore.storage.storage.token_metadata[expectedPairId.toFixed()].token_id,
     ).to.be.bignumber.equal(expectedPairId);
     expect(
       await dexCore.storage.storage.token_metadata[
         expectedPairId.toFixed()
-      ].token_info.get("name")
+      ].token_info.get("name"),
     ).to.be.equal("517569707573776170204c5020546f6b656e");
     expect(
       await dexCore.storage.storage.token_metadata[
         expectedPairId.toFixed()
-      ].token_info.get("symbol")
+      ].token_info.get("symbol"),
     ).to.be.equal("515054");
     expect(
       await dexCore.storage.storage.token_metadata[
         expectedPairId.toFixed()
-      ].token_info.get("decimals")
+      ].token_info.get("decimals"),
     ).to.be.equal("36");
     expect(
       await dexCore.storage.storage.token_metadata[
         expectedPairId.toFixed()
-      ].token_info.get("description")
+      ].token_info.get("description"),
     ).to.be.equal(
-      "517569707573776170204c5020746f6b656e20726570726573656e7473207573657220736861726520696e20746865206c697175696469747920706f6f6c"
+      "517569707573776170204c5020746f6b656e20726570726573656e7473207573657220736861726520696e20746865206c697175696469747920706f6f6c",
     );
     expect(
       await dexCore.storage.storage.token_metadata[
         expectedPairId.toFixed()
-      ].token_info.get("shouldPreferSymbol")
+      ].token_info.get("shouldPreferSymbol"),
     ).to.be.equal("74727565");
     expect(
       await dexCore.storage.storage.token_metadata[
         expectedPairId.toFixed()
-      ].token_info.get("thumbnailUri")
+      ].token_info.get("thumbnailUri"),
     ).to.be.equal(
-      "68747470733a2f2f7175697075737761702e636f6d2f51504c502e706e67"
+      "68747470733a2f2f7175697075737761702e636f6d2f51504c502e706e67",
     );
     Buffer.from;
   });
@@ -776,7 +777,7 @@ describe("DexCore (launch exchange)", async () => {
     });
 
     const prevDexCoreBalance: BigNumber = fa12Token2.getBalance(
-      dexCore.contract.address
+      dexCore.contract.address,
     );
 
     await fa12Token2.approve(dexCore.contract.address, params.token_a_in);
@@ -789,19 +790,19 @@ describe("DexCore (launch exchange)", async () => {
     });
 
     const currDexCoreBalance: BigNumber = fa12Token2.getBalance(
-      dexCore.contract.address
+      dexCore.contract.address,
     );
 
     expect(
-      await utils.tezos.tz.getBalance(dexCore.contract.address)
+      await utils.tezos.tz.getBalance(dexCore.contract.address),
     ).to.be.bignumber.equal(new BigNumber(0));
     expect(
       await utils.tezos.tz.getBalance(
-        dexCore.storage.storage.pairs[expectedPairId.toFixed()].bucket
-      )
+        dexCore.storage.storage.pairs[expectedPairId.toFixed()].bucket,
+      ),
     ).to.be.bignumber.equal(params.token_b_in);
     expect(currDexCoreBalance).to.be.bignumber.equal(
-      prevDexCoreBalance.plus(params.token_a_in)
+      prevDexCoreBalance.plus(params.token_a_in),
     );
   });
 
@@ -827,7 +828,7 @@ describe("DexCore (launch exchange)", async () => {
 
     const prevDexCoreBalance: BigNumber = await fa2Token2.getBalance(
       dexCore.contract.address,
-      params.pair.token_a["fa2"].id
+      params.pair.token_a["fa2"].id,
     );
 
     await dexCore.launchExchange(params, params.token_b_in.toNumber());
@@ -840,19 +841,19 @@ describe("DexCore (launch exchange)", async () => {
 
     const currDexCoreBalance: BigNumber = await fa2Token2.getBalance(
       dexCore.contract.address,
-      params.pair.token_a["fa2"].id
+      params.pair.token_a["fa2"].id,
     );
 
     expect(
-      await utils.tezos.tz.getBalance(dexCore.contract.address)
+      await utils.tezos.tz.getBalance(dexCore.contract.address),
     ).to.be.bignumber.equal(new BigNumber(0));
     expect(
       await utils.tezos.tz.getBalance(
-        dexCore.storage.storage.pairs[expectedPairId.toFixed()].bucket
-      )
+        dexCore.storage.storage.pairs[expectedPairId.toFixed()].bucket,
+      ),
     ).to.be.bignumber.equal(params.token_b_in);
     expect(currDexCoreBalance).to.be.bignumber.equal(
-      prevDexCoreBalance.plus(params.token_a_in)
+      prevDexCoreBalance.plus(params.token_a_in),
     );
   });
 
@@ -879,10 +880,10 @@ describe("DexCore (launch exchange)", async () => {
     });
 
     const prevDexCoreTok1Balance: BigNumber = fa12Token1.getBalance(
-      dexCore.contract.address
+      dexCore.contract.address,
     );
     const prevDexCoreTok2Balance: BigNumber = fa12Token3.getBalance(
-      dexCore.contract.address
+      dexCore.contract.address,
     );
 
     await fa12Token1.approve(dexCore.contract.address, params.token_a_in);
@@ -896,17 +897,17 @@ describe("DexCore (launch exchange)", async () => {
     });
 
     const currDexCoreTok1Balance: BigNumber = fa12Token1.getBalance(
-      dexCore.contract.address
+      dexCore.contract.address,
     );
     const currDexCoreTok2Balance: BigNumber = fa12Token3.getBalance(
-      dexCore.contract.address
+      dexCore.contract.address,
     );
 
     expect(currDexCoreTok1Balance).to.be.bignumber.equal(
-      prevDexCoreTok1Balance.plus(params.token_a_in)
+      prevDexCoreTok1Balance.plus(params.token_a_in),
     );
     expect(currDexCoreTok2Balance).to.be.bignumber.equal(
-      prevDexCoreTok2Balance.plus(params.token_a_in)
+      prevDexCoreTok2Balance.plus(params.token_a_in),
     );
   });
 
@@ -938,11 +939,11 @@ describe("DexCore (launch exchange)", async () => {
 
     const prevDexCoreTok1Balance: BigNumber = await fa2Token1.getBalance(
       dexCore.contract.address,
-      params.pair.token_a["fa2"].id
+      params.pair.token_a["fa2"].id,
     );
     const prevDexCoreTok2Balance: BigNumber = await fa2Token3.getBalance(
       dexCore.contract.address,
-      params.pair.token_b["fa2"].id
+      params.pair.token_b["fa2"].id,
     );
 
     await fa2Token3.updateOperators([
@@ -964,18 +965,18 @@ describe("DexCore (launch exchange)", async () => {
 
     const currDexCoreTok1Balance: BigNumber = await fa2Token1.getBalance(
       dexCore.contract.address,
-      params.pair.token_a["fa2"].id
+      params.pair.token_a["fa2"].id,
     );
     const currDexCoreTok2Balance: BigNumber = await fa2Token3.getBalance(
       dexCore.contract.address,
-      params.pair.token_b["fa2"].id
+      params.pair.token_b["fa2"].id,
     );
 
     expect(currDexCoreTok1Balance).to.be.bignumber.equal(
-      prevDexCoreTok1Balance.plus(params.token_a_in)
+      prevDexCoreTok1Balance.plus(params.token_a_in),
     );
     expect(currDexCoreTok2Balance).to.be.bignumber.equal(
-      prevDexCoreTok2Balance.plus(params.token_b_in)
+      prevDexCoreTok2Balance.plus(params.token_b_in),
     );
   });
 
@@ -1002,11 +1003,11 @@ describe("DexCore (launch exchange)", async () => {
     });
 
     const prevDexCoreTok1Balance: BigNumber = fa12Token3.getBalance(
-      dexCore.contract.address
+      dexCore.contract.address,
     );
     const prevDexCoreTok2Balance: BigNumber = await fa2Token3.getBalance(
       dexCore.contract.address,
-      params.pair.token_b["fa2"].id
+      params.pair.token_b["fa2"].id,
     );
 
     await fa12Token3.approve(dexCore.contract.address, params.token_a_in);
@@ -1019,18 +1020,18 @@ describe("DexCore (launch exchange)", async () => {
     });
 
     const currDexCoreTok1Balance: BigNumber = fa12Token3.getBalance(
-      dexCore.contract.address
+      dexCore.contract.address,
     );
     const currDexCoreTok2Balance: BigNumber = await fa2Token3.getBalance(
       dexCore.contract.address,
-      params.pair.token_b["fa2"].id
+      params.pair.token_b["fa2"].id,
     );
 
     expect(currDexCoreTok1Balance).to.be.bignumber.equal(
-      prevDexCoreTok1Balance.plus(params.token_a_in)
+      prevDexCoreTok1Balance.plus(params.token_a_in),
     );
     expect(currDexCoreTok2Balance).to.be.bignumber.equal(
-      prevDexCoreTok2Balance.plus(params.token_a_in)
+      prevDexCoreTok2Balance.plus(params.token_a_in),
     );
   });
 
@@ -1058,13 +1059,13 @@ describe("DexCore (launch exchange)", async () => {
       .not.be.null;
     expect(
       await utils.tezos.tz.getBalance(
-        dexCore.storage.storage.pairs[expectedPairId.toFixed()].bucket
-      )
+        dexCore.storage.storage.pairs[expectedPairId.toFixed()].bucket,
+      ),
     ).to.be.bignumber.equal(params.token_b_in);
 
     const bucket: Bucket = await Bucket.init(
       dexCore.storage.storage.pairs[expectedPairId.toFixed()].bucket,
-      dexCore.tezos
+      dexCore.tezos,
     );
 
     await bucket.updateStorage({
@@ -1073,24 +1074,24 @@ describe("DexCore (launch exchange)", async () => {
     });
 
     expect(bucket.storage.users[params.shares_receiver].candidate).to.be.equal(
-      params.candidate
+      params.candidate,
     );
     expect(
-      bucket.storage.users[params.shares_receiver].votes
+      bucket.storage.users[params.shares_receiver].votes,
     ).to.be.bignumber.equal(
-      BigNumber.min(params.token_a_in, params.token_b_in)
+      BigNumber.min(params.token_a_in, params.token_b_in),
     );
     expect(
-      Date.parse(bucket.storage.bakers[params.candidate].ban_end_time)
+      Date.parse(bucket.storage.bakers[params.candidate].ban_end_time),
     ).to.be.bignumber.equal(new BigNumber(0));
     expect(bucket.storage.bakers[params.candidate].votes).to.be.bignumber.equal(
-      BigNumber.min(params.token_a_in, params.token_b_in)
+      BigNumber.min(params.token_a_in, params.token_b_in),
     );
     expect(bucket.storage.previous_delegated).to.be.equal(params.candidate);
     expect(bucket.storage.current_delegated).to.be.equal(params.candidate);
     expect(bucket.storage.next_candidate).to.be.equal(zeroAddress);
     expect(bucket.storage.baker_registry).to.be.equal(
-      dexCore.storage.storage.baker_registry
+      dexCore.storage.storage.baker_registry,
     );
     expect(bucket.storage.dex_core).to.be.equal(dexCore.contract.address);
     expect(bucket.storage.pair_id).to.be.bignumber.equal(expectedPairId);
@@ -1098,18 +1099,18 @@ describe("DexCore (launch exchange)", async () => {
     expect(bucket.storage.total_reward).to.be.bignumber.equal(new BigNumber(0));
     expect(bucket.storage.reward_paid).to.be.bignumber.equal(new BigNumber(0));
     expect(bucket.storage.reward_per_share).to.be.bignumber.equal(
-      new BigNumber(0)
+      new BigNumber(0),
     );
     expect(bucket.storage.reward_per_block).to.be.bignumber.equal(
-      new BigNumber(0)
+      new BigNumber(0),
     );
     expect(bucket.storage.last_update_level).to.be.bignumber.equal(
-      new BigNumber((await utils.tezos.rpc.getBlock()).header.level)
+      new BigNumber((await utils.tezos.rpc.getBlock()).header.level),
     );
     expect(bucket.storage.collecting_period_end).to.be.bignumber.equal(
       dexCore.storage.storage.collecting_period.plus(
-        new BigNumber((await utils.tezos.rpc.getBlock()).header.level)
-      )
+        new BigNumber((await utils.tezos.rpc.getBlock()).header.level),
+      ),
     );
   });
 
@@ -1136,7 +1137,7 @@ describe("DexCore (launch exchange)", async () => {
 
     const bucket: Bucket = await Bucket.init(
       dexCore.storage.storage.pairs[expectedPairId.toFixed()].bucket,
-      dexCore.tezos
+      dexCore.tezos,
     );
 
     await bucket.updateStorage({
@@ -1145,32 +1146,32 @@ describe("DexCore (launch exchange)", async () => {
     });
 
     expect(bucket.storage.users[params.shares_receiver].candidate).to.be.equal(
-      params.candidate
+      params.candidate,
     );
     expect(
-      bucket.storage.users[params.shares_receiver].votes
+      bucket.storage.users[params.shares_receiver].votes,
     ).to.be.bignumber.equal(
-      BigNumber.min(params.token_a_in, params.token_b_in)
+      BigNumber.min(params.token_a_in, params.token_b_in),
     );
     expect(bucket.storage.bakers[params.candidate].votes).to.be.bignumber.equal(
-      BigNumber.min(params.token_a_in, params.token_b_in)
+      BigNumber.min(params.token_a_in, params.token_b_in),
     );
     expect(bucket.storage.previous_delegated).to.be.equal(params.candidate);
     expect(bucket.storage.current_delegated).to.be.equal(params.candidate);
     expect(bucket.storage.next_candidate).to.be.equal(zeroAddress);
     expect(await utils.tezos.rpc.getDelegate(bucket.contract.address)).to.equal(
-      params.candidate
+      params.candidate,
     );
     expect(bucket.storage.baker_registry).to.be.equal(
-      dexCore.storage.storage.baker_registry
+      dexCore.storage.storage.baker_registry,
     );
     expect(bucket.storage.last_update_level).to.be.bignumber.equal(
-      new BigNumber((await utils.tezos.rpc.getBlock()).header.level)
+      new BigNumber((await utils.tezos.rpc.getBlock()).header.level),
     );
     expect(bucket.storage.collecting_period_end).to.be.bignumber.equal(
       dexCore.storage.storage.collecting_period.plus(
-        new BigNumber((await utils.tezos.rpc.getBlock()).header.level)
-      )
+        new BigNumber((await utils.tezos.rpc.getBlock()).header.level),
+      ),
     );
   });
 
@@ -1197,11 +1198,11 @@ describe("DexCore (launch exchange)", async () => {
 
     const bucket: Bucket = await Bucket.init(
       dexCore.storage.storage.pairs[pairId.toFixed()].bucket,
-      dexCore.tezos
+      dexCore.tezos,
     );
     const divestedTokens: TokensPerShare = DexCore.getTokensPerShare(
       shares,
-      dexCore.storage.storage.pairs[pairId.toFixed()]
+      dexCore.storage.storage.pairs[pairId.toFixed()],
     );
     const divestParams: DivestLiquidity = {
       pair_id: pairId,
@@ -1224,31 +1225,31 @@ describe("DexCore (launch exchange)", async () => {
     });
 
     expect(
-      await utils.tezos.tz.getBalance(bucket.contract.address)
+      await utils.tezos.tz.getBalance(bucket.contract.address),
     ).to.be.bignumber.equal(new BigNumber(0));
     expect(bucket.storage.users[params.shares_receiver].candidate).to.be.equal(
-      null
+      null,
     );
     expect(
-      bucket.storage.users[params.shares_receiver].votes
+      bucket.storage.users[params.shares_receiver].votes,
     ).to.be.bignumber.equal(new BigNumber(0));
     expect(bucket.storage.bakers[params.candidate].votes).to.be.bignumber.equal(
-      new BigNumber(0)
+      new BigNumber(0),
     );
     expect(bucket.storage.previous_delegated).to.be.equal(params.candidate);
     expect(bucket.storage.current_delegated).to.be.equal(params.candidate);
     expect(bucket.storage.next_candidate).to.be.equal(zeroAddress);
     expect(await utils.tezos.rpc.getDelegate(bucket.contract.address)).to.equal(
-      params.candidate
+      params.candidate,
     );
     expect(bucket.storage.baker_registry).to.be.equal(
-      dexCore.storage.storage.baker_registry
+      dexCore.storage.storage.baker_registry,
     );
     expect(bucket.storage.last_update_level).to.be.bignumber.equal(
-      prevBucketStorage.last_update_level.plus(1)
+      prevBucketStorage.last_update_level.plus(1),
     );
     expect(bucket.storage.collecting_period_end).to.be.bignumber.equal(
-      prevBucketStorage.collecting_period_end
+      prevBucketStorage.collecting_period_end,
     );
 
     await dexCore.launchExchange(params, params.token_b_in.toNumber());
@@ -1258,33 +1259,33 @@ describe("DexCore (launch exchange)", async () => {
     });
 
     expect(
-      await utils.tezos.tz.getBalance(bucket.contract.address)
+      await utils.tezos.tz.getBalance(bucket.contract.address),
     ).to.be.bignumber.equal(params.token_b_in);
     expect(bucket.storage.users[params.shares_receiver].candidate).to.be.equal(
-      params.candidate
+      params.candidate,
     );
     expect(
-      bucket.storage.users[params.shares_receiver].votes
+      bucket.storage.users[params.shares_receiver].votes,
     ).to.be.bignumber.equal(
-      BigNumber.min(params.token_a_in, params.token_b_in)
+      BigNumber.min(params.token_a_in, params.token_b_in),
     );
     expect(bucket.storage.bakers[params.candidate].votes).to.be.bignumber.equal(
-      BigNumber.min(params.token_a_in, params.token_b_in)
+      BigNumber.min(params.token_a_in, params.token_b_in),
     );
     expect(bucket.storage.previous_delegated).to.be.equal(params.candidate);
     expect(bucket.storage.current_delegated).to.be.equal(params.candidate);
     expect(bucket.storage.next_candidate).to.be.equal(zeroAddress);
     expect(await utils.tezos.rpc.getDelegate(bucket.contract.address)).to.equal(
-      params.candidate
+      params.candidate,
     );
     expect(bucket.storage.baker_registry).to.be.equal(
-      dexCore.storage.storage.baker_registry
+      dexCore.storage.storage.baker_registry,
     );
     expect(bucket.storage.last_update_level).to.be.bignumber.equal(
-      (await utils.getLastBlock()).toFixed()
+      (await utils.getLastBlock()).toFixed(),
     );
     expect(bucket.storage.collecting_period_end).to.be.bignumber.equal(
-      prevBucketStorage.collecting_period_end
+      prevBucketStorage.collecting_period_end,
     );
   });
 });

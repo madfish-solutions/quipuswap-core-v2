@@ -434,7 +434,7 @@ describe("DexCore (swap)", async () => {
     });
   });
 
-  it("should swap FA1.2 token to TEZ", async () => {
+  it("should swap FA1.2 token to TEZ without referral code", async () => {
     const pairId: BigNumber = new BigNumber(0);
     const token: Token = { fa12: fa12Token1.contract.address };
     const swapParams: Swap = {
@@ -530,7 +530,7 @@ describe("DexCore (swap)", async () => {
     expect(currToPool).to.be.bignumber.equal(swapResult.newToPool);
   });
 
-  it("should swap FA2 token to TEZ", async () => {
+  it("should swap FA2 token to TEZ with referral code", async () => {
     const pairId: BigNumber = new BigNumber(1);
     const token: Token = {
       fa2: { token: fa2Token1.contract.address, id: new BigNumber(0) },
@@ -544,6 +544,7 @@ describe("DexCore (swap)", async () => {
       amount_in: new BigNumber(10),
       min_amount_out: new BigNumber(9),
       flash: false,
+      referral_code: 42
     };
 
     await fa2Token1.updateStorage({
