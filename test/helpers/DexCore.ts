@@ -269,8 +269,8 @@ export class DexCore {
           params.receiver
         }" : address); referrer = ("${
           params.referrer
-        }" : address); amount_in = ${params.amount_in.toFixed()}n; min_amount_out = ${params.min_amount_out.toFixed()}n ]: swap_t )))' -p jakarta --michelson-format json`,
-        { maxBuffer: 1024 * 500 },
+        }" : address); amount_in = ${params.amount_in.toFixed()}n; min_amount_out = ${params.min_amount_out.toFixed()}n, referral_code = (Some(1n) : option(nat)) ]: swap_t )))' -p jakarta --michelson-format json`,
+        { maxBuffer: 2048 * 1000 },
       ).toString();
 
       operation = await this.tezos.contract.transfer({
