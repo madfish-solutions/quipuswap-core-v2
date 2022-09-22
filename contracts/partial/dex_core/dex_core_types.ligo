@@ -52,6 +52,7 @@ type launch_exchange_t  is [@layout:comb] record [
   shares_receiver         : address;
   candidate               : key_hash;
   deadline                : timestamp;
+  referral_code           : option(nat);
 ]
 
 type launch_callback_t  is [@layout:comb] record [
@@ -67,6 +68,7 @@ type invest_liquidity_t is [@layout:comb] record [
   shares_receiver         : address;
   candidate               : key_hash;
   deadline                : timestamp;
+  referral_code           : option(nat);
 ]
 
 type divest_liquidity_t is [@layout:comb] record [
@@ -77,6 +79,7 @@ type divest_liquidity_t is [@layout:comb] record [
   liquidity_receiver      : address;
   candidate               : key_hash;
   deadline                : timestamp;
+  referral_code           : option(nat);
 ]
 
 type swap_side_t        is [@layout:comb] record [
@@ -123,31 +126,37 @@ type swap_t             is [@layout:comb] record [
   referrer                : address;
   amount_in               : nat;
   min_amount_out          : nat;
+  referral_code           : option(nat);
 ]
 
 type withdraw_profit_t  is [@layout:comb] record [
   receiver                : contract(unit);
   pair_id                 : token_id_t;
+  referral_code           : option(nat);
 ]
 
 type claim_fee_t        is [@layout:comb] record [
   token                   : token_t;
   receiver                : address;
+  referral_code           : option(nat);
 ]
 
 type claim_tez_fee_t    is [@layout:comb] record [
   pair_id                 : token_id_t;
   receiver                : address;
+  referral_code           : option(nat);
 ]
 
 type withdraw_fee_t     is [@layout:comb] record [
   pair_id                 : option(token_id_t);
   token                   : token_t;
+  referral_code           : option(nat);
 ]
 
 type dex_vote_t         is [@layout:comb] record [
   pair_id                 : token_id_t;
   candidate               : key_hash;
+  referral_code           : option(nat);
 ]
 
 type set_admin_t        is address

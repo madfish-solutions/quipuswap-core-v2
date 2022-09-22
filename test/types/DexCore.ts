@@ -23,6 +23,7 @@ export type LaunchExchange = {
   shares_receiver: string;
   candidate: string;
   deadline: string;
+  referral_code?: number;
 };
 
 export type InvestLiquidity = {
@@ -33,6 +34,7 @@ export type InvestLiquidity = {
   shares_receiver: string;
   candidate: string;
   deadline: string;
+  referral_code?: number;
 };
 
 export type DivestLiquidity = {
@@ -43,6 +45,7 @@ export type DivestLiquidity = {
   liquidity_receiver: string;
   candidate: string;
   deadline: string;
+  referral_code?: number;
 };
 
 export type Swap = {
@@ -54,26 +57,31 @@ export type Swap = {
   amount_in: BigNumber;
   min_amount_out: BigNumber;
   flash: boolean;
+  referral_code?: number;
 };
 
 export type WithdrawProfit = {
   receiver: string;
   pair_id: BigNumber;
+  referral_code?: number;
 };
 
 export type ClaimFee = {
   token: Token;
   receiver: string;
+  referral_code?: number;
 };
 
 export type ClaimTezFee = {
   pair_id: BigNumber;
   receiver: string;
+  referral_code?: number;
 };
 
 export type WithdrawAuctionFee = {
   pair_id: BigNumber | undefined | null;
   token: Token;
+  referral_code?: number;
 };
 
 export type DexVote = {

@@ -191,7 +191,7 @@ describe("DexCore (withdraw methods)", async () => {
     });
   });
 
-  it.skip("should withdraw user's profit - 1", async () => {
+  it.skip("should withdraw user's profit - 1 without referral code", async () => {
     const pairId: BigNumber = new BigNumber(1);
     const amount: BigNumber = new BigNumber(100);
     const receiver: string = bob.pkh;
@@ -258,7 +258,7 @@ describe("DexCore (withdraw methods)", async () => {
     ).to.be.bignumber.equal(expectedUserRewardsInfo.rewardPaid_f);
   });
 
-  it("should withdraw user's profit - 2", async () => {
+  it("should withdraw user's profit - 2 with referral code", async () => {
     const pairId: BigNumber = new BigNumber(1);
     const receiver: string = bob.pkh;
     const user: string = alice.pkh;
@@ -286,6 +286,7 @@ describe("DexCore (withdraw methods)", async () => {
     const withdrawProfitParams: WithdrawProfit = {
       receiver: receiver,
       pair_id: pairId,
+      referral_code: 42
     };
 
     await dexCore.withdrawProfit(withdrawProfitParams);
@@ -352,7 +353,7 @@ describe("DexCore (withdraw methods)", async () => {
     });
   });
 
-  it("should claim FA1.2 interface fee and transfer it to a receiver", async () => {
+  it("should claim FA1.2 interface fee and transfer it to a receiver without referral code", async () => {
     const token: Token = { fa12: fa12Token1.contract.address };
     const receiver: string = carol.pkh;
     const referrer: string = bob.pkh;
@@ -417,7 +418,7 @@ describe("DexCore (withdraw methods)", async () => {
     );
   });
 
-  it("should claim FA2 interface fee and transfer it to a receiver", async () => {
+  it("should claim FA2 interface fee and transfer it to a receiver with referral code", async () => {
     const token: Token = {
       fa2: { token: fa2Token1.contract.address, id: new BigNumber(0) },
     };
@@ -457,6 +458,7 @@ describe("DexCore (withdraw methods)", async () => {
     const claimParams: ClaimFee = {
       token: token,
       receiver: receiver,
+      referral_code: 42
     };
 
     await utils.setProvider(bob.sk);
@@ -530,7 +532,7 @@ describe("DexCore (withdraw methods)", async () => {
     });
   });
 
-  it("should claim TEZ interface fee and transfer it to a receiver", async () => {
+  it("should claim TEZ interface fee and transfer it to a receiver wiht referral code", async () => {
     const pairId: BigNumber = new BigNumber(1);
     const receiver: string = alice.pkh;
     const referrer: string = bob.pkh;
@@ -569,6 +571,7 @@ describe("DexCore (withdraw methods)", async () => {
     const claimParams: ClaimTezFee = {
       pair_id: pairId,
       receiver: receiver,
+      referral_code: 42
     };
 
     await utils.setProvider(bob.sk);
@@ -660,6 +663,7 @@ describe("DexCore (withdraw methods)", async () => {
     const params: WithdrawAuctionFee = {
       pair_id: undefined,
       token: { fa12: fa12Token1.contract.address },
+      referral_code: 42,
     };
 
     await dexCore.updateStorage({ auction_fee: [params.token] });
@@ -720,7 +724,7 @@ describe("DexCore (withdraw methods)", async () => {
     );
   });
 
-  it("should withdraw FA2 auction fee", async () => {
+  it("should withdraw FA2 auction fee without referral code", async () => {
     const params: WithdrawAuctionFee = {
       pair_id: undefined,
       token: {

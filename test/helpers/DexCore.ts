@@ -262,6 +262,10 @@ export class DexCore {
 
     if (params.flash) {
       const ligo: string = getLigo(true);
+      let referral_code = "None";
+      if (params.referral_code) {
+        referral_code = `Some ( ${params.referral_code}n )`;
+      }
       const stdout: string = execSync(
         `${ligo} compile parameter $PWD/contracts/test/lambdas.ligo 'Use(Swap((record [ lambda = Some(lambda); swaps = ${this.parseSwaps(
           params.swaps,
@@ -269,8 +273,8 @@ export class DexCore {
           params.receiver
         }" : address); referrer = ("${
           params.referrer
-        }" : address); amount_in = ${params.amount_in.toFixed()}n; min_amount_out = ${params.min_amount_out.toFixed()}n ]: swap_t )))' -p jakarta --michelson-format json`,
-        { maxBuffer: 1024 * 500 },
+        }" : address); amount_in = ${params.amount_in.toFixed()}n; min_amount_out = ${params.min_amount_out.toFixed()}n; referral_code = ${referral_code} ]: swap_t )))' -p jakarta --michelson-format json`,
+        { maxBuffer: 2048 * 1000 },
       ).toString();
 
       operation = await this.tezos.contract.transfer({
