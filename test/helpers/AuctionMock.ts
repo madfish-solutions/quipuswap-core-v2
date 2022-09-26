@@ -1,35 +1,17 @@
 import {
   OriginationOperation,
   TransactionOperation,
-  WalletParamsWithKind,
-  WalletOperationBatch,
-  WalletOperation,
   TezosToolkit,
   Contract,
-  OpKind,
 } from "@taquito/taquito";
 
 import fs from "fs";
-
-import { BigNumber } from "bignumber.js";
 
 import env from "../../env";
 
 import { confirmOperation } from "../../scripts/confirmation";
 
-import { PRECISION } from "./Constants";
-
-import {
-  UpdateWhitelist,
-  AuctionMockStorage,
-  LaunchAuction,
-  WithdrawFee,
-  ReceiveFees,
-  ReceiveFee,
-  PlaceBid,
-  Fees,
-  ClaimFee,
-} from "../types/Auction";
+import { AuctionMockStorage, ReceiveFee, ClaimFee } from "../types/Auction";
 export class AuctionMock {
   storage: AuctionMockStorage;
   tezos: TezosToolkit;

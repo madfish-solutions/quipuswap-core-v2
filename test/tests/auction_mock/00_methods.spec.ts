@@ -1,4 +1,4 @@
-import { Common, Auction as AuctionErrors } from "../../helpers/Errors";
+import { Common } from "../../helpers/Errors";
 import { AuctionMock } from "../../helpers/AuctionMock";
 import { Utils } from "../../helpers/Utils";
 import { FA2 } from "../../helpers/FA2";
@@ -14,7 +14,6 @@ import accounts from "../../../scripts/sandbox/accounts";
 import { auctionMockStorage } from "../../../storage/Auction";
 import { fa2Storage } from "../../../storage/test/FA2";
 
-import { Fees, UpdateWhitelist } from "../../types/Auction";
 import { SBAccount } from "../../types/Common";
 
 chai.use(require("chai-bignumber")(BigNumber));
