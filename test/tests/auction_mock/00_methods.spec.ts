@@ -76,7 +76,7 @@ describe("AuctionMock", async () => {
         fee: new BigNumber(1000),
       }),
       (err: Error) => {
-        expect(err.message).to.equal("NOT_DEX");
+        expect(err.message).to.equal(Common.ERR_NOT_DEX_CORE);
 
         return true;
       },
