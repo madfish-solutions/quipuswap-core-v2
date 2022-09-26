@@ -4,7 +4,7 @@ import { BigNumber } from "bignumber.js";
 
 import { zeroAddress } from "../test/helpers/Utils";
 
-import { AuctionStorage } from "../test/types/Auction";
+import { AuctionStorage, AuctionMockStorage } from "../test/types/Auction";
 
 import auctionZIP16Errors from "./metadata/auctionZIP16Errors";
 
@@ -56,4 +56,10 @@ export const auctionStorage: AuctionStorage = {
       "ascii",
     ).toString("hex"),
   }),
+};
+
+export const auctionMockStorage: AuctionMockStorage = {
+  owner: zeroAddress,
+  dex: zeroAddress,
+  fees: MichelsonMap.fromLiteral({}),
 };

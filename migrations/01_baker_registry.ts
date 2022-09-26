@@ -9,7 +9,7 @@ module.exports = async (tezos: TezosToolkit, network: string) => {
     tezos,
     "baker_registry",
     bakerRegistryStorage,
-    network
+    network,
   );
 
   console.log(`BakerRegistry: ${bakerRegistryAddress}`);

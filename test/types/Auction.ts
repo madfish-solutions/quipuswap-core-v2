@@ -14,6 +14,12 @@ export type ReceiveFee = {
   fee: BigNumber;
 };
 
+export type ClaimFee = {
+  token: Token;
+  fee: BigNumber;
+  recipient: string;
+};
+
 export type LaunchAuction = {
   token: Token;
   amt: BigNumber;
@@ -61,4 +67,10 @@ export type AuctionStorage = {
   };
   auction_lambdas: MichelsonMap<MichelsonMapKey, unknown>;
   metadata: MichelsonMap<MichelsonMapKey, unknown>;
+};
+
+export type AuctionMockStorage = {
+  owner: string;
+  dex: string;
+  fees: MichelsonMap<MichelsonMapKey, unknown>;
 };

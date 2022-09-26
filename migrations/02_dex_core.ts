@@ -33,7 +33,6 @@ module.exports = async (tezos: TezosToolkit, network: string) => {
     network,
   ))!;
   const dexCore: DexCore = await DexCore.init(dexCoreAddress, tezos);
-
   await dexCore.setLambdas();
 
   console.log(`DexCore: ${dexCoreAddress}`);

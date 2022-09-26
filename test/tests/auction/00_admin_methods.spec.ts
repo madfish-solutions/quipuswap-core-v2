@@ -20,6 +20,7 @@ import { SBAccount } from "../../types/Common";
 chai.use(require("chai-bignumber")(BigNumber));
 
 describe("Auction (admin methods)", async () => {
+  return;
   var utils: Utils;
   var auction: Auction;
   var quipuToken: FA2;
@@ -122,7 +123,7 @@ describe("Auction (admin methods)", async () => {
 
   it("should setup a new baker and delegate for him", async () => {
     expect(
-      await utils.tezos.rpc.getDelegate(auction.contract.address)
+      await utils.tezos.rpc.getDelegate(auction.contract.address),
     ).to.equal(null);
 
     await auction.setBaker(alice.pkh);
@@ -130,7 +131,7 @@ describe("Auction (admin methods)", async () => {
 
     expect(auction.storage.storage.baker).to.equal(alice.pkh);
     expect(
-      await utils.tezos.rpc.getDelegate(auction.contract.address)
+      await utils.tezos.rpc.getDelegate(auction.contract.address),
     ).to.equal(alice.pkh);
   });
 
@@ -140,7 +141,7 @@ describe("Auction (admin methods)", async () => {
 
     expect(auction.storage.storage.baker).to.equal(alice.pkh);
     expect(
-      await utils.tezos.rpc.getDelegate(auction.contract.address)
+      await utils.tezos.rpc.getDelegate(auction.contract.address),
     ).to.equal(alice.pkh);
   });
 
@@ -150,7 +151,7 @@ describe("Auction (admin methods)", async () => {
 
     expect(auction.storage.storage.baker).to.equal(null);
     expect(
-      await utils.tezos.rpc.getDelegate(auction.contract.address)
+      await utils.tezos.rpc.getDelegate(auction.contract.address),
     ).to.equal(null);
   });
 
@@ -192,10 +193,10 @@ describe("Auction (admin methods)", async () => {
     await auction.updateStorage();
 
     expect(auction.storage.storage.fees.dev_fee_f).to.be.bignumber.equal(
-      fees.dev_fee_f
+      fees.dev_fee_f,
     );
     expect(auction.storage.storage.fees.bid_fee_f).to.be.bignumber.equal(
-      fees.bid_fee_f
+      fees.bid_fee_f,
     );
   });
 
@@ -220,7 +221,7 @@ describe("Auction (admin methods)", async () => {
         expect(err.message).to.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
 
         return true;
-      }
+      },
     );
   });
 
@@ -249,7 +250,7 @@ describe("Auction (admin methods)", async () => {
     await auction.updateStorage();
 
     expect(auction.storage.storage.auction_duration).to.be.bignumber.equal(
-      auctionDuration
+      auctionDuration,
     );
   });
 
@@ -414,11 +415,14 @@ describe("Auction (admin methods)", async () => {
     const auctionExtension: BigNumber = new BigNumber(666);
 
     await utils.setProvider(alice.sk);
-    await rejects(auction.setAuctionExtension(auctionExtension), (err: Error) => {
-      expect(err.message).to.equal(Common.ERR_NOT_ADMIN);
+    await rejects(
+      auction.setAuctionExtension(auctionExtension),
+      (err: Error) => {
+        expect(err.message).to.equal(Common.ERR_NOT_ADMIN);
 
-      return true;
-    });
+        return true;
+      },
+    );
   });
 
   it("should fail if positive TEZ tokens amount were passed", async () => {
@@ -431,26 +435,32 @@ describe("Auction (admin methods)", async () => {
         expect(err.message).to.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
 
         return true;
-      }
+      },
     );
   });
 
   it("should fail if admin is trying to set a negative auction extension", async () => {
     let auctionExtension: BigNumber = new BigNumber(-666);
 
-    await rejects(auction.setAuctionExtension(auctionExtension), (err: Error) => {
-      expect(err.message).to.equal(AuctionErrors.ERR_WRONG_AUCTION_EXTENSION);
+    await rejects(
+      auction.setAuctionExtension(auctionExtension),
+      (err: Error) => {
+        expect(err.message).to.equal(AuctionErrors.ERR_WRONG_AUCTION_EXTENSION);
 
-      return true;
-    });
+        return true;
+      },
+    );
 
     auctionExtension = new BigNumber(0);
 
-    await rejects(auction.setAuctionExtension(auctionExtension), (err: Error) => {
-      expect(err.message).to.equal(AuctionErrors.ERR_WRONG_AUCTION_EXTENSION);
+    await rejects(
+      auction.setAuctionExtension(auctionExtension),
+      (err: Error) => {
+        expect(err.message).to.equal(AuctionErrors.ERR_WRONG_AUCTION_EXTENSION);
 
-      return true;
-    });
+        return true;
+      },
+    );
   });
 
   it("should setup a new auction extension by an admin", async () => {
@@ -460,7 +470,7 @@ describe("Auction (admin methods)", async () => {
     await auction.updateStorage();
 
     expect(auction.storage.storage.auction_extension).to.be.bignumber.equal(
-      auctionExtension
+      auctionExtension,
     );
   });
 
@@ -468,11 +478,14 @@ describe("Auction (admin methods)", async () => {
     const extensionTrigger: BigNumber = new BigNumber(666);
 
     await utils.setProvider(alice.sk);
-    await rejects(auction.setExtensionTrigger(extensionTrigger), (err: Error) => {
-      expect(err.message).to.equal(Common.ERR_NOT_ADMIN);
+    await rejects(
+      auction.setExtensionTrigger(extensionTrigger),
+      (err: Error) => {
+        expect(err.message).to.equal(Common.ERR_NOT_ADMIN);
 
-      return true;
-    });
+        return true;
+      },
+    );
   });
 
   it("should fail if positive TEZ tokens amount were passed", async () => {
@@ -485,26 +498,32 @@ describe("Auction (admin methods)", async () => {
         expect(err.message).to.equal(Common.ERR_NON_PAYABLE_ENTRYPOINT);
 
         return true;
-      }
+      },
     );
   });
 
   it("should fail if admin is trying to set a negative extension trigger", async () => {
     let extensionTrigger: BigNumber = new BigNumber(-666);
 
-    await rejects(auction.setExtensionTrigger(extensionTrigger), (err: Error) => {
-      expect(err.message).to.equal(AuctionErrors.ERR_WRONG_EXTENSION_TRIGGER);
+    await rejects(
+      auction.setExtensionTrigger(extensionTrigger),
+      (err: Error) => {
+        expect(err.message).to.equal(AuctionErrors.ERR_WRONG_EXTENSION_TRIGGER);
 
-      return true;
-    });
+        return true;
+      },
+    );
 
     extensionTrigger = new BigNumber(0);
 
-    await rejects(auction.setExtensionTrigger(extensionTrigger), (err: Error) => {
-      expect(err.message).to.equal(AuctionErrors.ERR_WRONG_EXTENSION_TRIGGER);
+    await rejects(
+      auction.setExtensionTrigger(extensionTrigger),
+      (err: Error) => {
+        expect(err.message).to.equal(AuctionErrors.ERR_WRONG_EXTENSION_TRIGGER);
 
-      return true;
-    });
+        return true;
+      },
+    );
   });
 
   it("should setup a new extension trigger by an admin", async () => {
@@ -514,7 +533,7 @@ describe("Auction (admin methods)", async () => {
     await auction.updateStorage();
 
     expect(auction.storage.storage.extension_trigger).to.be.bignumber.equal(
-      extensionTrigger
+      extensionTrigger,
     );
   });
 });
