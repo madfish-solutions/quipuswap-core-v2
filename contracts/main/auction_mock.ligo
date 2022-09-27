@@ -20,6 +20,5 @@ function main(
   | Default(param)       -> ((nil : list(operation)), s)
   | Receive_fee(param)   -> receive_fee(param, s)
   | Claim_fee(param)     -> claim_fee(param, s)
-  | Claim_xtz_fee(param) -> claim_xtz_fee(param, s)
   ]
 

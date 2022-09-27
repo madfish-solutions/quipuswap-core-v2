@@ -25,26 +25,24 @@ function claim_fee (
   block {
     only_admin(s.owner);
     const fee_balance : nat = unwrap(s.fees[params.token], AuctionMock.err_unknown_token);
-    const op = transfer_token(
+    var operations : list(operation) := list[
+      transfer_token(
         Tezos.self_address,
         params.recipient,
         params.fee,
         params.token
-    );
+      );
+    ];
+
+    if Tezos.balance > 0mutez
+    then operations := transfer_token(
+        Tezos.self_address,
+        params.recipient,
+        Tezos.balance / 1mutez,
+        Tez(unit)
+      ) # operations
+    else skip;
+
     s.fees[params.token] := get_nat_or_fail(fee_balance - params.fee);
 
-} with (list[op], s)
-
-function claim_xtz_fee(
-  const recipient       : address;
-  const s               : storage_t)
-                        : return_t is
-  block {
-    only_admin(s.owner);
-    const op = Tezos.transaction(
-        unit,
-        Tezos.balance,
-        (Tezos.get_contract_with_error(recipient, Common.err_contract_404) : contract(unit))
-    );
-
-  } with (list[op], s)
+} with (operations, s)
