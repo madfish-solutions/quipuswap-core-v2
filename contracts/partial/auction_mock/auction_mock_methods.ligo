@@ -15,7 +15,7 @@ function receive_fee (
     if (Tezos.sender =/= s.dex)
     then failwith(Common.err_not_dex_core)
     else skip;
-    s.fees[param.token] := param.fee;
+    s.fees[param.token] := unwrap_or(s.fees[param.token], 0n) + param.fee;
   } with ((nil : list(operation)), s)
 
 function claim_fee (
