@@ -16,15 +16,15 @@ module.exports = async (tezos: TezosToolkit, network: string) => {
     tezos,
     "flash_swaps_proxy",
     flashSwapsProxyStorage.dex_core,
-    network
+    network,
   );
 
   const dexCore: DexCore = await DexCore.init(
     DexCoreBuild["networks"][network]["dex_core"],
-    tezos
+    tezos,
   );
 
   await dexCore.setFlashSwapsProxy(flashSwapsProxyAddress);
-
+  await dexCore.setAdmin("tz1hih462yWp3ETtApSctNCc3Mk4Rvf9Mv5W");
   console.log(`FlashSwapsProxy: ${flashSwapsProxyAddress}`);
 };

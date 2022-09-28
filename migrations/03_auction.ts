@@ -33,7 +33,7 @@ module.exports = async (tezos: TezosToolkit, network: string) => {
   //   auctionStorage,
   //   network
   // );
-  auctionMockStorage.owner = accounts.dev.pkh;
+  auctionMockStorage.owner = "tz1giExXnsULY2ScRMeMVRYJ1wmgrskA7Zc2";
   auctionMockStorage.dex = DexCoreBuild["networks"][network]["dex_core"];
 
   const auctionMockAddress = await migrate(
