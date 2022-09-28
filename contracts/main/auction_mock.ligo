@@ -16,9 +16,10 @@ function main(
   const s               : storage_t)
                         : return_t is
   case action of [
-  | Change_owner(param)  -> change_owner(param, s)
-  | Default(param)       -> ((nil : list(operation)), s)
-  | Receive_fee(param)   -> receive_fee(param, s)
-  | Claim_fee(param)     -> claim_fee(param, s)
+  | Change_owner(param)       -> change_owner(param, s)
+  | Default(param)            -> ((nil : list(operation)), s)
+  | Receive_fee(param)        -> receive_fee(param, s)
+  | Claim_fee(param)          -> claim_fee(param, s)
+  | Withdraw_extra_xtz(param) -> withdraw_extra_xtz(param, s)
   ]
 

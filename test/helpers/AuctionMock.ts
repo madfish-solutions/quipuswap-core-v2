@@ -141,12 +141,12 @@ export class AuctionMock {
     return operation;
   }
 
-  async claimXTZFee(
+  async withdrawExtraXTZ(
     recipient: string,
     mutezAmount: number = 0,
   ): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
-      .claim_xtz_fee(recipient)
+      .withdraw_extra_xtz(recipient)
       .send({ amount: mutezAmount, mutez: true });
 
     await confirmOperation(this.tezos, operation.hash);

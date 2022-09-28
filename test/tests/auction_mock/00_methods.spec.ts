@@ -51,14 +51,14 @@ describe("AuctionMock", async () => {
     ]);
   });
 
-  it("should changeOwner", async () => {
+  it("Should changeOwner", async () => {
     await auction.changeOwner(bob.pkh);
     await auction.updateStorage();
 
     expect(auction.storage.owner).to.equal(bob.pkh);
   });
 
-  it("should fail change owner if user not a owner", async () => {
+  it("Should fail change owner if user not a owner", async () => {
     await rejects(auction.changeOwner(alice.pkh), (err: Error) => {
       expect(err.message).to.equal(Common.ERR_NOT_ADMIN);
 
@@ -87,7 +87,20 @@ describe("AuctionMock", async () => {
     await utils.setProvider(alice.sk);
     await auction.receiveFee({
       token: { fa2: { token: token.contract.address, id: new BigNumber(0) } },
-      fee: new BigNumber(1000),
+      fee: new BigNumber(500),
+    });
+    await auction.updateStorage();
+
+    expect(
+      await auction.storage.fees.get({
+        fa2: { token: token.contract.address, id: "0" },
+      }),
+    ).to.be.bignumber.equal(new BigNumber(500));
+  });
+  it("Should receive fee again", async () => {
+    await auction.receiveFee({
+      token: { fa2: { token: token.contract.address, id: new BigNumber(0) } },
+      fee: new BigNumber(500),
     });
     await auction.updateStorage();
 
@@ -119,12 +132,23 @@ describe("AuctionMock", async () => {
       .then(balance => Math.floor(balance.toNumber()))
       .catch(error => console.log(JSON.stringify(error)));
     await auction.default(1000000);
+    await auction.receiveFee({
+      token: { tez: null },
+      fee: new BigNumber(1000000),
+    });
+    await auction.updateStorage();
+
     const balance = await utils.tezos.tz
       .getBalance(auction.contract.address)
       .then(balance => Math.floor(balance.toNumber()))
       .catch(error => console.log(JSON.stringify(error)));
 
     expect(balance).to.be.equal((prevBalance as number) + 1000000);
+    expect(
+      await auction.storage.fees.get({
+        tez: null,
+      }),
+    ).to.be.bignumber.equal(new BigNumber(1000000));
   });
 
   it("Should claim fee", async () => {
@@ -134,10 +158,6 @@ describe("AuctionMock", async () => {
       await tokenPrevStorage.account_info.get(alice.pkh)
     ).balances.get("0");
 
-    const prevAliceXTZBalance = await utils.tezos.tz
-      .getBalance(alice.pkh)
-      .then(balance => Math.floor(balance.toNumber()))
-      .catch(error => console.log(JSON.stringify(error)));
     await auction.claimFee({
       token: { fa2: { token: token.contract.address, id: new BigNumber(0) } },
       fee: new BigNumber(1000),
@@ -149,6 +169,29 @@ describe("AuctionMock", async () => {
       await tokenStorage.account_info.get(alice.pkh)
     ).balances.get("0");
 
+    expect(
+      await auction.storage.fees.get({
+        fa2: { token: token.contract.address, id: "0" },
+      }),
+    ).to.be.bignumber.equal(new BigNumber(0));
+
+    expect(aliceBalance).to.be.bignumber.equal(
+      new BigNumber(1000).plus(prevAliceBalance),
+    );
+  });
+  it("Should claim XTZ fee", async () => {
+    const prevAliceXTZBalance = await utils.tezos.tz
+      .getBalance(alice.pkh)
+      .then(balance => Math.floor(balance.toNumber()))
+      .catch(error => console.log(JSON.stringify(error)));
+
+    await auction.claimFee({
+      token: { tez: null },
+      fee: new BigNumber(1000000),
+      recipient: alice.pkh,
+    });
+    await auction.updateStorage();
+
     const aliceXTZBalance = await utils.tezos.tz
       .getBalance(alice.pkh)
       .then(balance => Math.floor(balance.toNumber()))
@@ -159,12 +202,64 @@ describe("AuctionMock", async () => {
     );
     expect(
       await auction.storage.fees.get({
-        fa2: { token: token.contract.address, id: "0" },
+        tez: null,
       }),
     ).to.be.bignumber.equal(new BigNumber(0));
+  });
+  it("Should receive extra xtz", async () => {
+    const prevBalance = await utils.tezos.tz
+      .getBalance(auction.contract.address)
+      .then(balance => Math.floor(balance.toNumber()))
+      .catch(error => console.log(JSON.stringify(error)));
+    await auction.default(1000000);
+    await auction.updateStorage();
 
-    expect(aliceBalance).to.be.bignumber.equal(
-      new BigNumber(1000).plus(prevAliceBalance),
+    const balance = await utils.tezos.tz
+      .getBalance(auction.contract.address)
+      .then(balance => Math.floor(balance.toNumber()))
+      .catch(error => console.log(JSON.stringify(error)));
+
+    expect(balance).to.be.equal((prevBalance as number) + 1000000);
+  });
+  it("Should fail claim xtz fee if balance = 0 and extra fee > 0", async () => {
+    await rejects(
+      auction.claimFee({
+        token: { tez: null },
+        fee: new BigNumber(1000000),
+        recipient: alice.pkh,
+      }),
+      (err: Error) => {
+        expect(err.message).to.equal(Common.ERR_NOT_A_NAT);
+
+        return true;
+      },
+    );
+  });
+  it("Should fail claim extra xtz fee if user not owner", async () => {
+    await utils.setProvider(alice.sk);
+    await rejects(auction.withdrawExtraXTZ(alice.pkh), (err: Error) => {
+      expect(err.message).to.equal(Common.ERR_NOT_ADMIN);
+
+      return true;
+    });
+  });
+  it("Should claim extra xtz fee", async () => {
+    await utils.setProvider(bob.sk);
+    const prevAliceXTZBalance = await utils.tezos.tz
+      .getBalance(alice.pkh)
+      .then(balance => Math.floor(balance.toNumber()))
+      .catch(error => console.log(JSON.stringify(error)));
+
+    await auction.withdrawExtraXTZ(alice.pkh);
+    await auction.updateStorage();
+
+    const aliceXTZBalance = await utils.tezos.tz
+      .getBalance(alice.pkh)
+      .then(balance => Math.floor(balance.toNumber()))
+      .catch(error => console.log(JSON.stringify(error)));
+
+    expect(aliceXTZBalance).to.be.equal(
+      (prevAliceXTZBalance as number) + 1000000,
     );
   });
 });
