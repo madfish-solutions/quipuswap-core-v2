@@ -4,13 +4,21 @@ The second version ot the Quipuswap DEX.
 
 This version will support both TOKEN/TOKEN and TOKEN/TEZ pools, implement more
 essential view methods, flash loans, referral and QUIPU buyback fees, better
-mechanics for voting and baker rewards distribution, time-weighted average
-price for oracles etc.
+mechanics for voting and baker rewards distribution, time-weighted average price
+for oracles etc.
+
+# Contracts
+
+BakerRegistry: KT1LEetjBZK1mWBrzNQJASbd8JDzXs5UVrYy
+DexCore: KT1AsS9E8qs3z9JtYRxHtmvFFoaWGVYapLHN
+AuctionMock: KT1GD7oB2hrqGypHPEsyU1Xnv9CRX7qQi6J8
+FlashSwapsProxy: KT1JCGdMMYnAH9crDPftXhpmLh5uqVKwnMHZ
 
 # Requiremets
 
 - Installed [NodeJS](https://nodejs.org/en/) (tested with NodeJS v17+);
-- Installed [Yarn](https://classic.yarnpkg.com/lang/en/docs/install/#mac-stable);
+- Installed
+  [Yarn](https://classic.yarnpkg.com/lang/en/docs/install/#mac-stable);
 - Installed node modules:
 
   ```shell
@@ -74,8 +82,8 @@ To deploy the contracts you should run the following command:
 By default, the contracts will be deployed to the `development` network (in the
 Docker container).
 
-Also, you can specify the network for deploying (possible networks:
-`ithacanet`, `mainnet`):
+Also, you can specify the network for deploying (possible networks: `ithacanet`,
+`mainnet`):
 
 ```shell
   yarn migrate -n [network_name]
