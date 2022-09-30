@@ -72,6 +72,10 @@ module Auction is {
   const err_wrong_extension_trigger  : string = "314";
 }
 
+module AuctionMock is {
+  const err_unknown_token            : string = "500";
+}
+
 module Common is {
   const err_not_admin                      : string = "400";
   const err_not_pending_admin              : string = "401";
