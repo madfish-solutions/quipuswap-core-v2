@@ -17,6 +17,7 @@ function main(
                         : return_t is
   case action of [
   | Change_owner(param)       -> change_owner(param, s)
+  | Confirm_owner             -> confirm_owner(s)
   | Default(param)            -> ((nil : list(operation)), s)
   | Receive_fee(param)        -> receive_fee(param, s)
   | Claim_fee(param)          -> claim_fee(param, s)

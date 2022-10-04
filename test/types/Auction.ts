@@ -71,6 +71,7 @@ export type AuctionStorage = {
 
 export type AuctionMockStorage = {
   owner: string;
+  pending_owner: string | undefined | null;
   dex: string;
   fees: MichelsonMap<MichelsonMapKey, unknown>;
 };
