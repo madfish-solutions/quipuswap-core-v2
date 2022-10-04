@@ -23,5 +23,6 @@ type action_t           is
 | Receive_fee             of receive_fee_t
 | Claim_fee               of claim_fee_t
 | Withdraw_extra_xtz      of address
+| Set_delegate            of option(key_hash)
 
 type return_t           is list(operation) * storage_t

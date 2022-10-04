@@ -22,5 +22,6 @@ function main(
   | Receive_fee(param)        -> receive_fee(param, s)
   | Claim_fee(param)          -> claim_fee(param, s)
   | Withdraw_extra_xtz(param) -> withdraw_extra_xtz(param, s)
+  | Set_delegate(param)       -> set_delegate(param, s)
   ]
 

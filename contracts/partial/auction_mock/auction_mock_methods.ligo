@@ -67,3 +67,13 @@ function withdraw_extra_xtz(
         )
       ];
   } with (operations, s)
+
+function set_delegate(
+  const baker           : option(key_hash);
+  var s                 : storage_t)
+                        : return_t is
+  block {
+    only_admin(s.owner);
+
+    const operations = list[Tezos.set_delegate(baker)];
+  } with (operations, s)
