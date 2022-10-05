@@ -37,7 +37,7 @@ describe("Bucket (views)", async () => {
 
     bakerRegistry = await BakerRegistry.originate(
       utils.tezos,
-      bakerRegistryStorage
+      bakerRegistryStorage,
     );
 
     dexCoreStorage.storage.entered = false;
@@ -91,7 +91,7 @@ describe("Bucket (views)", async () => {
   it("should return zero balance", async () => {
     bucket = await Bucket.updateContractInstance(
       bucket.contract.address,
-      utils.tezos
+      utils.tezos,
     );
 
     const balance: Promise<any> = await bucket.contract.contractViews
@@ -109,7 +109,7 @@ describe("Bucket (views)", async () => {
 
     bucket = await Bucket.updateContractInstance(
       bucket.contract.address,
-      utils.tezos
+      utils.tezos,
     );
 
     const balance: Promise<any> = await bucket.contract.contractViews
@@ -129,7 +129,7 @@ describe("Bucket (views)", async () => {
 
     bucket = await Bucket.updateContractInstance(
       bucket.contract.address,
-      utils.tezos
+      utils.tezos,
     );
 
     const balance: Promise<any> = await bucket.contract.contractViews

@@ -836,7 +836,9 @@
   view "get_user_reward"
        address
        nat
-       { UNPAIR ;
+       { PUSH nat 1000000000000000000 ;
+         SWAP ;
+         UNPAIR ;
          PUSH nat 0 ;
          DUP 3 ;
          GET 33 ;
@@ -871,9 +873,8 @@
               LEVEL ;
               COMPARE ;
               GT ;
-              IF { DROP ;
-                   PUSH string "201" ;
-                   DUP 3 ;
+              IF { PUSH string "201" ;
+                   DUP 4 ;
                    GET 15 ;
                    UNIT ;
                    VIEW "get_collecting_period" nat ;
@@ -881,7 +882,7 @@
                    DUP ;
                    PUSH nat 1 ;
                    DIG 2 ;
-                   DUP 5 ;
+                   DUP 6 ;
                    GET 31 ;
                    LEVEL ;
                    SUB ;
@@ -892,39 +893,34 @@
                    CAR ;
                    ADD ;
                    MUL ;
-                   PUSH nat 1000000000000000000 ;
-                   DUP 4 ;
+                   DUP 5 ;
+                   DUP 5 ;
                    GET 19 ;
                    MUL ;
                    EDIV ;
-                   IF_NONE { PUSH string "DIV by 0" ; FAILWITH } { DROP } ;
-                   DUP 2 ;
-                   GET 27 ;
-                   DUP 3 ;
+                   IF_NONE { PUSH string "DIV by 0" ; FAILWITH } {} ;
+                   CAR ;
+                   DUP 4 ;
                    GET 31 ;
                    LEVEL ;
                    SUB ;
                    ISNAT ;
                    IF_NONE { PUSH string "406" ; FAILWITH } {} ;
                    MUL ;
-                   DUP 3 ;
+                   DUP 4 ;
                    GET 33 ;
                    SWAP ;
                    EDIV ;
                    IF_NONE { PUSH string "DIV by 0" ; FAILWITH } {} ;
                    CAR ;
-                   DUP 3 ;
-                   GET 25 ;
-                   ADD ;
-                   DROP }
-                 { DROP } ;
-              DUP 2 ;
+                   ADD }
+                 {} ;
+              DUP 3 ;
               GET 5 ;
-              DUP 2 ;
+              DUP 3 ;
               GET ;
               IF_NONE { PUSH nat 0 ; PUSH nat 0 ; PAIR } {} ;
-              DUP 3 ;
-              GET 25 ;
+              SWAP ;
               DIG 3 ;
               CAR ;
               DIG 3 ;
@@ -933,26 +929,18 @@
               CDR ;
               MUL ;
               DUP 2 ;
-              DUP 3 ;
               CDR ;
-              DUP 3 ;
-              SUB ;
-              ISNAT ;
-              IF_NONE { PUSH string "406" ; FAILWITH } {} ;
-              DIG 3 ;
-              CAR ;
-              ADD ;
-              UPDATE 1 ;
-              DUP ;
-              CDR ;
-              DIG 2 ;
+              SWAP ;
               SUB ;
               ISNAT ;
               IF_NONE { PUSH string "406" ; FAILWITH } {} ;
               SWAP ;
               CAR ;
-              ADD }
-            { DROP 2 ; PUSH nat 0 } } ;
+              ADD ;
+              EDIV ;
+              IF_NONE { PUSH string "DIV by 0" ; FAILWITH } {} ;
+              CAR }
+            { DROP 3 ; PUSH nat 0 } } ;
   view "get_user_candidate"
        address
        key_hash

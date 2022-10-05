@@ -141,7 +141,7 @@ describe("Bucket (withdraw rewards)", async () => {
     });
   });
 
-  it("should get user reward from View method = 0n", async () => {
+  it("should get user reward from View method = 0", async () => {
     const aliceRewards: BigNumber = await bucket.contract.contractViews
       .get_user_reward(alice.pkh)
       .executeView({ viewCaller: alice.pkh });
@@ -175,14 +175,16 @@ describe("Bucket (withdraw rewards)", async () => {
         dexCore.storage.storage.ledger[`${alice.pkh},${pairId}`],
         expectedRewardsInfo.rewardPerShare,
       );
-    console.log(expectedUserRewardsInfo);
 
     const aliceRewards: BigNumber = await bucket.contract.contractViews
       .get_user_reward(alice.pkh)
       .executeView({ viewCaller: alice.pkh });
 
     expect(aliceRewards.toNumber()).to.be.equal(
-      expectedUserRewardsInfo.reward_f.div(PRECISION).toNumber(),
+      expectedUserRewardsInfo.reward_f
+        .div(PRECISION)
+        .integerValue(BigNumber.ROUND_DOWN)
+        .toNumber(),
     );
   });
   it("should withdraw user's rewards - 1", async () => {

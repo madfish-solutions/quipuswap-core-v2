@@ -42,9 +42,9 @@
 
       const reward_per_block = (s.next_reward * Constants.precision) / period_duration;
 
-      const new_reward : nat = get_nat_or_fail(Tezos.level - s.collecting_period_end) * s.reward_per_block;
+      const new_reward : nat = get_nat_or_fail(Tezos.level - s.collecting_period_end) * reward_per_block;
 
-      reward_per_share := s.reward_per_share + (new_reward / s.total_supply);
+      reward_per_share := reward_per_share + (new_reward / s.total_supply);
     } else skip;
     var user_reward_info : user_reward_info_t := unwrap_or(
       s.users_rewards[user_addr],
@@ -53,7 +53,7 @@
 
     const user : user_t = unwrap_or(s.users[user_addr], Constants.default_user);
 
-    const current_reward : nat = user.votes * s.reward_per_share;
+    const current_reward : nat = user.votes * reward_per_share;
     const reward : nat = user_reward_info.reward_f + get_nat_or_fail(
       current_reward - user_reward_info.reward_paid_f);
   } with reward / Constants.precision
