@@ -60,6 +60,7 @@ export const auctionStorage: AuctionStorage = {
 
 export const auctionMockStorage: AuctionMockStorage = {
   owner: zeroAddress,
+  pending_owner: null,
   dex: zeroAddress,
   fees: MichelsonMap.fromLiteral({}),
 };
