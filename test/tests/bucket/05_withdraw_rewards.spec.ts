@@ -224,7 +224,7 @@ describe("Bucket (withdraw rewards)", async () => {
         dexCore.storage.storage.ledger[`${user},${pairId}`],
         expectedRewardsInfo.rewardPerShare,
       );
-    console.log(expectedUserRewardsInfo);
+
     const actualReward: BigNumber = expectedUserRewardsInfo.reward_f
       .dividedBy(PRECISION)
       .integerValue(BigNumber.ROUND_DOWN);
