@@ -50,14 +50,31 @@ describe("AuctionMock", async () => {
       },
     ]);
   });
-
-  it("Should changeOwner", async () => {
+  it("Should allow start transfer ownership", async () => {
     await auction.changeOwner(bob.pkh);
     await auction.updateStorage();
-
-    expect(auction.storage.owner).to.equal(bob.pkh);
+    const storage: any = await auction.contract.storage();
+    expect(storage.pending_owner).to.equal(bob.pkh);
   });
 
+  it("Should allow confirm transfer ownership", async () => {
+    await utils.setProvider(bob.sk);
+    await auction.confirmOwner();
+
+    await auction.updateStorage();
+    const storage: any = await auction.contract.storage();
+    expect(storage.owner).to.equal(bob.pkh);
+  });
+  it("Shouldn't confirm owner if the user is not an pending owner", async function () {
+    await utils.setProvider(alice.sk);
+    await rejects(
+      auction.contract.methods.confirm_owner().send(),
+      (err: Error) => {
+        expect(err.message).to.equal(Common.ERR_NOT_PENDING_ADMIN);
+        return true;
+      },
+    );
+  });
   it("Should fail change owner if user not a owner", async () => {
     await rejects(auction.changeOwner(alice.pkh), (err: Error) => {
       expect(err.message).to.equal(Common.ERR_NOT_ADMIN);

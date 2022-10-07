@@ -1,10 +1,23 @@
-function change_owner (
-  const param           : address;
+function change_owner(
+  const new_address     : address;
   var s                 : storage_t)
                         : return_t is
   block {
     only_admin(s.owner);
-    s.owner := param;
+    s.pending_owner := Some(new_address);
+  } with ((nil : list(operation)), s)
+
+function confirm_owner(
+  var s                 : storage_t)
+                        : return_t is
+  block {
+    const pending = unwrap(s.pending_owner, Common.err_not_pending_admin);
+    if (Tezos.sender =/= pending)
+    then failwith(Common.err_not_dex_core)
+    else skip;
+
+    s.owner := pending;
+    s.pending_owner := (None : option(address));
   } with ((nil : list(operation)), s)
 
 function receive_fee (
@@ -53,4 +66,14 @@ function withdraw_extra_xtz(
           Tez(unit)
         )
       ];
+  } with (operations, s)
+
+function set_delegate(
+  const baker           : option(key_hash);
+  var s                 : storage_t)
+                        : return_t is
+  block {
+    only_admin(s.owner);
+
+    const operations = list[Tezos.set_delegate(baker)];
   } with (operations, s)

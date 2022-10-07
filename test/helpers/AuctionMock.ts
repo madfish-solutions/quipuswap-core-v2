@@ -122,7 +122,7 @@ export class AuctionMock {
     owner: string,
     mutezAmount: number = 0,
   ): Promise<TransactionOperation> {
-    const operation: TransactionOperation = await this.contract.methodsObject
+    const operation: TransactionOperation = await this.contract.methods
       .change_owner(owner)
       .send({ amount: mutezAmount, mutez: true });
 
@@ -130,7 +130,17 @@ export class AuctionMock {
 
     return operation;
   }
+  async confirmOwner(
+    mutezAmount: number = 0,
+  ): Promise<TransactionOperation> {
+    const operation: TransactionOperation = await this.contract.methods
+      .confirm_owner()
+      .send({ amount: mutezAmount, mutez: true });
 
+    await confirmOperation(this.tezos, operation.hash);
+
+    return operation;
+  }
   async default(mutezAmount: number = 0): Promise<TransactionOperation> {
     const operation: TransactionOperation = await this.contract.methodsObject
       .default()

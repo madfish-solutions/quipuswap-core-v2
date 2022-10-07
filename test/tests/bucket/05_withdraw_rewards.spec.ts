@@ -55,7 +55,7 @@ describe("Bucket (withdraw rewards)", async () => {
 
     bakerRegistry = await BakerRegistry.originate(
       utils.tezos,
-      bakerRegistryStorage
+      bakerRegistryStorage,
     );
 
     fa2Token1 = await FA2.originate(utils.tezos, fa2Storage);
@@ -94,7 +94,7 @@ describe("Bucket (withdraw rewards)", async () => {
     ]);
     await dexCore.launchExchange(
       launchParams,
-      launchParams.token_b_in.toNumber()
+      launchParams.token_b_in.toNumber(),
     );
     await dexCore.updateStorage({
       pairs: [pairId],
@@ -102,7 +102,7 @@ describe("Bucket (withdraw rewards)", async () => {
 
     bucket = await Bucket.init(
       dexCore.storage.storage.pairs[pairId.toFixed()].bucket,
-      dexCore.tezos
+      dexCore.tezos,
     );
 
     bucketStorage.baker_registry = bakerRegistry.contract.address;
@@ -141,6 +141,52 @@ describe("Bucket (withdraw rewards)", async () => {
     });
   });
 
+  it("should get user reward from View method = 0", async () => {
+    const aliceRewards: BigNumber = await bucket.contract.contractViews
+      .get_user_reward(alice.pkh)
+      .executeView({ viewCaller: alice.pkh });
+    expect(aliceRewards.toNumber()).to.be.equal(0);
+  });
+  it("should get user reward from View method =/= 0", async () => {
+    const amount: BigNumber = new BigNumber(100);
+
+    await bucket.default(amount.toNumber());
+    await utils.bakeBlocks(6);
+    await dexCore.updateStorage({
+      pairs: [pairId],
+      ledger: [[alice.pkh, pairId]],
+    });
+    await bucket.updateStorage({
+      users_rewards: [alice.pkh],
+    });
+
+    const expectedRewardsInfo: UpdateRewards = await Bucket.updateRewards(
+      bucket.storage,
+      dexCore.storage,
+      dexCore.storage.storage.pairs[pairId.toFixed()].total_supply,
+      bucket.storage.next_reward,
+      utils,
+    );
+    const expectedUserRewardsInfo: UpdateUserRewards =
+      await Bucket.updateUserRewards(
+        bucket.storage,
+        alice.pkh,
+        dexCore.storage.storage.ledger[`${alice.pkh},${pairId}`],
+        dexCore.storage.storage.ledger[`${alice.pkh},${pairId}`],
+        expectedRewardsInfo.rewardPerShare,
+      );
+
+    const aliceRewards: BigNumber = await bucket.contract.contractViews
+      .get_user_reward(alice.pkh)
+      .executeView({ viewCaller: alice.pkh });
+
+    expect(aliceRewards.toNumber()).to.be.equal(
+      expectedUserRewardsInfo.reward_f
+        .div(PRECISION)
+        .integerValue(BigNumber.ROUND_DOWN)
+        .toNumber(),
+    );
+  });
   it("should withdraw user's rewards - 1", async () => {
     const amount: BigNumber = new BigNumber(100);
     const receiver: string = bob.pkh;
@@ -168,7 +214,7 @@ describe("Bucket (withdraw rewards)", async () => {
       dexCore.storage,
       dexCore.storage.storage.pairs[pairId.toFixed()].total_supply,
       bucket.storage.next_reward,
-      utils
+      utils,
     );
     const expectedUserRewardsInfo: UpdateUserRewards =
       await Bucket.updateUserRewards(
@@ -176,8 +222,9 @@ describe("Bucket (withdraw rewards)", async () => {
         user,
         dexCore.storage.storage.ledger[`${user},${pairId}`],
         dexCore.storage.storage.ledger[`${user},${pairId}`],
-        expectedRewardsInfo.rewardPerShare
+        expectedRewardsInfo.rewardPerShare,
       );
+
     const actualReward: BigNumber = expectedUserRewardsInfo.reward_f
       .dividedBy(PRECISION)
       .integerValue(BigNumber.ROUND_DOWN);
@@ -189,11 +236,11 @@ describe("Bucket (withdraw rewards)", async () => {
     expect(bucket.storage.reward_paid).to.be.bignumber.equal(actualReward);
     expect(bucket.storage.users_rewards[user].reward_f).to.be.bignumber.equal(
       expectedUserRewardsInfo.reward_f.minus(
-        actualReward.multipliedBy(PRECISION)
-      )
+        actualReward.multipliedBy(PRECISION),
+      ),
     );
     expect(
-      bucket.storage.users_rewards[user].reward_paid_f
+      bucket.storage.users_rewards[user].reward_paid_f,
     ).to.be.bignumber.equal(expectedUserRewardsInfo.rewardPaid_f);
   });
 
@@ -225,7 +272,7 @@ describe("Bucket (withdraw rewards)", async () => {
       dexCore.storage,
       dexCore.storage.storage.pairs[pairId.toFixed()].total_supply,
       prevBucketStorage.next_reward,
-      utils
+      utils,
     );
     const expectedUserRewardsInfo: UpdateUserRewards =
       await Bucket.updateUserRewards(
@@ -233,7 +280,7 @@ describe("Bucket (withdraw rewards)", async () => {
         user,
         dexCore.storage.storage.ledger[`${user},${pairId}`],
         dexCore.storage.storage.ledger[`${user},${pairId}`],
-        expectedRewardsInfo.rewardPerShare
+        expectedRewardsInfo.rewardPerShare,
       );
     const actualReward: BigNumber = expectedUserRewardsInfo.reward_f
       .dividedBy(PRECISION)
@@ -244,15 +291,15 @@ describe("Bucket (withdraw rewards)", async () => {
     });
 
     expect(bucket.storage.reward_paid).to.be.bignumber.equal(
-      prevBucketStorage.reward_paid.plus(actualReward)
+      prevBucketStorage.reward_paid.plus(actualReward),
     );
     expect(bucket.storage.users_rewards[user].reward_f).to.be.bignumber.equal(
       expectedUserRewardsInfo.reward_f.minus(
-        actualReward.multipliedBy(PRECISION)
-      )
+        actualReward.multipliedBy(PRECISION),
+      ),
     );
     expect(
-      bucket.storage.users_rewards[user].reward_paid_f
+      bucket.storage.users_rewards[user].reward_paid_f,
     ).to.be.bignumber.equal(expectedUserRewardsInfo.rewardPaid_f);
   });
 
@@ -281,23 +328,23 @@ describe("Bucket (withdraw rewards)", async () => {
       prevDexCoreStorage,
       prevPair.total_supply,
       prevBucketStorage.next_reward,
-      utils
+      utils,
     );
 
     await bucket.updateStorage();
 
     expect(bucket.storage.reward_per_share).to.be.bignumber.equal(
-      expectedRewardsInfo.rewardPerShare
+      expectedRewardsInfo.rewardPerShare,
     );
     expect(bucket.storage.reward_per_block).to.be.bignumber.equal(
-      expectedRewardsInfo.rewardPerBlock
+      expectedRewardsInfo.rewardPerBlock,
     );
     expect(bucket.storage.next_reward).to.be.bignumber.equal(new BigNumber(0));
     expect(bucket.storage.last_update_level).to.be.bignumber.equal(
-      expectedRewardsInfo.lastUpdateLevel
+      expectedRewardsInfo.lastUpdateLevel,
     );
     expect(bucket.storage.collecting_period_end).to.be.bignumber.equal(
-      expectedRewardsInfo.collectingPeriodEnd
+      expectedRewardsInfo.collectingPeriodEnd,
     );
   });
 
@@ -330,7 +377,7 @@ describe("Bucket (withdraw rewards)", async () => {
       prevDexCoreStorage,
       prevPair.total_supply,
       prevBucketStorage.next_reward,
-      utils
+      utils,
     );
     const expectedUserRewardsInfo: UpdateUserRewards =
       await Bucket.updateUserRewards(
@@ -338,7 +385,7 @@ describe("Bucket (withdraw rewards)", async () => {
         user,
         dexCore.storage.storage.ledger[`${user},${pairId}`],
         dexCore.storage.storage.ledger[`${user},${pairId}`],
-        expectedRewardsInfo.rewardPerShare
+        expectedRewardsInfo.rewardPerShare,
       );
     const actualReward: BigNumber = expectedUserRewardsInfo.reward_f
       .dividedBy(PRECISION)
@@ -350,11 +397,11 @@ describe("Bucket (withdraw rewards)", async () => {
 
     expect(bucket.storage.users_rewards[user].reward_f).to.be.bignumber.equal(
       expectedUserRewardsInfo.reward_f.minus(
-        actualReward.multipliedBy(PRECISION)
-      )
+        actualReward.multipliedBy(PRECISION),
+      ),
     );
     expect(
-      bucket.storage.users_rewards[user].reward_paid_f
+      bucket.storage.users_rewards[user].reward_paid_f,
     ).to.be.bignumber.equal(expectedUserRewardsInfo.rewardPaid_f);
   });
 });
